@@ -1,0 +1,57 @@
+name: CI
+
+# CI is a safety net only: main moves exclusively through /dev-release
+# (squash + tag), never by auto-merge. Dokploy deploys on push per branch.
+#
+# `npm audit` is deliberately absent here and lives in the /dev-release gate
+# only. An advisory published overnight would turn every push red without a
+# line of code having changed, and a dev branch that can never be green stops
+# being read at all. A release is the right moment to block on it.
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # npm run lint already runs tsc, so there is no separate typecheck step.
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      # Whole-graph gates: dead exports and circular dependencies only make
+      # sense on the full project, so they live here rather than in the lint.
+      - name: Knip (dead code)
+        run: npx knip
+
+      - name: Dependency rules
+        run: npm run depcruise
+
+      - name: Norm check
+        run: npm run norm
+
+      - name: Build
+        run: npm run build
