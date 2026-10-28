@@ -36,6 +36,7 @@ export const TONE = {
   seaLine: 0x8fa39a,
   gold: 0xd9a41e,
   goldLight: 0xf4d277,
+  goldDeep: 0x946512,
   glint: 0xfff6cf,
   rampart: 0xd8ccae,
   wall: 0xe6dcc4,

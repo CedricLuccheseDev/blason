@@ -99,9 +99,39 @@ orders. It decides nothing about the rules.
   `hand.ts` (the keys 1 to 9, `keys.ts`).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
-- `scene.ts` stacks the layers: the page and its frame, the sea and its shore
-  lines, the lands (`regions.ts`, traced around their tiles by `trace.ts` and
-  inked with a trembling pen, `pen.ts`), the works (`marks.ts`, `art/`), the
+- `scene.ts` stacks the layers, so that what the game must make read stays
+  above what only adorns it: the page and its frame, the sea and its shore
+  lines (`layers/lands.ts`), the lands' washes (`regions.ts`, traced around
+  their tiles by `trace.ts`), the ground over them (`layers/ground.ts`), the
+  paved roads, the borders (`layers/borders.ts`: a watercolour edge of the
+  lord's colour and a ribbon of ink that swells as a quill's, `ribbon.ts`,
+  `pen.ts`), the works (`marks.ts`) and their life (`layers/life.ts`), the
+  green and the red borders, then the wagons, the armies and the names.
+- The map gains detail with the zoom, by the pixels a tile covers on screen
+  (`ground/detail.ts`): from afar the wash and the works' silhouettes; at mid
+  distance (9 to 18 pixels a tile) hatched hills, groves, rivers, fields round
+  the villages, the works drawn, the mills turning; up close single trees,
+  tufts, close furrows, the sea's ripples, roof tiles, smoke, peasants at work,
+  gold glinting. Each level fades in over a range. The ground (`ground/`) reads
+  each tile's biome once, from the map's nearest cell (`terrain.ts`); lays the
+  wash's blooms (`bloom.ts`) and the woods' and hills' darker tone
+  (`tones.ts`) at every distance, the rivers (`rivers.ts`) from mid distance;
+  and paints the decoration (`ornaments.ts`, `fields.ts`, `paint.ts`, drawn by
+  `art/trees.ts`) chunk by chunk, sixteen tiles a side, on canvases kept on the
+  graphics card per level of zoom (`decor.ts`, `cache.ts`), multiplied into the
+  washes so that its ink takes each land's hue. A chunk is painted again only
+  when the land under it, a work or a road changed there (`changes.ts`, from
+  the tiles' weights, `weights.ts`: nothing on a border, a road or a shore, a
+  clearing round each work) or the zoom passed to another level, a few each
+  frame, the middle of the screen first, the new one fading in over the old.
+- The works (`art/works.ts`) are drawn once per lord's colour and level of
+  detail into a texture: a silhouette cut out by a parchment halo, never under
+  thirty pixels on screen; a drawing; an illustration (`art/village.ts`,
+  `art/house.ts`, `art/castle.ts`, `art/ramparts.ts`, `art/market.ts`,
+  `art/stall.ts`, `art/gold.ts`, with the pen of `art/ink.ts`); their life,
+  sails, smoke, glints and peasants (`art/life.ts`), only on screen, still
+  under reduced motion.
+- Over the works, the
   armies (`armies.ts`): where each one stands and faces (`fronts.ts`), its
   men kept from frame to frame and running to their places in a column or in
   ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them,

@@ -3,27 +3,23 @@ import { NEUTRAL } from '../../engine'
 import { mixColor } from './ease'
 import { flatten } from './geometry'
 import { drawLand } from './layers/lands'
-import { alongBorder } from './pen'
 import { TONE, playerColor } from './palette'
-import { castleLand, corners, inside, smooth, spread } from './trace'
+import { castleLand, corners, smooth, spread } from './trace'
 import type { GameState, Point, World } from '../../engine'
 
 // The lands drawn as the boards draw them (design/mockups/cells.ts): each
 // region of the grid, a lord's land or a free domain, traced round its
-// tiles, its steps rounded off, filled with its wash; a rim of its lord's
-// colour just inside a lord's border; every border in a trembling pen line;
-// all of it clipped to the coast. The land a castle holds is tinted with
-// stone, one tint for all of a lord's castles. A region is traced again
-// only when its land changed, a few times a second; its outline as last
-// traced lends its line to the green of the allies and the red of the wars.
+// tiles, its steps rounded off, filled with its wash, clipped to the coast.
+// The land a castle holds is tinted with stone and walled, one tint for all
+// of a lord's castles. A region is traced again only when its land changed,
+// a few times a second; its outline as last traced lends its line to the
+// borders' ink (layers/borders.ts), the green of the allies and the red of
+// the wars, and its keys to the ground's decoration (ground/decor.ts).
 
 const WASH = 0.5
 const MY_WASH = 0.74
 const FREE = 0xdccb9e
 const FREE_WASH = 0.42
-/** The rim's width inside a lord's border, and its strength. */
-const RIM = 3
-const RIM_ALPHA = 0.55
 /** How much stone tints the land a castle holds. */
 const STONE_ALPHA = 0.3
 /** Points of a rampart's line between two of its merlons. */
@@ -45,11 +41,9 @@ export function makeRegions(state: GameState, land: World, me: number) {
   under.sortableChildren = true
   const washes = container.addChild(new Container())
   washes.sortableChildren = true
-  const stone = container.addChild(new Graphics())
-  const rims = container.addChild(new Container())
-  const inks = container.addChild(new Container())
-  const mask = container.addChild(drawLand(land))
-  container.mask = mask
+  container.mask = container.addChild(drawLand(land))
+  /** The castles' stone, laid over the ground's decoration with the borders. */
+  const stone = new Graphics()
   // Each tile under the sea near a shore takes the nearest land's region, so the washes reach the coast and the coast clips them.
   const shore = grid.land.map((l, t) => (l ? t : -1))
   let ring = shore.flatMap((s, t) => (s >= 0 ? [t] : []))
@@ -102,28 +96,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
     for (const loop of loops) wash.poly(flatten(loop)).fill(color)
     wash.zIndex = -spread(loops)
     base.zIndex = wash.zIndex
-    const ink = inks.addChild(new Graphics())
-    for (const loop of loops)
-      ink.poly(flatten(alongBorder([...loop, loop[0]])), false)
-    ink.stroke({
-      width: 1.1,
-      color: TONE.ink,
-      alpha: key < 0 ? 0.4 : 0.8,
-      join: 'round',
-    })
-    const parts = [base, wash, ink]
-    if (key >= 0) {
-      const rim = rims.addChild(new Graphics())
-      for (const loop of loops) rim.poly(flatten(inside(loop, RIM / 2)))
-      rim.stroke({
-        width: RIM,
-        color: playerColor(key),
-        alpha: RIM_ALPHA,
-        join: 'round',
-      })
-      parts.push(rim)
-    }
-    drawn.set(key, parts)
+    drawn.set(key, [base, wash])
     outlines.set(key, loops)
   }
 
@@ -175,15 +148,18 @@ export function makeRegions(state: GameState, land: World, me: number) {
 
   return {
     container,
-    /** A lord's outline as last traced: loops in map units, his land on the right of their course. */
-    outline: (lord: number) => outlines.get(lord) ?? [],
-    /** Traces again the regions whose land changed, a few times a second; whether it did. */
-    update(now: number): boolean {
-      if (now - traced < EVERY_MS) return false
+    stone,
+    /** A region's outline as last traced: loops in map units, its land on the right of their course. */
+    outline: (key: number) => outlines.get(key) ?? [],
+    /** Each tile's region as last traced: a lord, a free domain (-3 and down), the open sea (-2). */
+    keys: () => keys,
+    /** Traces again the regions whose land changed, a few times a second; the regions traced, if any. */
+    update(now: number): Set<number> | null {
+      if (now - traced < EVERY_MS) return null
       traced = now
       const { next, dirty } = changes()
       const works = state.works.map((w) => [w.tile, w.owner].join(':')).join()
-      if (dirty.size === 0 && works === built) return false
+      if (dirty.size === 0 && works === built) return null
       const tiles = tilesOf(next, dirty)
       for (const key of dirty)
         if (key !== SEA_KEY && key !== UNSET)
@@ -191,7 +167,9 @@ export function makeRegions(state: GameState, land: World, me: number) {
       keys = next
       built = works
       wall(next)
-      return true
+      dirty.delete(SEA_KEY)
+      dirty.delete(UNSET)
+      return dirty
     },
   }
 }
