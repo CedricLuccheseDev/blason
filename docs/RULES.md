@@ -7,8 +7,13 @@ applies each rule is named beside it.
 ## The land
 
 - The map is grown from a seed (`engine/map/`): the same seed draws the same
-  land on every machine. It is cut into a fine grid of tiles, four map units a
-  side (`engine/grid.ts`).
+  land on every machine. Its shape is one of six families (a continent, a
+  coast, an inland sea, two lands and a neck, a strip between two seas,
+  fjords), with peninsulas, bays and capes; it is one piece, with no
+  islands. Lakes lie inland and, like the sea, no army crosses them. Rivers,
+  mountains, hills, woods and plains are drawn only: they change nothing to
+  the rules. The land is cut into a fine grid of tiles, four map units a side
+  (`engine/grid.ts`), some 53,000 tiles of land.
 - At the start the whole land is shared into **free domains**, each around its
   village, one village for some 600 tiles, for the lords to choose where they
   start (`engine/land.ts`).

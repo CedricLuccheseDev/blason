@@ -58,23 +58,58 @@ can tune them without touching the code. The rules themselves are described in
 
 ### The modules
 
-| Module                   | Responsibility                                                                             |
-| ------------------------ | ------------------------------------------------------------------------------------------ |
-| `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                            |
-| `map/`                   | The map generator: from a seed, the shape of the land, its coasts, lakes, rivers and names |
-| `grid.ts`                | The land cut into tiles of four map units                                                  |
-| `land.ts`                | The free domains, the peasants, the men holding a tile                                     |
-| `opening.ts`             | The opening: each lord's standard, moved at will, then the domains granted when it ends    |
-| `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                  |
-| `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs               |
-| `battle.ts`              | Battles between armies that meet, by the combat table                                      |
-| `enclosure.ts`           | Encircled land passing to the lord all round it                                            |
-| `heap.ts`                | The heap that orders the tiles an army strikes next                                        |
-| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time      |
-| `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                   |
-| `caravans.ts`            | The merchants' roads and what they pay                                                     |
-| `step.ts`                | The tick, validation of orders, victory                                                    |
-| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `levels.ts`      |
+| Module                   | Responsibility                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                     |
+| `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes |
+| `grid.ts`                | The land cut into tiles of four map units                                                           |
+| `land.ts`                | The free domains, the peasants, the men holding a tile                                              |
+| `opening.ts`             | The opening: each lord's standard, moved at will, then the domains granted when it ends             |
+| `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                           |
+| `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs                        |
+| `battle.ts`              | Battles between armies that meet, by the combat table                                               |
+| `enclosure.ts`           | Encircled land passing to the lord all round it                                                     |
+| `heap.ts`                | The heap that orders the tiles an army strikes next                                                 |
+| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time               |
+| `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                            |
+| `caravans.ts`            | The merchants' roads and what they pay                                                              |
+| `step.ts`                | The tick, validation of orders, victory                                                             |
+| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `levels.ts`               |
+
+### The map
+
+`engine/map/generate.ts` grows a land from a seed, in stages, each its own
+module, all pure and seeded (floating point, but only `+ − × ÷`, so every
+machine draws the same land):
+
+1. **Cells** (`points.ts`, `cells.ts`): points scattered evenly over the
+   frame (Poisson disc, relaxed twice) and their Voronoi cells, some two
+   thousand on land, each about 430 square map units.
+2. **The shape** (`shapes.ts`): the seed draws one of six families, a
+   continent the sea rings round, a coast on any side, an inland sea, two
+   lands joined by a neck, a strip between two seas, a land cut by fjords;
+   its lines are bent by a warp and roughened by noise (`noise.ts`, Perlin
+   written with the four operations), then marked on the coast with
+   peninsulas, bays and capes turned to face the open sea (`marks.ts`).
+3. **The sea** (`terrain.ts`): the family's share of the lowest cells, less
+   if it would break the land, which is one piece with no islands: every
+   cell can be reached on foot.
+4. **The ground** (`ground.ts`): each land cell's height, from the shape's
+   relief, the distance from the shore and a few ridged ranges; its
+   wetness, from a rain noise, more by the water and less up high.
+5. **Lakes** (`lakes.ts`): a few hollows of the inland, a handful of cells
+   each, filled with water where the land stays one piece round them. The
+   simulation counts them as sea: no army crosses them.
+6. **Rivers** (`rivers.ts`): along the cells' borders, from high springs
+   down the way a priority flood finds for the whole land, to the sea or a
+   lake, a few apart, tributaries ending where they meet another.
+7. **Biomes** (`biomes.ts`): the highest cells mountains, the next hills,
+   the wettest of the lowland woods, the rest plain, by shares; then a vote
+   of the neighbours, twice, so that they lie in regions. They are only
+   drawn: the simulation knows land and water.
+
+The tiles (`grid.ts`) then follow the cells: a tile is land when the cell
+nearest its middle is.
 
 ### The bots
 

@@ -1,15 +1,44 @@
 import { describe, expect, it } from 'vitest'
 import { generateWorld } from './generate'
+import { pickShape } from './shapes'
+import type { ShapeKind } from './shapes'
 
 const world = generateWorld('valbrune')
 const { land, sea } = world.map
 const many = 'abcdef'.split('').map((seed) => generateWorld(seed))
 
-function isOnePiece(map: (typeof world)['map']): boolean {
-  const reached = new Set([0])
-  for (const at of reached)
-    map.land[at].neighbors.forEach((n) => reached.add(n))
-  return reached.size === map.land.length
+/** The first seed that draws each family of shapes. */
+function seedsByFamily(): Map<ShapeKind, string> {
+  const found = new Map<ShapeKind, string>()
+  for (let i = 0; found.size < 6 && i < 200; i++) {
+    const seed = `family-${i}`
+    const kind = pickShape(seed).kind
+    if (!found.has(kind)) found.set(kind, seed)
+  }
+  return found
+}
+const families = [...seedsByFamily()].map(([kind, seed]) => ({
+  kind,
+  world: generateWorld(seed),
+}))
+
+/** Pieces of a graph, the cells of each walked by their neighbours. */
+function pieces(cells: Array<{ neighbors: Array<number> }>): number {
+  const seen = new Set<number>()
+  let count = 0
+  cells.forEach((_, start) => {
+    if (seen.has(start)) return
+    count++
+    seen.add(start)
+    const queue = [start]
+    for (const at of queue)
+      for (const n of cells[at].neighbors)
+        if (!seen.has(n)) {
+          seen.add(n)
+          queue.push(n)
+        }
+  })
+  return count
 }
 
 describe('the map generator', () => {
@@ -20,7 +49,7 @@ describe('the map generator', () => {
 
   it('cuts some two thousand cells of land of the same size, whatever the sea', () => {
     for (const w of many) {
-      expect(w.map.land.length).toBeGreaterThan(1750)
+      expect(w.map.land.length).toBeGreaterThan(1650)
       expect(w.map.land.length).toBeLessThan(2150)
       expect(w.map.sea.length).toBeGreaterThan(200)
       const cells = w.map.land.length + w.map.sea.length
@@ -30,8 +59,11 @@ describe('the map generator', () => {
     }
   })
 
-  it('draws lands of many shapes, the sea on any side', () => {
-    expect(new Set(many.map((w) => w.shape)).size).toBeGreaterThanOrEqual(3)
+  it('draws each of the six families of shapes for some seed, the sea on any side', () => {
+    expect(new Set(families.map((f) => f.kind))).toEqual(
+      new Set(['coast', 'continent', 'fjords', 'inland', 'isthmus', 'strip']),
+    )
+    for (const f of families) expect(f.world.shape).toBe(f.kind)
     const middles = many.map((w) => {
       const x = w.map.sea.reduce((sum, cell) => sum + cell.x, 0)
       return x / w.map.sea.length / w.width
@@ -57,15 +89,41 @@ describe('the map generator', () => {
     })
   })
 
-  it('makes one single land, every cell within reach on foot', () => {
-    expect(isOnePiece(world.map)).toBe(true)
-    for (const w of many) expect(isOnePiece(w.map)).toBe(true)
+  it('makes one single land, every cell within reach on foot, whatever the family', () => {
+    expect(pieces(land)).toBe(1)
+    for (const w of [...many, ...families.map((f) => f.world)])
+      expect(pieces(w.map.land)).toBe(1)
   })
 
-  it('draws an outline for each cell, a coast and a few rivers', () => {
+  it('digs lakes inland, apart from the sea', () => {
+    const lakes = [world, ...many].map((w) => pieces(w.map.sea) - 1)
+    expect(lakes.filter((n) => n > 0).length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('places the four grounds in broad regions, the mountains the fewest', () => {
+    const count = (b: string) => world.land.filter((c) => c.biome === b).length
+    const n = world.land.length
+    expect(count('mountains')).toBeGreaterThan(0)
+    expect(count('mountains')).toBeLessThan(count('hills'))
+    expect(count('hills')).toBeLessThan(count('forest'))
+    expect(count('forest')).toBeLessThan(count('plain'))
+    // No salt and pepper: nearly every cell has a neighbour of its ground.
+    const alone = land.filter(
+      (cell, id) =>
+        !cell.neighbors.some(
+          (m) => world.land[m].biome === world.land[id].biome,
+        ),
+    ).length
+    expect(alone / n).toBeLessThan(0.02)
+  })
+
+  it('draws an outline for each cell, a coast and rivers from the high ground', () => {
     expect(world.land).toHaveLength(land.length)
     expect(world.land.every((c) => c.outline.length >= 3)).toBe(true)
     expect(world.coast.length).toBeGreaterThan(10)
-    expect(world.rivers.length).toBeLessThanOrEqual(3)
+    for (const w of [world, ...many]) {
+      expect(w.rivers.length).toBeGreaterThanOrEqual(3)
+      expect(w.rivers.length).toBeLessThanOrEqual(6)
+    }
   })
 })

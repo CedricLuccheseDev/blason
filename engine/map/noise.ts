@@ -29,8 +29,11 @@ export const DIRECTIONS: ReadonlyArray<readonly [number, number]> = [
 
 export type Noise = (x: number, y: number) => number
 
-/** Fractal noise of four octaves, roughly in [-0.5, 0.5], from a seed. */
-export function makeNoise(seed: string): Noise {
+/**
+ * Fractal noise of four octaves by default, roughly in [-0.5, 0.5], from a
+ * seed: a larger map takes more, so its detail stays as fine.
+ */
+export function makeNoise(seed: string, octaves = 4): Noise {
   const perm = Array.from({ length: 256 }, (_, i) => i)
   for (let i = 255; i > 0; i--) {
     const j = drawInt(seed, i + 1, 'perm', i)
@@ -65,7 +68,7 @@ export function makeNoise(seed: string): Noise {
     let amplitude = 1
     let frequency = 1
     let norm = 0
-    for (let octave = 0; octave < 4; octave++) {
+    for (let octave = 0; octave < octaves; octave++) {
       sum += amplitude * perlin(x * frequency, y * frequency)
       norm += amplitude
       amplitude /= 2

@@ -1,5 +1,5 @@
 import { hash } from '../pen'
-import { FOREST, HILLS, PLAIN } from './terrain'
+import { FOREST, HILLS, MOUNTAINS, PLAIN } from './terrain'
 import type { Terrain } from './terrain'
 import type { Weights } from './weights'
 import type { Grid } from '../../../engine'
@@ -7,7 +7,8 @@ import type { Grid } from '../../../engine'
 // What stands on the ground over a stretch of the map, from back to front:
 // in the woods a grove at mid distance and every tree up close, broadleaf
 // trees and a fir now and then, four places to a tile; on the hills a hill
-// every other tile on staggered rows; on the plain a lone tree here and
+// every other tile on staggered rows, on the mountains taller and steeper
+// ones in close ranks; on the plain a lone tree here and
 // there, and up close tufts of grass. Each as dense as its tile's weight
 // allows. In map units, a tile 4 across as the boards'.
 
@@ -78,6 +79,29 @@ function hills(
   })
 }
 
+/** On the mountains, hills taller and steeper, crowded in ranks, one a tile and a half. */
+function mountains(
+  out: Array<Ornament>,
+  c: number,
+  r: number,
+  w: number,
+  k: number,
+) {
+  if (r % 2 !== 0 || (c + Math.floor(r / 2)) % 2 !== 0) return
+  if (hash(c, r, 41) > 0.95 * w) return
+  const h = hash(c, r, 43)
+  const bw = (1.5 + 0.8 * h) * k
+  out.push({
+    kind: 'hill',
+    x: (c + 1 + (hash(c, r, 42) - 0.5) * 0.8) * k,
+    y: (r + 1.5 + (hash(c, r, 45) - 0.5) * 0.6) * k,
+    bw,
+    hh: bw * (0.75 + 0.25 * hash(c, r, 44)),
+    w,
+    h,
+  })
+}
+
 function plain(
   out: Array<Ornament>,
   c: number,
@@ -130,6 +154,7 @@ export function ornaments(
       const b = terrain.biome[t]
       if (b === FOREST) woods(out, c, r, w, k, detail)
       else if (b === HILLS) hills(out, c, r, w, k)
+      else if (b === MOUNTAINS) mountains(out, c, r, w, k)
       else if (b === PLAIN) plain(out, c, r, w, k, detail)
     }
   return out.sort((a, b) => a.y - b.y || a.x - b.x)
