@@ -16,11 +16,18 @@ import type { GameState, Work } from '../../../engine'
 // land or free land: the road the army would march from its village to
 // the border, where it would enter, ringed, and a dotted line from there to
 // the tile aimed at. With a work in hand: its drawing on the
-// tile, the castle's circle, red where it may not stand,
+// tile, the circle it reaches (the castle's land held, the market's range of
+// trade), red where it may not stand,
 // with the works already standing ringed in red. In the opening:
 // the free domain one would start on, whole. Sized on screen.
 
 type At = { x: number; y: number }
+
+/** How far a work reaches, in tiles, for those that reach: a castle holds its land, a market trades. */
+const REACH: Partial<Record<Work, (state: GameState) => number>> = {
+  castle: (state) => state.rules.castleRadius,
+  market: (state) => state.rules.tradeRange,
+}
 
 export function makeAim(state: GameState, me: number) {
   const container = new Container()
@@ -67,9 +74,10 @@ export function makeAim(state: GameState, me: number) {
     const p = siteOf(state, tile)
     const ok = canBuild(state, me, tile, work)
     const tone = ok ? color : TONE.fight
-    if (work === 'castle')
+    const reach = REACH[work]
+    if (reach)
       marks
-        .circle(p.x, p.y, state.rules.castleRadius * state.grid.size)
+        .circle(p.x, p.y, reach(state) * state.grid.size)
         .fill({ color: tone, alpha: 0.1 })
         .stroke({ width: 1.6 / zoom, color: tone })
     drawWork(ghost, work)

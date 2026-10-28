@@ -75,6 +75,8 @@ export type Caravan = {
   owner: number
   /** The lord whose market it goes to: his land it may cross at the end of its road. */
   to: number
+  /** The lords whose markets it goes through, his own aside: their land it may cross. */
+  via: Array<number>
   /** The tiles of its road, from its market to the other, and how far along it is, in thousandths of a tile. */
   road: Array<number>
   along: number

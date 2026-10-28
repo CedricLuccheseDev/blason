@@ -117,12 +117,17 @@ village or a market, 20 for a castle.
 
 `engine/caravans.ts`:
 
+- **The trade network**: each market reaches 40 tiles. Two markets within
+  range of each other are joined by a road over the land, whoever holds them,
+  unless a third market lies nearer to both (`engine/network.ts`).
 - Every 10 seconds, each market may send a caravan to a market of another
-  lord, drawn by lot among all those a road reaches through its lord's land,
-  his allies' and free land: the farther and the allies' more often (the
-  chance goes with the road's length, twice for an ally). The more caravans
-  its lord has on the roads, the less often it sends one: with 6 out, one
-  time in two.
+  lord, drawn by lot among all those the network reaches: the farther and the
+  allies' more often (the chance goes with the road's length, twice for an
+  ally). It goes along the network's roads, through as many markets as it
+  takes, over its lord's land, his allies' and free land, and the land of the
+  lords whose markets it goes to; any other lord bars the way. The more
+  caravans its lord has on the roads, the less often it sends one: with 6 out,
+  one time in two.
 - It makes one journey at 4 tiles a second. Arriving, it pays both markets
   0.15 gold for each tile of its road, twice as much between allies.
 - An enemy who takes a tile of its road ahead takes the caravan: it turns to

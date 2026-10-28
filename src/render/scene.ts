@@ -13,7 +13,6 @@ import { makeMarks } from './marks'
 import { makeBadges, tilePlaces } from './places'
 import { makeRegions } from './regions'
 import { makeTrade } from './trade'
-import { makeWays } from './ways'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeBuilding } from './layers/building'
@@ -57,7 +56,6 @@ export function makeScene(
   )
   const badges = makeBadges(state, me)
   const trade = makeTrade(makeStamps(app.renderer), me)
-  const ways = makeWays(me)
   const tidings = makeTidings(me)
   const raids = makeRaids()
   const building = makeBuilding()
@@ -69,7 +67,6 @@ export function makeScene(
     regions.container,
     coast,
     raids.container,
-    ways.container,
     trade.roads,
     marks.container,
     seals.container,
@@ -94,7 +91,6 @@ export function makeScene(
       raids.draw(state, zoom)
       building.draw(state, zoom)
       seals.draw(state, zoom)
-      ways.draw(state)
       trade.draw(state, between)
       armies.draw(state, zoom, between)
       tidings.draw(state, zoom)

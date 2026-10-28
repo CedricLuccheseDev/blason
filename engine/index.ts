@@ -33,6 +33,8 @@ export { canBuild, priceOf } from './works'
 export { freeVillages, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
 export { meet } from './battle'
+export { tradeLinks } from './network'
+export type { Link } from './network'
 
 // The bots, players like the others, at the level chosen.
 export { createBot } from './bots/bot'

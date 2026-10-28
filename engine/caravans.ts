@@ -2,16 +2,19 @@ import { around } from './grid'
 import { drawInt } from './numbers'
 import { standing } from './land'
 import { isAllied, isFriendly } from './diplomacy'
+import { tradeLinks } from './network'
 import { NEUTRAL } from './types'
 import type { Caravan, GameState } from './types'
+import type { Link } from './network'
 
-// The merchants, as OpenFront's trade ships (docs/RULES.md): now and then a
+// The merchants, as OpenFront's trains (docs/RULES.md): now and then a
 // market sends a caravan to a market of another lord drawn by lot among all
-// those a road reaches, the far ones and the allies' more often, and less
-// often the more caravans its lord has on the roads. The road goes through
-// its lord's land, his allies' and the free land, entering at the last the
-// land of the lord it trades with; any other lord bars the way. It makes one
-// journey at a walk; arriving, it pays both markets, more the longer its
+// those the trade network reaches (network.ts), the far ones and the allies'
+// more often, and less often the more caravans its lord has on the roads. It
+// goes along the network's roads, through as many markets as it takes, over
+// its lord's land, his allies' and the free land, entering only the land of
+// the lords whose markets it goes to; any other lord bars the way. It makes
+// one journey at a walk; arriving, it pays both markets, more the longer its
 // road, twice as much between allies. An enemy who takes a tile of the road
 // ahead takes the caravan: it turns to his nearest market and pays him alone,
 // or is plundered if he has none it can reach.
@@ -24,17 +27,6 @@ function open(state: GameState, lord: number, tile: number): boolean {
 
 /** Tiles searched at most for a road, so a market far from all costs little. */
 const SEARCH = 30000
-
-/**
- * Whether a road may go on from one tile to the next: through open land, or
- * into another lord's land, then only within it, the market it goes to
- * being there; never on the sea.
- */
-function canStep(state: GameState, lord: number, from: number, to: number) {
-  const owner = state.owner[to]
-  if (open(state, lord, from)) return owner >= NEUTRAL
-  return owner === state.owner[from]
-}
 
 /** The road walked back from a tile to where it began. */
 function walkBack(before: Map<number, number>, end: number, from: number) {
@@ -68,33 +60,81 @@ function roadsFrom(
   return roads
 }
 
-/** A road drawn by lot among those a market reaches: the longer and the allies' more often. */
-function drawRoad(
+/** A journey: the market it ends at, its road there, and the lords whose markets it goes through. */
+type Journey = { end: number; road: Array<number>; via: Array<number> }
+
+/** Of the journeys found, the shortest not yet gone on from. */
+function nearest(found: Map<number, Journey>, done: Set<number>) {
+  let next: Journey | null = null
+  for (const j of found.values())
+    if (!done.has(j.end) && (!next || j.road.length < next.road.length))
+      next = j
+  return next
+}
+
+/** A journey gone on by a road of the network from the market it ends at, if the road leaves from there and the lord may take it. */
+function onward(
+  state: GameState,
+  lord: number,
+  from: Journey,
+  link: Link,
+  owners: Map<number, number>,
+): Journey | null {
+  if (link.a !== from.end && link.b !== from.end) return null
+  const to = link.a === from.end ? link.b : link.a
+  const owner = owners.get(to) ?? NEUTRAL
+  const road = link.a === from.end ? link.road : [...link.road].reverse()
+  if (!road.every((t) => open(state, lord, t) || state.owner[t] === owner))
+    return null
+  const via = owner === lord ? from.via : [...from.via, owner]
+  return { end: to, road: [...from.road, ...road.slice(1)], via }
+}
+
+/**
+ * The journeys from a market along the network, shortest first: a road is
+ * taken where it crosses only the lord's land, his allies' and the free land,
+ * or the land of the lord whose market it goes to.
+ */
+function journeys(state: GameState, lord: number, from: number) {
+  const owners = new Map(
+    state.works
+      .filter((w) => w.work === 'market' && standing(state, w))
+      .map((w) => [w.tile, w.owner]),
+  )
+  const found = new Map<number, Journey>([
+    [from, { end: from, road: [from], via: [] }],
+  ])
+  const done = new Set<number>()
+  const links = tradeLinks(state)
+  for (let next = nearest(found, done); next; next = nearest(found, done)) {
+    done.add(next.end)
+    for (const link of links) {
+      const on = onward(state, lord, next, link, owners)
+      if (on && (found.get(on.end)?.road.length ?? Infinity) > on.road.length)
+        found.set(on.end, on)
+    }
+  }
+  return [...found.values()].filter((j) => owners.get(j.end) !== lord)
+}
+
+/** A journey drawn by lot among those a market may make: the longer and the allies' more often. */
+function drawJourney(
   state: GameState,
   lord: number,
   market: number,
-): Array<number> | null {
-  const goals = new Set(
-    state.works
-      .filter(
-        (w) => w.work === 'market' && w.owner !== lord && standing(state, w),
-      )
-      .map((w) => w.tile),
-  )
-  if (goals.size === 0) return null
-  const may = (from: number, to: number) => canStep(state, lord, from, to)
-  const roads = roadsFrom(state, market, goals, may)
-  const weights = roads.map((road) => {
-    const to = state.owner[road[road.length - 1]]
+): Journey | null {
+  const all = journeys(state, lord, market)
+  const weights = all.map((j) => {
+    const to = state.owner[j.end]
     const bonus = isAllied(state, lord, to) ? state.rules.allyTrade : 100
-    return road.length * bonus
+    return j.road.length * bonus
   })
   const total = weights.reduce((a, b) => a + b, 0)
   if (total === 0) return null
   let lot = drawInt(state.seed, total, 'caravan', state.tick, market)
-  for (const [i, road] of roads.entries()) {
+  for (const [i, journey] of all.entries()) {
     lot -= weights[i]
-    if (lot < 0) return road
+    if (lot < 0) return journey
   }
   return null
 }
@@ -120,12 +160,13 @@ export function sendCaravans(state: GameState) {
     if (work.work !== 'market' || !standing(state, work)) continue
     if ((state.tick + work.tile * 7) % caravanTicks !== 0) continue
     if (!sends(state, work.owner, work.tile)) continue
-    const road = drawRoad(state, work.owner, work.tile)
-    if (!road) continue
-    const to = state.owner[road[road.length - 1]]
+    const journey = drawJourney(state, work.owner, work.tile)
+    if (!journey) continue
+    const { road, via } = journey
+    const to = state.owner[journey.end]
     const bonus = isAllied(state, work.owner, to) ? allyTrade : 100
     const gold = Math.floor((road.length * caravanGold * bonus) / 100)
-    state.caravans.push({ owner: work.owner, to, road, along: 0, gold })
+    state.caravans.push({ owner: work.owner, to, via, road, along: 0, gold })
   }
 }
 
@@ -153,6 +194,7 @@ function seize(state: GameState, c: Caravan, at: number): boolean {
   }
   c.owner = taker
   c.to = taker
+  c.via = [taker]
   c.taken = at
   return true
 }
@@ -168,7 +210,7 @@ export function moveCaravans(state: GameState) {
     const from = Math.max(Math.min(here, last - 1), c.taken ?? 0)
     for (let i = from; i < c.road.length - 1; i++) {
       const tile = c.road[i]
-      if (!open(state, c.owner, tile) && state.owner[tile] !== c.to)
+      if (!open(state, c.owner, tile) && !c.via.includes(state.owner[tile]))
         if (!seize(state, c, i)) return false
     }
     if (here < c.road.length - 1) return true

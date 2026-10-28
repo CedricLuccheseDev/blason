@@ -1,100 +1,99 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
+import { tradeLinks } from '../../engine'
 import { drawPaving } from './art/paving'
 import { playerColor } from './palette'
 import { drawRoad, pointOn } from './roads'
 import type { Spot } from './roads'
 import type { Stamps } from './textures'
-import type { Caravan, GameState } from '../../engine'
+import type { Caravan, GameState, Link } from '../../engine'
 
-// The merchants on their roads: a wagon under its lord's pennant rolls from
-// its market to another lord's, smoothly between two ticks and jolting a
-// little. Its road is paved under it while it rolls: one road of old for two
-// markets (art/paving.ts), near straight from market to market and rounding
-// the sea in soft bends (roads.ts), taken up a few seconds after the last
-// wagon left it or once one of its two markets is gone; mine a little
-// darker. The wagon and the road at the land's scale, as the armies.
+// The merchants on their roads. The trade network (engine/network.ts) is
+// paved once, a road of old from each market to its neighbours within range
+// (art/paving.ts), near straight and rounding the sea in soft bends
+// (roads.ts), mine a little darker, and paved again only when the markets
+// change. A wagon under its lord's pennant rolls along it from market to
+// market, smoothly between two ticks and jolting a little; one taken by an
+// enemy leaves it for his market by a track of its own. The wagon and the
+// roads at the land's scale, as the armies.
 
 /** A wagon's height on the land, in map units (a man stands some four), and as drawn in its stamp. */
 const TALL = 5
 const DRAWN = 16
 
-/** A road paved between two markets, and when a caravan last took it. */
-type Route = {
-  road: Array<number>
-  path: Array<Spot>
-  drawn: Graphics
-  used: number
-}
-
-/** Ticks a road stays once no caravan is on it, so that two wagons a moment apart share it. */
-const UNUSED = 50
-
 /** How many times a road's corners are smoothed, and how far it wanders aside, in map units. */
 const ROUNDS = 3
 const STRAY = 5
 
-/** Whether a market still stands on a tile. */
-const market = (state: GameState, tile: number) =>
-  state.works.some((w) => w.tile === tile && w.work === 'market')
+/** A road's key: its two markets, whichever way it is walked. */
+const keyOf = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`)
 
-/** A road's key: its two markets, whichever way the wagon goes, so that two markets share one road. */
-const keyOf = (road: Array<number>) => {
-  const [a, b] = [road[0], road.at(-1) ?? road[0]]
-  return a < b ? `${a}-${b}` : `${b}-${a}`
-}
+/** A caravan's way as drawn, and the length of its road it was drawn for. */
+type Way = { length: number; path: Array<Spot> }
 
 export function makeTrade(stamps: Stamps, me: number) {
   const container = new Container()
   /** The roads lie under the works; the wagons roll over them. */
   const roads = new Container()
   const sprites: Array<Sprite> = []
-  /** The roads taken, by their two markets, each paved once. */
-  const routes = new Map<string, Route>()
+  /** The network's roads as drawn, by their two markets. */
+  let paved = new Map<string, Array<Spot>>()
+  let laid: Array<Link> | null = null
+  const ways = new WeakMap<Caravan, Way>()
 
-  /** A caravan's road paved, the first time a caravan takes it; taken again, it is kept. */
-  function pave(state: GameState, caravan: Caravan): Route {
-    const { road, owner } = caravan
-    const key = keyOf(road)
-    const known = routes.get(key)
-    if (known) {
-      known.used = state.tick
-      return known
+  /** The network paved again, when its roads changed. */
+  function pave(state: GameState) {
+    const links = tradeLinks(state)
+    if (links === laid) return
+    laid = links
+    roads.removeChildren().forEach((child) => child.destroy())
+    paved = new Map()
+    const land = (t: number) => state.grid.land[t]
+    for (const { a, b, road } of links) {
+      const path = drawRoad(state, road, land, ROUNDS, STRAY)
+      const owners = state.works
+        .filter((w) => w.tile === a || w.tile === b)
+        .map((w) => w.owner)
+      drawPaving(roads.addChild(new Graphics()), path, owners.includes(me))
+      paved.set(keyOf(a, b), path)
     }
-    const path = drawRoad(state, road, (t) => state.grid.land[t], ROUNDS, STRAY)
-    const drawn = roads.addChild(new Graphics())
-    drawPaving(drawn, path, owner === me)
-    const route = { road, path, drawn, used: state.tick }
-    routes.set(key, route)
-    return route
   }
 
-  /** The roads no caravan took for a while, or whose market fell, taken up. */
-  function forget(state: GameState) {
-    for (const [key, { road, drawn, used }] of routes)
-      if (
-        state.tick - used > UNUSED ||
-        !market(state, road[0]) ||
-        !market(state, road.at(-1) ?? -1)
-      ) {
-        drawn.destroy()
-        routes.delete(key)
-      }
+  /** A stretch of a caravan's road as drawn: the network's road between two markets, else a track of its own. */
+  function stretch(state: GameState, road: Array<number>): Array<Spot> {
+    const [a, b] = [road[0], road[road.length - 1]]
+    const path = paved.get(keyOf(a, b))
+    if (path) return a < b ? path : [...path].reverse()
+    return drawRoad(state, road, (t) => state.grid.land[t], 0)
   }
 
-  /** Where a caravan is on its road now, so far into the next tick, and which way it goes. */
+  /** A caravan's way, stretch by stretch from market to market, drawn once (again if it was taken). */
+  function wayOf(state: GameState, caravan: Caravan): Array<Spot> {
+    const known = ways.get(caravan)
+    if (known?.length === caravan.road.length) return known.path
+    const markets = new Set(
+      state.works.filter((w) => w.work === 'market').map((w) => w.tile),
+    )
+    const path: Array<Spot> = []
+    let from = 0
+    caravan.road.forEach((tile, i) => {
+      if (i === 0 || (!markets.has(tile) && i < caravan.road.length - 1)) return
+      const part = stretch(state, caravan.road.slice(from, i + 1))
+      path.push(...(path.length ? part.slice(1) : part))
+      from = i
+    })
+    ways.set(caravan, { length: caravan.road.length, path })
+    return path
+  }
+
+  /** Where a caravan is on its way now, so far into the next tick, and which way it goes. */
   function along(state: GameState, caravan: Caravan, between: number) {
-    const route = pave(state, caravan)
-    const { path } = route
+    const path = wayOf(state, caravan)
     const moved = caravan.along + state.rules.caravanPace * between
-    // Its share of its own road, laid on the road shared, from its own end.
     const share = Math.min(
       1,
       moved / 1000 / Math.max(1, caravan.road.length - 1),
     )
-    const back = route.road[0] !== caravan.road[0]
-    const at = (back ? 1 - share : share) * (path.length - 1)
-    const p = pointOn(path, at)
-    return back ? { ...p, right: !p.right } : p
+    return pointOn(path, share * (path.length - 1))
   }
 
   return {
@@ -102,7 +101,7 @@ export function makeTrade(stamps: Stamps, me: number) {
     roads,
     draw(state: GameState, between = 0) {
       const seconds = performance.now() / 1000
-      if (state.tick % 10 === 0) forget(state)
+      if (state.tick % 10 === 0) pave(state)
       state.caravans.forEach((caravan, n) => {
         sprites[n] ??= container.addChild(new Sprite())
         const sprite = sprites[n]
@@ -113,8 +112,7 @@ export function makeTrade(stamps: Stamps, me: number) {
         sprite.anchor.set(stamp.anchor.x, stamp.anchor.y)
         sprite.position.set(x, y - Math.abs(Math.sin(seconds * 7 + n)) * 0.25)
         sprite.scale.set(right ? k : -k, k)
-        const mine = caravan.owner === me
-        sprite.alpha = mine ? 1 : 0.72
+        sprite.alpha = caravan.owner === me ? 1 : 0.72
         sprite.visible = true
       })
       for (let i = state.caravans.length; i < sprites.length; i++)

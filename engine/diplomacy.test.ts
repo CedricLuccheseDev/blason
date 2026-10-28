@@ -143,6 +143,23 @@ describe('the merchants', () => {
     expect(ends[19]).toBeGreaterThan(ends[9])
   })
 
+  it('trade only within range, from market to market along the network', () => {
+    // Lord 0's market at the left, lord 1's 50 tiles away: out of range.
+    const state = playing(60)
+    setOwner(state, 9, -1)
+    state.works.push({ work: 'market', tile: 0, owner: 0 })
+    state.works.push({ work: 'market', tile: 50, owner: 1 })
+    state.tick = 0
+    sendCaravans(state)
+    expect(state.caravans).toEqual([])
+    // A market of his own halfway joins them: the caravan goes through it.
+    state.works.push({ work: 'market', tile: 25, owner: 0 })
+    sendCaravans(state)
+    expect(state.caravans).toHaveLength(1)
+    expect(state.caravans[0].road).toContain(25)
+    expect(state.caravans[0].road.at(-1)).toBe(50)
+  })
+
   it('are taken by the enemy who takes a tile of the road ahead, and pay his nearest market alone', () => {
     const state = trade()
     // The market a tile in, so that a tile and its place on the road differ.

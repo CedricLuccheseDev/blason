@@ -81,6 +81,8 @@ export type Rules = {
   caravanTicks: number
   caravanPace: number
   caravanCrowd: number
+  /** How far a market reaches, in tiles: two markets within it of each other are joined by a road. */
+  tradeRange: number
   /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent. */
   caravanGold: number
   allyTrade: number
@@ -131,6 +133,7 @@ export const RULES: Rules = {
   caravanTicks: 10 * SECOND,
   caravanPace: 400,
   caravanCrowd: 6,
+  tradeRange: 40,
   caravanGold: 150,
   allyTrade: 200,
   victoryShare: 800,
