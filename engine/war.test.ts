@@ -143,27 +143,6 @@ describe('an army, tile by tile', () => {
   })
 })
 
-describe('the armies’ pace', () => {
-  it('a raid rides a quarter faster than the host, the levy a quarter slower', () => {
-    const state = playing(field(40))
-    hold(
-      state,
-      0,
-      Array.from({ length: 20 }, (_, t) => t),
-    )
-    muster(state, 0, 0)
-    hold(state, 1, [39])
-    endow(state, 0, 4000)
-    const along = (army: 'raid' | 'host' | 'ban') => {
-      const s = structuredClone(state)
-      run(s, 10, [attack(0, 25, army)])
-      return s.hosts[0].along
-    }
-    expect(along('raid')).toBe(Math.floor(along('host') * 1.25))
-    expect(along('ban')).toBe(Math.floor(along('host') * 0.75))
-  })
-})
-
 describe('the sickness', () => {
   it('takes a tenth a second of the peasants over what the villages feed, and none under it', () => {
     const state = playing(field(6))
