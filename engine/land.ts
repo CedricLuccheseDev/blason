@@ -159,17 +159,6 @@ function settle(state: GameState, player: number, tile: number): void {
   })
   state.villages = state.villages.filter((v) => v !== realm)
   state.works.push({ work: 'village', tile: realm, owner: player })
-  // And a barracks some way from the village, to send his first army from:
-  // on one of his tiles that far from it, drawn by lot, on any side.
-  const gap = state.rules.barracksGap
-  const ring = state.owner.flatMap((o, t) => {
-    if (o !== player) return []
-    const d = apart(state.grid, t, realm)
-    return d >= gap * gap && d <= (gap + 3) * (gap + 3) ? [t] : []
-  })
-  const beside = ring.at(drawInt(state.seed, ring.length, 'barracks', player))
-  if (beside !== undefined)
-    state.works.push({ work: 'barracks', tile: beside, owner: player })
   state.players[player].peasants = capOf(state, player)
   closed.delete(state)
 }

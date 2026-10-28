@@ -30,9 +30,9 @@ export function hold(state: GameState, owner: number, tiles: Array<number>) {
   for (const t of tiles) setOwner(state, t, owner)
 }
 
-/** A barracks of the lord's on the tile, to send his armies from. */
+/** A village of the lord's on the tile, to levy his armies from. */
 export function muster(state: GameState, lord: number, tile: number) {
-  state.works.push({ work: 'barracks', tile, owner: lord })
+  state.works.push({ work: 'village', tile, owner: lord })
 }
 
 export function endow(

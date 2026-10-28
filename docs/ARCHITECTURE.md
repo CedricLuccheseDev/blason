@@ -64,12 +64,12 @@ can tune them without touching the code. The rules themselves are described in
 | `map/`                   | The map generator: from a seed, the shape of the land, its coasts, lakes, rivers and names |
 | `grid.ts`                | The land cut into tiles of four map units                                                  |
 | `land.ts`                | The free domains, the start, the peasants                                                  |
-| `muster.ts`              | Raising an army: the free barracks, its road to the front, where it stands                 |
+| `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                  |
 | `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs               |
 | `battle.ts`              | Battles between armies that meet, by the combat table                                      |
 | `enclosure.ts`           | Encircled land passing to the lord all round it                                            |
 | `heap.ts`                | The heap that orders the tiles an army strikes next                                        |
-| `works.ts`               | Villages, markets, barracks and castles: where they may stand and their price              |
+| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time      |
 | `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                   |
 | `caravans.ts`            | The merchants' roads and what they pay                                                     |
 | `step.ts`                | The tick, validation of orders, victory                                                    |
@@ -103,7 +103,7 @@ orders. It decides nothing about the rules.
   and the seal of each battle (`layers/warning.ts`), the standard-bearer
   among their men (`layers/standard.ts`); the roads as they are drawn, straight and even
   (`roads.ts`); the borders being bitten, in red (`layers/raids.ts`); the works being built
-  (`layers/building.ts`); the barracks' seals (`layers/barracks.ts`), the caravans on
+  (`layers/building.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
   (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
   (`layers/aim.ts`) and the parchment's grain (`layers/paper.ts`).

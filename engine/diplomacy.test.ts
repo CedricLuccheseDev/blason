@@ -22,7 +22,7 @@ function playing(width = 20): GameState {
   state.tick = state.rules.openingTicks
   state.villages = []
   for (let t = 0; t < 4; t++) setOwner(state, t, 0)
-  state.works.push({ work: 'barracks', tile: 3, owner: 0 })
+  state.works.push({ work: 'village', tile: 3, owner: 0 })
   for (let t = width - 4; t < width; t++) setOwner(state, t, 1)
   setOwner(state, 9, 2)
   for (const lord of state.players) {

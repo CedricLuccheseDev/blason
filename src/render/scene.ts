@@ -16,7 +16,7 @@ import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeBuilding } from './layers/building'
-import { makeBarracksSeals } from './layers/barracks'
+import { makeLevySeals } from './layers/levy'
 import type { GameState, Work, World } from '../../engine'
 import type { Application } from 'pixi.js'
 import type { Placement } from './layers/labels'
@@ -59,7 +59,7 @@ export function makeScene(
   const tidings = makeTidings(me)
   const raids = makeRaids()
   const building = makeBuilding()
-  const seals = makeBarracksSeals()
+  const seals = makeLevySeals()
   const world = new Container()
   world.addChild(page.container, drawSea(land), drawLand(land))
   if (page.compass) world.addChild(page.compass)

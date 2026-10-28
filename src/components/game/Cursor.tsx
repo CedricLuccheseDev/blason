@@ -44,7 +44,7 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
       {me.free > 0 ? (
         <span className="hud-note">{m.game.click}</span>
       ) : (
-        <span className="hud-note text-gules">{m.game.noBarracks}</span>
+        <span className="hud-note text-gules">{m.game.noLevy}</span>
       )}
     </div>
   )

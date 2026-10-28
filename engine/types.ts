@@ -47,7 +47,7 @@ export type Host = {
   queue: Array<[number, number]>
   /** The tiles it took last, where it fights. */
   edge: Array<number>
-  /** The barracks it was sent from, its road from there to the front over its lord's land, and how far along it is, in thousandths of a tile. */
+  /** The village it was raised at, its road from there to the front over its lord's land, and how far along it is, in thousandths of a tile. */
   from: number
   road: Array<number>
   along: number

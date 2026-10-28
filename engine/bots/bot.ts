@@ -114,7 +114,7 @@ function construct(
 ): Array<Order> {
   const enemies = [...fronts.keys()].filter((o) => o >= 0)
   // The first market and village before all, free: no gold nor peasants without them.
-  const missing = (['market', 'village', 'barracks'] as const).find(
+  const missing = (['market', 'village'] as const).find(
     (w) => worksOf(state, me, w) === 0,
   )
   let work: Work = missing ?? 'village'
@@ -122,7 +122,6 @@ function construct(
     if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
     const roll = drawInt(state.seed, 100, 'work', me, state.tick)
     if (roll >= 45) work = 'market'
-    if (roll >= 80) work = 'barracks'
     if (enemies.length && roll < 25) work = 'castle'
   }
   if (state.players[me].gold < (priceOf(state, me, work) + 40) * 1000) return []
@@ -160,7 +159,7 @@ export function createBot(self: number, seed: string): Bot {
     const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
     if (state.tick < rest || !full) return []
     const out = state.hosts.filter((h) => h.owner === me).length
-    if (out >= worksOf(state, me, 'barracks')) return []
+    if (out >= worksOf(state, me, 'village')) return []
     const free = fronts.get(NEUTRAL)
     const orders = free
       ? expand(state, me, free)

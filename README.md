@@ -20,12 +20,12 @@ It is inspired by [OpenFront](https://openfront.io) and written from scratch.
 - **Peasants and gold**: your villages feed peasants who hold your land and
   whom you raise in three armies (a raid, a host, the whole levy); your
   merchants bring the gold that pays for the works.
-- **Armies that march and battles you can watch**: an army leaves from a
-  barracks, walks to the front over your land, and fights any enemy army it
-  meets.
-- **Four works, one resource each**: villages feed the peasants, markets send
-  the merchants, barracks send the armies, castles make their land fight one
-  for one; the first of each is free, so a lord can always start again.
+- **Armies that march and battles you can watch**: an army is levied at a
+  village, walks to the front over your land, and fights the enemy army that
+  comes to meet it.
+- **Three works**: villages feed the peasants and levy the armies, markets
+  send the merchants, castles make their land fight one for one; the first
+  village and market are free, so a lord can always start again.
 - **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord
   who breaks one bears the traitor's mark.
 - **Nineteen bots** that read the same state and send the same orders as you.

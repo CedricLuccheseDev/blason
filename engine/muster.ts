@@ -2,13 +2,14 @@ import { apart, around } from './grid'
 import { standing } from './land'
 import type { GameState, Host } from './types'
 
-// Raising an army: each barracks sends one army at a time, so a lord has as
-// many armies out as he has barracks. An attack is sent from the free
-// barracks nearest the front and marches there over its lord's own land,
+// Raising an army: each village levies one army at a time from its people,
+// so a lord has as many armies out as he has villages. An attack is sent
+// from the free village nearest the front and marches there over its lord's
+// own land,
 // seen by all, so that its target has the time to answer.
 
-/** The lord's barracks with no army out, the nearest the tile first. */
-export function freeBarracks(
+/** The lord's villages built and with no army out, the nearest the tile first. */
+export function freeVillages(
   state: GameState,
   lord: number,
   tile: number,
@@ -18,7 +19,7 @@ export function freeBarracks(
     .filter(
       (w) =>
         w.owner === lord &&
-        w.work === 'barracks' &&
+        w.work === 'village' &&
         standing(state, w) &&
         !busy.has(w.tile),
     )
@@ -29,7 +30,7 @@ export function freeBarracks(
     )
 }
 
-/** The road from a barracks to one of the lord's tiles touching the entry, over his own land; none if it is cut off. */
+/** The road from a village to one of the lord's tiles touching the entry, over his own land; none if it is cut off. */
 export function roadTo(
   state: GameState,
   lord: number,

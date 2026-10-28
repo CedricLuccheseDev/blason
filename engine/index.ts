@@ -30,7 +30,7 @@ export { nextDrop, step, victoryShare } from './step'
 // What the screen and the bots ask of the rules.
 export { costOf, entryFor, menFor } from './war'
 export { canBuild, priceOf } from './works'
-export { freeBarracks, marching, roadTo } from './muster'
+export { freeVillages, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
 
 // The bots, players like the others.

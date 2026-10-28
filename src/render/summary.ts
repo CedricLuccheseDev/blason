@@ -41,7 +41,7 @@ export type Summary = {
         gold: number
         alive: boolean
         picked: boolean
-        /** His barracks with no army out: an attack leaves from one of them. */
+        /** His villages with no army out: an attack leaves from one of them. */
         free: number
       })
     | null
@@ -158,7 +158,7 @@ export function summarize(
       alive: lord.alive,
       picked: hasPicked(state, me),
       free:
-        worksOf(state, me, 'barracks') -
+        worksOf(state, me, 'village') -
         state.hosts.filter((h) => h.owner === me).length,
     },
     army: hand.army,

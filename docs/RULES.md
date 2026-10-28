@@ -21,8 +21,8 @@ applies each rule is named beside it.
 ## The opening
 
 For the first 10 seconds each lord chooses where he starts by clicking a free
-domain; he takes it whole, its village included, and a barracks rises some
-10 tiles from that village. A lord who has not chosen is given one when the opening ends.
+domain; he takes it whole, its village included. A lord who has not chosen
+is given one when the opening ends.
 Every lord starts with 50 gold.
 
 ## Peasants and gold
@@ -44,9 +44,10 @@ Every lord starts with 50 gold.
 - Three armies, which differ only by their size: the **raid** takes 10 % of
   the peasants, the **host** 25 % and the **levy** 50 % (keys 1 to 3).
 - A left click on another's land, or on free land, raises the army in hand
-  at the lord's free **barracks** nearest the front: each barracks sends one
-  army at a time, so a lord has as many armies out as he has barracks
-  (`engine/muster.ts`). With every barracks' army out, a click raises none.
+  at the lord's free **village** nearest the front: each village levies one
+  army at a time from its people, so a lord has as many armies out as he has
+  villages (`engine/muster.ts`). With every village's army out, a click
+  raises none.
 - The army first **marches** to the front over its lord's own land, 6 tiles a
   second, seen by all; if its road is cut under it, it goes home. Then it
   enters by the border tile nearest the click and spreads from there towards
@@ -80,24 +81,22 @@ Every lord starts with 50 gold.
 
 ## Works
 
-Four works, one resource each, placed anywhere on one's own land (keys 4 to
-7), at least 4 tiles from any other work so that none lies on another;
-castles stand at least 10 tiles from one another (`engine/works.ts`):
+Three works, placed anywhere on one's own land (keys 4 to 6), at least 4
+tiles from any other work so that none lies on another; castles stand at
+least 10 tiles from one another (`engine/works.ts`):
 
-- the **village** feeds 100 peasants;
+- the **village** feeds 100 peasants and levies the armies, one at a time;
 - the **market** sends the caravans that bring the gold;
-- the **barracks** is where the armies are raised and sent from, one at a
-  time;
 - the **castle**: the land within 12 tiles of it fights as the combat table
   says, one for one; it sends no army.
 
-The first village, market and barracks cost nothing, so that a lord can always
-start again from nothing; then each costs double the one before (100 gold for
-the second village or market, 150 for the second barracks). A castle costs 200
-gold, then double. Three doublings at most. A work is taken with its tile.
+The first village and market cost nothing, so that a lord can always start
+again from nothing; then each costs double the one before (100 gold for the
+second). A castle costs 200 gold, then double. Three doublings at most. A
+work is taken with its tile.
 
 A work takes time to build, and serves only once done: 10 seconds for a
-village or a market, 12 for a barracks, 20 for a castle.
+village or a market, 20 for a castle.
 
 ## Alliances and traitors
 

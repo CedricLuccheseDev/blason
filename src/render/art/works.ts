@@ -110,25 +110,9 @@ function market(g: Graphics) {
     g.circle(x, y, 1.2).fill(TONE.gold).stroke({ color: TONE.ink, width: 0.3 })
 }
 
-/** Two tents and a pennant on its pole: where the armies are raised and sent from. */
-function barracks(g: Graphics) {
-  g.ellipse(0, 4.4, 7, 1.8).fill({ color: TONE.ink, alpha: 0.16 })
-  for (const x of [-3.2, 3]) {
-    g.poly([x - 2.8, 3.2, x, -2.2, x + 2.8, 3.2])
-      .fill(TONE.wall)
-      .stroke({ color: TONE.ink, width: 0.4 })
-    g.moveTo(x, 3.2).lineTo(x, 0.4).stroke({ color: TONE.ink, width: 0.35 })
-  }
-  g.moveTo(0, 3.4).lineTo(0, -6.6).stroke({ color: TONE.ink, width: 0.5 })
-  g.poly([0, -6.6, 3.6, -5.6, 0, -4.6])
-    .fill(TONE.loss)
-    .stroke({ color: TONE.ink, width: 0.3 })
-}
-
 const DRAWINGS: Record<Work, (g: Graphics) => void> = {
   village,
   market,
-  barracks,
   castle,
 }
 

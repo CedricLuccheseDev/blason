@@ -23,12 +23,11 @@ export const fr: Messages = {
     chooseHint: 'Clique un domaine libre sur la carte : il sera tout à toi',
     others: 'Les autres seigneurs choisissent',
     click: 'clic : attaquer',
-    noBarracks: 'toutes tes casernes ont une armée dehors',
+    noLevy: 'tous tes villages ont une armée dehors',
     armies: { raid: 'Chevauchée', host: 'Ost', ban: 'Arrière-ban' },
     works: {
       village: 'Village',
       market: 'Marché',
-      barracks: 'Caserne',
       castle: 'Château',
     },
     percent: (n: number) => `${n}\u202f%`,
@@ -83,7 +82,6 @@ export const fr: Messages = {
     works: {
       village: (n: number) => (n === 1 ? 'ton village' : `${n} villages`),
       market: (n: number) => (n === 1 ? 'ton marché' : `${n} marchés`),
-      barracks: (n: number) => (n === 1 ? 'ta caserne' : `${n} casernes`),
       castle: (n: number) => (n === 1 ? 'ton château' : `${n} châteaux`),
     },
     and: 'et',

@@ -6,12 +6,12 @@ import { density, setOwner } from './land'
 import { NEUTRAL } from './types'
 import { pop, push } from './heap'
 import { walled } from './battle'
-import { freeBarracks, marching, roadTo } from './muster'
+import { freeVillages, marching, roadTo } from './muster'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
 
 // The war. A click raises an army out of the lord's peasants at his free
-// barracks nearest the front (muster.ts); it marches there over his land,
+// village nearest the front (muster.ts); it marches there over his land,
 // seen by all, then enters by the border tile nearest the click and spreads
 // from there as a bulge moving towards it, a tile a tick whatever its size:
 // more men take it further, never faster. Each tile is held by its share of
@@ -84,7 +84,7 @@ export function costOf(state: GameState, men: number): number {
   return Math.floor((men * state.rules.menPrice) / UNIT)
 }
 
-/** A click: an army raised at the lord's free barracks nearest the front, marching there to strike the clicked tile's lord or free domain. */
+/** A click: an army raised at the lord's free village nearest the front, marching there to strike the clicked tile's lord or free domain. */
 export function attack(
   state: GameState,
   player: number,
@@ -98,10 +98,10 @@ export function attack(
   if (men < UNIT) return
   let from = -1
   let road: Array<number> | null = null
-  for (const barracks of freeBarracks(state, player, entry)) {
-    road = roadTo(state, player, barracks, entry)
+  for (const village of freeVillages(state, player, entry)) {
+    road = roadTo(state, player, village, entry)
     if (road) {
-      from = barracks
+      from = village
       break
     }
   }

@@ -22,12 +22,11 @@ export const en = {
     chooseHint: 'Click a free domain on the map: it will be all yours',
     others: 'The other lords are choosing',
     click: 'click: attack',
-    noBarracks: 'every barracks of yours has an army out',
+    noLevy: 'every village of yours has an army out',
     armies: { raid: 'Raid', host: 'Host', ban: 'Levy' },
     works: {
       village: 'Village',
       market: 'Market',
-      barracks: 'Barracks',
       castle: 'Castle',
     },
     percent: (n: number) => `${n}%`,
@@ -82,7 +81,6 @@ export const en = {
     works: {
       village: (n: number) => (n === 1 ? 'your village' : `${n} villages`),
       market: (n: number) => (n === 1 ? 'your market' : `${n} markets`),
-      barracks: (n: number) => (n === 1 ? 'your barracks' : `${n} barracks`),
       castle: (n: number) => (n === 1 ? 'your castle' : `${n} castles`),
     },
     and: 'and',

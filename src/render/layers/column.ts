@@ -5,7 +5,7 @@ import { drawRoad } from '../roads'
 import type { GameState, Host } from '../../../engine'
 import type { Spot } from '../roads'
 
-// An army's road from its barracks to the front. The road the simulation
+// An army's road from its village to the front. The road the simulation
 // walks goes from tile to tile, in steps; it is drawn as a man would walk it,
 // in straight lines over his lord's land (roads.ts), and its men walk it so
 // (squads.ts). What is left of it is dotted before the army, then on to

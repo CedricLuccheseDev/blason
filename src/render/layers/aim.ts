@@ -3,7 +3,7 @@ import {
   canBuild,
   canStart,
   entryFor,
-  freeBarracks,
+  freeVillages,
   roadTo,
 } from '../../../engine'
 import { drawRoad } from '../roads'
@@ -13,7 +13,7 @@ import { siteOf } from '../marks'
 import type { GameState, Work } from '../../../engine'
 
 // What a click on the tile under the pointer would do. Against another's
-// land or free land: the road the army would march from its barracks to
+// land or free land: the road the army would march from its village to
 // the border, where it would enter, ringed, and a dotted line from there to
 // the tile aimed at. With a work in hand: its drawing on the
 // tile, the castle's circle, red where it may not stand,
@@ -30,11 +30,11 @@ export function makeAim(state: GameState, me: number) {
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** The road the army would march from the free barracks nearest the front, as it would be drawn; none if no barracks is free. */
+  /** The road the army would march from the free village nearest the front, as it would be drawn; none if no village is free. */
   function roadOf(entry: number): Array<At> {
     if (entry < 0) return []
-    for (const barracks of freeBarracks(state, me, entry)) {
-      const road = roadTo(state, me, barracks, entry)
+    for (const village of freeVillages(state, me, entry)) {
+      const road = roadTo(state, me, village, entry)
       if (road) return drawRoad(state, road, (t) => state.owner[t] === me, 0)
     }
     return []
@@ -106,7 +106,7 @@ export function makeAim(state: GameState, me: number) {
     if (entry < 0) return
     const e = siteOf(state, entry)
     const p = siteOf(state, tile)
-    // From the barracks to the border, the road the army would walk, then on to the tile aimed at.
+    // From the village to the border, the road the army would walk, then on to the tile aimed at.
     for (let i = 1; i < road.length; i++) line(road[i - 1], road[i], zoom)
     if (road.length > 0) line(road[road.length - 1], e, zoom)
     line(e, p, zoom)

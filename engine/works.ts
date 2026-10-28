@@ -4,12 +4,12 @@ import { worksOf } from './land'
 import type { Work } from './rules'
 import type { GameState } from './types'
 
-// The works, one resource each: a village feeds the peasants, a market
-// brings gold, a barracks sends the armies, a castle makes the land round it
-// hold three times better. Built anywhere on one's own land, a few tiles
-// from any other work so that none lies on another, castles further apart. The first village, market and
-// barracks cost nothing, so that a lord can always start again from nothing;
-// each one more costs double the one before.
+// The works: a village feeds the peasants and levies the armies, a market
+// brings gold, a castle makes the land round it fight one for one. Built
+// anywhere on one's own land, a few tiles from any other work so that none
+// lies on another, castles further apart. The first village and market cost
+// nothing, so that a lord can always start again from nothing; each one more
+// costs double the one before.
 
 /** A work's price for a lord, in gold. */
 export function priceOf(state: GameState, lord: number, work: Work): number {

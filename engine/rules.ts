@@ -9,16 +9,11 @@ import { TICKS_PER_SECOND } from './units'
 export type Army = 'raid' | 'host' | 'ban'
 
 /** What a lord may build anywhere on his land, one thing a place. */
-export type Work = 'village' | 'market' | 'barracks' | 'castle'
+export type Work = 'village' | 'market' | 'castle'
 
 /** The armies and the works, in the order the bar shows them: one more is one more entry here. */
 export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
-export const WORKS: ReadonlyArray<Work> = [
-  'village',
-  'market',
-  'barracks',
-  'castle',
-]
+export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
 
 export type Rules = {
   /** Ticks during which each lord picks where he starts. */
@@ -37,7 +32,7 @@ export type Rules = {
   armies: Readonly<Record<Army, number>>
   /** Tiles an army takes each tick at most, once at the front: its pace, whatever its size. */
   paceTiles: number
-  /** How far an army marches each tick from its barracks to the front, in thousandths of a tile. */
+  /** How far an army marches each tick from its village to the front, in thousandths of a tile. */
   marchPace: number
   /**
    * What a fight costs the attacker for each man the other side loses, in
@@ -69,9 +64,8 @@ export type Rules = {
   firstFree: ReadonlyArray<Work>
   priceDoublings: number
   castleGap: number
-  /** Tiles kept between any two works, so that their drawings never lie on one another; between a lord's first village and his first barracks. */
+  /** Tiles kept between any two works, so that their drawings never lie on one another. */
   workGap: number
-  barracksGap: number
   /** An alliance lasts so long; both may renew it in its last moments; an offer waits so long. */
   allianceTicks: number
   renewTicks: number
@@ -112,18 +106,16 @@ export const RULES: Rules = {
   neutralGold: 100,
   villageEvery: 600,
   castleRadius: 12,
-  workPrice: { village: 100, market: 100, barracks: 150, castle: 200 },
+  workPrice: { village: 100, market: 100, castle: 200 },
   buildTicks: {
     village: 10 * SECOND,
     market: 10 * SECOND,
-    barracks: 12 * SECOND,
     castle: 20 * SECOND,
   },
-  firstFree: ['village', 'market', 'barracks'],
+  firstFree: ['village', 'market'],
   priceDoublings: 3,
   castleGap: 10,
   workGap: 4,
-  barracksGap: 10,
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,

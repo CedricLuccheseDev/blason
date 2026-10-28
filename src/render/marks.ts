@@ -9,8 +9,7 @@ import type { GameState, Grid } from '../../engine'
 // villages, houses on the parchment, and the lords' works, small ink
 // drawings (a village in its fields, a castle, a market). The land a castle
 // holds is not ringed here: the territory tints it with stone. Drawn again
-// when a work is built or changes hands. A barracks whose army is out stands
-// faded until it comes home; its seal says so (layers/barracks.ts).
+// when a work is built or changes hands; pale while it is being built.
 
 export function makeMarks(state: GameState) {
   const container = new Container()
@@ -18,13 +17,10 @@ export function makeMarks(state: GameState) {
   const works = container.addChild(new Container())
   const at = (tile: number) => siteOf(state, tile)
   let key = ''
-  /** Each barracks drawn, by its tile. */
-  const barracks = new Map<number, Graphics>()
 
   function redraw() {
     villages.removeChildren().forEach((c) => c.destroy())
     works.removeChildren().forEach((c) => c.destroy())
-    barracks.clear()
     for (const tile of state.villages) {
       const g = villages.addChild(new Graphics())
       drawVillage(g, tile)
@@ -37,7 +33,6 @@ export function makeMarks(state: GameState) {
       const drawn = works.addChild(new Graphics())
       drawWork(drawn, work.work)
       drawn.position.set(x, y)
-      if (work.work === 'barracks') barracks.set(work.tile, drawn)
     }
   }
 
@@ -50,14 +45,10 @@ export function makeMarks(state: GameState) {
         key = now
         redraw()
       }
-      const out = new Set(state.hosts.map((h) => h.from))
-      for (const [tile, drawn] of barracks)
-        drawn.alpha = out.has(tile) ? 0.55 : 1
       // A work being built stands pale until it is done (layers/building.ts).
       state.works.forEach((work, i) => {
-        const drawn = works.children[i] as Container | undefined
-        if (drawn && !standing(state, work)) drawn.alpha = 0.4
-        else if (drawn && work.work !== 'barracks') drawn.alpha = 1
+        const drawn = works.children.at(i)
+        if (drawn) drawn.alpha = standing(state, work) ? 1 : 0.4
       })
     },
   }
