@@ -12,6 +12,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+# The relay's address for games online (src/render/link.ts), a build arg so
+# that Vite inlines it; none, and the game offers no game online.
+ARG VITE_RELAY_URL
+ENV VITE_RELAY_URL=${VITE_RELAY_URL}
 RUN npx vite build
 
 # Runtime stage — the server bundle keeps react/tanstack as external imports,
