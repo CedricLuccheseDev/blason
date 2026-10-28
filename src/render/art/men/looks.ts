@@ -1,10 +1,10 @@
 import { TONE } from '../../palette'
-import { drawFootman } from './footman'
+import { drawFootman, footPoleHand } from './footman'
 import { IRON } from './heads'
-import { drawRider } from './rider'
+import { drawRider, riderPoleHand } from './rider'
 import type { Garb } from './body'
 import type { FootKit } from './footman'
-import type { Sketch } from './kit'
+import type { Pt, Sketch } from './kit'
 
 // The four looks of the men, so that an army's kind reads at a glance: the
 // raid rides, the host comes in iron and in its lord's surcoat, the levy
@@ -25,6 +25,8 @@ export type Art = {
   bearer: boolean
   /** The shadow under him: how far forward of his feet, how wide, how deep. */
   shadow: { x: number; rx: number; ry: number }
+  /** Where the standard-bearer's upper hand holds the pole, standing, from his feet. */
+  pole: Pt
 }
 
 const LIGHT = TONE.parchment
@@ -176,6 +178,7 @@ const rider =
 
 const FOOT: Box = { left: -6.5, top: -17.5, width: 18.5, height: 18.5 }
 const ON_FOOT = { x: 0.3, rx: 2.5, ry: 0.75 }
+const FOOT_POLE = footPoleHand()
 
 export const LOOKS: Record<Look, Art> = {
   raid: {
@@ -188,13 +191,27 @@ export const LOOKS: Record<Look, Art> = {
     ],
     bearer: true,
     shadow: { x: 1.4, rx: 6.6, ry: 1.45 },
+    pole: riderPoleHand(),
   },
-  host: { box: FOOT, men: host.map(foot), bearer: true, shadow: ON_FOOT },
-  ban: { box: FOOT, men: ban.map(foot), bearer: true, shadow: ON_FOOT },
+  host: {
+    box: FOOT,
+    men: host.map(foot),
+    bearer: true,
+    shadow: ON_FOOT,
+    pole: FOOT_POLE,
+  },
+  ban: {
+    box: FOOT,
+    men: ban.map(foot),
+    bearer: true,
+    shadow: ON_FOOT,
+    pole: FOOT_POLE,
+  },
   peasant: {
     box: FOOT,
     men: peasant.map(foot),
     bearer: false,
     shadow: ON_FOOT,
+    pole: FOOT_POLE,
   },
 }

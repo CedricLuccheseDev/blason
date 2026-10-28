@@ -22,6 +22,8 @@ export type Man = {
   facing: 1 | -1
   moving: boolean
   seed: number
+  /** How far he has walked, in map units: his steps follow it, so that his feet never slide. */
+  paces: number
 }
 
 export type Squad = {
@@ -112,6 +114,7 @@ function muster(squad: Squad, n: number, shape: Shape) {
       facing: 1,
       moving: false,
       seed: beats++,
+      paces: 0,
     })
   }
 }
@@ -176,6 +179,7 @@ export function rally(squad: Squad, n: number, shape: Shape, dt: number) {
     if (d > 0) {
       man.x += (dx / d) * step
       man.y += (dy / d) * step
+      man.paces += step
     }
     man.moving = d > STAND
     // In the ranks he faces the enemy, turning away only for a real run.

@@ -154,7 +154,7 @@ export function drawRider(sk: Sketch, kit: RiderKit, frame: number) {
   caparison(sk, back)
   horseHead(sk, back, kit.horse)
   const hand: Pt = kit.bearer
-    ? [far[0] + 1.9, far[1] + 0.6]
+    ? [far[0] + 2.55, far[1] + 0.6]
     : [far[0] + seat.grip[0], far[1] + seat.grip[1]]
   arm(sk, far, hand, shade(IRON, 0.25))
   if (!kit.bearer) lance(sk, hand, seat.angle, seat.wave)

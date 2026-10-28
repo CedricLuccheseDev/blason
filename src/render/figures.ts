@@ -27,6 +27,8 @@ export type Figures = {
   anchor: (face: 1 | -1) => { x: number; y: number }
   /** The shadow under a man, from his feet, in the drawings' units. */
   shadow: { x: number; rx: number; ry: number }
+  /** Where the standard-bearer holds his pole, standing, from his feet, in the drawings' units. */
+  pole: readonly [number, number]
 }
 
 const made = new Map<Look, Figures>()
@@ -52,6 +54,7 @@ function cut(sheet: Sheet, look: Look): Figures {
     },
     anchor: (face) => anchorOf(sheet.box, face),
     shadow: LOOKS[look].shadow,
+    pole: LOOKS[look].pole,
   }
 }
 
@@ -71,18 +74,25 @@ export function warmFigures() {
   looks.forEach((look, i) => setTimeout(() => sheetOf(look), 200 * (i + 1)))
 }
 
-/** The frame a man shows: still, a step of his walk, or a beat of his fight, each man on his own beat. */
+/** Fight loops a second: a blow a little more than a second long. */
+const BLOWS = 0.9
+
+/**
+ * The frame a man shows: still; a step of his walk, by how far he has walked
+ * and so many map units a stride; or a beat of his fight, each man on his own.
+ */
 export function frameAt(
   seconds: number,
-  seed: number,
-  moving: boolean,
+  man: { seed: number; moving: boolean; paces: number },
   fighting: boolean,
-  cadence: number,
+  stride: number,
 ): number {
-  const own = (seed * 0.618) % 1
-  if (moving) return 1 + (Math.floor((seconds * cadence + own) * WALK) % WALK)
+  const own = (man.seed * 0.618) % 1
+  if (man.moving)
+    return 1 + (Math.floor((man.paces / stride + own) * WALK) % WALK)
   if (!fighting) return 0
-  return 1 + WALK + (Math.floor((seconds * 0.9 + own * 1.7) * FIGHT) % FIGHT)
+  const beat = Math.floor((seconds * BLOWS + own * 1.7) * FIGHT)
+  return 1 + WALK + (beat % FIGHT)
 }
 
 /** A man as two sprites, his dye under his base, scaled from the sheet's pixels to the map. */

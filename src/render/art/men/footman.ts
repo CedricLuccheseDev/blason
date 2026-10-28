@@ -27,7 +27,7 @@ export type FootKit = {
 /** Where the standard-bearer's hands hold the pole, from his shoulder. */
 export const POLE_HANDS: readonly [Pt, Pt] = [
   [2.2, 1.6],
-  [2.1, 3.2],
+  [2.85, 3.05],
 ]
 
 const plus = (a: Pt, b: Pt): Pt => [a[0] + b[0], a[1] + b[1]]
@@ -38,7 +38,7 @@ function nearArm(sk: Sketch, kit: FootKit, pose: Pose, near: Pt, hand: Pt) {
   const both =
     kit.weapon && !kit.shield ? otherHand(kit.weapon, hand, pose.angle) : null
   if (both) return arm(sk, near, both, sleeve)
-  const lift = kit.shield ? pose.guard : pose.guard * 0.6
+  const lift = kit.shield ? pose.guard : pose.swing * 0.6
   const free: Pt = [
     near[0] + Math.sin(lift) * 2.6,
     near[1] + Math.cos(lift) * 2.6,
@@ -52,6 +52,12 @@ function nearArm(sk: Sketch, kit: FootKit, pose: Pose, near: Pt, hand: Pt) {
 function bearer(sk: Sketch, kit: FootKit, near: Pt, far: Pt) {
   arm(sk, far, plus(far, POLE_HANDS[1]), shade(kit.garb.sleeves, 0.25))
   arm(sk, near, plus(near, POLE_HANDS[0]), kit.garb.sleeves)
+}
+
+/** Where a standing standard-bearer's upper hand holds the pole, from his feet. */
+export function footPoleHand(): Pt {
+  const f = frameOf(footPose(0, { grip: [0, 0], angle: 0 }, 'spear'))
+  return plus(plus(f.shoulder, [0.25, 0.2]), POLE_HANDS[0])
 }
 
 export function drawFootman(sk: Sketch, kit: FootKit, frame: number) {

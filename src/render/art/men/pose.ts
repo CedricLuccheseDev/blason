@@ -21,6 +21,8 @@ export type Pose = {
   grip: Pt
   angle: number
   guard: number
+  /** The near arm swinging free on the march, for a man with no shield and a hand free. */
+  swing: number
 }
 
 /** How a man fights: thrusting a spear or a fork, or bringing a blade down over his head. */
@@ -79,9 +81,9 @@ const BLOWS: Record<
   },
   // An axe or a flail raised behind the head and brought down.
   chop: {
-    x: [0.9, 0.1, -0.5, 1.1, 2, 1.5],
-    y: [1.4, -0.9, -2.1, -1.4, 1.5, 2],
-    angle: [-0.2, -1.1, -1.6, 0.5, 1.9, 1.2],
+    x: [1.3, 0.1, -0.5, 1.1, 2, 1.6],
+    y: [1.7, -0.9, -2.1, -1.4, 1.5, 2],
+    angle: [0.7, -1.1, -1.6, 0.5, 1.9, 1.2],
     lean: [0, -0.12, -0.18, 0.1, 0.28, 0.14],
     guard: [0.5, 1.3, 1.6, 1.1, 0.3, 0.4],
   },
@@ -99,6 +101,7 @@ export function footPose(frame: number, carry: Carry, blow: Blow): Pose {
       grip: carry.grip,
       angle: carry.angle,
       guard: 0.15,
+      swing: 0,
     }
   if (frame <= WALK) {
     const phase = phaseOf(frame - 1)
@@ -111,7 +114,8 @@ export function footPose(frame: number, carry: Carry, blow: Blow): Pose {
         carry.grip[1] + Math.abs(sway) * 0.15,
       ],
       angle: carry.angle + sway * 0.05,
-      guard: -0.4 * sway,
+      guard: 0.2 + 0.06 * sway,
+      swing: -0.4 * sway,
     }
   }
   const beat = frame - 1 - WALK
@@ -122,5 +126,6 @@ export function footPose(frame: number, carry: Carry, blow: Blow): Pose {
     grip: [b.x[beat], b.y[beat]],
     angle: b.angle[beat],
     guard: b.guard[beat],
+    swing: b.guard[beat],
   }
 }

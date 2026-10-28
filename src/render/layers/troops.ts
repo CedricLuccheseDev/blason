@@ -16,12 +16,16 @@ import type { Man, Squad } from '../squads'
 // grow and shrink with the zoom.
 
 const DUST = 0xb59a72
-/** Steps of the walk a second: the raid trots, the levy plods. */
-const CADENCE: Record<Look, number> = {
-  raid: 2.2,
-  host: 1.6,
-  ban: 1.35,
-  peasant: 1.5,
+/**
+ * Map units a stride, a step of each foot: a little longer than the legs
+ * cover, so that the march's quick pace does not set them racing; the
+ * horse's trot longer still.
+ */
+const STRIDE: Record<Look, number> = {
+  raid: 8,
+  host: 6,
+  ban: 5.5,
+  peasant: 5.5,
 }
 /** How much a man's size may differ from his fellows': the levy most. */
 const SIZES: Record<Look, number> = {
@@ -87,8 +91,7 @@ export function makeTroops() {
     const figures = sheetOf(squad.look)
     const t = traits(squad.look, man.seed, figures.men)
     const { figure, shadow } = next()
-    const cadence = CADENCE[squad.look]
-    const frame = frameAt(seconds, man.seed, man.moving, fighting, cadence)
+    const frame = frameAt(seconds, man, fighting, STRIDE[squad.look])
     figure.show(figures, t.man, man.facing, frame, squad.color)
     figure.tone(t.tint)
     figure.box.scale.set(pixel(t.size))
