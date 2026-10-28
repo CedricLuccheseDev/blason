@@ -154,14 +154,28 @@ the lord aimed at, the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 
-## Multiplayer, next
+## Multiplayer
 
-The engine is built for lockstep, as in OpenFront: the server will run no
-simulation. It will gather every player's orders for a turn, every 100
-milliseconds, and send the turn to all; each browser applies it to its own
-copy of the game. A client sends back a fingerprint of its state now and then
-so that the server can spot one that diverges. Watching a game, or replaying
-one, is then receiving or replaying the list of turns.
+The engine is built for lockstep, as in OpenFront: the server runs no
+simulation.
+
+- `net/protocol.ts`, shared by the browser and the server, says the
+  messages: join a room (the public one, a private one by its code, or a new
+  private one), start, an order, a fingerprint; and back the lobby, the
+  beginning (the seed, the bots' level, the players by seat), each numbered
+  turn, a desync.
+- `server/` is the relay, a small Node WebSocket server of its own
+  (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Its rooms
+  (`server/rooms.ts`) gather up to eight players, the rest of the twenty
+  seats being bots; then every 100 milliseconds it sends everyone the turn:
+  the orders received since the last, each signed with its sender's seat.
+  A player who leaves during a game gives his seat to a bot, on every browser
+  at the same turn. Every 50 turns each browser tells the fingerprint of its
+  state, and the relay names the first turn where two differ.
+- Each browser applies the turns to its own copy of the game, bots included:
+  a distant player is one more seat the session receives from outside, as a
+  bot is. Watching a game, or replaying one, is receiving or replaying the
+  list of turns.
 
 ## SOLID
 
