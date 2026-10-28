@@ -47,7 +47,7 @@ function Piece({
       aria-pressed={held}
       aria-label={name}
       onClick={onClick}
-      className={`${PIECE} ${narrow ? 'w-14 px-1' : 'w-32 px-2'} ${faint ? 'opacity-50' : ''}`}
+      className={`${PIECE} ${narrow ? 'w-12 px-0.5' : 'w-32 px-2'} ${faint ? 'opacity-50' : ''}`}
     >
       <span className="relative">
         {emblem}

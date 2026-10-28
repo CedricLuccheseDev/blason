@@ -24,7 +24,12 @@ export const fr: Messages = {
     others: 'Les autres seigneurs choisissent',
     click: 'clic : attaquer',
     armies: { raid: 'Chevauchée', host: 'Ost', ban: 'Arrière-ban' },
-    works: { village: 'Village', castle: 'Château', market: 'Marché' },
+    works: {
+      village: 'Village',
+      market: 'Marché',
+      barracks: 'Caserne',
+      castle: 'Château',
+    },
     percent: (n: number) => `${n}\u202f%`,
     victory: 'Victoire',
     winner: 'remporte la partie',

@@ -15,7 +15,7 @@ function field(width: number): Grid {
 function playing(grid: Grid): GameState {
   const state = createGame(grid, 2, 'test', {
     ...RULES,
-    gold: 0,
+    marketGold: 0,
     fillSeconds: Number.MAX_SAFE_INTEGER,
   })
   state.tick = state.rules.openingTicks

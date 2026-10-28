@@ -1,6 +1,6 @@
 import { drawInt } from '../numbers'
 import { apart, around } from '../grid'
-import { canStart, capOf, hasPicked } from '../land'
+import { canStart, capOf, hasPicked, worksOf } from '../land'
 import { NEUTRAL } from '../types'
 import { menFor } from '../war'
 import { canBuild, priceOf } from '../works'
@@ -91,7 +91,7 @@ function placeFor(
   let score = -Infinity
   for (let k = 0; k < 60; k++) {
     const t = drawInt(state.seed, state.owner.length, 'site', me, state.tick, k)
-    if (!canBuild(state, me, t)) continue
+    if (!canBuild(state, me, t, work)) continue
     const near = borders.reduce(
       (m, b) => Math.min(m, apart(state.grid, b, t)),
       1e12,
@@ -112,11 +112,19 @@ function construct(
   fronts: Map<number, Array<number>>,
   thrift: number,
 ): Array<Order> {
-  if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
   const enemies = [...fronts.keys()].filter((o) => o >= 0)
-  const roll = drawInt(state.seed, 100, 'work', me, state.tick)
-  let work: Work = roll < 50 ? 'village' : 'market'
-  if (enemies.length && roll < 30) work = 'castle'
+  // The first market and village before all, free: no gold nor peasants without them.
+  const missing = (['market', 'village', 'barracks'] as const).find(
+    (w) => worksOf(state, me, w) === 0,
+  )
+  let work: Work = missing ?? 'village'
+  if (!missing) {
+    if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
+    const roll = drawInt(state.seed, 100, 'work', me, state.tick)
+    if (roll >= 45) work = 'market'
+    if (roll >= 80) work = 'barracks'
+    if (enemies.length && roll < 25) work = 'castle'
+  }
   if (state.players[me].gold < (priceOf(state, me, work) + 40) * 1000) return []
   const borders = enemies.flatMap((o) => fronts.get(o) ?? []).slice(0, 40)
   const tile = placeFor(state, me, work, borders)

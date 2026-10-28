@@ -9,11 +9,16 @@ import { TICKS_PER_SECOND } from './units'
 export type Army = 'raid' | 'host' | 'ban'
 
 /** What a lord may build anywhere on his land, one thing a place. */
-export type Work = 'village' | 'castle' | 'market'
+export type Work = 'village' | 'market' | 'barracks' | 'castle'
 
 /** The armies and the works, in the order the bar shows them: one more is one more entry here. */
 export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
-export const WORKS: ReadonlyArray<Work> = ['village', 'castle', 'market']
+export const WORKS: ReadonlyArray<Work> = [
+  'village',
+  'market',
+  'barracks',
+  'castle',
+]
 
 export type Rules = {
   /** Ticks during which each lord picks where he starts. */
@@ -22,10 +27,10 @@ export type Rules = {
   tileSize: number
   /** A lord's gold at the start, in gold. */
   startGold: number
-  /** Gold each second, the same for all, in thousandths: the markets' caravans bring more. */
-  gold: number
-  /** The peasants a land feeds: a base, so many thousandths a tile, so many a village. */
-  peasants: { base: number; tile: number; village: number }
+  /** Gold each market brings by itself each second, in thousandths: no market, no gold; its caravans bring more. */
+  marketGold: number
+  /** The peasants each village feeds, in men: no village, no peasants; the land alone feeds none. */
+  peasants: { village: number }
   /** An empty gauge fills to its cap in so many seconds; none is born above it. */
   fillSeconds: number
   /** What a man raised costs, in thousandths of gold: 0 is OpenFront's free attack. */
@@ -44,10 +49,16 @@ export type Rules = {
   /** A castle: the land within so many tiles of it holds so many times better, in percent. */
   castleRadius: number
   castleHold: number
-  /** Price of a work, in gold, doubled for each one of its kind the lord holds (so many times at most), and the tiles kept clear between two works. */
-  workPrice: number
+  /**
+   * Price of each work, in gold, doubled for each one of its kind the lord
+   * holds (so many times at most); the first of the kinds in `firstFree`
+   * costs nothing, so that a lord can always start again from nothing.
+   * Works stand side by side, castles alone kept so many tiles apart.
+   */
+  workPrice: Record<Work, number>
+  firstFree: ReadonlyArray<Work>
   priceDoublings: number
-  workGap: number
+  castleGap: number
   /** An alliance lasts so long; both may renew it in its last moments; an offer waits so long. */
   allianceTicks: number
   renewTicks: number
@@ -75,8 +86,8 @@ export const RULES: Rules = {
   openingTicks: 10 * SECOND,
   tileSize: 4,
   startGold: 50,
-  gold: 5000,
-  peasants: { base: 50, tile: 300, village: 50 },
+  marketGold: 5000,
+  peasants: { village: 250 },
   fillSeconds: 60,
   menPrice: 0,
   armies: { raid: 10, host: 25, ban: 50 },
@@ -88,9 +99,10 @@ export const RULES: Rules = {
   villageGold: 50,
   castleRadius: 12,
   castleHold: 300,
-  workPrice: 100,
+  workPrice: { village: 100, market: 100, barracks: 150, castle: 200 },
+  firstFree: ['village', 'market', 'barracks'],
   priceDoublings: 3,
-  workGap: 10,
+  castleGap: 10,
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,

@@ -27,6 +27,13 @@ export const GLYPHS = {
       open: true,
     },
   ],
+  // Two tents and a pennant: where the armies are raised and sent from.
+  barracks: [
+    { d: 'M2 21 L7.5 12 L13 21 Z' },
+    { d: 'M11 21 L16.5 12 L22 21 Z' },
+    { d: 'M12 12 V3 M7.5 21 V17 M16.5 21 V17', open: true },
+    { d: 'M12 3 L18 4.6 L12 6.2 Z' },
+  ],
   felon: [
     { d: 'M12 2.5 L20 5.6 V11.8 Q20 18.2 12 21.5 Q4 18.2 4 11.8 V5.6 Z' },
     { d: 'M12.6 2.8 L10.6 8 L13.6 11.2 L10.4 15.2 L12 21.2', open: true },

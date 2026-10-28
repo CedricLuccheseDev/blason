@@ -44,7 +44,7 @@ export function makeAim(state: GameState, me: number) {
 
   function building(tile: number, work: Work, zoom: number) {
     const p = siteOf(state, tile)
-    const ok = canBuild(state, me, tile)
+    const ok = canBuild(state, me, tile, work)
     const tone = ok ? color : TONE.fight
     if (work === 'castle')
       marks

@@ -23,7 +23,12 @@ export const en = {
     others: 'The other lords are choosing',
     click: 'click: attack',
     armies: { raid: 'Raid', host: 'Host', ban: 'Levy' },
-    works: { village: 'Village', castle: 'Castle', market: 'Market' },
+    works: {
+      village: 'Village',
+      market: 'Market',
+      barracks: 'Barracks',
+      castle: 'Castle',
+    },
     percent: (n: number) => `${n}%`,
     victory: 'Victory',
     winner: 'wins the game',

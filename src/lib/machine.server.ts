@@ -62,7 +62,7 @@ export async function llmsTxt() {
     '## The game',
     '',
     '- Three armies raised from the peasants: the raid (10 %), the host (25 %), the levy (50 %). An army enters by the border nearest the click and spreads at most three tiles a tick; each tile costs the men who hold it.',
-    '- Villages feed more peasants, castles hold their land three times better, markets send caravans to other lords’ markets.',
+    '- Four works, one resource each: villages feed the peasants, markets bring gold and send caravans, barracks send the armies, castles hold their land three times better. The first village, market and barracks are free.',
     '- Alliances last five minutes; breaking one marks the breaker a traitor for thirty seconds.',
     '- A lord wins with 80 % of the land, a share that drops from the tenth minute down to 50 %.',
     '',

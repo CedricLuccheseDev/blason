@@ -20,8 +20,9 @@ It is inspired by [OpenFront](https://openfront.io) and written from scratch.
 - **Peasants and gold**: your land feeds peasants who hold it and whom you
   raise in three armies (a raid, a host, the whole levy); gold pays for the
   works.
-- **Works placed freely**: villages feed more peasants, castles hold their
-  land three times better, markets send caravans.
+- **Four works, one resource each**: villages feed the peasants, markets
+  bring gold, barracks send the armies, castles hold their land three times
+  better; the first of each is free, so a lord can always start again.
 - **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord
   who breaks one bears the traitor's mark.
 - **Nineteen bots** that read the same state and send the same orders as you.

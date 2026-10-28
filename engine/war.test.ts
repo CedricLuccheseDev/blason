@@ -3,57 +3,12 @@ import { TICKS_PER_SECOND, UNIT } from './units'
 import { generateWorld } from './map/generate'
 import { createBot } from './bots/bot'
 import { makeGrid } from './grid'
-import { createGame, setOwner } from './land'
-import { RULES } from './rules'
+import { createGame } from './land'
 import { stateHash, step } from './step'
 import { holdOf } from './war'
-import { build, priceOf } from './works'
-import type { Army } from './rules'
-import type { GameState, Grid, Order } from './types'
+import { attack, endow, field, hold, owned, playing, run } from './testing'
 
 const SECOND = TICKS_PER_SECOND
-
-/** A land of so many tiles across and down, all of it land. */
-function field(width: number, height = 1): Grid {
-  const land = Array.from({ length: width * height }, () => true)
-  return { width, height, size: 4, land, area: land.length }
-}
-
-/** A game past its opening, no village, no income, nothing born: men and gold counted exactly. */
-function playing(grid: Grid, players = 2): GameState {
-  const state = createGame(grid, players, 'test', {
-    ...RULES,
-    gold: 0,
-    fillSeconds: Number.MAX_SAFE_INTEGER,
-  })
-  state.tick = state.rules.openingTicks
-  state.villages = []
-  return state
-}
-
-function hold(state: GameState, owner: number, tiles: Array<number>) {
-  for (const t of tiles) setOwner(state, t, owner)
-}
-
-function endow(state: GameState, lord: number, peasants: number, gold = 1000) {
-  state.players[lord].peasants = peasants * UNIT
-  state.players[lord].gold = gold * UNIT
-}
-
-function run(state: GameState, ticks: number, orders: Array<Order> = []) {
-  step(state, orders)
-  for (let i = 1; i < ticks; i++) step(state)
-}
-
-const attack = (player: number, tile: number, army: Army): Order => ({
-  player,
-  type: 'attack',
-  tile,
-  army,
-})
-
-const owned = (state: GameState, lord: number) =>
-  state.owner.flatMap((o, t) => (o === lord ? [t] : []))
 
 describe('an army, tile by tile', () => {
   it('enters by the border nearest the click and spreads from there as a bulge towards it, three tiles a tick at most', () => {
@@ -146,40 +101,6 @@ describe('an army, tile by tile', () => {
   })
 })
 
-describe('the works', () => {
-  it('stand on one’s own land, clear of each other, at a price doubled for each of its kind', () => {
-    const state = playing(field(40))
-    hold(
-      state,
-      0,
-      Array.from({ length: 40 }, (_, i) => i),
-    )
-    endow(state, 0, 0, 10_000)
-    const base = state.rules.workPrice
-    build(state, 0, 0, 'village')
-    build(state, 0, 3, 'village')
-    expect(state.works).toHaveLength(1)
-    build(state, 0, 20, 'village')
-    expect(state.works).toHaveLength(2)
-    expect(priceOf(state, 0, 'village')).toBe(4 * base)
-    expect(state.players[0].gold).toBe((10_000 - 3 * base) * UNIT)
-  })
-
-  it('pass to whoever takes their tile; a free village taken brings its gold and becomes the taker’s village', () => {
-    const state = playing(field(6))
-    hold(state, 0, [0])
-    hold(state, 1, [5])
-    state.villages = [2]
-    endow(state, 0, 400, 50)
-    run(state, 1, [attack(0, 2, 'host')])
-    expect(state.owner[2]).toBe(0)
-    expect(state.villages).toEqual([])
-    expect(state.works).toEqual([{ work: 'village', tile: 2, owner: 0 }])
-    // Its fifty gold untouched, the men being free, and the village's.
-    expect(state.players[0].gold).toBe((50 + state.rules.villageGold) * UNIT)
-  })
-})
-
 describe('the game is deterministic', () => {
   it('the same seed, played by the same bots, gives the same game', () => {
     const play = () => {
@@ -201,7 +122,7 @@ describe('the game is deterministic', () => {
 })
 
 describe('the land shared out', () => {
-  it('has no empty land: every tile in a free domain, each lord starting on a whole one, never two on the same', () => {
+  it('has no empty land: every tile in a free domain, each lord starting on a whole one with its village and a barracks, never two on the same', () => {
     const world = generateWorld('domains')
     const grid = makeGrid(world.map, world.width, world.height, 4)
     const state = createGame(grid, 2, 'domains')
@@ -216,6 +137,9 @@ describe('the land shared out', () => {
     const domain = state.realm.filter((r) => r === home).length
     expect(state.players[0].tiles).toBe(domain)
     expect(state.players[1].tiles).toBe(0)
-    expect(state.works).toEqual([{ work: 'village', tile: home, owner: 0 }])
+    // The domain's village becomes his, and a barracks stands beside it.
+    expect(state.works.map((w) => w.work)).toEqual(['village', 'barracks'])
+    expect(state.works[0]).toEqual({ work: 'village', tile: home, owner: 0 })
+    expect(state.works[1].owner).toBe(0)
   })
 })

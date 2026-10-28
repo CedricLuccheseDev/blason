@@ -67,7 +67,7 @@ export function createGame(
     villages,
     works: [],
     players: Array.from({ length: players }, () => ({
-      peasants: rules.peasants.base * UNIT,
+      peasants: 0,
       gold: rules.startGold * UNIT,
       alive: true,
       felonUntil: 0,
@@ -86,17 +86,16 @@ export function worksOf(state: GameState, lord: number, work: string) {
   return state.works.filter((w) => w.owner === lord && w.work === work).length
 }
 
-/** The peasants a lord's land feeds: a base, so many a tile, so many a village. */
+/** The peasants a lord's villages feed: so many each; the land alone feeds none. */
 export function capOf(state: GameState, lord: number): number {
-  const { base, tile, village } = state.rules.peasants
-  const tiles = state.players[lord].tiles
   const villages = worksOf(state, lord, 'village')
-  return (base + village * villages) * UNIT + tile * tiles
+  return state.rules.peasants.village * villages * UNIT
 }
 
-/** The gold a lord earns each second, in thousandths, the same for all: his markets' caravans bring more. */
+/** The gold a lord's markets bring each second, in thousandths: no market, no gold; their caravans bring more. */
 export function incomeOf(state: GameState, lord: number): number {
-  return state.players[lord].alive ? state.rules.gold : 0
+  if (!state.players[lord].alive) return 0
+  return state.rules.marketGold * worksOf(state, lord, 'market')
 }
 
 /** The men holding each of a lord's tiles: his peasants spread over his land. */
@@ -161,6 +160,12 @@ function settle(state: GameState, player: number, tile: number): void {
   })
   state.villages = state.villages.filter((v) => v !== realm)
   state.works.push({ work: 'village', tile: realm, owner: player })
+  // And a barracks beside the village, to send his first army from.
+  const beside = around(state.grid, realm).find(
+    (t) => state.owner[t] === player,
+  )
+  if (beside !== undefined)
+    state.works.push({ work: 'barracks', tile: beside, owner: player })
   state.players[player].peasants = capOf(state, player)
   closed.delete(state)
 }

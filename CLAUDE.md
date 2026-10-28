@@ -5,6 +5,9 @@ redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent l
 l'or qui paie les constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
 navigateur.
 
+**La doctrine** (Cédric, 28/10) : « un jeu qui prend plusieurs briques des rts complexes, mais en simplifié rapide et
+fun. Et agréable visuellement ». Chaque règle et chaque écran se jugent à cette aune.
+
 Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est un écran titre avec
 une partie de bots filmée derrière le menu. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
 état est à l'étiquette git `fiefs-final`). Le dépôt est fait pour devenir public, comme celui d'OpenFront : code

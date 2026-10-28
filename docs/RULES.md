@@ -19,16 +19,19 @@ applies each rule is named beside it.
 ## The opening
 
 For the first 10 seconds each lord chooses where he starts by clicking a free
-domain; he takes it whole, village included. A lord who has not chosen is
-given one when the opening ends. Every lord starts with 50 gold.
+domain; he takes it whole, its village included, and a barracks rises beside
+that village. A lord who has not chosen is given one when the opening ends.
+Every lord starts with 50 gold.
 
 ## Peasants and gold
 
-- A land feeds **peasants**: 50, plus 0.3 a tile, plus 50 a village. An empty
-  gauge fills in 60 seconds, and no one is born above the cap.
+- Every resource comes from a work: without one, none. Each **village**
+  feeds 250 **peasants**; the land alone feeds none. An empty gauge fills in
+  60 seconds, and no one is born above the cap.
 - The peasants hold the land, spread over it: a tile is held by its lord's
   peasants divided among his tiles.
-- **Gold** comes at 5 a second for every lord, plus what the caravans bring.
+- Each **market** brings 5 **gold** a second by itself, plus what its caravans
+  bring.
 - Men are raised from the peasants for free: gold pays for works. (Paying a
   man in gold stalled the games past forty minutes; the price stays in
   `RULES.menPrice`, at 0.)
@@ -50,15 +53,19 @@ given one when the opening ends. Every lord starts with 50 gold.
 
 ## Works
 
-Three works, placed anywhere on one's own land (keys 4 to 6), at least 10 tiles
-from another work (`engine/works.ts`):
+Four works, one resource each, placed anywhere on one's own land (keys 4 to
+7), one a tile, side by side if need be; castles alone stand at least 10 tiles
+from one another (`engine/works.ts`):
 
-- the **village** feeds 50 peasants more;
-- the **castle** makes the land within 12 tiles of it hold three times better;
-- the **market** sends caravans.
+- the **village** feeds 250 peasants;
+- the **market** brings 5 gold a second and sends caravans;
+- the **barracks** is where the armies are raised and sent from;
+- the **castle** makes the land within 12 tiles of it hold three times better.
 
-A work costs 100 gold, doubled for each one of its kind the lord already holds
-(three doublings at most). It is taken with its tile.
+The first village, market and barracks cost nothing, so that a lord can always
+start again from nothing; then each costs double the one before (100 gold for
+the second village or market, 150 for the second barracks). A castle costs 200
+gold, then double. Three doublings at most. A work is taken with its tile.
 
 ## Alliances and traitors
 
