@@ -5,11 +5,11 @@ import type { Graphics } from 'pixi.js'
 // his arms across its head, ending in two tails, hung from a crossbar under
 // a gold finial. Its foot at (0, 0); `s` the size of a screen pixel.
 
-export const LIGHT = 0xfbf4e2
+const LIGHT = 0xfbf4e2
 const POLE = 0x65492f
 /** On screen, in pixels: the pole's height, the cloth's height, its tails. */
-export const HIGH = 50
-export const CLOTH = 30
+const HIGH = 50
+const CLOTH = 30
 const TAIL = 7
 
 export function drawBanner(

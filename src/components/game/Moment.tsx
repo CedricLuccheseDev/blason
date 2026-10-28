@@ -42,11 +42,7 @@ export function Moment({
         {title}
       </span>
       <div className="flex gap-2">
-        <Link
-          to={online ? '/' : '/play'}
-          reloadDocument
-          className={actClass()}
-        >
+        <Link to={online ? '/' : '/play'} reloadDocument className={actClass()}>
           {m.game.playAgain}
         </Link>
         {fallen && !winner && (
