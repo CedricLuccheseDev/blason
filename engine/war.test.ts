@@ -23,7 +23,8 @@ describe('an army, tile by tile', () => {
   it('enters by the border nearest the click and spreads from there towards it, a few tiles a tick', () => {
     // A 9 by 9 land; lord 0 holds its middle and his barracks there, lord 1 a corner far away.
     const state = playing(field(9, 9))
-    state.rules = { ...state.rules, paceTiles: 1 }
+    // Free land that costs nothing, to watch the army's course alone.
+    state.rules = { ...state.rules, paceTiles: 1, neutralHold: 0 }
     hold(state, 0, [40])
     muster(state, 0, 40)
     hold(state, 1, [80])
@@ -58,12 +59,12 @@ describe('an army, tile by tile', () => {
     expect(state.players[0].gold).toBe(0)
   })
 
-  it('finds each tile held by its militia, or by its lord’s peasants spread over his land', () => {
+  it('finds each tile held by its lord’s peasants spread over his land, a free one by half what holds the mean lord’s', () => {
     const state = playing(field(30))
     hold(state, 1, [10, 11, 12, 13])
     endow(state, 1, 40)
-    expect(holdOf(state, 0)).toBe(state.rules.militia)
     expect(holdOf(state, 11)).toBe(10 * UNIT)
+    expect(holdOf(state, 0)).toBe(5 * UNIT)
   })
 
   it('pays a soldier for two peasants, one for one under their lord’s castle', () => {
@@ -98,6 +99,7 @@ describe('an army, tile by tile', () => {
 
   it('goes home with its survivors when there is nothing left to take', () => {
     const state = playing(field(4))
+    state.rules = { ...state.rules, neutralHold: 0 }
     hold(state, 0, [0])
     muster(state, 0, 0)
     hold(state, 1, [3])
@@ -105,7 +107,7 @@ describe('an army, tile by tile', () => {
     run(state, 3, [attack(0, 1, 'host')])
     expect(owned(state, 0)).toEqual([0, 1, 2])
     expect(state.hosts).toEqual([])
-    expect(state.players[0].peasants).toBe(400 * UNIT - state.rules.militia)
+    expect(state.players[0].peasants).toBe(400 * UNIT)
   })
 })
 
@@ -149,5 +151,15 @@ describe('the land shared out', () => {
     expect(state.works.map((w) => w.work)).toEqual(['village', 'barracks'])
     expect(state.works[0]).toEqual({ work: 'village', tile: home, owner: 0 })
     expect(state.works[1].owner).toBe(0)
+  })
+
+  it('has no free village left once the opening is over: the free land is one', () => {
+    const world = generateWorld('domains')
+    const grid = makeGrid(world.map, world.width, world.height, 4)
+    const state = createGame(grid, 2, 'domains')
+    expect(state.villages.length).toBeGreaterThan(2)
+    for (let t = 0; t <= state.rules.openingTicks; t++) step(state, [])
+    expect(state.villages).toEqual([])
+    expect(state.players.every((p) => p.tiles > 0)).toBe(true)
   })
 })

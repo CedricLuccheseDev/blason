@@ -41,8 +41,6 @@ export type Host = {
   /** The tile clicked, and the tile it entered by. */
   aim: number
   entry: number
-  /** Against free land, the domain it strikes, and none other; -1 against a lord. */
-  realm: number
   departs: number
   /** The tiles it will strike next, a heap of [distance to the click, tile]. */
   queue: Array<[number, number]>
@@ -87,7 +85,7 @@ export type GameState = {
   owner: Array<number>
   /** The free domain each tile was drawn into at the start, named by its village's tile; -1 at sea. The whole land is shared out: no empty land, and free land fought for a domain at a time. */
   realm: Array<number>
-  /** The free villages still standing, by their tile. */
+  /** The free villages to start at, by their tile, during the opening; none after it. */
   villages: Array<number>
   works: Array<Building>
   players: Array<Lord>

@@ -150,7 +150,11 @@ const shoreOf = new Int32Array(GW * GH).fill(-1)
 type Grid = Int32Array
 const SEA_KEY = -2
 const keyOf = (s: GameState, t: number) =>
-  s.owner[t] === NEUTRAL ? -3 - s.realm[t] : s.owner[t]
+  s.owner[t] !== NEUTRAL
+    ? s.owner[t]
+    : s.tick < s.rules.openingTicks
+      ? -3 - s.realm[t]
+      : -3
 function gridOf(s: GameState): Grid {
   const g = new Int32Array(GW * GH)
   for (let t = 0; t < GW * GH; t++)

@@ -41,7 +41,7 @@ machine computes the same game, tick for tick.
 ### The state, the orders, the step
 
 - `GameState` (`engine/types.ts`) holds the land (`owner`, the lord of each
-  tile; `realm`, the free domain of each tile), the villages and works, the
+  tile; `realm`, the free domain of each tile, to start on), the villages and works, the
   players (peasants, gold, traitor's mark), the armies on the march (`hosts`),
   the alliances and offers, the caravans, the tick and the winner.
 - An `Order` is everything a player can do: choose where to start, attack a

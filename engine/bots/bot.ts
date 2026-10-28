@@ -131,12 +131,10 @@ function construct(
   return tile < 0 ? [] : [{ player: me, type: 'build', tile, work }]
 }
 
-/** The free land, a domain at a time: the one whose village stands nearest an edge drawn, struck at its village, or where it touches mine once its village is gone. */
+/** The free land, at a point of its edge drawn, struck well inside. */
 function expand(state: GameState, me: number, free: Array<number>) {
   const edge = free[drawInt(state.seed, free.length, 'edge', me, state.tick)]
-  const realm = state.realm[edge]
-  const aim = state.villages.includes(realm) ? realm : edge
-  return [attack(me, aim, 'host')]
+  return [attack(me, edge, 'host')]
 }
 
 export function createBot(self: number, seed: string): Bot {

@@ -50,13 +50,10 @@ export type Rules = {
   /** Ticks an even battle between two armies lasts, and how near, in tiles, two armies must come to fight. */
   battleTicks: number
   meetTiles: number
-  /** Men holding a free tile, in thousandths, and one round a free village, within so many tiles of it. */
-  militia: number
-  villageMilitia: number
-  villageRadius: number
-  /** One free village for so many tiles, and the gold its taker carries off. */
+  /** Men holding a free tile, in percent of a lord's tile, the mean of the lords standing: half as many. */
+  neutralHold: number
+  /** One free domain for so many tiles, to start on. */
   villageEvery: number
-  villageGold: number
   /** A castle: the land within so many tiles of it fights as the combat table says. */
   castleRadius: number
   /**
@@ -107,11 +104,8 @@ export const RULES: Rules = {
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
   battleTicks: 40,
   meetTiles: 8,
-  militia: 200,
-  villageMilitia: 1000,
-  villageRadius: 3,
+  neutralHold: 50,
   villageEvery: 600,
-  villageGold: 50,
   castleRadius: 12,
   workPrice: { village: 100, market: 100, barracks: 150, castle: 200 },
   firstFree: ['village', 'market', 'barracks'],

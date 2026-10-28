@@ -175,7 +175,7 @@ export function pickStart(state: GameState, player: number, tile: number) {
   settle(state, player, tile)
 }
 
-/** At the end of the opening, who picked nothing gets the free domain farthest from all. */
+/** At the end of the opening, who picked nothing gets the free domain farthest from all; then the free villages are gone. */
 export function assignMissingStarts(state: GameState): void {
   state.players.forEach((_, id) => {
     if (hasPicked(state, id)) return
@@ -196,4 +196,7 @@ export function assignMissingStarts(state: GameState): void {
     }
     if (best >= 0) settle(state, id, best)
   })
+  // The opening over, the free domains and their villages are gone: what
+  // no lord holds is one free land, held by its villagers.
+  state.villages = []
 }

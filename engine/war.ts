@@ -48,22 +48,19 @@ function touches(state: GameState, player: number, tile: number) {
   return around(state.grid, tile).some((t) => state.owner[t] === player)
 }
 
-/** Whether a tile is the army's to strike: its target's, and against free land, of its domain. */
-function struck(state: GameState, target: number, realm: number, tile: number) {
-  if (state.owner[tile] !== target) return false
-  return target !== NEUTRAL || state.realm[tile] === realm
-}
+/** Whether a tile is the army's to strike: its target's, or free. */
+const struck = (state: GameState, target: number, tile: number) =>
+  state.owner[tile] === target
 
-/** Where an army against the tile's lord, or its free domain, enters: its tile bordering mine nearest the tile, or -1. */
+/** Where an army against the tile's lord, or the free land, enters: its tile bordering mine nearest the tile, or -1. */
 export function entryFor(state: GameState, player: number, tile: number) {
   const target = state.owner[tile]
   if (target === player || target < NEUTRAL) return -1
   if (target >= 0 && isAllied(state, player, target)) return -1
-  const realm = state.realm[tile]
   let best = -1
   let gap = Infinity
   state.owner.forEach((_, t) => {
-    if (!struck(state, target, realm, t) || !touches(state, player, t)) return
+    if (!struck(state, target, t) || !touches(state, player, t)) return
     const d = apart(state.grid, t, tile)
     if (d < gap) {
       gap = d
@@ -119,7 +116,6 @@ export function attack(
     men,
     aim: tile,
     entry,
-    realm: target === NEUTRAL ? state.realm[tile] : -1,
     departs: state.tick,
     queue: [[0, entry]],
     edge: [],
@@ -130,32 +126,31 @@ export function attack(
   })
 }
 
-/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; or its militia, more round a free village. */
+/** The men holding a free tile: so many in a hundred of what holds the mean lord's tile. */
+function neutralHold(state: GameState): number {
+  const standing = state.players.filter((p) => p.alive && p.tiles > 0)
+  if (standing.length === 0) return 0
+  const peasants = standing.reduce((sum, p) => sum + p.peasants, 0)
+  const tiles = standing.reduce((sum, p) => sum + p.tiles, 0)
+  return Math.floor((peasants * state.rules.neutralHold) / 100 / tiles)
+}
+
+/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's. */
 export function holdOf(state: GameState, tile: number): number {
   const owner = state.owner[tile]
-  const { rules, grid } = state
-  if (owner === NEUTRAL) {
-    const r = rules.villageRadius
-    const near = state.villages.some((v) => apart(grid, v, tile) <= r * r)
-    return near ? rules.villageMilitia : rules.militia
-  }
+  const { rules } = state
+  if (owner === NEUTRAL) return neutralHold(state)
   const mark = isFelon(state, owner) ? rules.felonHold : 100
   return Math.floor((density(state, owner) * mark) / 100)
 }
 
-/** A tile taken: its new lord, its free village's gold and its work. */
+/** A tile taken: its new lord, and its work. */
 function take(state: GameState, host: Host, tile: number) {
-  const was = state.owner[tile]
-  if (was === NEUTRAL && state.villages.includes(tile)) {
-    state.villages = state.villages.filter((v) => v !== tile)
-    state.players[host.owner].gold += state.rules.villageGold * UNIT
-    state.works.push({ work: 'village', tile, owner: host.owner })
-  }
   for (const work of state.works)
     if (work.tile === tile) work.owner = host.owner
   setOwner(state, tile, host.owner)
   for (const t of around(state.grid, tile))
-    if (struck(state, host.target, host.realm, t))
+    if (struck(state, host.target, t))
       push(host.queue, [priority(state, host, t), t])
 }
 
@@ -186,7 +181,7 @@ function march(state: GameState, host: Host) {
     const next = pop(host.queue)
     if (!next) break
     const tile = next[1]
-    const ours = struck(state, host.target, host.realm, tile)
+    const ours = struck(state, host.target, tile)
     if (!ours || !touches(state, host.owner, tile)) continue
     if (!fight(state, host, tile)) break
     take(state, host, tile)

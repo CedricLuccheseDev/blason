@@ -10,11 +10,12 @@ applies each rule is named beside it.
   land on every machine. It is cut into a fine grid of tiles, four map units a
   side (`engine/grid.ts`).
 - At the start the whole land is shared into **free domains**, each around its
-  village, one village for some 600 tiles: there is no empty land
-  (`engine/land.ts`).
-- A free domain only defends itself, by its militia: 0.2 men a tile, a whole
-  man a tile within 3 tiles of its village. Taking a free village gives it to
-  the taker with 50 gold.
+  village, one village for some 600 tiles, for the lords to choose where they
+  start (`engine/land.ts`).
+- Once the opening is over, the free domains and their villages are gone:
+  what no lord holds is one **free land**. It only defends itself, by its
+  villagers: each free tile is held by half the men that hold the mean lord's
+  tile (`engine/war.ts`). Taking it gives land, nothing else.
 
 ## The opening
 
@@ -52,7 +53,7 @@ Every lord starts with 50 gold.
   faster (`engine/war.ts`).
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
-  while he bears the traitor's mark; the militia on free land):
+  while he bears the traitor's mark; the villagers on free land):
 
   | The army against                       | It loses, per man of the other |
   | -------------------------------------- | ------------------------------ |
