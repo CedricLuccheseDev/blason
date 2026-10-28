@@ -8,8 +8,21 @@ import type { Level } from '../../../engine'
 /** Where the browser keeps the bots' level last chosen, for the next visit. */
 const LEVEL_KEY = 'blason.level'
 
-/** The bots' level last chosen here, normal the first time or if the browser keeps nothing. */
-export function useLevel(): [Level, (step: 1 | -1, wrap?: boolean) => void] {
+/** Keeps the level chosen for the next visit, if the browser keeps anything. */
+function keep(level: Level) {
+  try {
+    localStorage.setItem(LEVEL_KEY, level)
+  } catch {
+    // Kept for this visit only.
+  }
+}
+
+/** The bots' level last chosen here, normal the first time or if the browser keeps nothing; turned by a step, or chosen. */
+export function useLevel(): [
+  Level,
+  (step: 1 | -1, wrap?: boolean) => void,
+  (level: Level) => void,
+] {
   const [level, setLevel] = useState<Level>('normal')
   useEffect(() => {
     try {
@@ -25,12 +38,12 @@ export function useLevel(): [Level, (step: 1 | -1, wrap?: boolean) => void] {
       const n = LEVELS.length
       const i = LEVELS.indexOf(now) + step
       const next = LEVELS[wrap ? (i + n) % n : Math.max(0, Math.min(n - 1, i))]
-      try {
-        localStorage.setItem(LEVEL_KEY, next)
-      } catch {
-        // Kept for this visit only.
-      }
+      keep(next)
       return next
     })
-  return [level, turn]
+  const choose = (next: Level) => {
+    keep(next)
+    setLevel(next)
+  }
+  return [level, turn, choose]
 }

@@ -50,8 +50,9 @@ npm install
 npm run dev
 ```
 
-Then open the address `npm run dev` prints: the home is a title screen with a
-game of bots behind it; **Play** starts a game against nineteen bots.
+Then open the address `npm run dev` prints: the home is a board game on a
+wooden table, a game of bots on the board; the seal plays the card turned,
+against nineteen bots by default.
 
 ## Commands
 
@@ -79,7 +80,8 @@ game of bots behind it; **Play** starts a game against nineteen bots.
 - `src/render/`: the map on screen (PixiJS) and the player's gestures
 - `src/components/hud/`: the HUD's design system
 - `src/components/game/`: the game's HUD, built on it
-- `src/components/home/`: the home's game in the background
+- `src/table/`: the home's table in 3D (Three.js)
+- `src/components/home/`: the home, the words and settings laid on the table
 - `src/i18n/`: French and English
 - `src/content/`: the journal's posts
 - `scripts/`: the arena and the style checks

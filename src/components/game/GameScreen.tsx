@@ -14,6 +14,7 @@ import { Moment } from './Moment'
 import type { Letter } from './News'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Level } from '../../../engine'
+import type { Online } from '~/render/online'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
@@ -34,7 +35,8 @@ const [LETTERS, LETTER_MS] = [4, 6000]
 export function GameScreen({
   me,
   level,
-}: Readonly<{ me: number; level: Level }>) {
+  online,
+}: Readonly<{ me: number; level: Level; online?: Online }>) {
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
   const [game, setGame] = useState<GameHandle | null>(null)
@@ -75,6 +77,7 @@ export function GameScreen({
           onNews: tell,
           names: PLAYERS.map((p) => m.game.colors[p.key]),
           level,
+          online,
         })
         if (off()) mounted.destroy()
         else {
@@ -87,7 +90,7 @@ export function GameScreen({
       cancelled = true
       handle?.destroy()
     }
-  }, [me, level])
+  }, [me, level, online])
 
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it.
@@ -109,7 +112,7 @@ export function GameScreen({
             </div>
             <div className="flex flex-col items-center gap-2">
               <Race summary={summary} />
-              <Moment summary={summary} />
+              <Moment summary={summary} online={online !== undefined} />
             </div>
             <div className="flex w-72 flex-col gap-2 justify-self-end max-sm:col-span-2 max-sm:row-start-2 max-sm:w-64 short:w-60">
               <Offers

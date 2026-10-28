@@ -1,0 +1,111 @@
+import { useEffect, useRef, useState } from 'react'
+import type { Link } from '~/render/link'
+import type { Online } from '~/render/online'
+import type { FromRelay, Lobby } from '../../../../net/protocol'
+import { connect, relayUrl } from '~/render/link'
+
+// A seat in a room of the relay (server/rooms.ts), from the home: the public
+// room, a private one by its code, or a new private one. The room is told
+// live (who sits, when it starts); when the relay says the game begins, the
+// line is handed over, open, to whoever plays it. One room at a time:
+// joining another, or leaving, closes the line.
+
+export type Room =
+  | { status: 'off' }
+  | { status: 'unavailable' }
+  | { status: 'joining'; code: string | null }
+  | { status: 'seated'; seat: number; lobby: Lobby; heardAt: number }
+  | { status: 'error'; reason: 'full' | 'unknown' | 'started' | 'lost' }
+
+export type RoomActions = {
+  /** Sits at the public room (null), a private one by its code, or a new one ('new'). */
+  join: (code: string | null) => void
+  leave: () => void
+  /** The host starts the game now. */
+  start: () => void
+}
+
+export function useRoom(
+  onBegin: (online: Online) => void,
+): [Room, RoomActions] {
+  const [room, setRoom] = useState<Room>({ status: 'off' })
+  const line = useRef<Link | null>(null)
+  const begun = useRef(onBegin)
+  begun.current = onBegin
+  // Every line opened gets a number: what a closed one says is not heard.
+  const opened = useRef(0)
+
+  const leave = () => {
+    opened.current += 1
+    line.current?.close()
+    line.current = null
+    setRoom({ status: 'off' })
+  }
+
+  const join = (code: string | null) => {
+    leave()
+    const url = relayUrl()
+    if (!url) {
+      setRoom({ status: 'unavailable' })
+      return
+    }
+    const mine = opened.current
+    setRoom({ status: 'joining', code })
+    connect(url)
+      .then((link) => {
+        if (mine !== opened.current) return link.close()
+        line.current = link
+        let seat = -1
+        const stop = link.listen((message: FromRelay) => {
+          if (mine !== opened.current) return
+          if (message.t === 'lobby') {
+            seat = message.seat
+            setRoom({
+              status: 'seated',
+              seat,
+              lobby: message.lobby,
+              heardAt: Date.now(),
+            })
+          } else if (message.t === 'error')
+            setRoom({ status: 'error', reason: message.reason })
+          else if (message.t === 'begin') {
+            // From here the turns wait for the game: no one here listens any more.
+            stop()
+            line.current = null
+            const { seed, level, names } = message
+            begun.current({ link, seat, seed, level, players: names.length })
+          }
+        })
+        link.send({ t: 'join', room: code, name: '' })
+      })
+      .catch(() => {
+        if (mine === opened.current)
+          setRoom({ status: 'error', reason: 'lost' })
+      })
+  }
+
+  const start = () => line.current?.send({ t: 'start' })
+
+  // Leaving the home leaves the room, unless the game began.
+  useEffect(
+    () => () => {
+      opened.current += 1
+      line.current?.close()
+    },
+    [],
+  )
+
+  return [room, { join, leave, start }]
+}
+
+/** Ms left before the public room starts, now, or none. */
+export function leftOf(room: Room, now: number): number | null {
+  if (room.status !== 'seated' || room.lobby.startsIn === null) return null
+  return Math.max(0, room.lobby.startsIn - (now - room.heardAt))
+}
+
+/** A span of ms as m:ss. */
+export const clock = (ms: number) => {
+  const s = Math.ceil(ms / 1000)
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}

@@ -8,8 +8,8 @@ navigateur.
 **La doctrine** (Cédric, 28/10) : « un jeu qui prend plusieurs briques des rts complexes, mais en simplifié rapide et
 fun. Et agréable visuellement ». Chaque règle et chaque écran se jugent à cette aune.
 
-Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est un écran titre avec
-une partie de bots filmée derrière le menu. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
+Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est une table de jeu en 3D,
+une partie de bots sur le plateau, les modes en cartes, le sceau pour jouer. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
 état est à l'étiquette git `fiefs-final`). Le dépôt est fait pour devenir public, comme celui d'OpenFront : code
 rangé, documenté en anglais (`README.md`, `docs/`, `CONTRIBUTING.md`), sous licence AGPL-3.0.
 
@@ -91,10 +91,15 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   les lettres et les alliances à renouveler à droite, la barre en bas avec la bourse dedans, puis les armées
   en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
   se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
-- `src/routes/index.tsx` : l'accueil, comme l'écran titre d'un jeu ; le menu sur un parchemin roulé (Jouer,
-  Regarder, le Journal ; flèches et Entrée), derrière une partie de bots (`src/components/home/Spectacle.tsx`)
-  filmée par le réalisateur ; la terre de la prochaine partie s'y prépare (`src/render/ahead.ts`).
-- `src/i18n/` : les mots, en français et en anglais, par section (`home`, `game`, `race`, `pacts`, `errors`).
+- `src/routes/index.tsx` : l'accueil, un jeu de société sur une vraie table de bois, en 3D (Three.js, chargé sur
+  l'accueil seul) : `src/table/` la scène (le plateau, le couvercle, les cartes des modes, le sceau, le dé, le
+  carnet, la bougie ; les mots restent du HTML posé sur les objets par une transformation projective,
+  `overlays.ts`), qui ne décide rien ; `src/components/home/` le React (`table/` : les cartes et leurs réglages au
+  dos, le sceau qui joue la carte retournée, les salles du relais en direct, `useRoom.ts`). Le plateau porte la
+  vraie partie des bots, filmée par le réalisateur hors de vue et lue comme une image ; un clic plonge dedans pour
+  la regarder. Sans WebGL, le menu seul (`PlainMenu.tsx`). La terre de la prochaine partie s'y prépare
+  (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à `/play?online` (`src/render/online.ts`).
+- `src/i18n/` : les mots, en français et en anglais, par section (`home`, `table`, `game`, `race`, `pacts`, `errors`).
 - `design/mockups/` : les sources des planches, tirées d'une partie du jeu (`cells.ts`) ; leurs pièces suivent les
   jetons du HUD (`kit.py`).
 - Pas de Convex pour l'instant (projet créé en `--no-backend`) : il viendra pour les comptes et les classements. Le

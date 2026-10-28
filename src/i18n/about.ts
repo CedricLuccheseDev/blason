@@ -68,7 +68,7 @@ export const aboutEn: About = {
     {
       heading: 'What is not there yet',
       body: [
-        'Blason is played alone against nineteen bots for now, easy, fair or hard as you choose at the home. Playing together comes next: each browser will keep running its own copy of the game, and a small server will gather everyone’s orders every tenth of a second and send them to all. There are no accounts, no advertising and no audience measurement.',
+        'Blason is played against nineteen bots, easy, fair or hard as you choose at the home, or online with up to eight players, the empty seats going to bots: in the public room, which starts half a minute after its first player sits, or in a private room joined by its code. Each browser runs its own copy of the game, and a small server, the relay, gathers everyone’s orders every tenth of a second and sends them to all. There are no accounts yet, so no profiles nor rankings, no advertising and no audience measurement.',
         'The code is free software under the AGPL-3.0 licence: it can be read, studied and improved, and whoever runs a modified version on a server must publish it.',
       ],
     },
@@ -126,7 +126,7 @@ export const aboutFr: About = {
     {
       heading: 'Ce qui n’y est pas encore',
       body: [
-        'Pour l’instant, Blason se joue seul contre dix-neuf bots, faciles, moyens ou difficiles au choix de l’accueil. Jouer ensemble viendra ensuite : chaque navigateur continuera de faire tourner sa propre copie de la partie, et un petit serveur réunira les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a ni compte, ni publicité, ni mesure d’audience.',
+        'Blason se joue contre dix-neuf bots, faciles, moyens ou difficiles au choix de l’accueil, ou en ligne jusqu’à huit joueurs, les places vides allant aux bots : dans la salle publique, qui part une demi-minute après que son premier joueur s’y assoit, ou dans une salle privée qu’on rejoint par son code. Chaque navigateur fait tourner sa propre copie de la partie, et un petit serveur, le relais, réunit les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a pas encore de compte, donc ni profil ni classement, ni publicité, ni mesure d’audience.',
         'Le code est un logiciel libre, sous licence AGPL-3.0 : on peut le lire, l’étudier et l’améliorer, et quiconque en fait tourner une version modifiée sur un serveur doit la publier.',
       ],
     },

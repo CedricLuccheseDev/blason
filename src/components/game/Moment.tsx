@@ -7,7 +7,10 @@ import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
 /** The opening and the end, under the race. */
-export function Moment({ summary }: Readonly<{ summary: Summary }>) {
+export function Moment({
+  summary,
+  online = false,
+}: Readonly<{ summary: Summary; online?: boolean }>) {
   const m = useMessages()
   const [dismissed, setDismissed] = useState(false)
   const { me, opening, winner } = summary
@@ -39,7 +42,11 @@ export function Moment({ summary }: Readonly<{ summary: Summary }>) {
         {title}
       </span>
       <div className="flex gap-2">
-        <Link to="/play" reloadDocument className={actClass()}>
+        <Link
+          to={online ? '/' : '/play'}
+          reloadDocument
+          className={actClass()}
+        >
           {m.game.playAgain}
         </Link>
         {fallen && !winner && (

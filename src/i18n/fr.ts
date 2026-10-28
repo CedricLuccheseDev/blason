@@ -1,8 +1,10 @@
 import { blogFr } from './blog'
+import { tableFr } from './table'
 import type { Messages } from './en'
 
 export const fr: Messages = {
   blog: blogFr,
+  table: tableFr,
   common: {
     author: 'Cédric Lucchese',
     about: 'Comment ça marche',

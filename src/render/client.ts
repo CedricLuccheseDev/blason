@@ -10,6 +10,7 @@ import { makeDirector } from './director'
 import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
 import { startSession } from './session'
+import { startRemoteSession } from './remote'
 import { makeNews } from './news'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
@@ -18,6 +19,7 @@ import type { News } from './news'
 import type { Room } from './director'
 import type { Army, Coup, Level, Work } from '../../engine'
 import type { Summary } from './summary'
+import type { Online } from './online'
 
 // The game on screen, the land taken bit by bit: the manuscript map
 // of the game, its lands spreading tile by tile as in OpenFront, with its
@@ -63,10 +65,13 @@ export async function mountGame(
     level?: Level
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
+    /** A game online (online.ts): its land, its turns and my seat come from the relay. */
+    online?: Online
   },
 ): Promise<GameHandle> {
   const app = new Application()
-  const { land, grid } = takeLand(seed)
+  const { online } = hooks
+  const { land, grid } = takeLand(online?.seed ?? seed)
   await app.init({
     preference: 'webgl',
     resizeTo: element,
@@ -74,9 +79,20 @@ export async function mountGame(
     antialias: true,
     resolution: Math.min(window.devicePixelRatio || 1, 2),
     autoDensity: true,
+    // A watched game is also read as a picture (the home's board): its frame must stay readable.
+    preserveDrawingBuffer: hooks.spectate !== undefined,
   })
   element.appendChild(app.canvas)
-  const session = startSession(grid, land.seed, me, hooks.level)
+  const session = online
+    ? startRemoteSession(
+        grid,
+        land.seed,
+        me,
+        online.level,
+        online.players,
+        online.link,
+      )
+    : startSession(grid, land.seed, me, hooks.level)
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
 
@@ -197,6 +213,7 @@ export async function mountGame(
       // next game on the page, which a destroyed one would break.
       app.destroy(true, { children: true })
       scene.destroy()
+      online?.link.close()
     },
     choose(next) {
       hand.choose(next)

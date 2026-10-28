@@ -179,7 +179,7 @@ orders. It decides nothing about the rules.
   ruling and scale in pale ink (`layers/margin.ts`).
 - `camera.ts` is the player's camera, out to twice farther than the whole land,
   where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
-  goes to the fiercest fight on its own (the home's background).
+  goes to the fiercest fight on its own (the game on the home's board).
 - `summary.ts` reads from the state, once a second, the figures the HUD shows;
   `news.ts` what the player's letters tell, the coups among it (`coupNews.ts`).
 
@@ -219,6 +219,42 @@ the lord aimed at, the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 
+## The home
+
+The home is a board game on a wooden table, in 3D (Three.js, loaded on the
+home alone; `.dependency-cruiser.cjs` keeps it there, so the game's route
+stays light). `src/table/` is the scene and decides nothing; its contract is
+`src/table/index.ts`:
+
+- the things, cut and painted once: the sizes and the two layouts, a desk's
+  and a phone's (`sizes.ts`); the painted surfaces (`paint/`: the walnut, the
+  board's printed frame, the lid, the cards' stock, the seal's wax, the die,
+  the journal's pages) and their textures (`assets.ts`); the meshes
+  (`objects/`); the scene, the candle for light, every thing in its place
+  (`stage.ts`);
+- each frame (`motion.ts`, `press.ts`, `ease.ts`): the camera's drift, the
+  flame, a card lifted, turned and held up, the seal pressed, the die thrown
+  (`dice.ts`), the journal raised; the candle's shadows are drawn again only
+  when a thing moves; under reduced motion everything is where it goes at
+  once;
+- the words stay HTML: each piece the home lays over the table names its
+  thing (`data-ov`), and `pins.ts` and `overlays.ts` map it there every frame
+  by a projective transform (`quad.ts`), so that it follows the thing's
+  perspective and stays crisp text, a real button for the keyboard;
+- the pointer: a ray from the eye to the first thing it meets (`touch.ts`).
+
+The board shows a real game: the spectator's game of twenty bots
+(`client.ts` with the director), drawn by PixiJS out of sight and read by the
+table a few times a second as the board's picture. Clicking the board dives
+the camera into it, and the same game then takes the screen.
+
+The React side, `src/components/home/`: `Home.tsx` (the table, or where no
+WebGL is, the plain menu, `PlainMenu.tsx`), and `table/`: the overlays (the
+cards' faces, the backs with each mode's settings, the ribbon, the journal
+reading the blog's posts, the player's card), what a touch means
+(`useChoice.ts`: a card turned, the seal playing the card turned, the die),
+the rooms of the relay (`useRoom.ts`), the spectator (`useSpectator.ts`).
+
 ## Multiplayer
 
 The engine is built for lockstep, as in OpenFront: the server runs no
@@ -237,6 +273,11 @@ simulation.
   A player who leaves during a game gives his seat to a bot, on every browser
   at the same turn. Every 50 turns each browser tells the fingerprint of its
   state, and the relay names the first turn where two differ.
+- In the browser, `link.ts` is the line to the relay; the home's cards sit
+  the player at a room and show it live (`useRoom.ts`); when the relay says
+  the game begins, the open line is left in `online.ts` and `/play?online`
+  mounts the game with `remote.ts`'s session, stepped by the relay's turns,
+  instead of the local one.
 - Each browser applies the turns to its own copy of the game, bots included:
   a distant player is one more seat the session receives from outside, as a
   bot is. Watching a game, or replaying one, is receiving or replaying the

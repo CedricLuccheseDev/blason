@@ -1,21 +1,21 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { GameHandle } from '~/render/client'
-import type { Room } from '~/render/director'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
-/**
- * Behind the home's menu, a game that twenty bots play on
- * a land drawn anew, watched by a directed camera (render/director.ts) that
- * keeps what it shows clear of the menu, on the left or at the bottom. It is scenery:
- * it takes no pointer and says nothing to a screen reader.
- */
-export function Spectacle({ room }: Readonly<{ room: () => Room }>) {
+// The game on the board: twenty bots playing a land drawn anew, watched by
+// the director's camera (render/director.ts), drawn by the game's own
+// renderer in a frame kept out of sight; the table reads its picture a few
+// times a second. To watch it, the frame takes the whole screen, and the
+// same game goes on. Its land is its own: the one made ahead is kept for the
+// player's game.
+
+const NO_ROOM = { left: 0, bottom: 0 }
+
+export function useSpectator() {
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
-  // The latest measure of the menu, read by the camera every frame.
-  const inset = useRef(room)
-  inset.current = room
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
     const element = host.current
@@ -28,17 +28,19 @@ export function Spectacle({ room }: Readonly<{ room: () => Room }>) {
       .then(async ({ faces, mountGame, randomSeed }) => {
         await faces()
         if (off()) return
-        // A land of its own: the one made ahead is kept for the player's game.
         const mounted = await mountGame(element, randomSeed(), -1, {
           onSummary: () => {},
           onAim: () => {},
           names: PLAYERS.map((p) => m.game.colors[p.key]),
-          spectate: () => inset.current(),
+          spectate: () => NO_ROOM,
         })
         if (off()) mounted.destroy()
-        else handle = mounted
+        else {
+          handle = mounted
+          setCanvas(element.querySelector('canvas'))
+        }
       })
-      // Scenery that cannot start (no WebGL) leaves the menu standing alone.
+      // A board that cannot show its game keeps its blank parchment.
       .catch(() => undefined)
     return () => {
       cancelled = true
@@ -46,11 +48,5 @@ export function Spectacle({ room }: Readonly<{ room: () => Room }>) {
     }
   }, [])
 
-  return (
-    <div
-      ref={host}
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 bg-vellum"
-    />
-  )
+  return { host, canvas }
 }

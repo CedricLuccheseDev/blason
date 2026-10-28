@@ -1,7 +1,9 @@
 import { blogEn } from './blog'
+import { tableEn } from './table'
 
 export const en = {
   blog: blogEn,
+  table: tableEn,
   common: {
     author: 'Cédric Lucchese',
     about: 'How it works',
