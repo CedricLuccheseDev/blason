@@ -34,7 +34,7 @@ export {
   standing,
   worksOf,
 } from './land'
-export { nextDrop, step, victoryShare } from './step'
+export { nextDrop, stateHash, step, victoryShare } from './step'
 
 // What the screen and the bots ask of the rules.
 export { costOf, entryFor, menFor } from './war'
