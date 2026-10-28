@@ -6,7 +6,8 @@ import type { GameState, Host } from '../../engine'
 // fiercest fight on the land and glides to it, following its front as it
 // moves, the land breathing a little under it; in the opening it shows the
 // whole land, and when no one fights, the realm of the first. What it looks
-// at stays in the part of the screen a menu leaves free on the left. Under
+// at stays in the part of the screen a menu leaves free, on the left or
+// at the bottom. Under
 // reduced motion it holds the whole land, still.
 
 /** How often it looks for a fiercer fight, and how long it stays at least. */
@@ -18,19 +19,23 @@ const [ROOM, CLOSEST] = [150, 4]
 
 type Shot = { x: number; y: number; k: number }
 
+/** What a menu covers of the screen, in pixels. */
+export type Room = { left: number; bottom: number }
+
 export function makeDirector(
   app: Application,
   world: Container,
   size: { width: number; height: number },
   state: GameState,
-  left: () => number,
+  /** The room the menu takes, in pixels: on the left, and at the bottom. */
+  room: () => Room,
 ) {
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   // The menu's width as the camera sees it, eased when the menu comes or goes.
-  let inset = left()
-  const free = () => Math.max(1, app.screen.width - inset)
-  const fit = () =>
-    Math.min(free() / size.width, app.screen.height / size.height) * 0.94
+  let inset = room()
+  const free = () => Math.max(1, app.screen.width - inset.left)
+  const high = () => Math.max(1, app.screen.height - inset.bottom)
+  const fit = () => Math.min(free() / size.width, high() / size.height) * 0.94
   const whole = (): Shot => ({
     x: size.width / 2,
     y: size.height / 2,
@@ -45,7 +50,7 @@ export function makeDirector(
       Math.min(
         CLOSEST * fit(),
         free() / (x1 - x0 + ROOM),
-        app.screen.height / (y1 - y0 + ROOM),
+        high() / (y1 - y0 + ROOM),
       ),
     ),
   })
@@ -105,7 +110,12 @@ export function makeDirector(
       if (since >= EVERY || (over && since >= DWELL)) choose()
       else if (followed && !over) goal = front(followed)
       const t = 1 - (1 - GLIDE) ** (ms / (1000 / 60))
-      inset += (left() - inset) * Math.min(1, t * 4)
+      const to = room()
+      const ease = Math.min(1, t * 4)
+      inset = {
+        left: inset.left + (to.left - inset.left) * ease,
+        bottom: inset.bottom + (to.bottom - inset.bottom) * ease,
+      }
       shot = {
         x: shot.x + (goal.x - shot.x) * t,
         y: shot.y + (goal.y - shot.y) * t,
@@ -117,8 +127,8 @@ export function makeDirector(
       const x = shot.x + Math.sin(seconds * 0.11) * sway
       const y = shot.y + Math.cos(seconds * 0.07) * sway
       world.scale.set(shot.k)
-      world.x = inset + free() / 2 - x * shot.k
-      world.y = app.screen.height / 2 - y * shot.k
+      world.x = inset.left + free() / 2 - x * shot.k
+      world.y = high() / 2 - y * shot.k
     },
   }
 }

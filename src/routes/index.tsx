@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent, ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode, RefObject } from 'react'
 import { Spectacle } from '~/components/home/Spectacle'
 import { Act } from '~/components/hud/Act'
 import { Shield } from '~/components/hud/Emblem'
@@ -46,7 +46,14 @@ function Home() {
   useGameAhead()
   const shown = useRef(true)
   shown.current = !watching
-  const left = () => (shown.current && window.innerWidth >= WIDE ? MENU : 0)
+  const menu = useRef<HTMLElement>(null)
+  // The room the menu takes: its width on the left of a wide screen, its
+  // height at the bottom of a phone held upright, none while watching.
+  const room = () => {
+    if (!shown.current) return { left: 0, bottom: 0 }
+    if (window.innerWidth >= WIDE) return { left: MENU, bottom: 0 }
+    return { left: 0, bottom: (menu.current?.offsetHeight ?? 0) + 16 }
+  }
 
   useEffect(() => {
     if (!watching) return
@@ -59,7 +66,7 @@ function Home() {
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-vellum select-none">
-      <Spectacle left={left} />
+      <Spectacle room={room} />
       {watching ? (
         <div className="absolute top-4 left-4">
           <Act tone="plain" onClick={() => setWatching(false)}>
@@ -67,13 +74,16 @@ function Home() {
           </Act>
         </div>
       ) : (
-        <Menu onWatch={() => setWatching(true)} />
+        <Menu onWatch={() => setWatching(true)} menu={menu} />
       )}
     </main>
   )
 }
 
-function Menu({ onWatch }: Readonly<{ onWatch: () => void }>) {
+function Menu({
+  onWatch,
+  menu,
+}: Readonly<{ onWatch: () => void; menu: RefObject<HTMLElement | null> }>) {
   const m = useMessages()
   const [chosen, setChosen] = useState(0)
   const list = useRef<HTMLUListElement>(null)
@@ -103,19 +113,22 @@ function Menu({ onWatch }: Readonly<{ onWatch: () => void }>) {
 
   return (
     <nav
+      ref={menu}
       aria-label={m.home.menu}
       onKeyDown={onKey}
-      className="absolute inset-x-4 inset-y-6 sm:right-auto sm:left-6 sm:w-[340px]"
+      className="absolute inset-x-4 bottom-4 sm:top-6 sm:right-auto sm:bottom-6 sm:left-6 sm:w-[340px] short:top-4 short:bottom-4"
     >
       <Sheet
         rolled="ends"
-        className="flex h-full flex-col justify-between gap-6 p-6"
+        className="flex flex-col justify-between gap-6 p-6 sm:h-full short:gap-3 short:p-4"
       >
         <header className="flex flex-col gap-3">
-          <Shield color="var(--color-gilt)" size="l" />
+          <span className="short:hidden">
+            <Shield color="var(--color-gilt)" size="l" />
+          </span>
           {/* norm-ok: wordmark, not copy */}
           <h1 className="font-caps text-6xl leading-none text-quill">Blason</h1>
-          <p className="hud-note text-hud-m">{m.home.tagline}</p>
+          <p className="hud-note text-hud-m short:hidden">{m.home.tagline}</p>
           <Flourish />
         </header>
         <ul ref={list} className="flex flex-col gap-2">
@@ -164,7 +177,8 @@ function Menu({ onWatch }: Readonly<{ onWatch: () => void }>) {
 }
 
 /** The links at the foot of the scroll: the rest of the site, discreet. */
-const FOOT = 'hud-note transition-colors hover:text-quill'
+const FOOT =
+  'hud-note inline-flex min-h-11 items-center transition-colors hover:text-quill'
 
 /** A gold rule across the scroll, a lozenge at its middle, between the title and the menu. */
 function Flourish() {

@@ -57,8 +57,10 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
     }
   }, [me])
 
+  // touch-none: the fingers belong to the game, which pinches its own map
+  // sharp; the browser zooming the page would only blur it.
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-vellum select-none">
+    <main className="relative h-dvh w-full touch-none overflow-hidden bg-vellum select-none">
       <div
         ref={host}
         className="absolute inset-0"
@@ -69,8 +71,8 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
       {failed && <Failed />}
       {game && summary && (
         <>
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:[zoom:0.75]">
-            <div className="flex w-80 flex-col gap-2">
+          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-1 max-sm:grid-rows-[auto_auto_auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
+            <div className="flex w-fit min-w-0 flex-col items-stretch gap-2 max-sm:w-full">
               <Purse summary={summary} />
               <Allies
                 summary={summary}
@@ -81,13 +83,13 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
               <Race summary={summary} />
               <Moment summary={summary} />
             </div>
-            <div className="flex w-80 flex-col gap-2 justify-self-end">
+            <div className="flex w-80 flex-col gap-2 justify-self-end max-sm:w-full short:w-60">
               <Offers
                 summary={summary}
                 onAccept={(seat) => game.treat('ally', seat)}
               />
             </div>
-            <div className="col-span-3 row-start-3 flex justify-center">
+            <div className="col-span-3 row-start-3 flex justify-center max-sm:col-span-1 max-sm:row-start-5">
               <Bar summary={summary} onArmy={game.choose} onWork={game.hold} />
             </div>
           </div>

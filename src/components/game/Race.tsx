@@ -17,7 +17,11 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
   const rival = leader && leader.key !== me?.key ? leader : null
   const sx = X(needed)
   return (
-    <svg width={LINE} height={TALL} aria-hidden="true" className="shrink-0">
+    <svg
+      viewBox={`0 0 ${LINE} ${TALL}`}
+      aria-hidden="true"
+      className="h-7 w-full max-w-[360px]"
+    >
       <line x1={X(0)} y1={Y} x2={X(100)} y2={Y} stroke={INK} strokeWidth="1" />
       {Array.from({ length: 11 }, (_, i) => i * 10).map((p) => (
         <line
@@ -84,9 +88,9 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
     <Sheet className="flex items-center gap-3 p-3">
       <Figure size="l">{minutes(summary.seconds)}</Figure>
       <Rule />
-      <div className="flex flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <Track summary={summary} />
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {me && <Figure size="s">{m.race.you(me.share)}</Figure>}
           {rival && (
             <span className="hud-word text-hud-s">

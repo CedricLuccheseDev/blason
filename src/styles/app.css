@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* A phone on its side: too low for the HUD's full pieces (components/hud/useCompact.ts). */
+@custom-variant short (@media (max-height: 499px));
+
 /* Shared identity (see ~/Perso/CLAUDE.md): cold paper ground, print ink, a
    single accent stamp. Square corners, hairline rules, no shadows.
    Two typefaces, no more (NORM): Anton for titles, the wordmark and big

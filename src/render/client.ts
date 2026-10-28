@@ -10,6 +10,7 @@ import { landBox, siteOf, tileAt } from './marks'
 import { makeScene } from './scene'
 import { startSession } from './session'
 import { summarize } from './summary'
+import type { Room } from './director'
 import type { Army, Work } from '../../engine'
 import type { Summary } from './summary'
 
@@ -52,7 +53,7 @@ export async function mountGame(
     onAim: (aim: Aim | null) => void
     names: Array<string>
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
-    spectate?: () => number
+    spectate?: () => Room
   },
 ): Promise<GameHandle> {
   const app = new Application()

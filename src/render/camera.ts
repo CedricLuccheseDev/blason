@@ -1,8 +1,10 @@
+import { makeGestures } from './gestures'
 import type { Application, Container } from 'pixi.js'
 
 // The camera: the wheel zooms towards the pointer, smoothed over a few
-// frames; a drag moves the map, out past its edges if need be; the Home key
-// flies back to the player's realm, or to the whole land when there is none.
+// frames; a drag moves the map, out past its edges if need be, and two
+// fingers pinch it (gestures.ts); the Home key flies back to the player's
+// realm, or to the whole land when there is none.
 
 const MAX_ZOOM = 9
 
@@ -17,7 +19,6 @@ export function makeCamera(
   const canvas = app.canvas
   let target = 1
   let anchor = { x: 0, y: 0 }
-  let drag: { x: number; y: number } | null = null
   // Still showing the whole land, as fitted: a resize fits it again.
   let fitted = true
   // A point of the world the camera is flying to, and frames left to get there.
@@ -93,19 +94,24 @@ export function makeCamera(
     )
     anchor = { x: e.offsetX, y: e.offsetY }
   }
-  const onDown = (e: PointerEvent) => {
-    drag = { x: e.clientX, y: e.clientY }
-    aim = null
-  }
-  const onMove = (e: PointerEvent) => {
-    if (!drag) return
-    fitted = false
-    world.x += e.clientX - drag.x
-    world.y += e.clientY - drag.y
-    drag = { x: e.clientX, y: e.clientY }
-    clamp()
-  }
-  const onUp = () => (drag = null)
+  const gestures = makeGestures(canvas, {
+    start: () => (aim = null),
+    pan(dx, dy) {
+      fitted = false
+      world.x += dx
+      world.y += dy
+      clamp()
+    },
+    pinch(factor, at) {
+      fitted = false
+      anchor = at
+      target = Math.max(
+        fitZoom(),
+        Math.min(MAX_ZOOM * fitZoom(), world.scale.x * factor),
+      )
+      apply(target)
+    },
+  })
   /** Back to the player's realm, or the whole land when he has none. */
   function goHome() {
     const box = home()
@@ -116,9 +122,6 @@ export function makeCamera(
     if (e.key === 'Home') goHome()
   }
   canvas.addEventListener('wheel', onWheel, { passive: false })
-  canvas.addEventListener('pointerdown', onDown)
-  window.addEventListener('pointermove', onMove)
-  window.addEventListener('pointerup', onUp)
   window.addEventListener('keydown', onKey)
   fit()
 
@@ -169,9 +172,7 @@ export function makeCamera(
     },
     destroy() {
       canvas.removeEventListener('wheel', onWheel)
-      canvas.removeEventListener('pointerdown', onDown)
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
+      gestures.destroy()
       window.removeEventListener('keydown', onKey)
     },
   }

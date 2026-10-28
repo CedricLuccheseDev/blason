@@ -1,6 +1,7 @@
 import { SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { Rule, Sheet } from '../hud/Sheet'
+import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
 import { ARMY_MARKS } from './Bar'
 import { PactHalf, pactWith } from './Pact'
@@ -9,6 +10,8 @@ import { useMessages } from '~/i18n'
 
 /** How far from the pointer the cartouche stands. */
 const [DX, DY] = [24, 20]
+/** On a phone, how far above the bottom of the screen it stands: over the bar. */
+const ABOVE_BAR = 120
 
 /** The left of the cartouche: the army in hand, its men and its gold. */
 function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
@@ -61,6 +64,7 @@ export function Cursor({
   onTreat: (type: 'ally' | 'breakAlliance', target: number) => void
 }>) {
   const m = useMessages()
+  const narrow = useCompact()
   if (!aim || !summary.me) return null
   const seat = aim.lord
   const strikes = aim.entry !== null
@@ -71,11 +75,16 @@ export function Cursor({
   return (
     <div
       className="pointer-events-none absolute"
-      style={{
-        left: aim.x + (right ? DX : -DX),
-        top: aim.y + (below ? DY : -DY),
-        transform: `translate(${right ? 0 : '-100%'}, ${below ? 0 : '-100%'})`,
-      }}
+      // On a phone, above the bar, where no finger hides it.
+      style={
+        narrow
+          ? { left: '50%', bottom: ABOVE_BAR, transform: 'translateX(-50%)' }
+          : {
+              left: aim.x + (right ? DX : -DX),
+              top: aim.y + (below ? DY : -DY),
+              transform: `translate(${right ? 0 : '-100%'}, ${below ? 0 : '-100%'})`,
+            }
+      }
     >
       <Sheet className="flex items-stretch gap-3 p-3">
         {strikes && <ArmyHalf summary={summary} />}
