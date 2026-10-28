@@ -54,6 +54,8 @@ export const TONE = {
   white: 0xffffff,
   stone: 0xd9d1be,
   stoneDark: 0xb7ad97,
+  /** A castle's rampart round the land it holds. */
+  lead: 0x8d8574,
   slate: 0x6a635e,
   door: 0x4a3b2c,
   roofs: [0x8e5f48, 0x7d6650, 0x94704f, 0x73604e],

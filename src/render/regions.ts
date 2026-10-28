@@ -24,7 +24,9 @@ const FREE_WASH = 0.42
 const RIM = 3
 const RIM_ALPHA = 0.55
 /** How much stone tints the land a castle holds. */
-const STONE_ALPHA = 0.22
+const STONE_ALPHA = 0.3
+/** Points of a rampart's line between two of its merlons. */
+const MERLON = 6
 /** How often the lands are traced again, in ms. */
 const EVERY_MS = 200
 
@@ -123,10 +125,22 @@ export function makeRegions(state: GameState, land: World, me: number) {
   /** The land each lord's castles hold, tinted with stone. */
   function wall(now: Int32Array) {
     stone.clear()
+    const walls: Array<Array<Point>> = []
     for (const set of castleLand(state, now))
-      for (const loop of corners(width, height, (t) => set.has(t), set))
-        stone.poly(flatten(smooth(loop, grid.size)))
+      for (const loop of corners(width, height, (t) => set.has(t), set)) {
+        const round = smooth(loop, grid.size)
+        stone.poly(flatten(round))
+        walls.push(round)
+      }
     stone.fill({ color: TONE.stoneDark, alpha: STONE_ALPHA })
+    // Its rampart all round: a line of stone, merlons along it.
+    for (const round of walls) {
+      stone.poly(flatten(round))
+      stone.stroke({ width: 1.6, color: TONE.lead, alpha: 0.85, join: 'round' })
+      for (const [x, y] of round.filter((_, i) => i % MERLON === 0))
+        stone.rect(x - 0.9, y - 0.9, 1.8, 1.8)
+      stone.fill({ color: TONE.lead, alpha: 0.85 })
+    }
   }
 
   /** The keys of the land now, and the regions whose land changed. */

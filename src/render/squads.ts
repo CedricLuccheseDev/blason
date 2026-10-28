@@ -47,6 +47,9 @@ const STRIDE = 4
 /** A man's pace to his place, in map units a second: the armies' march (6 tiles a second), however far he is; nearer than so much, he stands. */
 const RUN = 24
 const STAND = 1.5
+/** The least pace near his place, and how far he must run, in map units, before he turns his back on the enemy. */
+const EASE = 6
+const TURN = 12
 /** Men lost for each man shown falling, and men shown falling a tick at most. */
 const PER_FALL = 10
 const FALLS = 1
@@ -156,14 +159,17 @@ export function rally(squad: Squad, n: number, shape: Shape, dt: number) {
     const dx = to.x - man.x
     const dy = to.y - man.y
     const d = Math.hypot(dx, dy)
-    const step = Math.min(d, RUN * dt)
+    // He slows as he nears his place, never stopping short nor jerking.
+    const step = Math.min(d, Math.min(RUN, EASE + d * 3) * dt)
     if (d > 0) {
       man.x += (dx / d) * step
       man.y += (dy / d) * step
     }
     man.moving = d > STAND
+    // In the ranks he faces the enemy, turning away only for a real run.
     const running: 1 | -1 = dx > 0 ? 1 : -1
-    man.facing = man.moving && Math.abs(dx) > STAND / 2 ? running : look
+    const turns = shape.line === 'column' ? d > STAND : d > TURN
+    man.facing = turns && Math.abs(dx) > STAND / 2 ? running : look
     man.alpha = Math.min(1, man.alpha + dt / 0.4)
   }
 }
