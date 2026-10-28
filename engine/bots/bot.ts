@@ -7,6 +7,7 @@ import { canBuild, priceOf } from '../works'
 import { TALK_EVERY, talk } from './talk'
 import { attack, war } from './war'
 import { SKILLS } from './levels'
+import { plot } from './coups'
 import type { Level, Skill } from './levels'
 import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
@@ -16,7 +17,7 @@ import type { GameState, Order } from '../types'
 // striking at their villages; they answer an army striking them by striking its
 // lord there, so the two meet; they wage one war at a time, on the
 // neighbour whose land is held thinnest, and rest between two attacks; they
-// build with the gold left over. Each has its own boldness and patience,
+// build with the gold left over; now and then a coup (coups.ts). Each has its own boldness and patience,
 // drawn from the seed, and the level chosen for the game (levels.ts).
 
 export type Bot = (state: GameState, me: number) => Array<Order>
@@ -159,6 +160,8 @@ export function createBot(
     if (state.tick < state.rules.openingTicks) return opening(state, me)
     const answered = answer(state, me, seen, skill)
     if (answered.length) return answered
+    const plotted = skill.slips < 20 ? plot(state, me) : []
+    if (plotted.length) return plotted
     const fronts = frontier(state, me)
     if ((state.tick + me) % TALK_EVERY < skill.every) {
       const said = talk(state, me, fronts, boldness)
