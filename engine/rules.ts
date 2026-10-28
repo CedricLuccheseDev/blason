@@ -77,9 +77,10 @@ export type Rules = {
   /** A traitor's mark lasts so long, and his land holds so much the while, in percent. */
   felonTicks: number
   felonHold: number
-  /** A market sends a caravan so often, which covers so many tiles a tick, in thousandths. */
+  /** A market may send a caravan so often, which covers so many tiles a tick, in thousandths; with so many of its lord's on the roads, it sends one time in two. */
   caravanTicks: number
   caravanPace: number
+  caravanCrowd: number
   /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent. */
   caravanGold: number
   allyTrade: number
@@ -129,6 +130,7 @@ export const RULES: Rules = {
   felonHold: 50,
   caravanTicks: 10 * SECOND,
   caravanPace: 400,
+  caravanCrowd: 6,
   caravanGold: 150,
   allyTrade: 200,
   victoryShare: 800,

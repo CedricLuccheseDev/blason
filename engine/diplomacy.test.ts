@@ -127,7 +127,40 @@ describe('the merchants', () => {
     expect(state.caravans).toEqual([])
   })
 
-  it('are pillaged when an enemy takes a tile of the road ahead', () => {
+  it('go by lot to any market a road reaches, the far ones more often', () => {
+    // Lord 0's market at the left, lord 2's in the middle, lord 1's at the right.
+    const state = trade()
+    state.works.push({ work: 'market', tile: 9, owner: 2 })
+    const ends = { 9: 0, 19: 0 }
+    for (let tick = 0; tick < 200 * state.rules.caravanTicks; tick++) {
+      state.tick = tick
+      state.caravans = []
+      sendCaravans(state)
+      for (const c of state.caravans)
+        if (c.road[0] === 0) ends[c.road.at(-1) as 9 | 19]++
+    }
+    expect(ends[9]).toBeGreaterThan(20)
+    expect(ends[19]).toBeGreaterThan(ends[9])
+  })
+
+  it('are taken by the enemy who takes a tile of the road ahead, and pay his nearest market alone', () => {
+    const state = trade()
+    // The market a tile in, so that a tile and its place on the road differ.
+    state.works[1].tile = 1
+    // Its own moment to send: each market sends at its own.
+    state.tick = state.rules.caravanTicks - 7
+    sendCaravans(state)
+    expect(state.caravans).toHaveLength(1)
+    // Lord 2 takes a tile of the road ahead, his market beside it.
+    for (const t of [12, 13]) setOwner(state, t, 2)
+    state.works.push({ work: 'market', tile: 13, owner: 2 })
+    for (let t = 0; t < 200 && state.caravans.length; t++) moveCaravans(state)
+    expect(state.players[2].gold).toBe(19 * state.rules.caravanGold)
+    expect(state.players[0].gold).toBe(0)
+    expect(state.players[1].gold).toBe(0)
+  })
+
+  it('are pillaged when an enemy with no market takes a tile of the road ahead', () => {
     const state = trade()
     state.tick = 0
     sendCaravans(state)

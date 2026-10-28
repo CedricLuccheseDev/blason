@@ -8,12 +8,11 @@ import type { Caravan, GameState } from '../../engine'
 
 // The merchants on their roads: a wagon under its lord's pennant rolls from
 // its market to another lord's, smoothly between two ticks and jolting a
-// little. Each market trades with the nearest market of another lord, and
-// the roads between them make a web: one paved road of old for two markets
-// (art/paving.ts), near straight from market to market and rounding the
-// sea in soft bends (roads.ts), until one of its two markets is gone or no
-// caravan has taken it for a while; mine a little darker. The wagon and the
-// road at the land's scale, as the armies.
+// little. Its road is paved under it while it rolls: one road of old for two
+// markets (art/paving.ts), near straight from market to market and rounding
+// the sea in soft bends (roads.ts), taken up a few seconds after the last
+// wagon left it or once one of its two markets is gone; mine a little
+// darker. The wagon and the road at the land's scale, as the armies.
 
 /** A wagon's height on the land, in map units (a man stands some four), and as drawn in its stamp. */
 const TALL = 5
@@ -27,8 +26,8 @@ type Route = {
   used: number
 }
 
-/** Ticks a road stays with no caravan on it: each market trades with its nearest, and the roads it no longer takes go. */
-const UNUSED = 300
+/** Ticks a road stays once no caravan is on it, so that two wagons a moment apart share it. */
+const UNUSED = 50
 
 /** How many times a road's corners are smoothed, and how far it wanders aside, in map units. */
 const ROUNDS = 3

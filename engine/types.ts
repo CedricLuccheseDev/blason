@@ -79,6 +79,8 @@ export type Caravan = {
   road: Array<number>
   along: number
   gold: number
+  /** Taken by an enemy: the place on its road it was taken, its new lord's road from there. */
+  taken?: number
 }
 
 export type GameState = {
