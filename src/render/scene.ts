@@ -15,6 +15,7 @@ import { makeRegions } from './regions'
 import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
+import { makeAllies } from './layers/allies'
 import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
 import type { GameState, Work, World } from '../../engine'
@@ -22,7 +23,8 @@ import type { Application } from 'pixi.js'
 import type { Placement } from './layers/labels'
 
 // The map, stacked: the page and the sea, the
-// bare land, the lords' washes spreading tile by tile, the coast in ink,
+// bare land, the lords' washes spreading tile by tile, the borders between
+// allies in green, the coast in ink, the borders at war in red,
 // the villages and the works, the frame; then the armies, the aim, and over
 // all each lord's name and peasants at the heart of his land. The grain of
 // the parchment over the screen.
@@ -57,7 +59,8 @@ export function makeScene(
   const badges = makeBadges(state, me)
   const trade = makeTrade(makeStamps(app.renderer), me)
   const tidings = makeTidings(me)
-  const raids = makeRaids()
+  const allies = makeAllies(me, regions.outline)
+  const raids = makeRaids(regions.outline)
   const building = makeBuilding()
   const seals = makeLevySeals()
   const world = new Container()
@@ -65,6 +68,7 @@ export function makeScene(
   if (page.compass) world.addChild(page.compass)
   world.addChild(
     regions.container,
+    allies.container,
     coast,
     raids.container,
     trade.roads,
@@ -86,9 +90,11 @@ export function makeScene(
     world,
     resize: paper.resize,
     draw(hovered: number, work: Work | null, zoom: number, between = 0) {
-      regions.update(performance.now())
+      const now = performance.now()
+      const traced = regions.update(now)
       marks.update()
-      raids.draw(state, zoom)
+      allies.draw(state, zoom, traced, now)
+      raids.draw(state, zoom, traced)
       building.draw(state, zoom)
       seals.draw(state, zoom)
       trade.draw(state, between)

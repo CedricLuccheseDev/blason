@@ -3,7 +3,7 @@ import { NEUTRAL } from '../../engine'
 import { mixColor } from './ease'
 import { flatten } from './geometry'
 import { drawLand } from './layers/lands'
-import { penned } from './pen'
+import { alongBorder } from './pen'
 import { TONE, playerColor } from './palette'
 import { castleLand, corners, inside, smooth, spread } from './trace'
 import type { GameState, Point, World } from '../../engine'
@@ -14,7 +14,8 @@ import type { GameState, Point, World } from '../../engine'
 // colour just inside a lord's border; every border in a trembling pen line;
 // all of it clipped to the coast. The land a castle holds is tinted with
 // stone, one tint for all of a lord's castles. A region is traced again
-// only when its land changed, a few times a second.
+// only when its land changed, a few times a second; its outline as last
+// traced lends its line to the green of the allies and the red of the wars.
 
 const WASH = 0.5
 const MY_WASH = 0.74
@@ -72,6 +73,8 @@ export function makeRegions(state: GameState, land: World, me: number) {
   }
   let keys = new Int32Array(shore.length).fill(UNSET)
   const drawn = new Map<number, Array<Graphics>>()
+  /** Each region's outline as last traced, for the lines laid along its border. */
+  const outlines = new Map<number, Array<Array<Point>>>()
   let traced = -Infinity
   let built = ''
 
@@ -83,6 +86,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
   function draw(key: number, tiles: Array<number>, now: Int32Array) {
     for (const g of drawn.get(key) ?? []) g.destroy()
     drawn.delete(key)
+    outlines.delete(key)
     if (tiles.length === 0) return
     const raw = corners(width, height, (t) => now[t] === key, tiles)
     const loops = raw.map((l) => smooth(l, grid.size))
@@ -100,7 +104,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
     base.zIndex = wash.zIndex
     const ink = inks.addChild(new Graphics())
     for (const loop of loops)
-      ink.poly(flatten(penned([...loop, loop[0]], 0.35, 3)), false)
+      ink.poly(flatten(alongBorder([...loop, loop[0]])), false)
     ink.stroke({
       width: 1.1,
       color: TONE.ink,
@@ -120,6 +124,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
       parts.push(rim)
     }
     drawn.set(key, parts)
+    outlines.set(key, loops)
   }
 
   /** The land each lord's castles hold, tinted with stone. */
@@ -170,13 +175,15 @@ export function makeRegions(state: GameState, land: World, me: number) {
 
   return {
     container,
-    /** Traces again the regions whose land changed, a few times a second. */
-    update(now: number) {
-      if (now - traced < EVERY_MS) return
+    /** A lord's outline as last traced: loops in map units, his land on the right of their course. */
+    outline: (lord: number) => outlines.get(lord) ?? [],
+    /** Traces again the regions whose land changed, a few times a second; whether it did. */
+    update(now: number): boolean {
+      if (now - traced < EVERY_MS) return false
       traced = now
       const { next, dirty } = changes()
       const works = state.works.map((w) => [w.tile, w.owner].join(':')).join()
-      if (dirty.size === 0 && works === built) return
+      if (dirty.size === 0 && works === built) return false
       const tiles = tilesOf(next, dirty)
       for (const key of dirty)
         if (key !== SEA_KEY && key !== UNSET)
@@ -184,6 +191,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
       keys = next
       built = works
       wall(next)
+      return true
     },
   }
 }

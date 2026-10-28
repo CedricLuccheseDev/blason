@@ -1,6 +1,6 @@
 // The colours of the game's world, a map drawn on a manuscript: brown-black
 // ink on parchment, each lord's land a wash of his colour, gold for what is
-// mine and red for a fight. Every other tone is muted earth, so that only a
+// mine, red for a fight and green for an alliance. Every other tone is muted earth, so that only a
 // player's colour stands out.
 
 /** Twenty heraldic colours, one per seat; their names live in the messages. */
@@ -44,6 +44,8 @@ export const TONE = {
   amber: 0xf0a83a,
   fight: 0xe8432f,
   fightDark: 0x741c16,
+  /** The border shared with an ally: a calm green, quieter than a fight's red. */
+  pact: 0x3f7f4a,
   outline: 0x3a2e22,
   frame: 0xefe3c4,
   neutral: 0xe8e1cd,

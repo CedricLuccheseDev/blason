@@ -1,4 +1,4 @@
-import type { GameState, Point } from '../../engine'
+import type { GameState, Grid, Point } from '../../engine'
 
 // Tracing the grid's regions as lines, as the boards do: the outline of a
 // set of tiles round its corners, its steps rounded off into a soft edge.
@@ -112,6 +112,52 @@ export function inside(loop: Array<Point>, by: number): Array<Point> {
     const d = Math.hypot(dx, dy) || 1
     return [p[0] - (dy / d) * by, p[1] + (dx / d) * by]
   })
+}
+
+/** A stretch of a loop's line facing what was looked for: an open line, and the tiles just across it. */
+export type Stretch = { line: Array<Point>; across: Array<number> }
+
+/** How far across a line its far side is read, in tiles. */
+const ACROSS = 0.6
+
+/** The tile just across a loop at one of its points, from the region on the right of its course; -1 off the grid. */
+function across(loop: Array<Point>, i: number, grid: Grid): number {
+  const [x, y] = loop[i]
+  const a = loop[(i + loop.length - 1) % loop.length]
+  const b = loop[(i + 1) % loop.length]
+  const d = (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1) / (grid.size * ACROSS)
+  const tx = Math.floor((x + (b[1] - a[1]) / d) / grid.size)
+  const ty = Math.floor((y - (b[0] - a[0]) / d) / grid.size)
+  const off = tx < 0 || ty < 0 || tx >= grid.width || ty >= grid.height
+  return off ? -1 : ty * grid.width + tx
+}
+
+/** The stretches of a loop whose far side the test picks, each reaching a point beyond, so that it meets the borders on either side. */
+export function facing(
+  loop: Array<Point>,
+  grid: Grid,
+  test: (t: number) => boolean,
+): Array<Stretch> {
+  const n = loop.length
+  const tiles = loop.map((_, i) => across(loop, i, grid))
+  const picked = tiles.map((t) => t >= 0 && test(t))
+  const start = picked.indexOf(false)
+  if (start < 0) return [{ line: [...loop, loop[0]], across: tiles }]
+  const stretches: Array<Stretch> = []
+  let run: Array<number> = []
+  for (let k = 1; k <= n; k++) {
+    const i = (start + k) % n
+    if (picked[i]) run.push(i)
+    else if (run.length > 0) {
+      const ends = [(run[0] + n - 1) % n, ...run, i]
+      stretches.push({
+        line: ends.map((j) => loop[j]),
+        across: run.map((j) => tiles[j]),
+      })
+      run = []
+    }
+  }
+  return stretches
 }
 
 /** The area a loop's box covers: the larger regions drawn first, the ones they enclose over them. */
