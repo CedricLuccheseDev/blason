@@ -21,9 +21,12 @@ export const en = {
   },
   game: {
     map: 'The land of the game, seen from above',
-    choose: 'Choose where you start',
-    chooseHint: 'Click a free domain on the map: it will be all yours',
-    others: 'The other lords are choosing',
+    choose: 'Plant your standard',
+    chooseHint: 'Click a free domain; you may change it until the count ends',
+    planted: 'Your standard is planted',
+    others: 'The lords are planting their standards',
+    plantedHint:
+      'Click another free domain to move it; it is yours when the count ends',
     click: 'click: attack',
     noLevy: 'every village of yours has an army out',
     armies: { raid: 'Raid', host: 'Host', ban: 'Levy' },

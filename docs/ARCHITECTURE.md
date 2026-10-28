@@ -146,7 +146,10 @@ orders. It decides nothing about the rules.
   ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them,
   the dead (`layers/fallen.ts`), the warning of an army coming for the player
   and the seal of each battle (`layers/warning.ts`), the standard-bearer
-  among their men (`layers/standard.ts`); the roads as they are drawn, straight and even
+  among their men (`layers/standard.ts`, its banner drawn by `art/banner.ts`);
+  in the opening, each lord's standard planted by the village he has chosen,
+  the player's ringed in gold, hopping to its new village when moved
+  (`layers/planted.ts`); the roads as they are drawn, straight and even
   (`roads.ts`); the borders being bitten, in red (`layers/raids.ts`); the works being built
   (`layers/building.ts`); what the coups leave, the rebels' land hatched and
   their pitchforks, the ashes charred and paling (`layers/scars.ts`); the coups

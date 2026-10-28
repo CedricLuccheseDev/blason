@@ -8,6 +8,7 @@ import { legible } from './ease'
 import { makeStamps } from './textures'
 import { makeArmies } from './armies'
 import { makeAim } from './layers/aim'
+import { makePlanted } from './layers/planted'
 import { makeMarks } from './marks'
 import { makeBadges, tilePlaces } from './places'
 import { makeRegions } from './regions'
@@ -35,9 +36,9 @@ import type { Placement } from './layers/labels'
 // ink, and the coast; what the coups leave (the rebels' land and the
 // ashes); the villages and the works, and their life; the borders between
 // allies in green and those at war in red; the frame; the wagons, the
-// armies, the coups on their way, the aim, and over all each lord's name
-// and peasants at the heart of his land. The grain of the parchment over
-// the whole page, moving with it. Farther out than the whole land, the
+// armies, the coups on their way, the aim, the standards planted in the
+// opening, and over all each lord's name and peasants at the heart of his
+// land. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
 // names and the standards shrink with it, as if the page were held farther
 // away, and the small writing fades out.
 
@@ -60,6 +61,7 @@ export function makeScene(
   const life = makeLife(ground.fieldsNear)
   const armies = makeArmies(makeStamps(app.renderer), me)
   const aim = makeAim(state, me)
+  const planted = makePlanted(me)
   // Where the lords are written, read once a tick for the names and their marks.
   let read = { tick: -1, places: new Map() as Placement }
   const placesOf = (s: GameState) => {
@@ -103,6 +105,7 @@ export function makeScene(
     strikes.container,
     tidings.container,
     aim.container,
+    planted.container,
     labels.container,
     badges.container,
   )
@@ -151,6 +154,7 @@ export function makeScene(
       strikes.draw(state, zoom, between)
       tidings.draw(state, zoom)
       aim.draw(hovered, hand, zoom)
+      planted.draw(state, zoom, now)
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
       const shown = legible(far)
       labels.update(state, zoom / fit / far, shown)

@@ -1,8 +1,6 @@
-import { Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { Act, actClass } from '../hud/Act'
-import { Figure } from '../hud/Figure'
-import { Rule, Sheet } from '../hud/Sheet'
+import { Act } from '../hud/Act'
+import { Sheet } from '../hud/Sheet'
 import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
@@ -12,6 +10,7 @@ import { CameraButtons } from './CameraButtons'
 import { Letters } from './News'
 import { Allies, Offers } from './Pacts'
 import { Bar } from './Bar'
+import { Moment } from './Moment'
 import type { Letter } from './News'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Level } from '../../../engine'
@@ -146,51 +145,6 @@ export function GameScreen({
         </>
       )}
     </main>
-  )
-}
-
-/** The opening and the end, under the race. */
-function Moment({ summary }: Readonly<{ summary: Summary }>) {
-  const m = useMessages()
-  const [dismissed, setDismissed] = useState(false)
-  const { me, opening, winner } = summary
-  if (opening !== null) {
-    const picking = me && !me.picked
-    return (
-      <Sheet className="flex items-center gap-4 px-6 py-4">
-        <Figure size="xl">{opening}</Figure>
-        <Rule />
-        <div className="flex flex-col gap-1">
-          <span className="hud-word text-hud-l">
-            {picking ? m.game.choose : m.game.others}
-          </span>
-          {picking && <span className="hud-note">{m.game.chooseHint}</span>}
-        </div>
-      </Sheet>
-    )
-  }
-  const fallen = me && !me.alive
-  // Watching the end hides the fall, never the winner.
-  if (!winner && (dismissed || !fallen)) return null
-  let title = winner ? `${m.game.colors[winner]} ${m.game.winner}` : ''
-  if (me && winner === me.key) title = m.game.victory
-  else if (fallen) title = m.game.fallen
-  return (
-    <Sheet className="flex flex-col items-center gap-3 px-6 py-4">
-      <span className="hud-word text-hud-xl" aria-live="polite">
-        {title}
-      </span>
-      <div className="flex gap-2">
-        <Link to="/play" reloadDocument className={actClass()}>
-          {m.game.playAgain}
-        </Link>
-        {fallen && !winner && (
-          <Act tone="plain" onClick={() => setDismissed(true)}>
-            {m.game.watchEnd}
-          </Act>
-        )}
-      </div>
-    </Sheet>
   )
 }
 
