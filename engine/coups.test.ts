@@ -39,9 +39,10 @@ const coup = (player: number, tile: number, kind: Coup): Order => ({
 describe('the coups', () => {
   it('cost more with each launched, doubled three times at most', () => {
     const state = facing()
-    expect(coupPrice(state, 0, 'fire')).toBe(600)
+    endow(state, 0, 400, 50_000)
+    expect(coupPrice(state, 0, 'fire')).toBe(1000)
     for (let n = 0; n < 5; n++) run(state, 1, [coup(0, 20, 'fire')])
-    expect(coupPrice(state, 0, 'fire')).toBe(4800)
+    expect(coupPrice(state, 0, 'fire')).toBe(8000)
   })
 
   it('archers: a volley near the border kills a share of the enemy armies under it', () => {
@@ -64,12 +65,13 @@ describe('the coups', () => {
     expect(state.players[0].gold).toBe(5000 * UNIT)
   })
 
-  it('Greek fire burns the works round where it falls, and no one may build there a while', () => {
+  it('Greek fire, thrown anywhere, burns the works round where it falls, and no one may build there a while', () => {
     const state = facing()
-    state.works.push({ work: 'market', tile: 20, owner: 1 })
-    run(state, 1, [coup(0, 20, 'fire')])
-    run(state, 4 * SECOND)
-    expect(state.works.some((w) => w.tile === 20)).toBe(false)
+    state.works.push({ work: 'market', tile: 29, owner: 1 })
+    run(state, 1, [coup(0, 29, 'fire')])
+    run(state, 8 * SECOND)
+    expect(state.works.some((w) => w.tile === 29)).toBe(false)
+    expect(canBuild(state, 1, 29, 'market')).toBe(false)
     expect(canBuild(state, 1, 20, 'market')).toBe(false)
     run(state, 61 * SECOND)
     expect(canBuild(state, 1, 20, 'market')).toBe(true)

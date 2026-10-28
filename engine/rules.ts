@@ -172,7 +172,7 @@ export const RULES: Rules = {
   coups: {
     troublemaker: { price: 300, reach: null, radius: 6, flight: null },
     archers: { price: 200, reach: 5, radius: 4, flight: 2 * SECOND },
-    fire: { price: 600, reach: 15, radius: 5, flight: 4 * SECOND },
+    fire: { price: 1000, reach: null, radius: 12, flight: 8 * SECOND },
   },
   coupDoublings: 3,
   arrowToll: 30,

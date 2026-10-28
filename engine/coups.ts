@@ -14,7 +14,8 @@ import type { GameState, Strike } from './types'
 // another lord, where the land round him rises and turns free, held by
 // rebels, unless an army of that lord meets him on his way; a volley of
 // arrows kills troops, falling a moment after on the enemy armies near the
-// border; Greek fire ruins an economy, falling on the works round where it
+// border; Greek fire, the heavy weapon as OpenFront's bomb, ruins an economy
+// anywhere on the map, falling a long while after on the works round where it
 // is thrown, which burn, and on the land, where no one may build until the
 // ashes cool. Each is dear, dearer with each launched, and seen coming.
 
@@ -71,8 +72,10 @@ export function launchSite(
   if (victimOf(state, lord, tile, coup) === null) return -1
   const from = nearestOf(state, lord, tile)
   if (from < 0) return -1
-  const { reach } = state.rules.coups[coup]
-  if (reach === null) return overLand(state.grid, from, tile) ? from : -1
+  const { reach, flight } = state.rules.coups[coup]
+  // Anywhere: a flying coup goes over the sea, a walker only over land.
+  if (reach === null)
+    return flight !== null || overLand(state.grid, from, tile) ? from : -1
   return apart(state.grid, from, tile) <= reach * reach ? from : -1
 }
 

@@ -148,7 +148,7 @@ twice as much with each launched, eight times at most, and is seen coming.
 | ------------ | ----- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Troublemaker | 300   | any land of another lord | Walks from the border at the armies' pace; there, 6 tiles round turn free, their works lost, held by rebels twice as well as free land and never encircled. An army of that lord meeting him ends him. |
 | Archers      | 200   | 5 tiles from the border  | A volley falls 2 seconds later on 4 tiles round: every enemy army under it loses 30 % of its men. Land and peasants are untouched.                                                                     |
-| Greek fire   | 600   | 15 tiles from the border | Falls 4 seconds later: the works of enemies within 5 tiles burn, and no one may build there for a minute. No one dies.                                                                                 |
+| Greek fire   | 1000  | anywhere on the map      | The heavy weapon, as OpenFront's bomb: falls 8 seconds later; the works of enemies within 12 tiles burn, and no one may build there for a minute. No one dies.                                         |
 
 ## Winning
 
