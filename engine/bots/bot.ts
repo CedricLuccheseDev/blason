@@ -141,7 +141,7 @@ function expand(state: GameState, me: number, free: Array<number>) {
 
 export function createBot(self: number, seed: string): Bot {
   /** Out of 100: how full its gauge must be before it strikes, how bold it is, how readily it builds. */
-  const patience = 70 + drawInt(seed, 25, 'patience', self)
+  const patience = 55 + drawInt(seed, 30, 'patience', self)
   const boldness = drawInt(seed, 100, 'boldness', self)
   const thrift = 20 + drawInt(seed, 40, 'thrift', self)
   const seen = new Map<number, number>()
@@ -161,7 +161,8 @@ export function createBot(self: number, seed: string): Bot {
     if (built.length) return built
     const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
     if (state.tick < rest || !full) return []
-    if (state.hosts.some((h) => h.owner === me)) return []
+    const out = state.hosts.filter((h) => h.owner === me).length
+    if (out >= worksOf(state, me, 'barracks')) return []
     const free = fronts.get(NEUTRAL)
     const orders = free
       ? expand(state, me, free)
@@ -169,7 +170,7 @@ export function createBot(self: number, seed: string): Bot {
     if (orders.length)
       rest =
         state.tick +
-        (free ? 50 : 200) +
+        (free ? 50 : 60) +
         drawInt(state.seed, 100, 'rest', me, state.tick)
     return orders
   }

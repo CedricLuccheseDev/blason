@@ -5,6 +5,7 @@ import { ally, breakAlliance, expireDiplomacy } from './diplomacy'
 import { assignMissingStarts, grow, pickStart } from './land'
 import { WORKS } from './rules'
 import { NO_ONE } from './types'
+import { clash } from './battle'
 import { advanceHosts, attack } from './war'
 import { build } from './works'
 import type { GameState, Order } from './types'
@@ -98,6 +99,7 @@ export function step(state: GameState, orders: Array<Order> = []) {
   if (state.tick === state.rules.openingTicks - 1) assignMissingStarts(state)
   if (state.tick >= state.rules.openingTicks) {
     grow(state)
+    clash(state)
     advanceHosts(state)
     sendCaravans(state)
     moveCaravans(state)

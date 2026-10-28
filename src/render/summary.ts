@@ -6,13 +6,13 @@ import {
   capOf,
   costOf,
   hasPicked,
-  incomeOf,
   isAllied,
   isFelon,
   menFor,
   nextDrop,
   priceOf,
   victoryShare,
+  worksOf,
 } from '../../engine'
 import { PLAYERS } from './palette'
 import type { Army, GameState, Work } from '../../engine'
@@ -34,14 +34,15 @@ export type Summary = {
   winner: Heraldry | null
   me:
     | (Seat & {
-        /** His peasants and what his land feeds, his gold, and what each brings a second. */
+        /** His peasants and what his villages feed, and how many are born a second; his gold. */
         peasants: number
         cap: number
         growth: number
         gold: number
-        income: number
         alive: boolean
         picked: boolean
+        /** His barracks with no army out: an attack leaves from one of them. */
+        free: number
       })
     | null
   /** The army in hand, and the men each would take now and their gold. */
@@ -154,9 +155,11 @@ export function summarize(
           ? 0
           : Math.floor(cap / UNIT / state.rules.fillSeconds),
       gold,
-      income: Math.floor(incomeOf(state, me) / UNIT),
       alive: lord.alive,
       picked: hasPicked(state, me),
+      free:
+        worksOf(state, me, 'barracks') -
+        state.hosts.filter((h) => h.owner === me).length,
     },
     army: hand.army,
     armies: ARMIES.map((a) => {

@@ -6,27 +6,39 @@ import { makeGrid } from './grid'
 import { createGame } from './land'
 import { stateHash, step } from './step'
 import { holdOf } from './war'
-import { attack, endow, field, hold, owned, playing, run } from './testing'
+import {
+  attack,
+  endow,
+  field,
+  hold,
+  muster,
+  owned,
+  playing,
+  run,
+} from './testing'
 
 const SECOND = TICKS_PER_SECOND
 
 describe('an army, tile by tile', () => {
-  it('enters by the border nearest the click and spreads from there as a bulge towards it, three tiles a tick at most', () => {
-    // A 9 by 9 land; lord 0 holds its middle, lord 1 a corner far away.
+  it('enters by the border nearest the click and spreads from there towards it, a few tiles a tick', () => {
+    // A 9 by 9 land; lord 0 holds its middle and his barracks there, lord 1 a corner far away.
     const state = playing(field(9, 9))
+    state.rules = { ...state.rules, paceTiles: 1 }
     hold(state, 0, [40])
+    muster(state, 0, 40)
     hold(state, 1, [80])
     endow(state, 0, 400)
     run(state, 1, [attack(0, 44, 'host')])
-    // In by the tile towards the click, then on and to the sides of it.
-    expect(owned(state, 0)).toEqual([33, 40, 41, 42])
-    run(state, 4)
+    // In by the tile towards the click.
+    expect(owned(state, 0)).toEqual([40, 41])
+    run(state, 20)
     expect(state.owner[44]).toBe(0)
   })
 
   it('raises a share of the peasants for free, the gold left for the works', () => {
     const state = playing(field(6))
     hold(state, 0, [0])
+    muster(state, 0, 0)
     hold(state, 1, [5])
     endow(state, 0, 100, 10)
     run(state, 1, [attack(0, 2, 'host')])
@@ -38,6 +50,7 @@ describe('an army, tile by tile', () => {
     const state = playing(field(6))
     state.rules = { ...state.rules, menPrice: UNIT }
     hold(state, 0, [0])
+    muster(state, 0, 0)
     hold(state, 1, [5])
     endow(state, 0, 100, 10)
     run(state, 1, [attack(0, 2, 'host')])
@@ -45,59 +58,54 @@ describe('an army, tile by tile', () => {
     expect(state.players[0].gold).toBe(0)
   })
 
-  it('pays each tile with the men holding it: militia on free land, a lord’s peasants spread over his land, three times as many under his castle', () => {
+  it('finds each tile held by its militia, or by its lord’s peasants spread over his land', () => {
     const state = playing(field(30))
     hold(state, 1, [10, 11, 12, 13])
     endow(state, 1, 40)
     expect(holdOf(state, 0)).toBe(state.rules.militia)
     expect(holdOf(state, 11)).toBe(10 * UNIT)
-    state.works.push({ work: 'castle', tile: 12, owner: 1 })
-    expect(holdOf(state, 11)).toBe(30 * UNIT)
   })
 
-  it('stops where it cannot pay for the next tile, its last men fallen there with as many of its holders', () => {
+  it('pays a soldier for two peasants, one for one under their lord’s castle', () => {
+    const state = playing(field(30))
+    state.rules = { ...state.rules, paceTiles: 1 }
+    hold(state, 0, [0])
+    muster(state, 0, 0)
+    hold(state, 1, [1, 2, 3, 4])
+    endow(state, 0, 400)
+    endow(state, 1, 40)
+    run(state, 1, [attack(0, 4, 'host')])
+    // Ten peasants held the tile: five soldiers fell.
+    expect(state.hosts[0].men).toBe(95 * UNIT)
+    expect(state.players[1].peasants).toBe(30 * UNIT)
+    state.works.push({ work: 'castle', tile: 4, owner: 1 })
+    run(state, 1)
+    expect(state.hosts[0].men).toBe(85 * UNIT)
+  })
+
+  it('stops where it cannot pay for the next tile, its last men fallen there with their worth of its holders', () => {
     const state = playing(field(8))
     hold(state, 0, [0])
+    muster(state, 0, 0)
     hold(state, 1, [1, 2, 3, 4, 5, 6, 7])
     endow(state, 0, 40)
     endow(state, 1, 70)
-    // Ten men raised against tiles held by ten each: the first falls, then the army is spent.
-    run(state, 1, [attack(0, 7, 'host')])
-    expect(owned(state, 0)).toEqual([0, 1])
+    // Ten men against tiles held by ten each, at five soldiers a tile: two fall, then the army is spent.
+    run(state, 3, [attack(0, 7, 'host')])
+    expect(owned(state, 0)).toEqual([0, 1, 2])
     expect(state.hosts).toEqual([])
-  })
-
-  it('meets the army of the lord it strikes, man for man', () => {
-    const state = playing(field(40))
-    hold(
-      state,
-      0,
-      Array.from({ length: 20 }, (_, i) => i),
-    )
-    hold(
-      state,
-      1,
-      Array.from({ length: 20 }, (_, i) => i + 20),
-    )
-    endow(state, 0, 400)
-    endow(state, 1, 800)
-    run(state, 1, [attack(1, 0, 'host')])
-    const left = state.hosts[0].men
-    run(state, 1, [attack(0, 30, 'raid')])
-    // My raid takes 10 % of what my peasants are now, and meets his host first.
-    expect(state.hosts.map((h) => h.owner)).toEqual([1])
-    expect(state.hosts[0].men).toBeLessThan(left - 30 * UNIT)
   })
 
   it('goes home with its survivors when there is nothing left to take', () => {
     const state = playing(field(4))
     hold(state, 0, [0])
+    muster(state, 0, 0)
     hold(state, 1, [3])
     endow(state, 0, 400)
-    run(state, 2, [attack(0, 1, 'host')])
+    run(state, 3, [attack(0, 1, 'host')])
     expect(owned(state, 0)).toEqual([0, 1, 2])
     expect(state.hosts).toEqual([])
-    expect(state.players[0].peasants).toBe(400 * UNIT - 2 * state.rules.militia)
+    expect(state.players[0].peasants).toBe(400 * UNIT - state.rules.militia)
   })
 })
 

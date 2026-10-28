@@ -15,7 +15,6 @@ function field(width: number): Grid {
 function playing(grid: Grid): GameState {
   const state = createGame(grid, 2, 'test', {
     ...RULES,
-    marketGold: 0,
     fillSeconds: Number.MAX_SAFE_INTEGER,
   })
   state.tick = state.rules.openingTicks
@@ -32,6 +31,7 @@ describe('the bots at war', () => {
     state.players[1].peasants = 2000 * UNIT
     state.players[0].peasants = 50 * UNIT
     for (const lord of state.players) lord.gold = 0
+    state.works.push({ work: 'barracks', tile: 0, owner: 1 })
     const bot = createBot(1, 'test')
     let orders: Array<Order> = []
     for (let t = 0; t < 60 * TICKS_PER_SECOND && orders.length === 0; t++) {

@@ -22,6 +22,7 @@ export const en = {
     chooseHint: 'Click a free domain on the map: it will be all yours',
     others: 'The other lords are choosing',
     click: 'click: attack',
+    noBarracks: 'every barracks of yours has an army out',
     armies: { raid: 'Raid', host: 'Host', ban: 'Levy' },
     works: {
       village: 'Village',

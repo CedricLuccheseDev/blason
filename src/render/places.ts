@@ -1,7 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import { isAllied, isFelon } from '../../engine'
+import { around, isAllied, isFelon } from '../../engine'
 import { drawIcon } from './art/icons'
-import { siteOf } from './marks'
 import type { GameState } from '../../engine'
 import type { Placement } from './layers/labels'
 
@@ -10,61 +9,41 @@ import type { Placement } from './layers/labels'
 // icon beside a player's troops. Sized on screen.
 
 /**
- * Each lord written on the tile deepest inside his land, farthest from any
- * edge, the bigger the land the bigger the words: a walk inward from every
- * edge. A name already written keeps its tile while it stays deep enough.
+ * Each lord written at the centre of his land as it stands now: the middle
+ * of its largest piece, which moves on smoothly as the land grows or
+ * shrinks; the bigger the land, the bigger the words.
  */
-export function tilePlaces(state: GameState, before?: Placement): Placement {
-  const { width } = state.grid
-  const depth = state.owner.map(() => -1)
-  const queue: Array<number> = []
-  const sides = (t: number) => {
-    const x = t % width
-    return [
-      x > 0 ? t - 1 : -1,
-      x < width - 1 ? t + 1 : -1,
-      t - width,
-      t + width,
-    ].filter((n) => n >= 0 && n < state.owner.length)
-  }
-  state.owner.forEach((o, t) => {
-    if (o < 0) return
-    // The frame's edge counts as a border: a name is never written against it.
-    const around = sides(t)
-    if (around.length < 4 || around.some((n) => state.owner[n] !== o)) {
-      depth[t] = 0
-      queue.push(t)
+export function tilePlaces(state: GameState): Placement {
+  const { width, size: tile } = state.grid
+  const seen = new Uint8Array(state.owner.length)
+  /** The largest piece of each lord: its tile count and the sums of its columns and rows. */
+  const largest = new Map<number, { n: number; x: number; y: number }>()
+  state.owner.forEach((o, start) => {
+    if (o < 0 || seen[start]) return
+    seen[start] = 1
+    const piece = { n: 0, x: 0, y: 0 }
+    const queue = [start]
+    for (const t of queue) {
+      piece.n += 1
+      piece.x += t % width
+      piece.y += Math.floor(t / width)
+      for (const n of around(state.grid, t))
+        if (!seen[n] && state.owner[n] === o) {
+          seen[n] = 1
+          queue.push(n)
+        }
     }
-  })
-  // The queue grows as it is walked: each tile is reached once.
-  for (const t of queue) {
-    for (const n of sides(t)) {
-      if (depth[n] >= 0 || state.owner[n] !== state.owner[t]) continue
-      depth[n] = depth[t] + 1
-      queue.push(n)
-    }
-  }
-  const best = state.players.map(() => -1)
-  state.owner.forEach((o, t) => {
-    if (o >= 0 && (best[o] < 0 || depth[t] > depth[best[o]])) best[o] = t
+    if (piece.n > (largest.get(o)?.n ?? 0)) largest.set(o, piece)
   })
   const places: Placement = new Map()
-  best.forEach((deepest, lord) => {
-    if (deepest < 0) return
-    // A name keeps its place while that stays nearly as deep: it moves only
-    // when its land has really changed shape.
-    const kept = before?.get(lord)?.tile
-    const tile =
-      kept !== undefined &&
-      state.owner[kept] === lord &&
-      depth[kept] * 10 >= depth[deepest] * 7
-        ? kept
-        : deepest
-    const { x, y } = siteOf(state, tile)
+  for (const [lord, piece] of largest) {
     const tiles = state.players[lord].tiles
-    const size = Math.min(46, 24 + 4 * Math.sqrt(tiles / 25))
-    places.set(lord, { x, y, size, tile })
-  })
+    places.set(lord, {
+      x: (piece.x / piece.n + 0.5) * tile,
+      y: (piece.y / piece.n + 0.5) * tile,
+      size: Math.min(46, 24 + 4 * Math.sqrt(tiles / 25)),
+    })
+  }
   return places
 }
 

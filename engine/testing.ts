@@ -19,7 +19,6 @@ export function field(width: number, height = 1): Grid {
 export function playing(grid: Grid, players = 2): GameState {
   const state = createGame(grid, players, 'test', {
     ...RULES,
-    marketGold: 0,
     fillSeconds: Number.MAX_SAFE_INTEGER,
   })
   state.tick = state.rules.openingTicks
@@ -29,6 +28,11 @@ export function playing(grid: Grid, players = 2): GameState {
 
 export function hold(state: GameState, owner: number, tiles: Array<number>) {
   for (const t of tiles) setOwner(state, t, owner)
+}
+
+/** A barracks of the lord's on the tile, to send his armies from. */
+export function muster(state: GameState, lord: number, tile: number) {
+  state.works.push({ work: 'barracks', tile, owner: lord })
 }
 
 export function endow(

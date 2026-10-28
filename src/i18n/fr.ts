@@ -23,6 +23,7 @@ export const fr: Messages = {
     chooseHint: 'Clique un domaine libre sur la carte : il sera tout à toi',
     others: 'Les autres seigneurs choisissent',
     click: 'clic : attaquer',
+    noBarracks: 'toutes tes casernes ont une armée dehors',
     armies: { raid: 'Chevauchée', host: 'Ost', ban: 'Arrière-ban' },
     works: {
       village: 'Village',

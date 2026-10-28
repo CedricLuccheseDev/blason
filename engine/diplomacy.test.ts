@@ -17,12 +17,12 @@ function field(width: number, height = 1): Grid {
 function playing(width = 20): GameState {
   const state = createGame(field(width), 3, 'test', {
     ...RULES,
-    marketGold: 0,
     fillSeconds: Number.MAX_SAFE_INTEGER,
   })
   state.tick = state.rules.openingTicks
   state.villages = []
   for (let t = 0; t < 4; t++) setOwner(state, t, 0)
+  state.works.push({ work: 'barracks', tile: 3, owner: 0 })
   for (let t = width - 4; t < width; t++) setOwner(state, t, 1)
   setOwner(state, 9, 2)
   for (const lord of state.players) {

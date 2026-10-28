@@ -8,7 +8,8 @@ import type { GameState, Grid } from '../../engine'
 // villages, houses on the parchment, and the lords' works, small ink
 // drawings (a village in its fields, a castle, a market). The land a castle
 // holds is not ringed here: the territory tints it with stone. Drawn again
-// when a work is built or changes hands.
+// when a work is built or changes hands. A barracks whose army is out stands
+// faded, empty until it comes home.
 
 export function makeMarks(state: GameState) {
   const container = new Container()
@@ -16,10 +17,13 @@ export function makeMarks(state: GameState) {
   const works = container.addChild(new Container())
   const at = (tile: number) => siteOf(state, tile)
   let key = ''
+  /** Each barracks drawn, by its tile. */
+  const barracks = new Map<number, Graphics>()
 
   function redraw() {
     villages.removeChildren().forEach((c) => c.destroy())
     works.removeChildren().forEach((c) => c.destroy())
+    barracks.clear()
     for (const tile of state.villages) {
       const g = villages.addChild(new Graphics())
       drawVillage(g, tile)
@@ -32,6 +36,7 @@ export function makeMarks(state: GameState) {
       const drawn = works.addChild(new Graphics())
       drawWork(drawn, work.work)
       drawn.position.set(x, y)
+      if (work.work === 'barracks') barracks.set(work.tile, drawn)
     }
   }
 
@@ -44,6 +49,9 @@ export function makeMarks(state: GameState) {
         key = now
         redraw()
       }
+      const out = new Set(state.hosts.map((h) => h.from))
+      for (const [tile, drawn] of barracks)
+        drawn.alpha = out.has(tile) ? 0.4 : 1
     },
   }
 }

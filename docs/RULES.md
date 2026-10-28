@@ -30,8 +30,9 @@ Every lord starts with 50 gold.
   60 seconds, and no one is born above the cap.
 - The peasants hold the land, spread over it: a tile is held by its lord's
   peasants divided among his tiles.
-- Each **market** brings 5 **gold** a second by itself, plus what its caravans
-  bring.
+- **Gold** comes from the merchants alone: each **market** sends caravans,
+  and a caravan arriving pays both its markets (see Merchants). There is no
+  gold by the second.
 - Men are raised from the peasants for free: gold pays for works. (Paying a
   man in gold stalled the games past forty minutes; the price stays in
   `RULES.menPrice`, at 0.)
@@ -40,16 +41,32 @@ Every lord starts with 50 gold.
 
 - Three armies, which differ only by their size: the **raid** takes 10 % of
   the peasants, the **host** 25 % and the **levy** 50 % (keys 1 to 3).
-- A left click on another's land, or on free land, raises the army in hand.
-  It enters by the border tile nearest the click and spreads from there
-  towards it, at most 3 tiles a tick, whatever its size: more men go further,
-  never faster (`engine/war.ts`).
-- Every tile taken costs the men who hold it: the lord's share of his
-  peasants, three times as many on land within 12 tiles of one of his castles,
-  half as many while he bears the traitor's mark; the militia on free land.
+- A left click on another's land, or on free land, raises the army in hand
+  at the lord's free **barracks** nearest the front: each barracks sends one
+  army at a time, so a lord has as many armies out as he has barracks
+  (`engine/muster.ts`). With every barracks' army out, a click raises none.
+- The army first **marches** to the front over its lord's own land, 6 tiles a
+  second, seen by all; if its road is cut under it, it goes home. Then it
+  enters by the border tile nearest the click and spreads from there towards
+  it, at most 3 tiles a tick, whatever its size: more men go further, never
+  faster (`engine/war.ts`).
+- Every tile taken costs the army as the **combat table** says, against the
+  men who hold it (the lord's peasants divided among his tiles, half as many
+  while he bears the traitor's mark; the militia on free land):
+
+  | The army against                       | It loses, per man of the other |
+  | -------------------------------------- | ------------------------------ |
+  | peasants                               | half a man (1 for 2)           |
+  | peasants within 12 tiles of a castle   | a man (1 for 1)                |
+  | an army in the field                   | a man (1 for 1)                |
+  | an army defending under its own castle | two men (2 for 1)              |
+
   The army fights until it cannot pay the next tile, then its survivors go
   home.
-- Two armies that strike each other clash, man for man.
+
+- **Battles**: two enemy armies that come within 3 tiles of each other stop
+  and fight where they meet, until one is gone; an even battle lasts some 4
+  seconds, so that it is seen (`engine/battle.ts`).
 
 ## Works
 
@@ -58,9 +75,11 @@ Four works, one resource each, placed anywhere on one's own land (keys 4 to
 from one another (`engine/works.ts`):
 
 - the **village** feeds 250 peasants;
-- the **market** brings 5 gold a second and sends caravans;
-- the **barracks** is where the armies are raised and sent from;
-- the **castle** makes the land within 12 tiles of it hold three times better.
+- the **market** sends the caravans that bring the gold;
+- the **barracks** is where the armies are raised and sent from, one at a
+  time;
+- the **castle**: the land within 12 tiles of it fights as the combat table
+  says, one for one; it sends no army.
 
 The first village, market and barracks cost nothing, so that a lord can always
 start again from nothing; then each costs double the one before (100 gold for

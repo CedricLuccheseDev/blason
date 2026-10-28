@@ -31,9 +31,6 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
         <Figure icon="coins" size={compact ? 'm' : 'l'}>
           {count(me.gold)}
         </Figure>
-        <Figure size="s" tone="gilt">
-          +{me.income}/s
-        </Figure>
       </div>
     </Sheet>
   )

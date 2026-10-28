@@ -41,7 +41,11 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
           </Figure>
         )}
       </div>
-      <span className="hud-note">{m.game.click}</span>
+      {me.free > 0 ? (
+        <span className="hud-note">{m.game.click}</span>
+      ) : (
+        <span className="hud-note text-gules">{m.game.noBarracks}</span>
+      )}
     </div>
   )
 }

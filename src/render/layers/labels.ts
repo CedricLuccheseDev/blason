@@ -42,12 +42,9 @@ function soldier(): Graphics {
 
 /** Where each lord is written, and how big on screen: the heart of his land, the bigger the land the bigger the words. */
 /** Share of the way a label glides each frame towards its new place. */
-const GLIDE = 0.08
+const GLIDE = 0.05
 
-export type Placement = Map<
-  number,
-  { x: number; y: number; size: number; tile?: number }
->
+export type Placement = Map<number, { x: number; y: number; size: number }>
 
 export function makeLabels<TState extends { tick: number }>(
   me: number,

@@ -68,7 +68,7 @@ export function war(
   }
   const { prey, thin } = thinnest(state, me, fronts)
   const mine = density(state, me)
-  if (prey < 0 || mine * 100 < thin * (130 - boldness / 2)) return []
+  if (prey < 0 || mine * 100 < thin * (115 - boldness / 2)) return []
   let army: Army = 'host'
   const roll = drawInt(state.seed, 100, 'army', me, state.tick)
   if (roll < 20) army = 'raid'

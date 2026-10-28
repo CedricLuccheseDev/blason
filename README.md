@@ -17,12 +17,15 @@ It is inspired by [OpenFront](https://openfront.io) and written from scratch.
   single seed.
 - **Land taken tile by tile** from the point you click, at a pace you can see
   and answer.
-- **Peasants and gold**: your land feeds peasants who hold it and whom you
-  raise in three armies (a raid, a host, the whole levy); gold pays for the
-  works.
-- **Four works, one resource each**: villages feed the peasants, markets
-  bring gold, barracks send the armies, castles hold their land three times
-  better; the first of each is free, so a lord can always start again.
+- **Peasants and gold**: your villages feed peasants who hold your land and
+  whom you raise in three armies (a raid, a host, the whole levy); your
+  merchants bring the gold that pays for the works.
+- **Armies that march and battles you can watch**: an army leaves from a
+  barracks, walks to the front over your land, and fights any enemy army it
+  meets.
+- **Four works, one resource each**: villages feed the peasants, markets send
+  the merchants, barracks send the armies, castles make their land fight one
+  for one; the first of each is free, so a lord can always start again.
 - **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord
   who breaks one bears the traitor's mark.
 - **Nineteen bots** that read the same state and send the same orders as you.

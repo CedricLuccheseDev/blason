@@ -1,18 +1,19 @@
 import { BitmapText, Container, Graphics, TextStyle } from 'pixi.js'
-import { UNIT } from '../../engine'
+import { UNIT, marching, positionOf } from '../../engine'
 import { drawSoldier } from './art/soldier'
 import { makeMelee, rankOf } from './layers/melee'
+import { headOf, makeColumns, pointOn } from './layers/column'
 import { TONE, playerColor } from './palette'
 import { siteOf } from './marks'
 import type { GameState, Host, Point } from '../../engine'
 import type { Clash } from './layers/melee'
 import type { Stamps } from './textures'
 
-// The armies on the march. Where an army bites into a land, at the tiles it
-// took last, two ranks of soldiers fight, its own facing the land's; over
-// them, its men in a pill of its lord's colour. One watches the wash of its
-// colour spread from where it entered. Sized on screen; the soldiers at the
-// land's scale.
+// The armies. On its road from its barracks, an army walks in a column
+// (layers/column.ts); where it bites into a land, at the tiles it took last,
+// two ranks of soldiers fight, its own facing the land's; where two armies
+// meet, their ranks face each other. Over each army, its men in a pill of its
+// lord's colour. Sized on screen; the soldiers at the land's scale.
 
 const SHARP = 8
 const LIGHT = 0xfbf4e2
@@ -111,29 +112,64 @@ function clashesOf(state: GameState, host: Host): Array<Clash> {
   })
 }
 
-/** The armies on the march: their soldiers fighting where they bite, their men. */
+/** Where an army stands now: its head on its road while it marches, else where it fights. */
+function standing(state: GameState, host: Host, between: number) {
+  if (marching(host))
+    return pointOn(state, host.road, headOf(state, host, between))
+  return siteOf(state, positionOf(host))
+}
+
+/** The battles between armies: their ranks face each other halfway between them. */
+function battlesOf(state: GameState, between: number): Array<Clash> {
+  const fighting = state.hosts.filter((h) => h.fighting)
+  const reach = state.rules.meetTiles * state.grid.size
+  const battles: Array<Clash> = []
+  fighting.forEach((a, i) => {
+    for (const b of fighting.slice(i + 1)) {
+      if (a.owner === b.owner) continue
+      const p = standing(state, a, between)
+      const q = standing(state, b, between)
+      const d = Math.hypot(p.x - q.x, p.y - q.y)
+      if (d > reach * 1.5) continue
+      const out: Point = d > 0 ? [(p.x - q.x) / d, (p.y - q.y) / d] : [1, 0]
+      battles.push({
+        at: [(p.x + q.x) / 2, (p.y + q.y) / 2],
+        out,
+        colors: [playerColor(a.owner), playerColor(b.owner)],
+        ranks: [rankOf(a.men / UNIT / 4), rankOf(b.men / UNIT / 4)],
+        seed: a.from + b.from,
+      })
+    }
+  })
+  return battles
+}
+
+/** The armies: their columns on the road, their soldiers fighting where they bite or meet, their men. */
 export function makeArmies(stamps: Stamps) {
   const container = new Container()
+  const columns = makeColumns(stamps)
   const melee = makeMelee(stamps, MELEE)
-  container.addChild(melee.container)
+  container.addChild(columns.container, melee.container)
   const pills = new Map<Host, ReturnType<typeof makePill>>()
 
   /** Each army's men in a pill over where it fights; a pill goes with its army. */
-  function count(state: GameState, zoom: number) {
+  function count(state: GameState, zoom: number, between: number) {
     for (const [host, pill] of pills) {
       if (state.hosts.includes(host)) continue
       pill.box.destroy({ children: true })
       pills.delete(host)
     }
     for (const host of state.hosts) {
-      const where = host.edge.length ? host.edge : [host.entry]
       let pill = pills.get(host)
       if (!pill) {
         pill = makePill(playerColor(host.owner))
         pills.set(host, pill)
         container.addChild(pill.box)
       }
-      const at = middle(state, where)
+      const at =
+        marching(host) || host.fighting || host.edge.length === 0
+          ? standing(state, host, between)
+          : middle(state, host.edge)
       pill.box.position.set(at.x, at.y - 16 / zoom)
       pill.show(Math.floor(host.men / UNIT), null, zoom)
     }
@@ -141,10 +177,14 @@ export function makeArmies(stamps: Stamps) {
 
   return {
     container,
-    draw(state: GameState, zoom: number) {
-      const fights = state.hosts.flatMap((h) => clashesOf(state, h))
+    draw(state: GameState, zoom: number, between = 0) {
+      columns.draw(state, zoom, between)
+      const bites = state.hosts
+        .filter((h) => !marching(h) && !h.fighting)
+        .flatMap((h) => clashesOf(state, h))
+      const fights = [...battlesOf(state, between), ...bites]
       melee.draw(fights.slice(0, CLASHES), performance.now() / 1000)
-      count(state, zoom)
+      count(state, zoom, between)
     },
   }
 }

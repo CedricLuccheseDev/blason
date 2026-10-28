@@ -112,8 +112,8 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
               />
               <Letters letters={letters} />
             </div>
-            <div className="col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-1 max-sm:row-start-5 max-sm:grid-cols-1">
-              <div className="w-80 max-sm:hidden short:w-60">
+            <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-1 max-sm:row-start-5 max-sm:grid-cols-1 max-sm:gap-2">
+              <div className="w-80 max-sm:w-full short:w-60">
                 <Aimed aim={aim} summary={summary} />
               </div>
               <div className="flex justify-center">
@@ -123,7 +123,7 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
                   onWork={game.hold}
                 />
               </div>
-              <div className="pointer-events-auto justify-self-end max-sm:hidden">
+              <div className="pointer-events-auto justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
                 <CameraButtons game={game} summary={summary} />
               </div>
             </div>

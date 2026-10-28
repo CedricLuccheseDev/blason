@@ -92,23 +92,16 @@ export function capOf(state: GameState, lord: number): number {
   return state.rules.peasants.village * villages * UNIT
 }
 
-/** The gold a lord's markets bring each second, in thousandths: no market, no gold; their caravans bring more. */
-export function incomeOf(state: GameState, lord: number): number {
-  if (!state.players[lord].alive) return 0
-  return state.rules.marketGold * worksOf(state, lord, 'market')
-}
-
 /** The men holding each of a lord's tiles: his peasants spread over his land. */
 export function density(state: GameState, lord: number): number {
   const { peasants, tiles } = state.players[lord]
   return Math.floor(peasants / Math.max(1, tiles))
 }
 
-/** Each tick, gold for every lord, and peasants born up to what his land feeds. */
+/** Each tick, peasants born up to what a lord's villages feed. Gold comes only by the merchants (caravans.ts). */
 export function grow(state: GameState): void {
   state.players.forEach((lord, id) => {
     if (!lord.alive) return
-    lord.gold += Math.floor(incomeOf(state, id) / TICKS_PER_SECOND)
     const cap = capOf(state, id)
     if (lord.peasants >= cap) return
     const born = Math.floor(cap / (state.rules.fillSeconds * TICKS_PER_SECOND))

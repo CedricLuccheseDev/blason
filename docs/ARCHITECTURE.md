@@ -63,9 +63,12 @@ can tune them without touching the code. The rules themselves are described in
 | `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                            |
 | `map/`                   | The map generator: from a seed, the shape of the land, its coasts, lakes, rivers and names |
 | `grid.ts`                | The land cut into tiles of four map units                                                  |
-| `land.ts`                | The free domains, the start, the peasants and the gold                                     |
-| `war.ts`                 | Armies: where they enter, how they spread, what each tile costs                            |
-| `works.ts`               | Villages, castles and markets: where they may stand and their price                        |
+| `land.ts`                | The free domains, the start, the peasants                                                  |
+| `muster.ts`              | Raising an army: the free barracks, its road to the front, where it stands                 |
+| `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs               |
+| `battle.ts`              | Battles between armies that meet, by the combat table                                      |
+| `heap.ts`                | The heap that orders the tiles an army strikes next                                        |
+| `works.ts`               | Villages, markets, barracks and castles: where they may stand and their price              |
 | `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                   |
 | `caravans.ts`            | The merchants' roads and what they pay                                                     |
 | `step.ts`                | The tick, validation of orders, victory                                                    |
@@ -92,8 +95,9 @@ orders. It decides nothing about the rules.
 - `scene.ts` stacks the layers: the page and its frame, the sea and its shore
   lines, the lands (`regions.ts`, traced around their tiles by `trace.ts` and
   inked with a trembling pen, `pen.ts`), the works (`marks.ts`, `art/`), the
-  armies and their battles (`armies.ts`, `layers/melee.ts`), the caravans
-  (`trade.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
+  armies, their columns on the march and their battles (`armies.ts`,
+  `layers/column.ts`, `layers/melee.ts`), the caravans and their roads
+  (`trade.ts`), what the player's works bring (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
   (`layers/aim.ts`) and the parchment's grain (`layers/paper.ts`).
 - `camera.ts` is the player's camera; `director.ts` is the spectator's, which
   goes to the fiercest fight on its own (the home's background).

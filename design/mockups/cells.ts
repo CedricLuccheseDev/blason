@@ -26,7 +26,6 @@ import {
   createGame,
   entryFor,
   generateWorld,
-  incomeOf,
   isAllied,
   isFelon,
   makeGrid,
@@ -896,7 +895,6 @@ function summary(s: GameState, work: Work | null = null) {
     cap: me.cap,
     growth: me.growth,
     gold: me.gold,
-    income: me.income,
     share: me.share,
     leader: rival
       ? { ...named(rival), share: rival.share }
