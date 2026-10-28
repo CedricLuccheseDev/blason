@@ -79,6 +79,14 @@ export const fr: Messages = {
     took: (tiles: number) => `tu lui as pris ${tiles} tuiles`,
     lost: (tiles: number) => `t’a pris ${tiles} tuiles`,
     betrayed: 'a rompu votre alliance',
+    seized: 't’a pris',
+    works: {
+      village: (n: number) => (n === 1 ? 'ton village' : `${n} villages`),
+      market: (n: number) => (n === 1 ? 'ton marché' : `${n} marchés`),
+      barracks: (n: number) => (n === 1 ? 'ta caserne' : `${n} casernes`),
+      castle: (n: number) => (n === 1 ? 'ton château' : `${n} châteaux`),
+    },
+    and: 'et',
     fell: 'est tombé',
   },
   lord: {

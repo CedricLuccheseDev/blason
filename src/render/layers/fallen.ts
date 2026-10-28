@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
-import type { Kind } from './melee'
+import type { Kind } from '../squads'
 import type { Stamps } from '../textures'
 
 // The dead of a fight: where men fall, a figure of their side topples over,

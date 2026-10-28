@@ -1,4 +1,4 @@
-import { BitmapText, Container, TextStyle } from 'pixi.js'
+import { BitmapText, Container, Graphics, TextStyle } from 'pixi.js'
 import { UNIT, capOf } from '../../../engine'
 import { TONE } from '../palette'
 import { siteOf } from '../marks'
@@ -6,8 +6,11 @@ import type { Caravan, GameState } from '../../../engine'
 
 // What the player's works bring, written where they bring it: a "+" of gold
 // rises from a market when a caravan arrives there, a "+" of peasants from
-// each village every second while they are born. The player's alone,
-// so that the map does not swarm with figures. Sized on screen.
+// each village every second while they are born. A work of his taken by
+// another is struck out where it stood: red rings spread from it and a red
+// seal crossed through beats there for a few seconds, so that a village or a
+// market lost in the turmoil is never lost unseen. The player's alone, so
+// that the map does not swarm with figures. Sized on screen.
 
 const SHARP = 8
 /** How long a figure rises, in seconds, and how high, in pixels. */
@@ -29,6 +32,9 @@ const GOLD = styleOf(TONE.gold)
 const PEASANTS = styleOf(0x8fd19e)
 
 type Tiding = { text: BitmapText; x: number; y: number; born: number }
+/** How long a lost work stays struck out, in seconds, and its seal's radius on screen. */
+const STRUCK = 5
+const SEAL = 10
 
 export function makeTidings(me: number) {
   const container = new Container()
@@ -37,6 +43,10 @@ export function makeTidings(me: number) {
   let seen = new Map<Caravan, number>()
   let tick = -1
   let lastVillages = 0
+  const marks = container.addChild(new Graphics())
+  /** My works at the last tick, by tile; those I lost, where and when. */
+  let held = new Map<number, string>()
+  const lost: Array<{ x: number; y: number; born: number }> = []
 
   function say(state: GameState, tile: number, words: string, gold: boolean) {
     const text = container.addChild(
@@ -78,6 +88,51 @@ export function makeTidings(me: number) {
     for (const v of villages) say(state, v.tile, `+${each}`, false)
   }
 
+  /** My works taken since the last tick, struck out where they stood. */
+  function losses(state: GameState, seconds: number) {
+    for (const work of state.works)
+      if (held.get(work.tile) === work.work && work.owner !== me)
+        lost.push({ ...siteOf(state, work.tile), born: seconds })
+    held = new Map(
+      state.works.filter((w) => w.owner === me).map((w) => [w.tile, w.work]),
+    )
+  }
+
+  /** Each lost work: red rings spreading, a red seal crossed through. */
+  function strike(zoom: number, seconds: number) {
+    marks.clear()
+    const s = 1 / zoom
+    for (let i = lost.length - 1; i >= 0; i--) {
+      const { x, y, born } = lost[i]
+      const age = seconds - born
+      if (age > STRUCK) {
+        lost.splice(i, 1)
+        continue
+      }
+      const fade = Math.min(1, (STRUCK - age) / 1.5)
+      const t = (age / 1.2) % 1
+      marks
+        .circle(x, y, SEAL * s * (1 + 2.2 * t))
+        .stroke({ width: 2.5 * s, color: TONE.fight, alpha: (1 - t) * fade })
+      marks
+        .circle(x, y, SEAL * s)
+        .fill({ color: TONE.fight, alpha: fade })
+        .stroke({ width: 1.5 * s, color: TONE.ink, alpha: fade })
+      const r = SEAL * s * 0.5
+      marks
+        .moveTo(x - r, y - r)
+        .lineTo(x + r, y + r)
+        .moveTo(x + r, y - r)
+        .lineTo(x - r, y + r)
+        .stroke({
+          width: 2.2 * s,
+          color: TONE.parchment,
+          alpha: fade,
+          cap: 'round',
+        })
+    }
+  }
+
   return {
     container,
     draw(state: GameState, zoom: number) {
@@ -86,7 +141,9 @@ export function makeTidings(me: number) {
         arrivals(state, state.tick - tick)
         tick = state.tick
         births(state, seconds)
+        losses(state, seconds)
       }
+      strike(zoom, seconds)
       for (let i = live.length - 1; i >= 0; i--) {
         const { text, x, y, born } = live[i]
         const t = (seconds - born) / LIFE

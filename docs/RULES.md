@@ -26,7 +26,7 @@ Every lord starts with 50 gold.
 ## Peasants and gold
 
 - Every resource comes from a work: without one, none. Each **village**
-  feeds 250 **peasants**; the land alone feeds none. An empty gauge fills in
+  feeds 100 **peasants**; the land alone feeds none. An empty gauge fills in
   60 seconds, and no one is born above the cap.
 - The peasants hold the land, spread over it: a tile is held by its lord's
   peasants divided among his tiles.
@@ -64,7 +64,7 @@ Every lord starts with 50 gold.
   The army fights until it cannot pay the next tile, then its survivors go
   home.
 
-- **Battles**: two enemy armies that come within 3 tiles of each other stop
+- **Battles**: two enemy armies that come within 8 tiles of each other stop
   and fight where they meet, until one is gone; an even battle lasts some 4
   seconds, so that it is seen (`engine/battle.ts`).
 
@@ -74,7 +74,7 @@ Four works, one resource each, placed anywhere on one's own land (keys 4 to
 7), at least 4 tiles from any other work so that none lies on another;
 castles stand at least 10 tiles from one another (`engine/works.ts`):
 
-- the **village** feeds 250 peasants;
+- the **village** feeds 100 peasants;
 - the **market** sends the caravans that bring the gold;
 - the **barracks** is where the armies are raised and sent from, one at a
   time;

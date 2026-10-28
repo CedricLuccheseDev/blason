@@ -1,185 +1,228 @@
 import { Container } from 'pixi.js'
 import { UNIT } from '../../engine'
-import { makeColumns } from './layers/column'
+import { GAP, makeFronts } from './fronts'
+import { makeRoads, pathOf } from './layers/column'
 import { makeFallen } from './layers/fallen'
-import { makeMelee, rankOf } from './layers/melee'
 import { makePill } from './layers/pill'
-import { TONE, playerColor } from './palette'
-import { makeTracks } from './tracks'
+import { makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
-import type { GameState } from '../../engine'
-import type { Clash } from './layers/melee'
+import { TONE, playerColor } from './palette'
+import {
+  column,
+  figuresOf,
+  lose,
+  makeSquad,
+  middle,
+  move,
+  muster,
+  ranks,
+} from './squads'
+import type { Front, Spot } from './fronts'
+import type { Drawn, Line } from './layers/troops'
+import type { Man, Squad } from './squads'
+import type { GameState, Host } from '../../engine'
 import type { Stamps } from './textures'
-import type { Track } from './tracks'
 
-// The armies, followed from frame to frame (tracks.ts) so that none ever
-// jumps or blinks. On its road from its barracks, an army walks in a column
-// (layers/column.ts); at the front, its soldiers face the peasants who hold
-// the land, pitchforks against spears; where two armies meet, their soldiers
-// face each other. Men fall as they are lost, on both sides (layers/fallen.ts).
-// An enemy army coming for the player is shown from afar (layers/warning.ts).
-// Over each army, its men in a pill of its lord's colour, gliding with it.
-// Sized on screen; the soldiers at the land's scale.
+// The armies, as one picture. Each army is a few men kept from frame to
+// frame (squads.ts) who walk its road in a column, then stand in two ranks
+// at the point its attack has reached (fronts.ts), the peasants of the land
+// facing them with their pitchforks; when two armies fight, both run to the
+// ground between them and face each other there. Men lost fall where they
+// stand (layers/fallen.ts); a side comes and goes in a fade. Over each army,
+// its men in a pill of its lord's colour, following its men. An enemy army
+// coming for the player is shown from afar (layers/warning.ts).
 
-/** World units for each size of the melee: small soldiers on a fine land. */
-const MELEE = 0.2
-/** Fights drawn at once at most. */
-const CLASHES = 60
-/** Men lost for each body drawn, and bodies at most a tick on each side. */
-const PER_BODY = 12
-const MOST_BODIES = 2
-/** How far behind its rank, and how wide, a side's dead lie, in sizes of the melee. */
-const DEPTH = 14
-const WIDTH = 40
-
-/** Where the dead lie, scattered without a pattern: the screen's own draws, the game's never touched. */
-let seed = 1
-function scatter(): number {
-  seed = (seed * 16807) % 2147483647
-  return seed / 2147483647
+/** Seconds for an army to fade in or out. */
+const FADE = 0.5
+type Army = {
+  troops: Squad
+  peasants: Squad
+  /** Its men at the last tick read, and its place this frame; gone once the game no longer has it. */
+  men: number
+  front: Front | null
+  pill: Spot | null
+  gone: boolean
 }
 
 /** The colour of the peasants who hold a land: their lord's, or the free land's. */
 const peasantColor = (owner: number) =>
   owner >= 0 ? playerColor(owner) : TONE.neutralPill
 
-/** A fight between two armies near each other, halfway between them. */
-function battle(a: Track, b: Track): Clash {
-  const d = Math.hypot(a.x - b.x, a.y - b.y)
-  return {
-    at: [(a.x + b.x) / 2, (a.y + b.y) / 2],
-    out: d > 0 ? [(a.x - b.x) / d, (a.y - b.y) / d] : [1, 0],
-    colors: [playerColor(a.host.owner), playerColor(b.host.owner)],
-    ranks: [rankOf(a.host.men / UNIT / 4), rankOf(b.host.men / UNIT / 4)],
-    kinds: ['soldier', 'soldier'],
-    alpha: Math.min(a.alpha, b.alpha),
-    seed: a.host.from + b.host.from,
-  }
-}
-
-/** An army against the peasants of the land it takes, where its front stands. */
-function bite(state: GameState, track: Track): Clash {
-  const { host } = track
-  const held =
-    host.target >= 0 ? state.players[host.target].peasants / UNIT / 20 : 2
-  return {
-    at: [track.x, track.y],
-    out: [track.back.x, track.back.y],
-    colors: [playerColor(host.owner), peasantColor(host.target)],
-    ranks: [rankOf(host.men / UNIT / 4), rankOf(held)],
-    kinds: ['soldier', 'peasant'],
-    alpha: track.alpha * (1 - track.march),
-    seed: host.from,
-  }
-}
-
-/** The pairs of armies fighting each other, each army once. */
-function battles(tracks: Array<Track>): Array<[Track, Track]> {
-  const fighting = tracks.filter((t) => t.host.fighting && !t.gone)
-  const pairs: Array<[Track, Track]> = []
-  const paired = new Set<Track>()
-  for (const a of fighting) {
-    if (paired.has(a)) continue
-    const b = fighting
-      .filter((t) => t !== a && !paired.has(t) && t.host.owner !== a.host.owner)
-      .sort(
-        (p, q) =>
-          Math.hypot(p.x - a.x, p.y - a.y) - Math.hypot(q.x - a.x, q.y - a.y),
-      )
-      .at(0)
-    if (!b) continue
-    paired.add(a)
-    paired.add(b)
-    pairs.push([a, b])
-  }
-  return pairs
-}
+/** An army as it is first seen: no men yet, they walk in. */
+const enlist = (host: Host): Army => ({
+  troops: makeSquad('soldier', playerColor(host.owner)),
+  peasants: makeSquad('peasant', peasantColor(host.target)),
+  men: host.men,
+  front: null,
+  pill: null,
+  gone: false,
+})
 
 export function makeArmies(stamps: Stamps, me: number) {
   const container = new Container()
-  const columns = makeColumns(stamps)
-  const fallen = makeFallen(stamps, MELEE)
-  const melee = makeMelee(stamps, MELEE)
+  const roads = makeRoads()
+  const fallen = makeFallen(stamps, 0.2)
+  const troops = makeTroops(stamps)
   const warning = makeWarning(me)
   container.addChild(
     warning.container,
+    roads.container,
     fallen.container,
-    columns.container,
-    melee.container,
+    troops.container,
   )
-  const pills = new Map<Track, ReturnType<typeof makePill>>()
-  let drawn: Array<Track> = []
-  let current: GameState
+  const fronts = makeFronts()
+  const armies = new Map<Host, Army>()
+  const pills = new Map<Army, ReturnType<typeof makePill>>()
+  let tick = -1
+  let last = performance.now() / 1000
 
-  /** Men lost: some fall where the army fights, and the peasants it killed on the other side. */
-  function bury(state: GameState, track: Track, men: number) {
-    const { host } = track
-    const lost = Math.min(MOST_BODIES, Math.round(men / UNIT / PER_BODY))
-    // Against an army, its own dead fall on its own track; against the land, peasants fall too.
-    const killed = host.fighting
-      ? 0
-      : (lost * 100) / state.rules.combat.peasants
-    const spread = (
-      side: number,
-      n: number,
-      color: number,
-      kind: 'soldier' | 'peasant',
-    ) => {
-      for (let i = 0; i < Math.min(MOST_BODIES, Math.round(n)); i++) {
-        const lateral = (scatter() - 0.5) * WIDTH * MELEE
-        const depth = (6 + scatter() * DEPTH) * MELEE * side
-        const x = track.x + track.back.x * depth - track.back.y * lateral
-        const y = track.y + track.back.y * depth + track.back.x * lateral
-        fallen.fall(x, y, color, kind, track.back.x * side >= 0 ? -1 : 1)
-      }
-    }
-    spread(1, lost, playerColor(host.owner), 'soldier')
-    spread(-1, killed, peasantColor(host.target), 'peasant')
+  const fall = (squad: Squad) => (man: Man) =>
+    fallen.fall(man.x, man.y, squad.color, squad.kind, man.facing)
+
+  /** The men lost since the last tick fall, the army's and, at the front, the peasants it killed. */
+  function count(state: GameState, host: Host, army: Army) {
+    const lost = Math.max(0, army.men - host.men) / UNIT
+    army.men = host.men
+    lose(army.troops, lost, figuresOf(host.men / UNIT), fall(army.troops))
+    if (army.front?.phase !== 'front') return
+    const killed = (lost * 100) / state.rules.combat.peasants
+    const { peasants } = army
+    lose(peasants, killed, peasants.men.length, fall(peasants))
   }
-  const tracks = makeTracks((track, men) => bury(current, track, men))
 
-  /** Each army's men in a pill over where it stands, faded in and out with it. */
-  function count(all: Array<Track>, zoom: number) {
-    for (const [track, pill] of pills) {
-      if (all.includes(track)) continue
-      pill.box.destroy({ children: true })
-      pills.delete(track)
+  /** The peasants of the land before an army at its front, in two ranks facing it. */
+  function defend(state: GameState, host: Host, army: Army, dt: number) {
+    const { front, peasants } = army
+    if (front?.phase !== 'front' || !front.line) {
+      peasants.alpha = Math.max(0, peasants.alpha - dt / FADE)
+      return
     }
-    for (const track of all) {
-      let pill = pills.get(track)
-      if (!pill) {
-        pill = makePill(playerColor(track.host.owner))
-        pills.set(track, pill)
-        container.addChild(pill.box)
+    const held =
+      host.target >= 0 ? state.players[host.target].peasants / UNIT / 3 : 30
+    const facing = { x: -front.facing.x, y: -front.facing.y }
+    const at = {
+      x: front.line.x + front.facing.x * GAP,
+      y: front.line.y + front.facing.y * GAP,
+    }
+    const n = figuresOf(held)
+    const places = ranks(at, facing, n)
+    muster(peasants, n, places)
+    move(peasants, places, facing, dt)
+    peasants.alpha = Math.min(1, peasants.alpha + dt / FADE)
+  }
+
+  /** Each man of the army a frame closer to his place: in a column on the march, in ranks at the front or in battle. */
+  function place(state: GameState, host: Host, army: Army, dt: number) {
+    const front = army.front as Front
+    const n = figuresOf(host.men / UNIT)
+    const places =
+      front.phase === 'march'
+        ? column(pathOf(state, host), front.head, n)
+        : ranks(front.at, front.facing, n)
+    muster(army.troops, n, places)
+    move(army.troops, places, front.facing, dt)
+    army.troops.alpha = Math.min(1, army.troops.alpha + dt / FADE)
+    defend(state, host, army, dt)
+  }
+
+  /** An army the game no longer has fades out where it stood, then is forgotten. */
+  function dismiss(host: Host, army: Army, dt: number) {
+    army.gone = true
+    army.troops.alpha = Math.max(0, army.troops.alpha - dt / FADE)
+    army.peasants.alpha = Math.max(0, army.peasants.alpha - dt / FADE)
+    if (army.troops.alpha > 0) return
+    armies.delete(host)
+    pills.get(army)?.box.destroy({ children: true })
+    pills.delete(army)
+  }
+
+  /** The armies the game has now followed a frame further. */
+  function follow(state: GameState, between: number, dt: number) {
+    const fresh = state.tick !== tick
+    tick = state.tick
+    const now = fronts.read(state, between)
+    for (const host of state.hosts) {
+      const army = armies.get(host) ?? enlist(host)
+      armies.set(host, army)
+      army.front = now.get(host) ?? null
+      if (fresh) count(state, host, army)
+      place(state, host, army, dt)
+    }
+    for (const [host, army] of armies)
+      if (!now.has(host)) dismiss(host, army, dt)
+  }
+
+  /** The lines where men fight: each front, each battle once. */
+  function lines(): Array<Line> {
+    const drawn: Array<Line> = []
+    const told = new Set<Host>()
+    for (const [host, army] of armies) {
+      const { front } = army
+      if (!front?.line || army.gone || told.has(host)) continue
+      if (front.foe) told.add(front.foe)
+      drawn.push({
+        at: front.line,
+        across: { x: -front.facing.y, y: front.facing.x },
+        width: Math.ceil(army.troops.men.length / 2) * 3.6,
+        alpha: army.troops.alpha,
+        seed: host.from,
+      })
+    }
+    return drawn
+  }
+
+  /** Each army's men in a pill over them, following them, faded in and out with them. */
+  function label(zoom: number) {
+    for (const army of armies.values()) {
+      const over = middle(army.troops.men)
+      if (!over) continue
+      const was = army.pill ?? over
+      army.pill = {
+        x: was.x + (over.x - was.x) * 0.2,
+        y: was.y + (over.y - was.y) * 0.2,
       }
-      pill.box.alpha = track.alpha
-      pill.box.position.set(track.x, track.y - 16 / zoom)
-      pill.show(Math.floor(track.men / UNIT), null, zoom)
+      let drawn = pills.get(army)
+      if (!drawn) {
+        drawn = makePill(army.troops.color)
+        pills.set(army, drawn)
+        container.addChild(drawn.box)
+      }
+      drawn.box.alpha = army.troops.alpha
+      drawn.box.position.set(army.pill.x, army.pill.y - 9 - 14 / zoom)
+      drawn.show(Math.floor(army.men / UNIT), null, zoom)
     }
+  }
+
+  /** Every side drawn: each army's men, and the peasants before it. */
+  function sides(): Array<Drawn> {
+    return [...armies.values()].flatMap((a) => [
+      { squad: a.troops, fighting: a.front?.phase !== 'march' },
+      ...(a.peasants.alpha > 0 ? [{ squad: a.peasants, fighting: true }] : []),
+    ])
   }
 
   return {
     container,
     draw(state: GameState, zoom: number, between = 0) {
-      current = state
       const seconds = performance.now() / 1000
-      drawn = tracks.update(state, between)
-      const walking = drawn
-        .filter((t) => t.march > 0)
-        .map((t) => ({ host: t.host, head: t.head, alpha: t.alpha * t.march }))
-      warning.draw(state, drawn, zoom)
-      columns.draw(state, walking, zoom, seconds)
-      const pairs = battles(drawn)
-      const paired = new Set(pairs.flat())
-      const fights = [
-        ...pairs.map(([a, b]) => battle(a, b)),
-        ...drawn
-          .filter((t) => t.march < 1 && !paired.has(t))
-          .map((t) => bite(state, t)),
-      ]
-      melee.draw(fights.slice(0, CLASHES), seconds)
+      const dt = Math.min(0.1, seconds - last)
+      last = seconds
+      follow(state, between, dt)
+      const standing = [...armies.values()].filter((a) => !a.gone)
+      const marches = standing.flatMap((a) =>
+        a.front?.phase === 'march'
+          ? [{ host: a.front.host, head: a.front.head, alpha: a.troops.alpha }]
+          : [],
+      )
+      warning.draw(
+        state,
+        standing.flatMap((a) => (a.front ? [a.front] : [])),
+        zoom,
+      )
+      roads.draw(state, marches, zoom)
+      troops.draw(sides(), lines(), seconds)
       fallen.draw(seconds)
-      count(drawn, zoom)
+      label(zoom)
     },
   }
 }

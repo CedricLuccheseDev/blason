@@ -62,6 +62,7 @@ export function makeScene(
   world.addChild(
     regions.container,
     coast,
+    trade.roads,
     marks.container,
     seals.container,
     page.frame,

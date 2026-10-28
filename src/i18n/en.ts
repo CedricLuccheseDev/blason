@@ -78,6 +78,14 @@ export const en = {
     took: (tiles: number) => `you took ${tiles} of his tiles`,
     lost: (tiles: number) => `took ${tiles} of your tiles`,
     betrayed: 'broke your alliance',
+    seized: 'took',
+    works: {
+      village: (n: number) => (n === 1 ? 'your village' : `${n} villages`),
+      market: (n: number) => (n === 1 ? 'your market' : `${n} markets`),
+      barracks: (n: number) => (n === 1 ? 'your barracks' : `${n} barracks`),
+      castle: (n: number) => (n === 1 ? 'your castle' : `${n} castles`),
+    },
+    and: 'and',
     fell: 'has fallen',
   },
   lord: {

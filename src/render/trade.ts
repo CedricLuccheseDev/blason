@@ -1,88 +1,81 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
+import { drawPaving } from './art/paving'
 import { playerColor } from './palette'
-import { siteOf } from './marks'
+import { drawRoad, pointOn } from './roads'
+import type { Spot } from './roads'
 import type { Stamps } from './textures'
 import type { Caravan, GameState } from '../../engine'
 
 // The merchants on their roads: a wagon under its lord's pennant rolls from
 // its market to another lord's, smoothly between two ticks and jolting a
-// little. Every road a caravan once took stays dotted on the map in its
-// lord's colour, as OpenFront's trade routes, until one of its two markets
-// is gone; mine at full ink, others' paler, so that the gold coming to me
-// stands out. Sized on screen.
+// little. Every road a caravan once took stays on the map as a paved road of
+// old (art/paving.ts), near straight from market to market and rounding the
+// sea in soft bends (roads.ts), until one of its two markets is gone; mine a
+// little darker. The wagon is sized on screen, the road at the land's scale.
 
 /** A wagon's height on screen, in pixels, and as drawn in its stamp. */
 const TALL = 20
 const DRAWN = 16
 
-type Route = { owner: number; road: Array<number> }
+type Route = { road: Array<number>; path: Array<Spot>; drawn: Graphics }
+
+/** How many times a road's corners are smoothed, and how far it wanders aside, in map units. */
+const ROUNDS = 3
+const STRAY = 5
 
 /** Whether a market still stands on a tile. */
 const market = (state: GameState, tile: number) =>
   state.works.some((w) => w.tile === tile && w.work === 'market')
 
+const keyOf = (road: Array<number>) => `${road[0]}-${road.at(-1)}`
+
 export function makeTrade(stamps: Stamps, me: number) {
   const container = new Container()
-  const roads = container.addChild(new Graphics())
+  /** The roads lie under the works; the wagons roll over them. */
+  const roads = new Container()
   const sprites: Array<Sprite> = []
-  /** The roads taken, by their two markets, and how they were last drawn. */
+  /** The roads taken, by their two markets, each paved once. */
   const routes = new Map<string, Route>()
-  let drawn = { version: -1, zoom: 0 }
-  let version = 0
 
-  /** The roads of the caravans out now kept, those whose market fell let go. */
+  /** The roads of the caravans out now kept and paved; those whose market fell taken up. */
   function remember(state: GameState) {
     for (const caravan of state.caravans) {
       const { road, owner } = caravan
-      const key = `${road[0]}-${road.at(-1)}`
+      const key = keyOf(road)
       if (routes.has(key)) continue
-      routes.set(key, { owner, road })
-      version += 1
+      const path = drawRoad(
+        state,
+        road,
+        (t) => state.grid.land[t],
+        ROUNDS,
+        STRAY,
+      )
+      const drawn = roads.addChild(new Graphics())
+      drawPaving(drawn, path, owner === me)
+      routes.set(key, { road, path, drawn })
     }
-    for (const [key, { road }] of routes)
+    for (const [key, { road, drawn }] of routes)
       if (!market(state, road[0]) || !market(state, road.at(-1) ?? -1)) {
+        drawn.destroy()
         routes.delete(key)
-        version += 1
       }
-  }
-
-  /** Every road kept, dotted every few tiles; drawn again only when they or the zoom change. */
-  function paint(state: GameState, zoom: number) {
-    const same = Math.abs(zoom / drawn.zoom - 1) < 0.15
-    if (version === drawn.version && same) return
-    drawn = { version, zoom }
-    roads.clear()
-    for (const { owner, road } of routes.values()) {
-      for (let i = 1; i < road.length - 1; i += 3) {
-        const p = siteOf(state, road[i])
-        roads.circle(p.x, p.y, 0.9 / zoom + 0.3)
-      }
-      roads.fill({ color: playerColor(owner), alpha: owner === me ? 0.7 : 0.3 })
-    }
   }
 
   /** Where a caravan is on its road now, so far into the next tick, and which way it goes. */
   function along(state: GameState, caravan: Caravan, between: number) {
-    const { road } = caravan
+    const path =
+      routes.get(keyOf(caravan.road))?.path ??
+      drawRoad(state, caravan.road, (t) => state.grid.land[t], ROUNDS, STRAY)
     const moved = caravan.along + state.rules.caravanPace * between
-    const at = Math.min(road.length - 1, moved / 1000)
-    const i = Math.min(road.length - 2, Math.floor(at))
-    const t = at - i
-    const a = siteOf(state, road[i])
-    const b = siteOf(state, road[i + 1])
-    return {
-      x: a.x + (b.x - a.x) * t,
-      y: a.y + (b.y - a.y) * t,
-      right: b.x >= a.x,
-    }
+    return pointOn(path, moved / 1000)
   }
 
   return {
     container,
+    roads,
     draw(state: GameState, zoom: number, between = 0) {
       const seconds = performance.now() / 1000
-      if (state.tick % 10 === 0 || drawn.version < 0) remember(state)
-      paint(state, zoom)
+      if (state.tick % 10 === 0 || routes.size === 0) remember(state)
       state.caravans.forEach((caravan, n) => {
         sprites[n] ??= container.addChild(new Sprite())
         const sprite = sprites[n]

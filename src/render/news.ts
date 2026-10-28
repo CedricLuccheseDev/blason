@@ -1,7 +1,8 @@
-import type { GameState } from '../../engine'
+import type { GameState, Work } from '../../engine'
 
-// The news, for the player's letters: who strikes him, an ally who broke
-// faith, a lord who fell, and once a fight with a lord is over, what he took
+// The news, for the player's letters: who strikes him, who took one of his
+// works (at once: a village, a market lost must never go unseen), an ally
+// who broke faith, a lord who fell, and once a fight with a lord is over, what he took
 // from him and lost to him in all; never the same letter every second. Read
 // once a second by comparing the game with the second before.
 
@@ -11,6 +12,7 @@ export type News =
   | { kind: 'lost'; lord: number; tiles: number }
   | { kind: 'betrayed'; lord: number }
   | { kind: 'fell'; lord: number }
+  | { kind: 'seized'; lord: number; works: Partial<Record<Work, number>> }
 
 /** Below so many tiles in a fight, a change of hands is not news. */
 const NOTABLE = 20
@@ -30,6 +32,8 @@ export function makeNews(state: GameState, me: number) {
   >()
   let second = 0
   let allies = new Set<number>()
+  /** My works at the last reading, by their tile. */
+  let held = new Map<number, Work>()
   let alive = state.players.map((p) => p.alive)
 
   const alliesOf = () =>
@@ -77,11 +81,28 @@ export function makeNews(state: GameState, me: number) {
     }
   }
 
+  /** My works another lord took since the last reading, told at once, by lord. */
+  function seizures(news: Array<News>) {
+    const by = new Map<number, Partial<Record<Work, number>>>()
+    for (const work of state.works) {
+      const was = held.get(work.tile)
+      if (was !== work.work || work.owner === me) continue
+      const works = by.get(work.owner) ?? {}
+      works[work.work] = (works[work.work] ?? 0) + 1
+      by.set(work.owner, works)
+    }
+    for (const [lord, works] of by) news.push({ kind: 'seized', lord, works })
+    held = new Map(
+      state.works.filter((w) => w.owner === me).map((w) => [w.tile, w.work]),
+    )
+  }
+
   /** What happened since the last reading. */
   function read(): Array<News> {
     if (me < 0) return []
     const news: Array<News> = []
     second += 1
+    seizures(news)
     strikes(news)
     exchanges(news)
     const bound = alliesOf()

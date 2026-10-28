@@ -10,21 +10,22 @@ import type { Placement } from './layers/labels'
 
 /**
  * Each lord written at the centre of his land as it stands now: the middle
- * of its largest piece, which moves on smoothly as the land grows or
- * shrinks; the bigger the land, the bigger the words.
+ * of its largest piece, or the nearest place to it clear of his works, so
+ * that his name never lies over a village or a castle; it moves on smoothly
+ * as the land grows or shrinks; the bigger the land, the bigger the words.
  */
 export function tilePlaces(state: GameState): Placement {
   const { width, size: tile } = state.grid
   const seen = new Uint8Array(state.owner.length)
-  /** The largest piece of each lord: its tile count and the sums of its columns and rows. */
-  const largest = new Map<number, { n: number; x: number; y: number }>()
+  /** The largest piece of each lord: its tiles, and the sums of their columns and rows. */
+  const largest = new Map<number, Piece>()
   state.owner.forEach((o, start) => {
     if (o < 0 || seen[start]) return
     seen[start] = 1
-    const piece = { n: 0, x: 0, y: 0 }
+    const piece: Piece = { tiles: [], x: 0, y: 0 }
     const queue = [start]
     for (const t of queue) {
-      piece.n += 1
+      piece.tiles.push(t)
       piece.x += t % width
       piece.y += Math.floor(t / width)
       for (const n of around(state.grid, t))
@@ -33,18 +34,47 @@ export function tilePlaces(state: GameState): Placement {
           queue.push(n)
         }
     }
-    if (piece.n > (largest.get(o)?.n ?? 0)) largest.set(o, piece)
+    if (piece.tiles.length > (largest.get(o)?.tiles.length ?? 0))
+      largest.set(o, piece)
   })
   const places: Placement = new Map()
   for (const [lord, piece] of largest) {
-    const tiles = state.players[lord].tiles
+    const at = clearOf(state, lord, piece)
     places.set(lord, {
-      x: (piece.x / piece.n + 0.5) * tile,
-      y: (piece.y / piece.n + 0.5) * tile,
-      size: Math.min(46, 24 + 4 * Math.sqrt(tiles / 25)),
+      x: (at.x + 0.5) * tile,
+      y: (at.y + 0.5) * tile,
+      size: Math.min(46, 24 + 4 * Math.sqrt(state.players[lord].tiles / 25)),
     })
   }
   return places
+}
+
+type Piece = { tiles: Array<number>; x: number; y: number }
+
+/** Tiles kept between a name and any work, so that it never lies over one. */
+const CLEAR = 5
+
+/** The tile of a piece nearest its middle that lies clear of the lord's works; its middle if none does. */
+function clearOf(state: GameState, lord: number, piece: Piece) {
+  const { width } = state.grid
+  const n = piece.tiles.length
+  const mid = { x: piece.x / n, y: piece.y / n }
+  const works = state.works
+    .filter((w) => w.owner === lord)
+    .map((w) => ({ x: w.tile % width, y: Math.floor(w.tile / width) }))
+  let best = mid
+  let near = Infinity
+  for (const t of piece.tiles) {
+    const x = t % width
+    const y = Math.floor(t / width)
+    const d = (x - mid.x) ** 2 + (y - mid.y) ** 2
+    if (d >= near) continue
+    if (works.some((w) => (w.x - x) ** 2 + (w.y - y) ** 2 < CLEAR * CLEAR))
+      continue
+    best = { x, y }
+    near = d
+  }
+  return best
 }
 
 /** A badge's size on screen, in pixels. */

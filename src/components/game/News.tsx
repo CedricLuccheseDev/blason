@@ -1,3 +1,4 @@
+import { WORKS } from '../../../engine'
 import { LordSheet } from './LordSheet'
 import type { News } from '~/render/client'
 import { PLAYERS } from '~/render/palette'
@@ -13,6 +14,17 @@ export type Letter = News & { id: number }
 export function Letters({ letters }: Readonly<{ letters: Array<Letter> }>) {
   const m = useMessages()
   const say = (n: News) => {
+    if (n.kind === 'seized') {
+      const lost = WORKS.flatMap((w) => {
+        const count = n.works[w] ?? 0
+        return count > 0 ? [m.news.works[w](count)] : []
+      })
+      const list =
+        lost.length > 1
+          ? `${lost.slice(0, -1).join(', ')} ${m.news.and} ${lost.at(-1)}`
+          : lost.join('')
+      return `${m.news.seized} ${list}`
+    }
     if (n.kind === 'attacked') return m.news.attacked
     if (n.kind === 'took') return m.news.took(n.tiles)
     if (n.kind === 'lost') return m.news.lost(n.tiles)
@@ -21,7 +33,11 @@ export function Letters({ letters }: Readonly<{ letters: Array<Letter> }>) {
   }
   return letters.map((letter) => (
     <LordSheet key={letter.id} lord={PLAYERS[letter.lord]}>
-      <span className="hud-note">{say(letter)}</span>
+      <span
+        className={`hud-note ${letter.kind === 'seized' ? 'text-gules' : ''}`}
+      >
+        {say(letter)}
+      </span>
     </LordSheet>
   ))
 }
