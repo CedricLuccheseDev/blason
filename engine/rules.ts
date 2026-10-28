@@ -26,6 +26,8 @@ export type Rules = {
   peasants: { village: number }
   /** An empty gauge fills to its cap in so many seconds; none is born above it. */
   fillSeconds: number
+  /** Of the peasants over what the villages feed, so many in a hundred die of sickness a second. */
+  sickness: number
   /** What a man raised costs, in thousandths of gold: 0 is OpenFront's free attack. */
   menPrice: number
   /** The share of the peasants each army takes, in percent. */
@@ -102,6 +104,7 @@ export const RULES: Rules = {
   startGold: 50,
   peasants: { village: 100 },
   fillSeconds: 60,
+  sickness: 10,
   menPrice: 0,
   armies: { raid: 10, host: 25, ban: 50 },
   paceTiles: 3,

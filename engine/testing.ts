@@ -15,11 +15,12 @@ export function field(width: number, height = 1): Grid {
   return { width, height, size: 4, land, area: land.length }
 }
 
-/** A game past its opening, no village, no income, nothing born: men and gold counted exactly. */
+/** A game past its opening, no village, no income, nothing born and no one sick: men and gold counted exactly. */
 export function playing(grid: Grid, players = 2): GameState {
   const state = createGame(grid, players, 'test', {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
+    sickness: 0,
   })
   state.tick = state.rules.openingTicks
   state.villages = []

@@ -22,6 +22,7 @@ export {
   capOf,
   createGame,
   hasPicked,
+  sicknessOf,
   standing,
   worksOf,
 } from './land'

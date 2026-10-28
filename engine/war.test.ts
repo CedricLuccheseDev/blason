@@ -4,6 +4,7 @@ import { generateWorld } from './map/generate'
 import { createBot } from './bots/bot'
 import { makeGrid } from './grid'
 import { createGame, holdOf } from './land'
+import { RULES } from './rules'
 import { stateHash, step } from './step'
 import {
   attack,
@@ -139,6 +140,24 @@ describe('an army, tile by tile', () => {
     expect(owned(state, 0)).toEqual([0, 1, 2])
     expect(state.hosts).toEqual([])
     expect(state.players[0].peasants).toBe(400 * UNIT)
+  })
+})
+
+describe('the sickness', () => {
+  it('takes a tenth a second of the peasants over what the villages feed, and none under it', () => {
+    const state = playing(field(6))
+    state.rules = { ...state.rules, sickness: RULES.sickness }
+    hold(state, 0, [0, 1])
+    muster(state, 0, 0)
+    hold(state, 1, [5])
+    const cap = state.rules.peasants.village * UNIT
+    state.players[0].peasants = cap + 100 * UNIT
+    run(state, SECOND)
+    const left = state.players[0].peasants - cap
+    expect(left).toBeGreaterThan(89 * UNIT)
+    expect(left).toBeLessThan(92 * UNIT)
+    run(state, 120 * SECOND)
+    expect(state.players[0].peasants).toBe(cap)
   })
 })
 

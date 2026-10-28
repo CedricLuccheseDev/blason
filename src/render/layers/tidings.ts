@@ -1,12 +1,14 @@
 import { BitmapText, Container, Graphics, TextStyle } from 'pixi.js'
-import { UNIT, capOf } from '../../../engine'
+import { TICKS_PER_SECOND, UNIT, capOf, sicknessOf } from '../../../engine'
 import { TONE } from '../palette'
 import { siteOf } from '../marks'
 import type { Caravan, GameState } from '../../../engine'
 
 // What the player's works bring, written where they bring it: a "+" of gold
 // rises from a market when a caravan arrives there, a "+" of peasants from
-// each village every second while they are born. A work of his taken by
+// each village every second while they are born; while there are more than
+// the villages feed, a red "−" of the sick instead, and a red cross on each
+// village, as on a plague house. A work of his taken by
 // another is struck out where it stood: red rings spread from it and a red
 // seal crossed through beats there for a few seconds, so that a village or a
 // market lost in the turmoil is never lost unseen. The player's alone, so
@@ -28,8 +30,9 @@ const styleOf = (fill: number) =>
     stroke: { color: TONE.ink, width: 3 * SHARP, join: 'round' },
   })
 const GOLD = styleOf(TONE.gold)
-/** A light green, read on the ink of its stroke. */
+/** A light green, read on the ink of its stroke; the sick in red. */
 const PEASANTS = styleOf(0x8fd19e)
+const SICK = styleOf(TONE.fight)
 
 type Tiding = { text: BitmapText; x: number; y: number; born: number }
 /** How long a lost work stays struck out, in seconds, and its seal's radius on screen. */
@@ -48,10 +51,13 @@ export function makeTidings(me: number) {
   let held = new Map<number, string>()
   const lost: Array<{ x: number; y: number; born: number }> = []
 
-  function say(state: GameState, tile: number, words: string, gold: boolean) {
-    const text = container.addChild(
-      new BitmapText({ text: words, style: gold ? GOLD : PEASANTS }),
-    )
+  function say(
+    state: GameState,
+    tile: number,
+    words: string,
+    style: TextStyle,
+  ) {
+    const text = container.addChild(new BitmapText({ text: words, style }))
     text.anchor.set(0.5, 1)
     const { x, y } = siteOf(state, tile)
     live.push({ text, x, y, born: performance.now() / 1000 })
@@ -65,8 +71,8 @@ export function makeTidings(me: number) {
       const last = caravan.road.length - 1
       if (along + state.rules.caravanPace * ticks < last * 1000) continue
       const gold = `+${Math.floor(caravan.gold / UNIT)}`
-      if (caravan.owner === me) say(state, caravan.road[0], gold, true)
-      if (caravan.to === me) say(state, caravan.road[last], gold, true)
+      if (caravan.owner === me) say(state, caravan.road[0], gold, GOLD)
+      if (caravan.to === me) say(state, caravan.road[last], gold, GOLD)
     }
     seen = new Map(state.caravans.map((c) => [c, c.along]))
   }
@@ -81,11 +87,18 @@ export function makeTidings(me: number) {
     )
     if (!lord.alive || villages.length === 0) return
     const { rules } = state
+    const sick = sicknessOf(state, me)
+    if (sick > 0) {
+      const dying = (sick * TICKS_PER_SECOND * VILLAGE_EVERY) / UNIT
+      const each = Math.max(1, Math.round(dying / villages.length))
+      for (const v of villages) say(state, v.tile, `\u2212${each}`, SICK)
+      return
+    }
     if (lord.peasants >= capOf(state, me)) return
     const each = Math.floor(
       (rules.peasants.village * VILLAGE_EVERY) / rules.fillSeconds,
     )
-    for (const v of villages) say(state, v.tile, `+${each}`, false)
+    for (const v of villages) say(state, v.tile, `+${each}`, PEASANTS)
   }
 
   /** My works taken since the last tick, struck out where they stood. */
@@ -133,6 +146,24 @@ export function makeTidings(me: number) {
     }
   }
 
+  /** While my peasants are sick, a red cross on each of my villages. */
+  function plague(state: GameState, zoom: number) {
+    if (sicknessOf(state, me) === 0) return
+    const s = 1 / zoom
+    for (const w of state.works) {
+      if (w.owner !== me || w.work !== 'village') continue
+      const { x, y } = siteOf(state, w.tile)
+      const [cy, r] = [y - 16 * s, 4 * s]
+      marks
+        .moveTo(x, cy - r)
+        .lineTo(x, cy + r)
+        .moveTo(x - r, cy)
+        .lineTo(x + r, cy)
+        .stroke({ width: 4 * s, color: TONE.ink, cap: 'round' })
+        .stroke({ width: 2.2 * s, color: TONE.fight, cap: 'round' })
+    }
+  }
+
   return {
     container,
     draw(state: GameState, zoom: number) {
@@ -144,6 +175,7 @@ export function makeTidings(me: number) {
         losses(state, seconds)
       }
       strike(zoom, seconds)
+      if (me >= 0) plague(state, zoom)
       for (let i = live.length - 1; i >= 0; i--) {
         const { text, x, y, born } = live[i]
         const t = (seconds - born) / LIFE

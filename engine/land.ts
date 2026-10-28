@@ -105,11 +105,24 @@ export function density(state: GameState, lord: number): number {
   return Math.floor(peasants / Math.max(1, tiles))
 }
 
-/** Each tick, peasants born up to what a lord's villages feed. Gold comes only by the merchants (caravans.ts). */
+/** The peasants a lord loses a tick to sickness: so much of those over what his villages feed, one at least while any are. */
+export function sicknessOf(state: GameState, lord: number): number {
+  const over = state.players[lord].peasants - capOf(state, lord)
+  if (over <= 0 || state.rules.sickness === 0) return 0
+  const lost = (over * state.rules.sickness) / 100 / TICKS_PER_SECOND
+  return Math.min(over, Math.max(UNIT, Math.floor(lost)))
+}
+
+/**
+ * Each tick, peasants born up to what a lord's villages feed; those over it,
+ * a village lost or an army come home, fall sick and die away. Gold comes
+ * only by the merchants (caravans.ts).
+ */
 export function grow(state: GameState): void {
   state.players.forEach((lord, id) => {
     if (!lord.alive) return
     const cap = capOf(state, id)
+    lord.peasants -= sicknessOf(state, id)
     if (lord.peasants >= cap) return
     const born = Math.floor(cap / (state.rules.fillSeconds * TICKS_PER_SECOND))
     lord.peasants = Math.min(cap, lord.peasants + born)

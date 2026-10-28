@@ -1,6 +1,7 @@
 import {
   ARMIES,
   NO_ONE,
+  TICKS_PER_SECOND,
   UNIT,
   WORKS,
   capOf,
@@ -11,6 +12,7 @@ import {
   menFor,
   nextDrop,
   priceOf,
+  sicknessOf,
   victoryShare,
   worksOf,
 } from '../../engine'
@@ -34,7 +36,7 @@ export type Summary = {
   winner: Heraldry | null
   me:
     | (Seat & {
-        /** His peasants and what his villages feed, and how many are born a second; his gold, and all he has gained since the start, the purse's "+" read from it. */
+        /** His peasants and what his villages feed, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
         peasants: number
         cap: number
         growth: number
@@ -155,7 +157,7 @@ export function summarize(
       cap: Math.floor(cap / UNIT),
       growth:
         lord.peasants >= cap
-          ? 0
+          ? -Math.ceil((sicknessOf(state, me) * TICKS_PER_SECOND) / UNIT)
           : Math.floor(cap / UNIT / state.rules.fillSeconds),
       gold,
       earned: Math.floor(earned / UNIT),

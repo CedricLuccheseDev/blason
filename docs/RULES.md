@@ -31,6 +31,8 @@ Every lord starts with 50 gold.
 - Every resource comes from a work: without one, none. Each **village**
   feeds 100 **peasants**; the land alone feeds none. An empty gauge fills in
   60 seconds, and no one is born above the cap.
+- **Sickness**: peasants over the cap (a village lost, an army come home)
+  fall sick, and a tenth of those over it die each second, until the cap.
 - The peasants hold the land, spread over it: a tile is held by its lord's
   peasants divided among his tiles.
 - **Gold** comes from the merchants alone: each **market** sends caravans,

@@ -123,8 +123,10 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
             / {count(me.cap)}
           </span>
         </Figure>
-        <Figure size="s" tone="thrive">
-          {me.growth > 0 ? `+${me.growth}/s` : ''}
+        <Figure size="s" tone={me.growth < 0 ? 'gules' : 'thrive'}>
+          {me.growth > 0 && `+${me.growth}/s`}
+          {/* Too many for the villages: the sickness takes them. */}
+          {me.growth < 0 && `\u2212${-me.growth}/s`}
         </Figure>
         <Figure icon="coins" size={compact ? 'm' : 'l'}>
           {count(me.gold)}

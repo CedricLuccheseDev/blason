@@ -12,11 +12,12 @@ function field(width: number, height = 1): Grid {
   return { width, height, size: 4, land, area: land.length }
 }
 
-/** A game past its opening, no income, nothing born; lord 0 on the left, lord 1 on the right of a row. */
+/** A game past its opening, no income, nothing born and no one sick; lord 0 on the left, lord 1 on the right of a row. */
 function playing(width = 20): GameState {
   const state = createGame(field(width), 3, 'test', {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
+    sickness: 0,
   })
   state.tick = state.rules.openingTicks
   state.villages = []
