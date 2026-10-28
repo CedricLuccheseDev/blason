@@ -22,8 +22,12 @@ export function Spectacle({ room }: Readonly<{ room: () => Room }>) {
     if (!element) return
     let handle: GameHandle | undefined
     let cancelled = false
+    // Read through a call: the game may be called off while any await runs.
+    const off = () => cancelled
     void import('~/render/client')
-      .then(async ({ mountGame, randomSeed }) => {
+      .then(async ({ faces, mountGame, randomSeed }) => {
+        await faces()
+        if (off()) return
         // A land of its own: the one made ahead is kept for the player's game.
         const mounted = await mountGame(element, randomSeed(), -1, {
           onSummary: () => {},
@@ -31,7 +35,7 @@ export function Spectacle({ room }: Readonly<{ room: () => Room }>) {
           names: PLAYERS.map((p) => m.game.colors[p.key]),
           spectate: () => inset.current(),
         })
-        if (cancelled) mounted.destroy()
+        if (off()) mounted.destroy()
         else handle = mounted
       })
       // Scenery that cannot start (no WebGL) leaves the menu standing alone.

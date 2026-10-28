@@ -59,15 +59,20 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
     if (!element) return
     let handle: GameHandle | undefined
     let cancelled = false
+    // Read through a call: the game may be called off while any await runs.
+    const off = () => cancelled
     import('~/render/client')
-      .then(async ({ mountGame }) => {
+      .then(async ({ faces, mountGame }) => {
+        // A game called off while its faces load is never made.
+        await faces()
+        if (off()) return
         const mounted = await mountGame(element, seedOf(), me, {
           onSummary: setSummary,
           onAim: setAim,
           onNews: tell,
           names: PLAYERS.map((p) => m.game.colors[p.key]),
         })
-        if (cancelled) mounted.destroy()
+        if (off()) mounted.destroy()
         else {
           handle = mounted
           setGame(mounted)

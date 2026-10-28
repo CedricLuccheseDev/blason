@@ -6,9 +6,10 @@ import type { GameState, Host } from '../../engine'
 
 // Where each army stands and which way it faces, read from the game every
 // frame. On the march, its head on its road. At the front, the point its
-// attack has reached on the straight line from where it entered to the tile
-// clicked: the simulation takes the tiles nearest that line first, so the
-// front moves along it and never back, however the bulge widens. In a battle,
+// attack has reached on the line from where it entered towards the tile
+// clicked, the click a direction and no halt: the simulation takes the tiles
+// nearest that line first, so the front moves along it, past the click if
+// the army goes on, and never back, however the bulge widens. In a battle,
 // its side of the ground halfway between it and the enemy army, facing it:
 // the two armies charge into each other there.
 
@@ -35,62 +36,131 @@ const unit = (x: number, y: number): Spot => {
   return { x: x / d, y: y / d }
 }
 
-/** The pairs of enemy armies fighting each other, each army once, the nearest together. */
-function pairs(state: GameState, anchor: (h: Host) => Spot) {
-  const fighting = state.hosts.filter((h) => h.fighting)
-  const paired = new Map<Host, Host>()
-  const apart = (a: Host, b: Host) => {
-    const [p, q] = [anchor(a), anchor(b)]
-    return Math.hypot(p.x - q.x, p.y - q.y)
-  }
-  for (const a of fighting) {
-    if (paired.has(a)) continue
-    const b = fighting
-      .filter((h) => h !== a && !paired.has(h) && h.owner !== a.owner)
-      .sort((p, q) => apart(a, p) - apart(a, q))
-      .at(0)
-    if (!b) continue
-    paired.set(a, b)
-    paired.set(b, a)
-  }
-  return paired
-}
+/** A battle as it is drawn: its two armies, the ground they met on, the way back to each side. */
+type Battle = { a: Host; b: Host; site: Spot; back: Spot; quiet: number }
+
+/** Ticks a battle is kept once neither army fights: a pause is not its end. */
+const QUIET = 10
 
 export function makeFronts() {
   /** How far along its line each army's attack has gone, in map units: it never goes back. */
   const reached = new Map<Host, number>()
+  /** The battles going on, each army in one at most, each kept on the ground where it began. */
+  const battles = new Map<Host, Battle>()
+  let tick = -1
 
-  /** The line of an attack: from where it entered, towards the tile clicked. */
+  /** The line of an attack: from where it entered, towards the tile clicked, a direction and no halt. */
   function axis(state: GameState, host: Host) {
     const from = siteOf(state, host.entry)
     const to = siteOf(state, host.aim)
-    const length = Math.hypot(to.x - from.x, to.y - from.y)
     const road = pathOf(state, host).at(-1) ?? from
     const dir =
-      length > 0
+      Math.hypot(to.x - from.x, to.y - from.y) > 0
         ? unit(to.x - from.x, to.y - from.y)
         : unit(from.x - road.x, from.y - road.y)
-    return { from, dir, length }
+    return { from, dir }
   }
 
   /** The point an attack has reached on its line. */
   function front(state: GameState, host: Host): Spot {
-    const { from, dir, length } = axis(state, host)
+    const { from, dir } = axis(state, host)
     let far = reached.get(host) ?? 0
     for (const t of host.edge) {
       const p = siteOf(state, t)
       far = Math.max(far, (p.x - from.x) * dir.x + (p.y - from.y) * dir.y)
     }
-    far = Math.min(far, length)
     reached.set(host, far)
     return { x: from.x + dir.x * far, y: from.y + dir.y * far }
+  }
+
+  /** Battles kept while their armies stand and fight, or pause a moment; new ones joined by armies free of any. */
+  function judge(state: GameState, anchor: (h: Host) => Spot) {
+    const standing = new Set(state.hosts)
+    for (const battle of new Set(battles.values())) {
+      const { a, b } = battle
+      const over = !standing.has(a) || !standing.has(b)
+      battle.quiet = a.fighting || b.fighting ? 0 : battle.quiet + 1
+      if (!over && battle.quiet <= QUIET) continue
+      battles.delete(a)
+      battles.delete(b)
+    }
+    const free = state.hosts.filter((h) => h.fighting && !battles.has(h))
+    for (const a of free) {
+      if (battles.has(a)) continue
+      const here = anchor(a)
+      const b = free
+        .filter((h) => h !== a && !battles.has(h) && h.owner !== a.owner)
+        .sort((p, q) => {
+          const [u, v] = [anchor(p), anchor(q)]
+          return (
+            Math.hypot(u.x - here.x, u.y - here.y) -
+            Math.hypot(v.x - here.x, v.y - here.y)
+          )
+        })
+        .at(0)
+      if (!b) continue
+      const there = anchor(b)
+      const site = { x: (here.x + there.x) / 2, y: (here.y + there.y) / 2 }
+      const back = unit(here.x - there.x, here.y - there.y)
+      const battle = { a, b, site, back, quiet: 0 }
+      battles.set(a, battle)
+      battles.set(b, battle)
+    }
+  }
+
+  /** An army in a battle: its side of the ground, facing the other. */
+  function fight(host: Host, battle: Battle, head: number): Front {
+    const sign = battle.a === host ? 1 : -1
+    const back = { x: battle.back.x * sign, y: battle.back.y * sign }
+    const { site } = battle
+    return {
+      host,
+      phase: 'battle',
+      at: { x: site.x + back.x * GAP, y: site.y + back.y * GAP },
+      facing: { x: -back.x, y: -back.y },
+      head,
+      line: site,
+      foe: battle.a === host ? battle.b : battle.a,
+    }
+  }
+
+  /** An army on the march, or at its front. */
+  function stand(
+    state: GameState,
+    host: Host,
+    here: Spot,
+    head: number,
+  ): Front {
+    if (marching(host)) {
+      const next = pointOn(pathOf(state, host), head + 1)
+      const facing = unit(next.x - here.x, next.y - here.y)
+      return {
+        host,
+        phase: 'march',
+        at: here,
+        facing,
+        head,
+        line: null,
+        foe: null,
+      }
+    }
+    const { dir } = axis(state, host)
+    const at = { x: here.x - dir.x * GAP, y: here.y - dir.y * GAP }
+    return {
+      host,
+      phase: 'front',
+      at,
+      facing: dir,
+      head,
+      line: here,
+      foe: null,
+    }
   }
 
   return {
     /** Every army's place this frame. */
     read(state: GameState, between: number): Map<Host, Front> {
       const anchors = new Map<Host, Spot>()
-      const anchor = (h: Host) => anchors.get(h) as Spot
       for (const host of state.hosts) {
         const head = headOf(state, host, between)
         anchors.set(
@@ -102,53 +172,20 @@ export function makeFronts() {
       }
       for (const host of reached.keys())
         if (!anchors.has(host)) reached.delete(host)
-      const foes = pairs(state, anchor)
+      if (state.tick !== tick) {
+        tick = state.tick
+        judge(state, (h) => anchors.get(h) as Spot)
+      }
       const fronts = new Map<Host, Front>()
       for (const host of state.hosts) {
         const head = headOf(state, host, between)
-        const here = anchor(host)
-        const foe = foes.get(host) ?? null
-        if (foe) {
-          const there = anchor(foe)
-          const mid = { x: (here.x + there.x) / 2, y: (here.y + there.y) / 2 }
-          const back = unit(here.x - there.x, here.y - there.y)
-          const at = { x: mid.x + back.x * GAP, y: mid.y + back.y * GAP }
-          const facing = { x: -back.x, y: -back.y }
-          fronts.set(host, {
-            host,
-            phase: 'battle',
-            at,
-            facing,
-            head,
-            line: mid,
-            foe,
-          })
-        } else if (marching(host)) {
-          const path = pathOf(state, host)
-          const next = pointOn(path, head + 1)
-          const facing = unit(next.x - here.x, next.y - here.y)
-          fronts.set(host, {
-            host,
-            phase: 'march',
-            at: here,
-            facing,
-            head,
-            line: null,
-            foe,
-          })
-        } else {
-          const { dir } = axis(state, host)
-          const at = { x: here.x - dir.x * GAP, y: here.y - dir.y * GAP }
-          fronts.set(host, {
-            host,
-            phase: 'front',
-            at,
-            facing: dir,
-            head,
-            line: here,
-            foe,
-          })
-        }
+        const battle = battles.get(host)
+        fronts.set(
+          host,
+          battle
+            ? fight(host, battle, head)
+            : stand(state, host, anchors.get(host) as Spot, head),
+        )
       }
       return fronts
     },

@@ -3,33 +3,25 @@ import { UNIT } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
 import { makeFallen } from './layers/fallen'
-import { makePill } from './layers/pill'
+import { makeStandard } from './layers/standard'
 import { makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
 import { TONE, playerColor } from './palette'
-import {
-  column,
-  figuresOf,
-  lose,
-  makeSquad,
-  middle,
-  move,
-  muster,
-  ranks,
-} from './squads'
+import { figuresOf, lose, makeSquad, middle, rally } from './squads'
 import type { Front, Spot } from './fronts'
 import type { Drawn, Line } from './layers/troops'
-import type { Man, Squad } from './squads'
+import type { Man, Shape, Squad } from './squads'
 import type { GameState, Host } from '../../engine'
 import type { Stamps } from './textures'
 
 // The armies, as one picture. Each army is a few men kept from frame to
-// frame (squads.ts) who walk its road in a column, then stand in two ranks
-// at the point its attack has reached (fronts.ts), the peasants of the land
+// frame (squads.ts) who walk its road in a column, then stand in ranks at
+// the point its attack has reached and follow it as it goes (fronts.ts), the peasants of the land
 // facing them with their pitchforks; when two armies fight, both run to the
 // ground between them and face each other there. Men lost fall where they
-// stand (layers/fallen.ts); a side comes and goes in a fade. Over each army,
-// its men in a pill of its lord's colour, following its men. An enemy army
+// stand (layers/fallen.ts); a side comes and goes in a fade. Among each
+// army's men, its standard-bearer holds high its banner, its lord's arms and
+// its men written on it (layers/standard.ts). An enemy army
 // coming for the player is shown from afar (layers/warning.ts).
 
 /** Seconds for an army to fade in or out. */
@@ -40,7 +32,7 @@ type Army = {
   /** Its men at the last tick read, and its place this frame; gone once the game no longer has it. */
   men: number
   front: Front | null
-  pill: Spot | null
+  flag: Spot | null
   gone: boolean
 }
 
@@ -54,7 +46,7 @@ const enlist = (host: Host): Army => ({
   peasants: makeSquad('peasant', peasantColor(host.target)),
   men: host.men,
   front: null,
-  pill: null,
+  flag: null,
   gone: false,
 })
 
@@ -72,7 +64,7 @@ export function makeArmies(stamps: Stamps, me: number) {
   )
   const fronts = makeFronts()
   const armies = new Map<Host, Army>()
-  const pills = new Map<Army, ReturnType<typeof makePill>>()
+  const standards = new Map<Army, ReturnType<typeof makeStandard>>()
   let tick = -1
   let last = performance.now() / 1000
 
@@ -104,23 +96,18 @@ export function makeArmies(stamps: Stamps, me: number) {
       x: front.line.x + front.facing.x * GAP,
       y: front.line.y + front.facing.y * GAP,
     }
-    const n = figuresOf(held)
-    const places = ranks(at, facing, n)
-    muster(peasants, n, places)
-    move(peasants, places, facing, dt)
+    rally(peasants, figuresOf(held), { line: 'ranks', at, facing }, dt)
     peasants.alpha = Math.min(1, peasants.alpha + dt / FADE)
   }
 
   /** Each man of the army a frame closer to his place: in a column on the march, in ranks at the front or in battle. */
   function place(state: GameState, host: Host, army: Army, dt: number) {
     const front = army.front as Front
-    const n = figuresOf(host.men / UNIT)
-    const places =
+    const shape: Shape =
       front.phase === 'march'
-        ? column(pathOf(state, host), front.head, n)
-        : ranks(front.at, front.facing, n)
-    muster(army.troops, n, places)
-    move(army.troops, places, front.facing, dt)
+        ? { line: 'column', path: pathOf(state, host), head: front.head }
+        : { line: 'ranks', at: front.at, facing: front.facing }
+    rally(army.troops, figuresOf(host.men / UNIT), shape, dt)
     army.troops.alpha = Math.min(1, army.troops.alpha + dt / FADE)
     defend(state, host, army, dt)
   }
@@ -132,8 +119,8 @@ export function makeArmies(stamps: Stamps, me: number) {
     army.peasants.alpha = Math.max(0, army.peasants.alpha - dt / FADE)
     if (army.troops.alpha > 0) return
     armies.delete(host)
-    pills.get(army)?.box.destroy({ children: true })
-    pills.delete(army)
+    standards.get(army)?.box.destroy({ children: true })
+    standards.delete(army)
   }
 
   /** The armies the game has now followed a frame further. */
@@ -171,25 +158,25 @@ export function makeArmies(stamps: Stamps, me: number) {
     return drawn
   }
 
-  /** Each army's men in a pill over them, following them, faded in and out with them. */
+  /** Each army's standard among its men, following them, faded in and out with them. */
   function label(zoom: number) {
     for (const army of armies.values()) {
       const over = middle(army.troops.men)
       if (!over) continue
-      const was = army.pill ?? over
-      army.pill = {
+      const was = army.flag ?? over
+      army.flag = {
         x: was.x + (over.x - was.x) * 0.2,
         y: was.y + (over.y - was.y) * 0.2,
       }
-      let drawn = pills.get(army)
+      let drawn = standards.get(army)
       if (!drawn) {
-        drawn = makePill(army.troops.color)
-        pills.set(army, drawn)
+        drawn = makeStandard(army.troops.color)
+        standards.set(army, drawn)
         container.addChild(drawn.box)
       }
       drawn.box.alpha = army.troops.alpha
-      drawn.box.position.set(army.pill.x, army.pill.y - 9 - 14 / zoom)
-      drawn.show(Math.floor(army.men / UNIT), null, zoom)
+      drawn.box.position.set(army.flag.x, army.flag.y)
+      drawn.show(Math.floor(army.men / UNIT), zoom)
     }
   }
 

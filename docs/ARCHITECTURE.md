@@ -99,8 +99,8 @@ orders. It decides nothing about the rules.
   men kept from frame to frame and running to their places in a column or in
   ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them,
   the dead (`layers/fallen.ts`), the warning of an army coming for the player
-  and the seal of each battle (`layers/warning.ts`), the pill of their men
-  (`layers/pill.ts`); the roads as they are drawn, straight and even
+  and the seal of each battle (`layers/warning.ts`), the standard-bearer
+  among their men (`layers/standard.ts`); the roads as they are drawn, straight and even
   (`roads.ts`); the barracks' seals (`layers/barracks.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
   (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim

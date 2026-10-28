@@ -52,8 +52,8 @@ const FACES = [
 /** How long to wait for them at most, in ms: past it, the game starts with what it has. */
 const FACES_WAIT = 4000
 
-/** The map's faces loaded, or the wait over. */
-async function faces() {
+/** The map's faces loaded, or the wait over: wait for it before mounting a game. */
+export async function faces() {
   const wait = new Promise((done) => setTimeout(done, FACES_WAIT))
   const loads = Promise.all(FACES.map((face) => document.fonts.load(face)))
   await Promise.race([loads.catch(() => undefined), wait])
@@ -76,7 +76,6 @@ export async function mountGame(
 ): Promise<GameHandle> {
   const app = new Application()
   const { land, grid } = takeLand(seed)
-  await faces()
   await app.init({
     preference: 'webgl',
     resizeTo: element,
@@ -211,7 +210,9 @@ export async function mountGame(
       input?.destroy()
       window.removeEventListener('keydown', onKey)
       camera.destroy()
-      app.destroy(true, { children: true, texture: true, textureSource: true })
+      // The textures stay: the fonts' and the stamps' are shared with the
+      // next game on the page, which a destroyed one would break.
+      app.destroy(true, { children: true })
     },
     choose(next) {
       army = next

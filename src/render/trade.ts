@@ -27,7 +27,11 @@ const STRAY = 5
 const market = (state: GameState, tile: number) =>
   state.works.some((w) => w.tile === tile && w.work === 'market')
 
-const keyOf = (road: Array<number>) => `${road[0]}-${road.at(-1)}`
+/** A road's key: its two markets, whichever way the wagon goes, so that two markets share one road. */
+const keyOf = (road: Array<number>) => {
+  const [a, b] = [road[0], road.at(-1) ?? road[0]]
+  return a < b ? `${a}-${b}` : `${b}-${a}`
+}
 
 export function makeTrade(stamps: Stamps, me: number) {
   const container = new Container()
@@ -63,11 +67,20 @@ export function makeTrade(stamps: Stamps, me: number) {
 
   /** Where a caravan is on its road now, so far into the next tick, and which way it goes. */
   function along(state: GameState, caravan: Caravan, between: number) {
+    const route = routes.get(keyOf(caravan.road))
     const path =
-      routes.get(keyOf(caravan.road))?.path ??
+      route?.path ??
       drawRoad(state, caravan.road, (t) => state.grid.land[t], ROUNDS, STRAY)
     const moved = caravan.along + state.rules.caravanPace * between
-    return pointOn(path, moved / 1000)
+    // Its share of its own road, laid on the road shared, from its own end.
+    const share = Math.min(
+      1,
+      moved / 1000 / Math.max(1, caravan.road.length - 1),
+    )
+    const back = route !== undefined && route.road[0] !== caravan.road[0]
+    const at = (back ? 1 - share : share) * (path.length - 1)
+    const p = pointOn(path, at)
+    return back ? { ...p, right: !p.right } : p
   }
 
   return {
