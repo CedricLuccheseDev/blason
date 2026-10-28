@@ -169,7 +169,8 @@ export function makeLabels<TState extends { tick: number }>(
     /** Where a lord's name is drawn now, and its half width and height, in map units; none while he is not written. */
     nameOf(lord: number) {
       const label = labels.get(lord)
-      if (!label?.box.visible || !label.shown) return null
+      if (!label?.box.visible || !label.name.visible || !label.shown)
+        return null
       const { name, shown } = label
       return {
         x: shown.x + name.x,
@@ -178,7 +179,12 @@ export function makeLabels<TState extends { tick: number }>(
         tall: name.height,
       }
     },
-    update(state: TState, zoom: number) {
+    /** `shown`: how much the names show, faded out when the land grows too small for them. */
+    update(state: TState, zoom: number, shown = 1) {
+      for (const label of labels.values()) {
+        label.name.alpha = shown
+        label.name.visible = shown > 0
+      }
       const now = Math.floor(state.tick / BEAT)
       let moved = zoom !== placed
       if (now !== beat) {

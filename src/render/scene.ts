@@ -3,8 +3,9 @@ import { UNIT } from '../../engine'
 import { flatten } from './geometry'
 import { makeLabels } from './layers/labels'
 import { drawLand, drawSea } from './layers/lands'
-import { makePage } from './layers/page'
+import { REACH, makePage } from './layers/page'
 import { makePaper } from './layers/paper'
+import { legible } from './ease'
 import { TONE } from './palette'
 import { makeStamps } from './textures'
 import { makeArmies } from './armies'
@@ -27,7 +28,9 @@ import type { Placement } from './layers/labels'
 // allies in green, the coast in ink, the borders at war in red,
 // the villages and the works, the frame; then the armies, the aim, and over
 // all each lord's name and peasants at the heart of his land. The grain of
-// the parchment over the screen.
+// the parchment over the whole page, moving with it. Farther out than the
+// whole land, the names and the standards shrink with it, as if the page
+// were held farther away, and the small writing fades out.
 
 export function makeScene(
   app: Application,
@@ -83,13 +86,25 @@ export function makeScene(
     labels.container,
     badges.container,
   )
-  const paper = makePaper(app)
-  app.stage.addChild(world, paper.sprite)
+  const paper = makePaper(land, REACH)
+  world.addChild(paper.sprite)
+  app.stage.addChild(world)
 
   return {
     world,
-    resize: paper.resize,
-    draw(hovered: number, work: Work | null, zoom: number, between = 0) {
+    /** The page's textures, which the game's end does not take with it. */
+    destroy() {
+      page.destroy()
+      paper.destroy()
+    },
+    /** `far`: the land's size against the whole land's, under 1 only farther out than it. */
+    draw(
+      hovered: number,
+      work: Work | null,
+      zoom: number,
+      between = 0,
+      far = 1,
+    ) {
       const now = performance.now()
       const traced = regions.update(now)
       marks.update()
@@ -98,12 +113,14 @@ export function makeScene(
       building.draw(state, zoom)
       seals.draw(state, zoom)
       trade.draw(state, between)
-      armies.draw(state, zoom, between)
+      armies.draw(state, zoom, between, far)
       tidings.draw(state, zoom)
       aim.draw(hovered, work, zoom)
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
-      labels.update(state, zoom / fit)
-      badges.update(labels.nameOf, zoom / fit)
+      const shown = legible(far)
+      labels.update(state, zoom / fit / far, shown)
+      badges.update(labels.nameOf, zoom / fit / far)
+      badges.container.alpha = shown
     },
   }
 }

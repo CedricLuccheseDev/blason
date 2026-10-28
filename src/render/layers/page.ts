@@ -1,14 +1,17 @@
 import { Container, Graphics } from 'pixi.js'
 import { TONE } from '../palette'
+import { makeLeaf } from './leaf'
+import { makeMargin } from './margin'
 import type { World } from '../../../engine'
 
-// The page of the manuscript the map is drawn on: past its edges the
-// parchment goes on, and the map sits in an inked frame, two rules and a
-// band of ink and parchment between, a gold lozenge at each corner. A
-// compass rose lies in the open sea.
+// The page of the manuscript the map is drawn on: the map sits in an inked
+// frame, two rules and a band of ink and parchment between, a gold lozenge
+// at each corner; past it the leaf goes on, browning and foxed (leaf.ts),
+// with its margin in pale ink (margin.ts). A compass rose lies in the open
+// sea.
 
-/** How far the parchment goes past the map, in world units. */
-const REACH = 2400
+/** How far the page is drawn past the map, in world units: farther than the widest zoom shows. */
+export const REACH = 6000
 const BAND = 9
 const BAR = 40
 
@@ -90,11 +93,8 @@ function rose(world: World): Graphics | null {
 
 export function makePage(world: World) {
   const container = new Container()
-  container.addChild(
-    new Graphics()
-      .rect(-REACH, -REACH, world.width + 2 * REACH, world.height + 2 * REACH)
-      .fill(TONE.page),
-  )
+  const leaf = makeLeaf(world)
+  container.addChild(leaf.container, makeMargin(world))
   const compass = rose(world)
-  return { container, frame: frame(world), compass }
+  return { container, frame: frame(world), compass, destroy: leaf.destroy }
 }

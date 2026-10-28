@@ -110,8 +110,12 @@ orders. It decides nothing about the rules.
   (`layers/building.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
   (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
-  (`layers/aim.ts`) and the parchment's grain (`layers/paper.ts`).
-- `camera.ts` is the player's camera; `director.ts` is the spectator's, which
+  (`layers/aim.ts`), the parchment's grain over the whole page, moving with it
+  (`layers/paper.ts`), and the page round the map: its frame (`layers/page.ts`),
+  the leaf browning and foxed outwards (`layers/leaf.ts`), the margin's chain,
+  ruling and scale in pale ink (`layers/margin.ts`).
+- `camera.ts` is the player's camera, out to twice farther than the whole land,
+  where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
   goes to the fiercest fight on its own (the home's background).
 - `summary.ts` reads from the state, once a second, the figures the HUD shows.
 

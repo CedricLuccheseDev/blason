@@ -66,7 +66,7 @@ export async function mountGame(
   await app.init({
     preference: 'webgl',
     resizeTo: element,
-    background: TONE.frame,
+    background: TONE.edge,
     antialias: true,
     resolution: Math.min(window.devicePixelRatio || 1, 2),
     autoDensity: true,
@@ -166,7 +166,9 @@ export async function mountGame(
     drawn = true
     if (director) director.step(ticker.elapsedMS)
     else camera.step()
-    scene.draw(hovered, work, camera.zoom(), between)
+    // Farther than the whole land, the names shrink with it (the director never goes so far).
+    const far = director ? 1 : Math.min(1, camera.level())
+    scene.draw(hovered, work, camera.zoom(), between, far)
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
@@ -189,7 +191,6 @@ export async function mountGame(
   const frame = new ResizeObserver(() => {
     app.resize()
     camera.resize()
-    scene.resize()
   })
   frame.observe(element)
 
@@ -203,6 +204,7 @@ export async function mountGame(
       // The textures stay: the fonts' and the stamps' are shared with the
       // next game on the page, which a destroyed one would break.
       app.destroy(true, { children: true })
+      scene.destroy()
     },
     choose(next) {
       army = next

@@ -74,9 +74,11 @@ export function makeStandard(color: number) {
 
   return {
     box,
-    show(count: number, zoom: number) {
+    /** `shown`: how much its figure shows, faded out when the land grows too small for it. */
+    show(count: number, zoom: number, shown = 1) {
       const s = 1 / zoom
       men.text = count.toLocaleString('fr-FR')
+      men.alpha = shown
       men.scale.set(s / SHARP)
       const width = Math.max(NARROW * s, men.width + 12 * s)
       if (Math.abs(width - drawn.width) > 0.01 * s || zoom !== drawn.zoom) {

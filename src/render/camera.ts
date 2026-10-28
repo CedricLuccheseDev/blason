@@ -4,9 +4,11 @@ import type { Application, Container } from 'pixi.js'
 // The camera: the wheel zooms towards the pointer, smoothed over a few
 // frames; a drag moves the map, out past its edges if need be, and two
 // fingers pinch it (gestures.ts); the Home key flies back to the player's
-// realm, or to the whole land when there is none.
+// realm, or to the whole land when there is none. It goes out farther than
+// the whole land, until the page shows round it.
 
-const MAX_ZOOM = 9
+/** The widest and the closest zoom, against the whole land on screen: at the widest it fills half the screen. */
+const [FAR, CLOSE] = [0.5, 9]
 
 export type Box = { left: number; top: number; right: number; bottom: number }
 
@@ -27,6 +29,9 @@ export function makeCamera(
   const fitZoom = () =>
     Math.min(app.screen.width / size.width, app.screen.height / size.height) *
     0.96
+  /** A zoom within the camera's reach. */
+  const within = (k: number) =>
+    Math.max(FAR * fitZoom(), Math.min(CLOSE * fitZoom(), k))
 
   function clamp() {
     const k = world.scale.x
@@ -34,7 +39,7 @@ export function makeCamera(
     const h = size.height * k
     const { width, height } = app.screen
     // The map may leave the screen up to its middle: any place, a corner's
-    // too, can be brought to the centre. The country beyond fills the rest.
+    // too, can be brought to the centre. The page round it fills the rest.
     const minX = width / 2 - w
     const maxX = width / 2
     const minY = height / 2 - h
@@ -65,7 +70,7 @@ export function makeCamera(
       app.screen.width / (box.right - box.left + room),
       app.screen.height / (box.bottom - box.top + room),
     )
-    target = Math.max(fitZoom(), Math.min((MAX_ZOOM / 2) * fitZoom(), k))
+    target = Math.max(fitZoom(), Math.min((CLOSE / 2) * fitZoom(), k))
     aim = {
       x: (box.left + box.right) / 2,
       y: (box.top + box.bottom) / 2,
@@ -88,10 +93,7 @@ export function makeCamera(
     fitted = false
     aim = null
     const factor = e.deltaY < 0 ? 1.25 : 1 / 1.25
-    target = Math.max(
-      fitZoom(),
-      Math.min(MAX_ZOOM * fitZoom(), target * factor),
-    )
+    target = within(target * factor)
     anchor = { x: e.offsetX, y: e.offsetY }
   }
   const gestures = makeGestures(canvas, {
@@ -105,10 +107,7 @@ export function makeCamera(
     pinch(factor, at) {
       fitted = false
       anchor = at
-      target = Math.max(
-        fitZoom(),
-        Math.min(MAX_ZOOM * fitZoom(), world.scale.x * factor),
-      )
+      target = within(world.scale.x * factor)
       apply(target)
     },
   })
@@ -126,7 +125,7 @@ export function makeCamera(
   fit()
 
   return {
-    /** Zoom relative to the whole land on screen: 1 shows it all. */
+    /** Zoom relative to the whole land on screen: 1 shows it all, less shows the page round it. */
     level: () => world.scale.x / fitZoom(),
     zoom: () => world.scale.x,
     /** The part of the world on screen, in world units. */
@@ -156,17 +155,14 @@ export function makeCamera(
     zoomBy(step: 1 | -1) {
       fitted = false
       aim = null
-      target = Math.max(
-        fitZoom(),
-        Math.min(MAX_ZOOM * fitZoom(), target * 1.25 ** (2 * step)),
-      )
+      target = within(target * 1.25 ** (2 * step))
       anchor = { x: app.screen.width / 2, y: app.screen.height / 2 }
     },
     /** After the screen changed size: fit again, or keep the view inside. */
     resize() {
       if (fitted) fit()
       else {
-        target = Math.max(fitZoom(), target)
+        target = within(target)
         clamp()
       }
     },

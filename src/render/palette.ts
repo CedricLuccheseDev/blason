@@ -47,7 +47,8 @@ export const TONE = {
   /** The border shared with an ally: a calm green, quieter than a fight's red. */
   pact: 0x3f7f4a,
   outline: 0x3a2e22,
-  frame: 0xefe3c4,
+  /** The parchment far out from the map, browned at the page's edge. */
+  edge: 0xdccba5,
   neutral: 0xe8e1cd,
   neutralPill: 0x6e665a,
   parchment: 0xf1e8d2,

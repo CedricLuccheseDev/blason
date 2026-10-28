@@ -7,6 +7,7 @@ import { makeStandard } from './layers/standard'
 import { makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
 import { TONE, playerColor } from './palette'
+import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
 import type { Front, Spot } from './fronts'
 import type { Drawn, Line } from './layers/troops'
@@ -173,7 +174,7 @@ export function makeArmies(stamps: Stamps, me: number) {
   }
 
   /** Each army's standard among its men, following them, faded in and out with them. */
-  function label(zoom: number) {
+  function label(zoom: number, shown: number) {
     for (const army of armies.values()) {
       const over = middle(army.troops.men)
       if (!over) continue
@@ -190,7 +191,7 @@ export function makeArmies(stamps: Stamps, me: number) {
       }
       drawn.box.alpha = army.troops.alpha
       drawn.box.position.set(army.flag.x, army.flag.y)
-      drawn.show(Math.floor(army.men / UNIT), zoom)
+      drawn.show(Math.floor(army.men / UNIT), zoom, shown)
     }
   }
 
@@ -204,7 +205,8 @@ export function makeArmies(stamps: Stamps, me: number) {
 
   return {
     container,
-    draw(state: GameState, zoom: number, between = 0) {
+    /** `far`: under 1 farther out than the whole land, where the standards shrink with it. */
+    draw(state: GameState, zoom: number, between = 0, far = 1) {
       const seconds = performance.now() / 1000
       const dt = Math.min(0.1, seconds - last)
       last = seconds
@@ -223,7 +225,7 @@ export function makeArmies(stamps: Stamps, me: number) {
       roads.draw(state, marches, zoom)
       troops.draw(sides(), lines(), seconds)
       fallen.draw(seconds)
-      label(zoom)
+      label(zoom / far, legible(far))
     },
   }
 }
