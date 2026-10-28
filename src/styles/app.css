@@ -17,6 +17,38 @@
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Anton', 'Inter', system-ui, sans-serif;
   --font-mono: 'Inter', system-ui, sans-serif;
+  /* The game's own hand, its art direction: a manuscript's
+     parchment and brown ink, gold and gules; IM Fell for the words,
+     Alegreya Sans for the figures. */
+  --color-vellum: #f6eedb;
+  --color-quill: #2b1e12;
+  --color-gilt: #d9a41e;
+  --color-gilt-deep: #946512;
+  --color-gules: #b3302a;
+  --color-thrive: #2f7d3f;
+  --color-shade: #d9c49a;
+  --color-shade-deep: #b89f6e;
+  --color-gilt-light: #f4d277;
+  --color-gules-deep: #741c16;
+  --color-lead: #8d8574;
+  --color-lead-deep: #5e5749;
+  --color-wax: #f0d9c4;
+  --color-leather: #7a5a3c;
+  --font-fell: 'IM Fell English', Georgia, serif;
+  --font-caps: 'IM Fell English SC', Georgia, serif;
+  --font-figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
+  /* The HUD's measures (src/components/hud/tokens.ts): four sizes of type
+     and nothing between them, one shadow for whatever lies on the map. */
+  --text-hud-s: 13px;
+  --text-hud-s--line-height: 1.2;
+  --text-hud-m: 16px;
+  --text-hud-m--line-height: 1.2;
+  --text-hud-l: 20px;
+  --text-hud-l--line-height: 1.15;
+  --text-hud-xl: 28px;
+  --text-hud-xl--line-height: 1;
+  /* norm-ok: the shadow of what lies on the map, the game's art direction. */
+  --shadow-lift: 0 2px 4px rgb(43 30 18 / 0.35);
 }
 
 @layer base {
@@ -120,6 +152,26 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* The HUD's type roles: words in IM Fell, figures in Alegreya Sans, at the
+   sizes above. A piece picks a role, never a font or a size of its own. */
+@layer components {
+  .hud-word {
+    @apply font-fell text-hud-m text-quill;
+  }
+  .hud-name {
+    @apply font-fell text-hud-l text-quill italic;
+  }
+  .hud-note {
+    @apply font-fell text-hud-s text-quill/70 italic;
+  }
+  .hud-figure {
+    @apply font-figures font-extrabold text-quill;
+    font-variant-numeric: lining-nums tabular-nums;
+    /* Alegreya's space is narrow: "285 / 300" would read as one figure. */
+    word-spacing: 0.12em;
   }
 }
 

@@ -1,0 +1,111 @@
+import { Figure, Icon } from '../hud/Figure'
+import { ICON } from '../hud/tokens'
+import { Rule, Sheet } from '../hud/Sheet'
+import { hex, minutes } from './format'
+import { Ecu } from './svg/kit'
+import { INK } from './svg/marks'
+import type { Summary } from '~/render/client'
+import { useMessages } from '~/i18n'
+
+/** The race's line: its length, and the margin left at each end for a shield. */
+const [LINE, END, TALL, Y] = [360, 8, 28, 20]
+const X = (share: number) => END + ((LINE - 2 * END) * share) / 100
+
+/** The line of the race: the shares in tens, mine filled in my colour, the shields, the flag at the share that wins. */
+function Track({ summary }: Readonly<{ summary: Summary }>) {
+  const { me, leader, needed } = summary
+  const rival = leader && leader.key !== me?.key ? leader : null
+  const sx = X(needed)
+  return (
+    <svg width={LINE} height={TALL} aria-hidden="true" className="shrink-0">
+      <line x1={X(0)} y1={Y} x2={X(100)} y2={Y} stroke={INK} strokeWidth="1" />
+      {Array.from({ length: 11 }, (_, i) => i * 10).map((p) => (
+        <line
+          key={p}
+          x1={X(p)}
+          y1={Y - (p % 50 ? 3 : 5)}
+          x2={X(p)}
+          y2={Y + (p % 50 ? 3 : 5)}
+          stroke={INK}
+          strokeWidth="1"
+          strokeOpacity="0.6"
+        />
+      ))}
+      {me && (
+        <path
+          d={`M${X(0)} ${Y} H${X(me.share)}`}
+          stroke={hex(me.color)}
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+      )}
+      <line x1={sx} y1={2} x2={sx} y2={Y + 6} stroke={INK} strokeWidth="1.5" />
+      <path
+        d={`M${sx} 2 L${sx + 14} 6 L${sx} 10 Z`}
+        fill="var(--color-gilt)"
+        stroke={INK}
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+      {rival && (
+        <Ecu
+          x={X(rival.share) - 6}
+          y={Y - 8}
+          w={12}
+          h={15}
+          color={hex(rival.color)}
+          lift={false}
+        />
+      )}
+      {me && (
+        <Ecu
+          x={X(me.share) - 7}
+          y={Y - 9}
+          w={14}
+          h={17}
+          color={hex(me.color)}
+          lift={false}
+        />
+      )}
+    </svg>
+  )
+}
+
+/**
+ * Top centre: the clock, and the race to the share of the land that wins:
+ * my share in my colour, the leader's shield, the flag at the share to
+ * reach, and when it drops next.
+ */
+export function Race({ summary }: Readonly<{ summary: Summary }>) {
+  const m = useMessages()
+  const { me, leader, needed, dropIn } = summary
+  const rival = leader && leader.key !== me?.key ? leader : null
+  return (
+    <Sheet className="flex items-center gap-3 p-3">
+      <Figure size="l">{minutes(summary.seconds)}</Figure>
+      <Rule />
+      <div className="flex flex-col gap-1">
+        <Track summary={summary} />
+        <div className="flex items-center gap-3">
+          {me && <Figure size="s">{m.race.you(me.share)}</Figure>}
+          {rival && (
+            <span className="hud-word text-hud-s">
+              {m.race.leads(m.game.colors[rival.key], rival.share)}
+            </span>
+          )}
+          <span className="flex-1" />
+          {dropIn === null ? (
+            <span className="hud-word text-hud-s">{m.race.toWin(needed)}</span>
+          ) : (
+            <span className="flex items-center gap-1">
+              <Icon name="hourglass" size={ICON.s} />
+              <span className="hud-word text-hud-s">
+                {m.race.dropsIn(minutes(dropIn))}
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+    </Sheet>
+  )
+}

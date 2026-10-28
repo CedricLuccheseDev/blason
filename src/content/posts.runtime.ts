@@ -32,7 +32,7 @@ async function readDropped(): Promise<Record<string, string>> {
   }
 }
 
-async function loadPosts(locale: Locale): Promise<Array<Post>> {
+export async function loadPosts(locale: Locale): Promise<Array<Post>> {
   return overlayPosts(bundledPosts(), parsePosts(await readDropped()))[locale]
 }
 

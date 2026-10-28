@@ -9,6 +9,29 @@ module.exports = {
       to: { circular: true },
     },
     {
+      name: 'engine-depends-on-nothing',
+      comment:
+        'The simulation runs the same everywhere: it imports neither the app, nor React, Pixi or Convex (SOLID, D)',
+      severity: 'error',
+      from: { path: '^engine/' },
+      to: {
+        path: [
+          '^src/',
+          '^scripts/',
+          '^design/',
+          'node_modules/(react|react-dom|pixi\\.js|convex)/',
+        ],
+      },
+    },
+    {
+      name: 'engine-through-its-contract',
+      comment:
+        'Outside the engine, only engine/index.ts is imported: its contract, not its insides (SOLID, D)',
+      severity: 'error',
+      from: { pathNot: '^engine/' },
+      to: { path: '^engine/', pathNot: '^engine/index\\.ts$' },
+    },
+    {
       name: 'convex-stays-isolated',
       comment: 'Convex functions deploy alone: they never import app code',
       severity: 'error',

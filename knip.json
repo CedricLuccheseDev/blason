@@ -1,6 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/routes/**/*.{ts,tsx}"],
-  "project": ["src/**/*.{ts,tsx}"],
+  "entry": ["src/routes/**/*.{ts,tsx}", "design/mockups/cells.ts"],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "engine/**/*.ts",
+    "scripts/*.ts",
+    "design/mockups/*.ts"
+  ],
   "ignoreDependencies": ["tailwindcss"]
 }

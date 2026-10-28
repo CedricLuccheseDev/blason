@@ -19,12 +19,19 @@ export function SiteFooter() {
           <a href={PORTFOLIO_URL} className="transition-colors hover:text-ink">
             {m.common.author}
           </a>
+          <Link to="/about" className="transition-colors hover:text-ink">
+            {m.common.about}
+          </Link>
+          <Link to="/legal" className="transition-colors hover:text-ink">
+            {m.common.legal}
+          </Link>
           <Link
             to="/blog"
             aria-label={m.blog.title}
             className="font-mono transition-colors hover:text-ink"
           >
             v{__APP_VERSION__}
+            {__APP_VERSION__.startsWith('0.') ? ' alpha' : ''}
           </Link>
         </div>
       </div>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><clipPath id="s"><path d="M7 3 H57 V29.68 Q57 51.72 32.0 61 Q7 51.72 7 29.68 Z"/></clipPath></defs>
+  <path d="M7 3 H57 V29.68 Q57 51.72 32.0 61 Q7 51.72 7 29.68 Z" fill="#d9a41e"/>
+  <path d="M7 41.28 L32.0 20.40 L57 41.28 L57 51.72 L32.0 30.84 L7 51.72 Z" fill="#f6eedb" fill-opacity="0.92" clip-path="url(#s)"/>
+  <path d="M7 3 H57 V29.68 Q57 51.72 32.0 61 Q7 51.72 7 29.68 Z" fill="none" stroke="#2b1e12" stroke-width="3.5" stroke-linejoin="round"/>
+</svg>

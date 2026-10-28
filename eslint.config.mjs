@@ -7,6 +7,7 @@ export default defineConfig([
   globalIgnores([
     'dist/',
     'scripts/',
+    'design/',
     'convex/_generated/',
     'src/routeTree.gen.ts',
   ]),

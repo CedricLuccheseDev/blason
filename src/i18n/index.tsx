@@ -22,7 +22,7 @@ export function LocaleProvider({
   )
 }
 
-function useLocale(): Locale {
+export function useLocale(): Locale {
   return useContext(LocaleContext)
 }
 

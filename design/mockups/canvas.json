@@ -1,0 +1,281 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "FiefMain.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Vue large, 2:30",
+      "w": 1440,
+      "x": 0,
+      "y": 0,
+      "page": "fiefs"
+    },
+    "Front.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Le front : viser, frapper, voir venir",
+      "w": 1440,
+      "x": 1805,
+      "y": 0,
+      "page": "fiefs"
+    },
+    "Batir.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Bâtir : l'éventail sur le fief",
+      "w": 1440,
+      "x": 0,
+      "y": 1300,
+      "page": "fiefs"
+    },
+    "Proche.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Au ras du sol, 1:00",
+      "w": 1440,
+      "x": 1805,
+      "y": 1300,
+      "page": "fiefs"
+    },
+    "Defaite.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Éliminé",
+      "w": 1440,
+      "x": 1805,
+      "y": 2600,
+      "page": "fiefs"
+    },
+    "FiefKit.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Les pièces du HUD",
+      "w": 1440,
+      "x": 0,
+      "y": 4580,
+      "page": "fiefs"
+    },
+    "Fiefs.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Le fond des fiefs",
+      "w": 1440,
+      "x": 1805,
+      "y": 4580,
+      "page": "fiefs"
+    },
+    "Raser.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "Raser pour rebâtir",
+      "w": 1440,
+      "x": 3610,
+      "y": 1300,
+      "page": "fiefs"
+    },
+    "Mobile.dc.html": {
+      "expand": "fill",
+      "h": 995,
+      "title": "Sur mobile, plus tard",
+      "w": 860,
+      "x": 3610,
+      "y": 0,
+      "page": "fiefs"
+    },
+    "Bataille.dc.html": {
+      "expand": "fill",
+      "h": 1580,
+      "title": "Une guerre, du repos au fief pillé",
+      "w": 1440,
+      "x": 0,
+      "y": 2600,
+      "page": "fiefs"
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "w": 1440,
+      "x": 0,
+      "y": 0,
+      "title": "La terre, 1:51",
+      "page": "terre"
+    },
+    "Combat.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "w": 1440,
+      "x": 1805,
+      "y": 0,
+      "title": "Le front",
+      "page": "terre"
+    },
+    "Viser.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "w": 1440,
+      "x": 3610,
+      "y": 0,
+      "title": "Viser",
+      "page": "terre"
+    },
+    "Armees.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "w": 1440,
+      "x": 0,
+      "y": 1300,
+      "title": "Les trois armées",
+      "page": "terre"
+    },
+    "Construire.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "w": 1440,
+      "x": 1805,
+      "y": 1300,
+      "title": "Bâtir",
+      "page": "terre"
+    },
+    "Kit.dc.html": {
+      "expand": "fill",
+      "h": 1290,
+      "w": 1440,
+      "x": 3610,
+      "y": 1300,
+      "title": "Le HUD, un système",
+      "page": "terre"
+    },
+    "Alliances.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "w": 1440,
+      "x": 0,
+      "y": 2950,
+      "title": "Alliances et marchands",
+      "page": "terre"
+    },
+    "Accueil.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "w": 1440,
+      "x": 1805,
+      "y": 2950,
+      "title": "L’accueil",
+      "page": "terre"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-25T14:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas",
+    "page": "terre"
+  },
+  "notes": {
+    "fiefrow1": {
+      "kind": "title1",
+      "maxW": 3245,
+      "text": "Une carte de manuscrit, au milieu d'une partie",
+      "w": 240,
+      "x": 0,
+      "y": -300,
+      "page": "fiefs"
+    },
+    "fiefrow2": {
+      "kind": "title1",
+      "maxW": 5050,
+      "text": "Bâtir, raser pour rebâtir, et le jeu au ras du sol",
+      "w": 240,
+      "x": 0,
+      "y": 1000,
+      "page": "fiefs"
+    },
+    "fiefrow3": {
+      "kind": "title1",
+      "maxW": 3245,
+      "text": "Une guerre, et l'élimination",
+      "w": 240,
+      "x": 0,
+      "y": 2300,
+      "page": "fiefs"
+    },
+    "fiefrow4": {
+      "kind": "title1",
+      "maxW": 3245,
+      "text": "Les pièces du HUD, et le fond des fiefs",
+      "w": 240,
+      "x": 0,
+      "y": 4280,
+      "page": "fiefs"
+    },
+    "terre1": {
+      "kind": "title1",
+      "maxW": 5050,
+      "text": "La terre fluide, au milieu d’une partie",
+      "w": 240,
+      "x": 0,
+      "y": -300,
+      "page": "terre"
+    },
+    "terre2": {
+      "kind": "title1",
+      "maxW": 5050,
+      "text": "Les trois armées, bâtir, et les pièces du HUD",
+      "w": 240,
+      "x": 0,
+      "y": 1000,
+      "page": "terre"
+    },
+    "terre3": {
+      "kind": "title1",
+      "maxW": 3245,
+      "text": "Alliances et marchands, et l’accueil",
+      "w": 240,
+      "x": 0,
+      "y": 2650,
+      "page": "terre"
+    },
+    "accueil": {
+      "x": 1805,
+      "y": 3930,
+      "w": 720,
+      "page": "terre",
+      "size": "m",
+      "text": "Le menu se parcourt aux flèches et s’ouvre par Entrée, comme dans un jeu ; la première entrée est en main dès l’arrivée.\nRegarder une partie écarte le menu et la caméra prend tout l’écran ; Échap le ramène.\nDerrière, une partie que jouent les vingt bots sur une terre redessinée à chaque fois ; toutes les neuf secondes, la caméra va au combat le plus âpre et suit son front."
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Combat.dc.html",
+    "Viser.dc.html",
+    "Armees.dc.html",
+    "Construire.dc.html",
+    "Kit.dc.html",
+    "Alliances.dc.html",
+    "Accueil.dc.html",
+    "FiefMain.dc.html",
+    "Front.dc.html",
+    "Batir.dc.html",
+    "Proche.dc.html",
+    "Bataille.dc.html",
+    "Defaite.dc.html",
+    "FiefKit.dc.html",
+    "Fiefs.dc.html",
+    "Raser.dc.html",
+    "Mobile.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "terre",
+      "name": "La terre fluide"
+    },
+    {
+      "id": "fiefs",
+      "name": "Archives, les fiefs"
+    }
+  ],
+  "title": "Blason, maquettes"
+}

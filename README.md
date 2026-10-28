@@ -1,22 +1,96 @@
 # Blason
 
-Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : une vingtaine de joueurs et de bots sur une
-carte inventée à chaque partie, des villages qui deviennent bourgs puis cités, des alliances courtes et
-des félons. Une partie finie en 15 à 20 minutes, dans le navigateur.
+Blason is a medieval real-time strategy game played in the browser. Twenty
+lords share a land drawn anew for each game and take it from one another tile
+by tile: peasants hold the land, gold pays the men raised from them, alliances
+are short and traitors are marked for all to see. The whole map is drawn in
+ink on a manuscript.
 
-La conception (règles, monde, briques) vit dans le vault Obsidian : `1 - Projects/Blason/Concept.md` et
-`1 - Projects/Blason/Blason.canvas`. Ces documents font foi.
+It is inspired by [OpenFront](https://openfront.io) and written from scratch.
 
-## Stack
+[![CI](https://github.com/CedricLuccheseDev/blason/actions/workflows/ci.yml/badge.svg)](https://github.com/CedricLuccheseDev/blason/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-TanStack Start, Vite, Tailwind v4, TypeScript strict. Base canonique de cl-plugin (`/new-project`),
-règles dans `~/Perso/cl-plugin/NORM.md`. La simulation du jeu vivra dans `engine/`, en TypeScript pur.
+## Features
 
-## Développer
+- **A new land each game**: coasts, lakes, rivers and names, all grown from a
+  single seed.
+- **Land taken tile by tile** from the point you click, at a pace you can see
+  and answer.
+- **Peasants and gold**: your land feeds peasants who hold it; gold pays the
+  men you raise from them, in three armies (a raid, a host, the whole levy).
+- **Works placed freely**: villages feed more peasants, castles hold their
+  land three times better, markets send caravans.
+- **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord
+  who breaks one bears the traitor's mark.
+- **Nineteen bots** that read the same state and send the same orders as you.
+- **A deterministic simulation**, the same on every machine, ready for
+  lockstep multiplayer.
+
+The game is playable alone against the bots. Multiplayer, a small relay server
+in lockstep as in OpenFront, comes next.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 24
+- npm
+- A modern browser with WebGL
+
+## Getting started
 
 ```sh
+git clone https://github.com/CedricLuccheseDev/blason.git
+cd blason
 npm install
 npm run dev
-npm test            # les tests
-npm run lint        # tsc et ESLint
 ```
+
+Then open the address `npm run dev` prints: the home is a title screen with a
+game of bots behind it; **Play** starts a game against nineteen bots.
+
+## Commands
+
+| Command                              | What it does                                                 |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `npm run dev`                        | The game with live reloading                                 |
+| `npm run build`                      | The production build, then a type check                      |
+| `npm start`                          | Serves the production build                                  |
+| `npm test`                           | The tests (Vitest), among them the rules and determinism     |
+| `npm run lint`                       | TypeScript and ESLint                                        |
+| `npm run knip`                       | Dead files, exports and dependencies                         |
+| `npm run depcruise`                  | The architecture's dependency rules                          |
+| `npm run norm`                       | The house style checks (`scripts/norm-check.mjs`)            |
+| `npm run format`                     | Prettier                                                     |
+| `npm run arena -- [games] [players]` | Whole games of bots, without a screen, and what they measure |
+
+## Project structure
+
+- `engine/`: the simulation, pure and deterministic TypeScript; its public
+  contract is `engine/index.ts`
+  - `engine/map/`: the map generator
+  - `engine/bots/`: the bots
+- `src/routes/`: the pages: the home (`/`), the game (`/play`), the journal
+  (`/blog`)
+- `src/render/`: the map on screen (PixiJS) and the player's gestures
+- `src/components/hud/`: the HUD's design system
+- `src/components/game/`: the game's HUD, built on it
+- `src/components/home/`: the home's game in the background
+- `src/i18n/`: French and English
+- `src/content/`: the journal's posts
+- `scripts/`: the arena and the style checks
+- `design/mockups/`: the sources of the design boards
+- `docs/`: the architecture and the rules
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md): how the simulation, the rendering and
+  the HUD fit together, and why.
+- [Rules](docs/RULES.md): the game as it plays today, with its numbers.
+- [Contributing](CONTRIBUTING.md): the workflow, the checks and the
+  conventions.
+
+## License
+
+Blason is free software under the
+[GNU Affero General Public License v3.0](LICENSE): whoever runs a modified
+version of it on a server must offer its source to the players.

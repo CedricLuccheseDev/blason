@@ -16,3 +16,11 @@ node_modules
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# The mockups' generated frames, backgrounds and boards (design/mockups/README.md)
+/design/mockups/page/
+/design/mockups/cells/
+/design/mockups/bg2/
+/design/mockups/out/
+/design/mockups/shots/
+/design/mockups/__pycache__/
