@@ -32,7 +32,7 @@ export function pickAt(
 }
 
 /** Whether an event belongs to HTML of the table that takes the pointer. */
-export const ownedByHtml = (e: Event) =>
+const ownedByHtml = (e: Event) =>
   e.target instanceof Element &&
   e.target.closest('[data-own], button, input, label, a') !== null
 

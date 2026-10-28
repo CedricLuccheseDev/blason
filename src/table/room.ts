@@ -19,12 +19,15 @@ import type { Vector3 } from 'three'
 // the candle's light and its shadows, a soft fill so that the near things
 // read.
 
-export function makeRenderer() {
+/** The renderer; a phone's draws at most one and a half pixels to the point, to spare its battery. */
+export function makeRenderer(phone: boolean) {
   const renderer = new WebGLRenderer({
     antialias: true,
     powerPreference: 'high-performance',
   })
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1))
+  renderer.setPixelRatio(
+    Math.min(phone ? 1.5 : 2, window.devicePixelRatio || 1),
+  )
   renderer.toneMapping = ACESFilmicToneMapping
   renderer.toneMappingExposure = 0.95
   renderer.outputColorSpace = SRGBColorSpace

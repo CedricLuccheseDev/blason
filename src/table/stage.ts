@@ -27,7 +27,7 @@ export type Pick =
   | { kind: 'book' }
   | { kind: 'board' }
 
-export type Card = {
+type Card = {
   i: number
   root: Group
   card: Group
@@ -45,7 +45,7 @@ export function setStage(
   player: number,
 ) {
   const L = LAYOUTS[variant]
-  const renderer = makeRenderer()
+  const renderer = makeRenderer(variant === 'phone')
   const scene = makeScene(renderer)
   const camera = new PerspectiveCamera(L.cam.fov, 1, 1, 600)
   const place = <TThing extends Object3D>(
@@ -153,7 +153,7 @@ export function setStage(
   }
 }
 
-export type Roll = {
+type Roll = {
   t0: number
   q0: Quaternion
   q1: Quaternion

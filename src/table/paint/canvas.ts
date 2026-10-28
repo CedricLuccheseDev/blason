@@ -40,7 +40,7 @@ export function texture(
 }
 
 /** A seeded stream of numbers in [0, 1): the same grain at every visit. */
-export function stream(seed: number): () => number {
+function stream(seed: number): () => number {
   let s = seed
   return () => {
     s = (s * 16807) % 2147483647

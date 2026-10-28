@@ -58,8 +58,8 @@ export function useChoice({ table, ready, level, room, rooms, watch }: Needs) {
       const go = () => void navigate({ to: '/play', search: { level } })
       setTimeout(go, still() ? 0 : 450)
     } else if (mode === 'online') {
+      // The public room is sat at while its card is turned: the seal sits again after a failure.
       if (room.status === 'error' || room.status === 'off') rooms.join(null)
-      turn(1)
     } else if (
       room.status === 'seated' &&
       !room.lobby.open &&

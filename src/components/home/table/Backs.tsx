@@ -12,7 +12,7 @@ import { PLAYERS } from '~/render/palette'
 // a private room's code (PrivateBack.tsx).
 
 /** A seat's colour, as CSS. */
-export const seatColour = (seat: number) =>
+const seatColour = (seat: number) =>
   `#${PLAYERS[seat % PLAYERS.length].color.toString(16).padStart(6, '0')}`
 
 /** The back's stock and its head: the title and the way to turn the card back. */
