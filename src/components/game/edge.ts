@@ -50,10 +50,10 @@ function reach(d: number, c: number, low: number, high: number): number {
 }
 
 /**
- * Pieces waiting at the edge, pushed apart along it so that none hides
- * another: on each side, in their order along it, each at least so many
- * pixels past the one before, across (their words under them are wide) or
- * down.
+ * Pieces pushed apart so that none hides another: those waiting at the
+ * edge along it, on each side in their order, each at least so many pixels
+ * past the one before, across (their words under them are wide) or down;
+ * those on the map side by side.
  */
 export function spread(
   placed: Array<Placed>,
@@ -68,5 +68,12 @@ export function spread(
     for (let i = 1; i < row.length; i++)
       row[i][along] = Math.max(row[i][along], row[i - 1][along] + gap[along])
   }
+  // On the map, those that would lie on one another side by side.
+  const laid = out.filter((p) => !p.side).sort((a, b) => a.x - b.x)
+  laid.forEach((p, i) => {
+    for (const q of laid.slice(0, i))
+      if (Math.abs(p.y - q.y) < gap.y && Math.abs(p.x - q.x) < gap.x)
+        p.x = q.x + gap.x
+  })
   return out
 }

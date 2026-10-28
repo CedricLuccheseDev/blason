@@ -186,6 +186,12 @@
   }
 }
 
+@keyframes hud-bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 @keyframes fade {
   from {
     opacity: 0;
@@ -233,6 +239,27 @@
   .hud-glow {
     animation: hud-glow 1.4s ease-in-out infinite;
   }
+  /* A herald's letter waiting on the map: it rises and settles, slowly. */
+  .hud-bob {
+    animation: hud-bob 2.4s ease-in-out infinite;
+  }
+  /* A parted seal's halves: broken, they fly apart and fade. */
+  .hud-half-l,
+  .hud-half-r {
+    transition-property: transform, opacity;
+    transition-duration: var(--duration-hud-enter);
+    transition-timing-function: var(--ease-hud);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .hud-broken .hud-half-l {
+    transform: translate(-16px, 10px) rotate(-24deg);
+    opacity: 0;
+  }
+  .hud-broken .hud-half-r {
+    transform: translate(16px, 12px) rotate(22deg);
+    opacity: 0;
+  }
   .hud-figure {
     @apply font-figures font-extrabold text-quill;
     font-variant-numeric: lining-nums tabular-nums;
@@ -268,8 +295,13 @@
   .rise-in,
   .fade-in,
   .hud-enter,
-  .hud-glow {
+  .hud-glow,
+  .hud-bob {
     animation: none;
+  }
+  .hud-half-l,
+  .hud-half-r {
+    transition: none;
   }
   .hud-press,
   .hud-press:hover,

@@ -25,7 +25,10 @@
 //   touched and 200 ms for what appears, through two roles: .hud-press on
 //   whatever is touched (it lifts under the pointer and sinks when pressed),
 //   .hud-enter on every sheet as it appears; a seal in hand rises and grows,
-//   gliding. Under reduced motion, none of it: the final state at once.
+//   gliding; what waits on the map for a click glows (.hud-glow, a seal to
+//   renew) or bobs (.hud-bob, a herald's letter), and a seal broken parts
+//   in two (.hud-broken). Under reduced motion, none of it: the final state
+//   at once.
 //
 // In the drawings, below: the icons, shields and seals, each in fixed sizes.
 

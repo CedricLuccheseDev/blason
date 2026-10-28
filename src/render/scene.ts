@@ -17,6 +17,7 @@ import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
 import { makePacts } from './layers/pacts'
+import { makeEnvoys } from './envoys'
 import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
 import { makeScars } from './layers/scars'
@@ -79,6 +80,7 @@ export function makeScene(
   )
   const badges = makeBadges(state, me)
   const pacts = makePacts(me, labels.nameOf)
+  const envoys = makeEnvoys(state, me, labels.nameOf)
   const trade = makeTrade(makeStamps(app.renderer), me)
   const tidings = makeTidings(me)
   const allies = makeAllies(me, regions.outline)
@@ -131,13 +133,14 @@ export function makeScene(
 
   return {
     world,
-    /** Where the HUD lays its pieces on the map this frame: the seal of each of my alliances. */
+    /** Where the HUD lays its pieces on the map this frame: the seal of each of my alliances, the heralds of the offers made to me. */
     anchors(): Array<Anchor> {
-      return state.alliances.flatMap(({ a, b }) => {
+      const bonds = state.alliances.flatMap(({ a, b }): Array<Anchor> => {
         const ally = a === me ? b : a
         const at = me === a || me === b ? pacts.middleOf(ally) : null
         return at ? [{ key: `pact:${ally}`, kind: 'pact', lord: ally, at }] : []
       })
+      return [...bonds, ...envoys.anchors()]
     },
     /** The page's textures, which the game's end does not take with it. */
     destroy() {

@@ -8,7 +8,6 @@ import { Aimed } from './Aimed'
 import { Lords } from './Lords'
 import { CameraButtons } from './CameraButtons'
 import { Letters } from './News'
-import { Offers } from './Pacts'
 import { Heralds } from './Heralds'
 import { Bar } from './Bar'
 import { Moment } from './Moment'
@@ -26,8 +25,9 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * over it a HUD kept to the edges, every piece a sheet of the design system
  * (components/hud) set in a grid kept 16 pixels from them: top left the
  * lords; top centre the race, thin, and under it the opening and the end;
- * top right the letters and the offers; the seals of the alliances on the
- * map, at the middle of their ribbons (Heralds.tsx); bottom left
+ * top right the letters; on the map, the seals of the alliances at the
+ * middle of their ribbons and the heralds' letters of the offers
+ * (Heralds.tsx); bottom left
  * the lord aimed at, while one is; at the bottom the bar, the purse in it;
  * bottom right the camera; the cartouche beside the pointer.
  */
@@ -125,10 +125,6 @@ export function GameScreen({
               <Moment summary={summary} online={online !== undefined} />
             </div>
             <div className="flex w-72 flex-col gap-2 justify-self-end max-sm:col-span-2 max-sm:row-start-2 max-sm:w-64 short:w-60">
-              <Offers
-                summary={summary}
-                onAccept={(seat) => game.treat('ally', seat)}
-              />
               <Letters letters={letters} />
             </div>
             <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-4 max-sm:grid-cols-1 max-sm:gap-2">

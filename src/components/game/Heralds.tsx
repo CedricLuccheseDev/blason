@@ -3,6 +3,8 @@ import { useCompact } from '../hud/useCompact'
 import { scaled } from '../hud/tokens'
 import { COMPACT_INSET, INSET, placeOn, spread } from './edge'
 import { PACT_SEAL, PactSeal } from './PactSeal'
+import { HeraldLetter } from './HeraldLetter'
+import { LETTER } from './svg/letter'
 import type { ReactNode } from 'react'
 import type { Placed } from './edge'
 import type {
@@ -15,7 +17,9 @@ import type {
 /**
  * The diplomacy on the map, as the board's direction A has it: the seal of
  * each of my alliances at the middle of its ribbon, which the render draws
- * between our capitals. The render says where each lies on the screen; one
+ * between our capitals; the herald's letter of each offer made to me, on my
+ * land nearest the lord who sends it, until it is answered or refused. The
+ * render says where each lies on the screen; one
  * out of view waits at its edge, an arrow towards it. Under the HUD's
  * corners, over the map; only what can be clicked takes the pointer.
  */
@@ -24,8 +28,15 @@ export function Heralds({
   summary,
 }: Readonly<{ game: GameHandle; summary: Summary }>) {
   const [laid, setLaid] = useState<Laid | null>(null)
+  // The offers refused, by the lord who made them, until they lapse.
+  const [refused, setRefused] = useState<ReadonlySet<number>>(new Set())
   const compact = useCompact()
   useEffect(() => game.heralds(setLaid), [game])
+  const standing = summary.offers.map((o) => o.seat).join()
+  useEffect(() => {
+    const seats = new Set(standing.split(',').map(Number))
+    setRefused((now) => new Set([...now].filter((seat) => seats.has(seat))))
+  }, [standing])
   const { me } = summary
   if (!laid || !me) return null
   // The HUD's corners grow with its scale, and so does the room kept clear of them.
@@ -43,10 +54,9 @@ export function Heralds({
     { x: 200 * k, y: (box + 40) * k },
   )
 
-  function pieceOf(herald: Herald, placed: Placed): ReactNode {
-    if (herald.kind !== 'pact' || !me) return null
+  function sealOf(herald: Herald, placed: Placed): ReactNode {
     const ally = summary.allies.find((a) => a.seat === herald.lord)
-    if (!ally) return null
+    if (!ally || !me) return null
     return (
       <At key={herald.key} placed={placed} lift={box / 2}>
         <PactSeal
@@ -60,9 +70,36 @@ export function Heralds({
     )
   }
 
+  function letterOf(herald: Herald, placed: Placed): ReactNode {
+    const offer = summary.offers.find((o) => o.seat === herald.lord)
+    if (!offer || refused.has(offer.seat)) return null
+    const refuse = () => setRefused((now) => new Set(now).add(offer.seat))
+    return (
+      <At
+        key={herald.key}
+        placed={placed}
+        lift={LETTER.cy * (compact ? 0.84 : 1)}
+      >
+        <HeraldLetter
+          offer={offer}
+          toward={placed.toward}
+          compact={compact}
+          room={{ left: placed.x, right: laid ? laid.width - placed.x : 0 }}
+          onSeal={() => {
+            game.treat('ally', offer.seat)
+            refuse()
+          }}
+          onRefuse={refuse}
+        />
+      </At>
+    )
+  }
+
+  const PIECES = { pact: sealOf, offer: letterOf, note: () => null }
+
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {laid.list.map((herald, i) => pieceOf(herald, places[i]))}
+      {laid.list.map((herald, i) => PIECES[herald.kind](herald, places[i]))}
     </div>
   )
 }
@@ -83,7 +120,7 @@ function At({
 }: Readonly<{ placed: Placed; lift: number; children: ReactNode }>) {
   return (
     <div
-      className="absolute"
+      className="absolute has-[[data-open]]:z-10"
       style={{
         left: placed.x,
         top: placed.y,

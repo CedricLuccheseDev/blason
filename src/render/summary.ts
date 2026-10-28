@@ -86,7 +86,7 @@ export type Summary = {
       atWar: boolean
     }
   >
-  offers: Array<Lord & { left: number }>
+  offers: Array<Lord & { left: number; ring: number }>
   asked: Array<number>
 }
 
@@ -137,7 +137,11 @@ function pacts(state: GameState, me: number) {
   })
   const offers = state.requests
     .filter((r) => r.to === me && state.players[r.from].alive)
-    .map((r) => ({ ...lordOf(r.from), left: seconds(r.expires - state.tick) }))
+    .map((r) => ({
+      ...lordOf(r.from),
+      left: seconds(r.expires - state.tick),
+      ring: Math.max(0, (r.expires - state.tick) / state.rules.requestTicks),
+    }))
   const asked = state.requests.filter((r) => r.from === me).map((r) => r.to)
   return { allies, offers, asked }
 }

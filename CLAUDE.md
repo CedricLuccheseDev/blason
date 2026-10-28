@@ -89,8 +89,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   mise en page en HTML, le SVG pour les seuls objets dessinés.
 - `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
   les lettres à droite, les sceaux de mes alliances posés sur la carte au milieu de leurs rubans, un clic pour
-  renouveler dans leurs dernières secondes, au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le rendu
-  dit où par `heralds.ts`, les rubans et les cordons dans `layers/pacts.ts`), la barre en bas avec la bourse dedans, puis les armées
+  renouveler dans leurs dernières secondes, les offres en plis scellés du héraut sur ma terre, un clic brise le sceau
+  pour sceller ou refuser (`HeraldLetter.tsx`), au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le
+  rendu dit où par `heralds.ts` et `envoys.ts`, les rubans et les cordons dans `layers/pacts.ts`), la barre en bas avec la bourse dedans, puis les armées
   en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
   se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
