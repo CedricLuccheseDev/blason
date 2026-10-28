@@ -6,7 +6,8 @@ import type { Army } from '../rules'
 import type { GameState, Order } from '../types'
 
 // The bots' wars: whom to strike, and with which army. A lord its host could
-// sweep away whole first, else the neighbour whose land is held thinnest.
+// sweep away whole first, else the neighbour whose land is held thinnest; a
+// bot that slips strikes a neighbour drawn by lot, whenever, short of men.
 
 export const attack = (player: number, tile: number, army: Army): Order => ({
   player,
@@ -51,13 +52,32 @@ function weakest(
   return found
 }
 
-/** One war at a time, on the neighbour held thinnest, when it holds thicker; it waits for the gold to pay most of the army. */
+/** A slip: a war on an enemy neighbour drawn by lot, at once, whatever its men. */
+function blunder(
+  state: GameState,
+  me: number,
+  fronts: Map<number, Array<number>>,
+): Array<Order> {
+  const foes = [...fronts.keys()].filter(
+    (o) => o >= 0 && !isAllied(state, me, o),
+  )
+  if (foes.length === 0) return []
+  const foe = foes[drawInt(state.seed, foes.length, 'blunder', me, state.tick)]
+  const cells = fronts.get(foe) ?? []
+  const at = cells[drawInt(state.seed, cells.length, 'stray', me, state.tick)]
+  return [attack(me, at, 'raid')]
+}
+
+/** One war at a time, on the neighbour held thinnest, when it holds thicker; it waits for the gold to pay most of the army; a bot may slip, out of 100 so often. */
 export function war(
   state: GameState,
   me: number,
   fronts: Map<number, Array<number>>,
   boldness: number,
+  slips = 0,
 ): Array<Order> {
+  if (drawInt(state.seed, 100, 'slip', me, state.tick) < slips)
+    return blunder(state, me, fronts)
   // A neighbour its host could sweep away whole is struck first, however
   // thick its land is held: a lord reduced to a corner is finished off.
   const last = weakest(state, me, fronts)

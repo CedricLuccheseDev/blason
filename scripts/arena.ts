@@ -9,13 +9,13 @@ import {
   step,
   TICKS_PER_SECOND,
 } from '../engine'
-import type { Host } from '../engine'
+import type { Host, Level } from '../engine'
 
 // The arena: twenty bots play whole games on a land of small
 // tiles, and the arena tells how long an attack lasts, when the free land is
 // gone, how far ahead the first is, how a game ends. It says whether the
 // game turns; the pleasure is judged by playing.
-// npm run arena -- [games] [players]
+// npm run arena -- [games] [players] [easy|normal|hard]
 
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
@@ -70,11 +70,11 @@ function watcher(state: ReturnType<typeof createGame>) {
   }
 }
 
-function play(seed: string, players: number) {
+function play(seed: string, players: number, level: Level) {
   const world = generateWorld(seed)
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
   const state = createGame(grid, players, seed)
-  const bots = state.players.map((_, id) => createBot(id, seed))
+  const bots = state.players.map((_, id) => createBot(id, seed, level))
   const watch = watcher(state)
   while (state.winner === NO_ONE && state.tick < LIMIT) {
     step(
@@ -96,7 +96,10 @@ const WIDTHS = [9, 7, 10, 10, 7, 6, 15, 14]
 
 const games = Number(process.argv[2] ?? 4)
 const players = Number(process.argv[3] ?? 20)
-write(`Arena: ${games} games of ${players} bots on a land of small tiles`)
+const level = (process.argv[4] ?? 'normal') as Level
+write(
+  `Arena: ${games} games of ${players} ${level} bots on a land of small tiles`,
+)
 write(
   cols(
     [
@@ -113,7 +116,7 @@ write(
   ),
 )
 for (let i = 0; i < games; i++) {
-  const r = play(`arena-${i}`, players)
+  const r = play(`arena-${i}`, players, level)
   const leader = Math.round(r.leaderAt10 * 100)
   write(
     cols(

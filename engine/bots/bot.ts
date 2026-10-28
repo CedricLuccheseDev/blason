@@ -6,6 +6,8 @@ import { menFor } from '../war'
 import { canBuild, priceOf } from '../works'
 import { TALK_EVERY, talk } from './talk'
 import { attack, war } from './war'
+import { SKILLS } from './levels'
+import type { Level, Skill } from './levels'
 import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
 
@@ -15,13 +17,9 @@ import type { GameState, Order } from '../types'
 // lord there, so the two meet; they wage one war at a time, on the
 // neighbour whose land is held thinnest, and rest between two attacks; they
 // build with the gold left over. Each has its own boldness and patience,
-// drawn from the seed.
+// drawn from the seed, and the level chosen for the game (levels.ts).
 
 export type Bot = (state: GameState, me: number) => Array<Order>
-
-/** A bot thinks once a second, each at its own moment, and notices an attack after a moment. */
-const EVERY = 10
-const NOTICE = 15
 
 /** During the opening: of the free domains, the one farthest from the lords already settled. */
 function opening(state: GameState, me: number): Array<Order> {
@@ -60,8 +58,13 @@ function frontier(state: GameState, me: number) {
   return new Map([...found].map(([o, set]) => [o, [...set]]))
 }
 
-/** An army striking me, noticed after a moment: strike its lord where it fights, so the armies meet. */
-function answer(state: GameState, me: number, seen: Map<number, number>) {
+/** An army striking me, noticed after a moment: strike its lord where it fights, so the armies meet; a bot that slips lets it be a while. */
+function answer(
+  state: GameState,
+  me: number,
+  seen: Map<number, number>,
+  skill: Skill,
+) {
   for (const lord of seen.keys())
     if (!state.hosts.some((h) => h.owner === lord && h.target === me))
       seen.delete(lord)
@@ -69,7 +72,9 @@ function answer(state: GameState, me: number, seen: Map<number, number>) {
     if (host.target !== me) continue
     const at = seen.get(host.owner) ?? state.tick
     seen.set(host.owner, at)
-    if (state.tick - at < NOTICE || menFor(state, me, 'host') < 10_000) continue
+    if (state.tick - at < skill.notice || menFor(state, me, 'host') < 10_000)
+      continue
+    if (drawInt(state.seed, 100, 'let', me, state.tick) < skill.slips) continue
     // One army at a time against the same lord: no new one every second.
     if (state.hosts.some((h) => h.owner === me && h.target === host.owner))
       continue
@@ -136,21 +141,26 @@ function expand(state: GameState, me: number, free: Array<number>) {
   return [attack(me, edge, 'host')]
 }
 
-export function createBot(self: number, seed: string): Bot {
+export function createBot(
+  self: number,
+  seed: string,
+  level: Level = 'normal',
+): Bot {
+  const skill = SKILLS[level]
   /** Out of 100: how full its gauge must be before it strikes, how bold it is, how readily it builds. */
-  const patience = 55 + drawInt(seed, 30, 'patience', self)
+  const patience = 55 + drawInt(seed, 30, 'patience', self) + skill.patience
   const boldness = drawInt(seed, 100, 'boldness', self)
-  const thrift = 20 + drawInt(seed, 40, 'thrift', self)
+  const thrift = 20 + drawInt(seed, 40, 'thrift', self) + skill.thrift
   const seen = new Map<number, number>()
   let rest = 0
 
   return (state, me) => {
-    if ((state.tick + me) % EVERY !== 0) return []
+    if ((state.tick + me) % skill.every !== 0) return []
     if (state.tick < state.rules.openingTicks) return opening(state, me)
-    const answered = answer(state, me, seen)
+    const answered = answer(state, me, seen, skill)
     if (answered.length) return answered
     const fronts = frontier(state, me)
-    if ((state.tick + me) % TALK_EVERY < EVERY) {
+    if ((state.tick + me) % TALK_EVERY < skill.every) {
       const said = talk(state, me, fronts, boldness)
       if (said.length) return said
     }
@@ -163,12 +173,16 @@ export function createBot(self: number, seed: string): Bot {
     const free = fronts.get(NEUTRAL)
     const orders = free
       ? expand(state, me, free)
-      : war(state, me, fronts, boldness)
+      : war(state, me, fronts, boldness, skill.slips)
     if (orders.length)
       rest =
         state.tick +
-        (free ? 50 : 60) +
-        drawInt(state.seed, 100, 'rest', me, state.tick)
+        Math.floor(
+          (((free ? 50 : 60) +
+            drawInt(state.seed, 100, 'rest', me, state.tick)) *
+            skill.rest) /
+            100,
+        )
     return orders
   }
 }

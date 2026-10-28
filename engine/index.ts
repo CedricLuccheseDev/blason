@@ -34,5 +34,7 @@ export { freeVillages, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
 export { meet } from './battle'
 
-// The bots, players like the others.
+// The bots, players like the others, at the level chosen.
 export { createBot } from './bots/bot'
+export { LEVELS } from './bots/levels'
+export type { Level } from './bots/levels'

@@ -14,6 +14,7 @@ import { Allies, Offers } from './Pacts'
 import { Bar } from './Bar'
 import type { Letter } from './News'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
+import type { Level } from '../../../engine'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
@@ -31,7 +32,10 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
 /** How many pieces of news at once, and for how long each. */
 const [LETTERS, LETTER_MS] = [4, 6000]
 
-export function GameScreen({ me }: Readonly<{ me: number }>) {
+export function GameScreen({
+  me,
+  level,
+}: Readonly<{ me: number; level: Level }>) {
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
   const [game, setGame] = useState<GameHandle | null>(null)
@@ -71,6 +75,7 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
           onAim: setAim,
           onNews: tell,
           names: PLAYERS.map((p) => m.game.colors[p.key]),
+          level,
         })
         if (off()) mounted.destroy()
         else {
@@ -83,7 +88,7 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
       cancelled = true
       handle?.destroy()
     }
-  }, [me])
+  }, [me, level])
 
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it.

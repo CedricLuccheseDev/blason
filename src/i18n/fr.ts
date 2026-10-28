@@ -12,6 +12,9 @@ export const fr: Messages = {
     tagline:
       'Un jeu de stratégie médiéval : vingt seigneurs, une terre redessinée à chaque partie.',
     play: 'Jouer',
+    rivals: 'Adversaires',
+    levels: { easy: 'Faciles', normal: 'Moyens', hard: 'Difficiles' },
+    levelHint: 'Change avec ← →',
     watch: 'Regarder une partie',
     journal: 'Journal',
     back: 'Retour au menu',

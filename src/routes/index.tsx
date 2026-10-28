@@ -1,7 +1,9 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent, ReactNode, RefObject } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import { Spectacle } from '~/components/home/Spectacle'
+import { useLevel } from '~/components/home/useLevel'
+import { Flourish, Lozenge, Second } from '~/components/home/Ornaments'
 import { Act } from '~/components/hud/Act'
 import { Shield } from '~/components/hud/Emblem'
 import { Sheet } from '~/components/hud/Sheet'
@@ -37,7 +39,8 @@ function useGameAhead() {
  * The home, as a game's title screen: behind, a game the bots play, watched
  * by a directed camera; on the left, on a scroll of parchment hanging rolled
  * at both ends, the shield and the name, then the menu, walked with the arrows and Enter, a gold lozenge
- * before the entry chosen; the version at the foot. To watch, the menu draws
+ * before the entry chosen, the rivals' level under Play turned with left and
+ * right; the version at the foot. To watch, the menu draws
  * aside and the camera takes the whole screen; Escape brings it back.
  */
 function Home() {
@@ -86,6 +89,7 @@ function Menu({
 }: Readonly<{ onWatch: () => void; menu: RefObject<HTMLElement | null> }>) {
   const m = useMessages()
   const [chosen, setChosen] = useState(0)
+  const [level, turn] = useLevel()
   const list = useRef<HTMLUListElement>(null)
   const items = () =>
     Array.from(
@@ -96,6 +100,13 @@ function Menu({
   useEffect(() => items()[0]?.focus({ preventScroll: true }), [])
 
   function onKey(e: KeyboardEvent) {
+    // On the rivals' entry, left and right change their level.
+    const side = { ArrowRight: 1, ArrowLeft: -1 }[e.key] as 1 | -1 | undefined
+    if (side && chosen === 1) {
+      e.preventDefault()
+      turn(side)
+      return
+    }
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key]
     if (!step) return
     e.preventDefault()
@@ -133,7 +144,7 @@ function Menu({
         </header>
         <ul ref={list} className="flex flex-col gap-2">
           <li>
-            <Link to="/play" {...entry(0)} className={ENTRY}>
+            <Link to="/play" search={{ level }} {...entry(0)} className={ENTRY}>
               <Lozenge />
               <span className="text-hud-xl">{m.home.play}</span>
             </Link>
@@ -141,8 +152,21 @@ function Menu({
           <li>
             <button
               type="button"
-              onClick={onWatch}
+              onClick={() => turn(1, true)}
               {...entry(1)}
+              className={ENTRY}
+            >
+              <Lozenge />
+              <Second note={chosen === 1 ? m.home.levelHint : undefined}>
+                {m.home.rivals} : {m.home.levels[level]}
+              </Second>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={onWatch}
+              {...entry(2)}
               className={ENTRY}
             >
               <Lozenge />
@@ -150,7 +174,7 @@ function Menu({
             </button>
           </li>
           <li className="mt-6">
-            <Link to="/blog" {...entry(2)} className={ENTRY}>
+            <Link to="/blog" {...entry(3)} className={ENTRY}>
               <Lozenge />
               <Second>{m.home.journal}</Second>
             </Link>
@@ -180,39 +204,7 @@ function Menu({
 const FOOT =
   'hud-note hud-press inline-flex min-h-11 items-center hover:text-quill'
 
-/** A gold rule across the scroll, a lozenge at its middle, between the title and the menu. */
-function Flourish() {
-  return (
-    <span aria-hidden="true" className="relative mt-3 h-px w-full bg-gilt">
-      <span className="absolute top-1/2 left-1/2 size-2.5 -translate-1/2 rotate-45 border border-quill bg-gilt" />
-    </span>
-  )
-}
-
 /** An entry of the menu: in IM Fell, pushed a little aside and gilt when chosen. */
 // norm-ok: focus moves the choice, and the chosen entry's gold lozenge, colour and shift are its visible focus.
 const ENTRY =
   'group flex min-h-11 w-fit cursor-pointer items-center gap-3 font-fell text-quill outline-none transition-[color,translate] duration-(--duration-hud-press) ease-hud data-[chosen=true]:translate-x-2 data-[chosen=true]:text-gilt-deep motion-reduce:transition-none'
-
-/** The lozenge before the entry chosen. */
-function Lozenge() {
-  return (
-    <span
-      aria-hidden="true"
-      className="size-3 shrink-0 rotate-45 border-[1.5px] border-quill bg-gilt opacity-0 transition-opacity duration-(--duration-hud-press) ease-hud group-data-[chosen=true]:opacity-100"
-    />
-  )
-}
-
-/** A second entry, smaller, with a note beside it if need be. */
-function Second({
-  children,
-  note,
-}: Readonly<{ children: ReactNode; note?: string }>) {
-  return (
-    <span className="flex items-baseline gap-2">
-      <span className="text-hud-l">{children}</span>
-      {note && <span className="hud-note">{note}</span>}
-    </span>
-  )
-}

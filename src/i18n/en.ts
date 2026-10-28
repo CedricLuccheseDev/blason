@@ -11,6 +11,9 @@ export const en = {
     tagline:
       'A medieval strategy game: twenty lords, one land drawn anew each game.',
     play: 'Play',
+    rivals: 'Rivals',
+    levels: { easy: 'Easy', normal: 'Fair', hard: 'Hard' },
+    levelHint: 'Change with ← →',
     watch: 'Watch a game',
     journal: 'Journal',
     back: 'Back to the menu',

@@ -73,7 +73,7 @@ can tune them without touching the code. The rules themselves are described in
 | `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                   |
 | `caravans.ts`            | The merchants' roads and what they pay                                                     |
 | `step.ts`                | The tick, validation of orders, victory                                                    |
-| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy                   |
+| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `levels.ts`      |
 
 ### The bots
 
@@ -81,7 +81,11 @@ A bot is a function of the state that returns orders (`createBot` in
 `engine/bots/bot.ts`). It reads the same state as a player and sends the same
 `Order`s, through the same validation: the simulation cannot tell a bot from a
 person. Bots are pure and deterministic like the rest of the engine, so in
-multiplayer they will run on every client without a server.
+multiplayer they will run on every client without a server. Their level
+(`engine/bots/levels.ts`: easy, normal, hard), chosen at the home, never lets
+them cheat: it sets how often a bot thinks, how soon it notices an attack, how
+long it rests, how full it waits to be and how often it slips. The arena takes
+it too: `npm run arena -- [games] [players] [easy|normal|hard]`.
 
 ## The rendering
 

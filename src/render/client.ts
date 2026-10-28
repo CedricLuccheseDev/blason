@@ -16,7 +16,7 @@ import { makeIncome } from './income'
 import type { Aim } from './aiming'
 import type { News } from './news'
 import type { Room } from './director'
-import type { Army, Work } from '../../engine'
+import type { Army, Level, Work } from '../../engine'
 import type { Summary } from './summary'
 
 // The game on screen, the land taken bit by bit: the manuscript map
@@ -55,6 +55,8 @@ export async function mountGame(
     /** What happened in the last second that the player should read. */
     onNews?: (news: Array<News>) => void
     names: Array<string>
+    /** The bots' level, chosen at the home; normal if none. */
+    level?: Level
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
   },
@@ -70,7 +72,7 @@ export async function mountGame(
     autoDensity: true,
   })
   element.appendChild(app.canvas)
-  const session = startSession(grid, land.seed, me)
+  const session = startSession(grid, land.seed, me, hooks.level)
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
 
