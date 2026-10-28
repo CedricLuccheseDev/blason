@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 // norm-ok: the game's own material (CLAUDE.md, the art direction): parchment laid on the map, its corners worn round, its shadow on the page.
 const SHEET =
-  'relative rounded-md border-[1.5px] border-quill bg-vellum shadow-lift'
+  'hud-enter relative rounded-md border-[1.5px] border-quill bg-vellum shadow-lift'
 const RULE =
   'pointer-events-none absolute inset-[3px] rounded-sm border border-gilt'
 const ROLL =

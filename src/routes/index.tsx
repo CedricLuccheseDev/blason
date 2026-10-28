@@ -178,7 +178,7 @@ function Menu({
 
 /** The links at the foot of the scroll: the rest of the site, discreet. */
 const FOOT =
-  'hud-note inline-flex min-h-11 items-center transition-colors hover:text-quill'
+  'hud-note hud-press inline-flex min-h-11 items-center hover:text-quill'
 
 /** A gold rule across the scroll, a lozenge at its middle, between the title and the menu. */
 function Flourish() {
@@ -192,14 +192,14 @@ function Flourish() {
 /** An entry of the menu: in IM Fell, pushed a little aside and gilt when chosen. */
 // norm-ok: focus moves the choice, and the chosen entry's gold lozenge, colour and shift are its visible focus.
 const ENTRY =
-  'group flex min-h-11 w-fit cursor-pointer items-center gap-3 font-fell text-quill outline-none transition-[color,translate] data-[chosen=true]:translate-x-2 data-[chosen=true]:text-gilt-deep motion-reduce:transition-none'
+  'group flex min-h-11 w-fit cursor-pointer items-center gap-3 font-fell text-quill outline-none transition-[color,translate] duration-(--duration-hud-press) ease-hud data-[chosen=true]:translate-x-2 data-[chosen=true]:text-gilt-deep motion-reduce:transition-none'
 
 /** The lozenge before the entry chosen. */
 function Lozenge() {
   return (
     <span
       aria-hidden="true"
-      className="size-3 shrink-0 rotate-45 border-[1.5px] border-quill bg-gilt opacity-0 transition-opacity group-data-[chosen=true]:opacity-100"
+      className="size-3 shrink-0 rotate-45 border-[1.5px] border-quill bg-gilt opacity-0 transition-opacity duration-(--duration-hud-press) ease-hud group-data-[chosen=true]:opacity-100"
     />
   )
 }

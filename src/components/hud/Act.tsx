@@ -14,7 +14,7 @@ export type Tone = keyof typeof TONES
 
 // norm-ok: a plate of the game's own material (CLAUDE.md, the art direction), as the sheet it lies on.
 const PLATE =
-  'pointer-events-auto inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border-[1.5px] border-quill px-4 font-fell text-hud-m shadow-lift transition-colors'
+  'pointer-events-auto inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border-[1.5px] border-quill px-4 font-fell text-hud-m shadow-lift hud-press'
 
 /** The button's look, for a link that acts as one. */
 export function actClass(tone: Tone = 'gilt'): string {

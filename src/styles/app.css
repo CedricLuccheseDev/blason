@@ -52,6 +52,11 @@
   --text-hud-xl--line-height: 1;
   /* norm-ok: the shadow of what lies on the map, the game's art direction. */
   --shadow-lift: 0 2px 4px rgb(43 30 18 / 0.35);
+  /* The HUD's motion: one curve, quick to leave and soft to land, and two
+     durations, for what is touched and for what appears. */
+  --ease-hud: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-hud-press: 120ms;
+  --duration-hud-enter: 200ms;
 }
 
 @layer base {
@@ -149,6 +154,13 @@
   }
 }
 
+@keyframes hud-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 @keyframes fade {
   from {
     opacity: 0;
@@ -169,6 +181,22 @@
   }
   .hud-note {
     @apply font-fell text-hud-s text-quill/70 italic;
+  }
+  /* The HUD's motion roles: what is touched lifts under the pointer and
+     sinks when pressed; a sheet that appears rises a little as it comes. */
+  .hud-press {
+    transition-property: transform, background-color, box-shadow, opacity;
+    transition-duration: var(--duration-hud-press);
+    transition-timing-function: var(--ease-hud);
+  }
+  .hud-press:hover {
+    transform: translateY(-1px);
+  }
+  .hud-press:active {
+    transform: translateY(1px) scale(0.97);
+  }
+  .hud-enter {
+    animation: hud-enter var(--duration-hud-enter) var(--ease-hud) both;
   }
   .hud-figure {
     @apply font-figures font-extrabold text-quill;
@@ -203,7 +231,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .rise-in,
-  .fade-in {
+  .fade-in,
+  .hud-enter {
     animation: none;
+  }
+  .hud-press,
+  .hud-press:hover,
+  .hud-press:active {
+    transition: none;
+    transform: none;
   }
 }

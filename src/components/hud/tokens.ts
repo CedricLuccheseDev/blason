@@ -13,6 +13,11 @@
 // - one material, the sheet (Sheet.tsx), one button (Act.tsx), one shadow
 //   (shadow-lift), one rounding (rounded-md, its rule rounded-sm);
 // - what cannot be had is at half ink (opacity-50).
+// - motion: one curve (ease-hud) and two durations, 120 ms for what is
+//   touched and 200 ms for what appears, through two roles: .hud-press on
+//   whatever is touched (it lifts under the pointer and sinks when pressed),
+//   .hud-enter on every sheet as it appears; a seal in hand rises and grows,
+//   gliding. Under reduced motion, none of it: the final state at once.
 //
 // In the drawings, below: the icons, shields and seals, each in fixed sizes.
 

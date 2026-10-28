@@ -42,18 +42,20 @@ function Round({
 }>) {
   const box = boxOf(size)
   const c = box / 2
+  const r = SEAL[size]
+  // In hand, it rises and grows by RAISE, gliding there (the HUD's motion).
+  const lift = held
+    ? `translateY(-${RAISE}px) scale(${(r + RAISE) / r})`
+    : undefined
   return (
     <svg
       width={box}
       height={box}
       aria-hidden="true"
-      className="shrink-0 overflow-visible"
+      className="shrink-0 overflow-visible transition-transform duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none"
+      style={{ transform: lift }}
     >
-      {children({
-        cx: c,
-        cy: held ? c - RAISE : c,
-        r: SEAL[size] + (held ? RAISE : 0),
-      })}
+      {children({ cx: c, cy: c, r })}
     </svg>
   )
 }

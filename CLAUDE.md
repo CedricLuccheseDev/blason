@@ -70,7 +70,11 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (13, 16, 20, 28) par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note`, `.hud-figure`),
   l'espace sur les pas 4, 8, 12, 16 et 24 ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
-  (`Act.tsx`) ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons et touches (`Emblem.tsx`). La
+  (`Act.tsx`) ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons et touches (`Emblem.tsx`) ;
+  un mouvement unifié, acté le 28/10 (« chaque élément hud interactif soit animé ... des animations unifiés ») :
+  une courbe (`ease-hud`), deux durées (120 ms pour ce qu'on touche, 200 ms pour ce qui apparaît), deux rôles
+  (`.hud-press`, `.hud-enter`), rien sous `prefers-reduced-motion` ; `useCompact` donne la forme compacte des
+  pièces sur téléphone, debout ou couché. La
   mise en page en HTML, le SVG pour les seuls objets dessinés.
 - `src/components/game/` : le HUD de la partie (la bourse, les alliés, la course, les lettres, la barre, le
   cartouche près de la souris), et ses dessins SVG (`svg/`).

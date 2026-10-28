@@ -111,7 +111,11 @@ The HUD is React, laid over the map. It is built on a small design system,
 - **one material**, the sheet of parchment (`Sheet.tsx`);
 - **one button**, 44 pixels tall (`Act.tsx`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
-  shields, wax seals, gilt medallions, keys (`Emblem.tsx`).
+  shields, wax seals, gilt medallions, keys (`Emblem.tsx`);
+- **one motion**: a single curve and two durations, through two roles,
+  `.hud-press` on whatever is touched and `.hud-enter` on every sheet that
+  appears; nothing moves under reduced motion;
+- **a compact shape** on phones, upright or sideways (`useCompact.ts`).
 
 The game's pieces (`src/components/game/`: the purse, the race, the bar, the
 cartouche beside the pointer, the alliance letters) are built from these and

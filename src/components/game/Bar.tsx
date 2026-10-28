@@ -17,7 +17,7 @@ export const ARMY_MARKS = {
 
 // norm-ok: the piece's hover wash follows the sheet's worn corners (the art direction).
 const PIECE =
-  'pointer-events-auto flex cursor-pointer flex-col items-center gap-1 rounded-md pb-2 transition-colors hover:bg-quill/5'
+  'pointer-events-auto flex cursor-pointer flex-col items-center gap-1 rounded-md pb-2 hud-press hover:bg-quill/5'
 
 /** One piece of the bar: its emblem and key, its name, its figures; on a phone, the emblem and its figures alone, the name said to screen readers. */
 function Piece({
