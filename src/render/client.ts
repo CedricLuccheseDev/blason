@@ -38,26 +38,12 @@ export type GameHandle = {
 }
 
 export type { Summary } from './summary'
+/** Whose ground the pointer is over, for the bar to light what a click there would do. */
+export type Ground = 'own' | 'foreign' | null
 export type { Aim } from './aiming'
 export type { News } from './news'
 export { prepareGame, randomSeed } from './ahead'
-
-/** The faces the map writes with: its names, figures and pills are cut from them once, so they must be there first. */
-const FACES = [
-  "900 64px 'Alegreya Sans'",
-  "700 64px 'Alegreya Sans'",
-  "64px 'IM Fell English SC'",
-  "64px 'IM Fell English'",
-]
-/** How long to wait for them at most, in ms: past it, the game starts with what it has. */
-const FACES_WAIT = 4000
-
-/** The map's faces loaded, or the wait over: wait for it before mounting a game. */
-export async function faces() {
-  const wait = new Promise((done) => setTimeout(done, FACES_WAIT))
-  const loads = Promise.all(FACES.map((face) => document.fonts.load(face)))
-  await Promise.race([loads.catch(() => undefined), wait])
-}
+export { faces } from './faces'
 
 export async function mountGame(
   element: HTMLElement,
@@ -69,6 +55,8 @@ export async function mountGame(
     onAim: (aim: Aim | null) => void
     /** What happened in the last second that the player should read. */
     onNews?: (news: Array<News>) => void
+    /** Whose ground the pointer is over: the player's own, another's or free, or none (sea, off the map). */
+    onGround?: (ground: Ground) => void
     names: Array<string>
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
@@ -102,6 +90,15 @@ export async function mountGame(
   let army: Army = 'host'
   let work: Work | null = null
   let hovered = -1
+  let ground: Ground = null
+  /** The ground under the pointer told again when it changes. */
+  function tread(tile: number) {
+    let now: Ground = null
+    if (tile >= 0) now = state.owner[tile] === me ? 'own' : 'foreign'
+    if (now === ground) return
+    ground = now
+    hooks.onGround?.(now)
+  }
   // The aim pinned by a right click.
   let pinned: Aim | null = null
   const aiming = makeAiming(app.canvas, state, me, scene.world)
@@ -130,6 +127,7 @@ export async function mountGame(
       ? makeInput(app.canvas, scene.world, pick, {
           hover(tile) {
             hovered = tile
+            tread(tile)
             if (!pinned) hooks.onAim(aimAt(tile, false))
           },
           click,

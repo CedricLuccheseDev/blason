@@ -12,22 +12,28 @@ import { CameraButtons } from './CameraButtons'
 import { Letters } from './News'
 import { Allies, Offers } from './Pacts'
 import { Bar } from './Bar'
-import { Purse } from './Purse'
 import type { Letter } from './News'
-import type { Aim, GameHandle, News, Summary } from '~/render/client'
+import type { Aim, GameHandle, Ground, News, Summary } from '~/render/client'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
 const seedOf = () => new URLSearchParams(window.location.search).get('seed')
 
 /**
- * The game, the land taken bit by bit: the map in the whole window,
- * and over it the HUD, every piece a sheet of the design system
- * (components/hud) set in a grid kept 16 pixels from the edges: top left
- * the purse and the allies under it; top centre the race, and under it the
- * opening and the end; top right the letters; at the bottom the bar; the
- * cartouche beside the pointer.
+ * The game, the land taken bit by bit: the map in the whole window, and
+ * over it a HUD kept to the edges, every piece a sheet of the design system
+ * (components/hud) set in a grid kept 16 pixels from them: top left the
+ * lords; top centre the race, thin, and under it the opening and the end;
+ * top right the letters, the offers and the alliances to renew; bottom left
+ * the lord aimed at, while one is; at the bottom the bar, the purse in it;
+ * bottom right the camera; the cartouche beside the pointer.
  */
+/** The half of the bar a click where the pointer is would use. */
+const litOf = (ground: Ground) => {
+  if (ground === 'own') return 'works'
+  return ground === 'foreign' ? 'armies' : null
+}
+
 /** How many pieces of news at once, and for how long each. */
 const [LETTERS, LETTER_MS] = [4, 6000]
 
@@ -37,6 +43,7 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
   const [game, setGame] = useState<GameHandle | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [aim, setAim] = useState<Aim | null>(null)
+  const [ground, setGround] = useState<Ground>(null)
   // The game could not start (no WebGL, a failed load): said, not a blank page.
   const [failed, setFailed] = useState(false)
   // The news on screen, each for a few seconds.
@@ -70,6 +77,7 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
           onSummary: setSummary,
           onAim: setAim,
           onNews: tell,
+          onGround: setGround,
           names: PLAYERS.map((p) => m.game.colors[p.key]),
         })
         if (off()) mounted.destroy()
@@ -99,35 +107,33 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
       {failed && <Failed />}
       {game && summary && (
         <>
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-1 max-sm:grid-rows-[auto_auto_auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
-            <div className="flex w-fit min-w-0 flex-col items-stretch gap-2 max-sm:w-full">
-              <Purse summary={summary} />
-              <Allies
-                summary={summary}
-                onRenew={(seat) => game.treat('ally', seat)}
-              />
+          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
+            <div className="relative flex w-64 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
+              <Lords summary={summary} aimed={aim?.lord ?? null} />
             </div>
             <div className="flex flex-col items-center gap-2">
               <Race summary={summary} />
               <Moment summary={summary} />
             </div>
-            <div className="flex w-80 flex-col gap-2 justify-self-end max-sm:w-full short:w-60">
+            <div className="flex w-80 flex-col gap-2 justify-self-end max-sm:col-span-2 max-sm:row-start-2 max-sm:w-64 short:w-60">
               <Offers
                 summary={summary}
                 onAccept={(seat) => game.treat('ally', seat)}
               />
+              <Allies
+                summary={summary}
+                onRenew={(seat) => game.treat('ally', seat)}
+              />
               <Letters letters={letters} />
             </div>
-            <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-1 max-sm:row-start-5 max-sm:grid-cols-1 max-sm:gap-2">
-              <div className="flex w-80 flex-col gap-2 max-sm:w-full short:w-60">
-                <div className="max-sm:hidden short:hidden">
-                  <Lords summary={summary} aimed={aim?.lord ?? null} />
-                </div>
+            <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-4 max-sm:grid-cols-1 max-sm:gap-2">
+              <div className="flex w-72 flex-col gap-2 max-sm:w-full short:w-60">
                 <Aimed aim={aim} summary={summary} />
               </div>
               <div className="flex justify-center">
                 <Bar
                   summary={summary}
+                  lit={litOf(ground)}
                   onArmy={game.choose}
                   onWork={game.hold}
                 />

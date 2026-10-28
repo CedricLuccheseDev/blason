@@ -76,40 +76,33 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
 }
 
 /**
- * Top centre: the clock, and the race to the share of the land that wins:
- * my share in my colour, the leader's shield, the flag at the share to
- * reach, and when it drops next.
+ * Top centre, on one thin line: the clock, the race to the share of the land
+ * that wins (my share in my colour, the leader's shield, the flag at the
+ * share to reach), and the share to reach or when it drops next. Who leads
+ * is read in the lords' list.
  */
 export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
-  const { me, leader, needed, dropIn } = summary
-  const rival = leader && leader.key !== me?.key ? leader : null
+  const { needed, dropIn } = summary
   return (
-    <Sheet className="flex items-center gap-3 p-3">
-      <Figure size="l">{minutes(summary.seconds)}</Figure>
+    <Sheet className="flex items-center gap-3 px-3 py-1">
+      <Figure size="m">{minutes(summary.seconds)}</Figure>
       <Rule />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="w-60 max-sm:w-24">
         <Track summary={summary} />
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {me && <Figure size="s">{m.race.you(me.share)}</Figure>}
-          {rival && (
-            <span className="hud-word text-hud-s">
-              {m.race.leads(m.game.colors[rival.key], rival.share)}
-            </span>
-          )}
-          <span className="flex-1" />
-          {dropIn === null ? (
-            <span className="hud-word text-hud-s">{m.race.toWin(needed)}</span>
-          ) : (
-            <span className="flex items-center gap-1">
-              <Icon name="hourglass" size={ICON.s} />
-              <span className="hud-word text-hud-s">
-                {m.race.dropsIn(minutes(dropIn))}
-              </span>
-            </span>
-          )}
-        </div>
       </div>
+      {dropIn === null ? (
+        <span className="hud-note whitespace-nowrap">
+          {m.race.toWin(needed)}
+        </span>
+      ) : (
+        <span className="flex items-center gap-1">
+          <Icon name="hourglass" size={ICON.s} />
+          <span className="hud-note whitespace-nowrap">
+            {m.race.dropsIn(minutes(dropIn))}
+          </span>
+        </span>
+      )}
     </Sheet>
   )
 }

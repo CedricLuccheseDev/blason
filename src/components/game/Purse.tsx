@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Shield } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
 import type { Summary } from '~/render/client'
@@ -21,8 +20,9 @@ function useShrunk(cap: number): boolean {
 }
 
 /**
- * Top left: the shield filling with the peasants; the peasants over what the
- * villages feed, red a moment when that falls, a village lost; and the gold.
+ * At the left of the bar, what the player has beside what he spends: the
+ * shield filling with the peasants; the peasants over what the villages
+ * feed, red a moment when that falls, a village lost; and the gold.
  */
 export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   const { me } = summary
@@ -30,14 +30,22 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   const shrunk = useShrunk(me?.cap ?? 0)
   if (!me) return null
   return (
-    <Sheet className="flex items-center gap-3 p-3">
-      <Shield
-        color={hex(me.color)}
-        size={compact ? 'm' : 'l'}
-        level={Math.min(1, me.peasants / Math.max(1, me.cap))}
-      />
-      <div className="grid flex-1 grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2">
-        <Figure icon="soldier" size={compact ? 'l' : 'xl'}>
+    <div className="flex items-center gap-2">
+      {!compact && (
+        <Shield
+          color={hex(me.color)}
+          size="m"
+          level={Math.min(1, me.peasants / Math.max(1, me.cap))}
+        />
+      )}
+      <div
+        className={
+          compact
+            ? 'flex items-center gap-3'
+            : 'grid grid-cols-[auto_auto] items-center gap-x-2 gap-y-1'
+        }
+      >
+        <Figure icon="soldier" size={compact ? 'm' : 'l'}>
           {count(me.peasants)}
           <span
             className={`text-hud-m transition-colors duration-(--duration-hud-enter) ease-hud ${
@@ -55,6 +63,6 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
           {count(me.gold)}
         </Figure>
       </div>
-    </Sheet>
+    </div>
   )
 }

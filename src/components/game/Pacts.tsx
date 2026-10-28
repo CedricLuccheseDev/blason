@@ -29,27 +29,30 @@ export function Offers({
 }
 
 /**
- * Under the purse, the player's allies: each lord bound to him, the time the
- * alliance has left, and in its last moments the seal to renew it.
+ * Among the letters, the alliances in their last moments: each lord bound to
+ * the player, the time left, the seal to renew it. The others are read in
+ * the lords' list, an ally's links ringed by the time he has left.
  */
 export function Allies({
   summary,
   onRenew,
 }: Readonly<{ summary: Summary; onRenew: (seat: number) => void }>) {
   const m = useMessages()
-  return summary.allies.map((a) => (
-    <LordSheet
-      key={a.seat}
-      lord={a}
-      act={
-        a.renewable && (
-          <Act onClick={() => onRenew(a.seat)}>{m.pacts.renew}</Act>
-        )
-      }
-    >
-      <Figure icon="links" size="s" tone="dim">
-        {minutes(a.left)}
-      </Figure>
-    </LordSheet>
-  ))
+  return summary.allies
+    .filter((a) => a.renewable)
+    .map((a) => (
+      <LordSheet
+        key={a.seat}
+        lord={a}
+        act={
+          a.renewable && (
+            <Act onClick={() => onRenew(a.seat)}>{m.pacts.renew}</Act>
+          )
+        }
+      >
+        <Figure icon="links" size="s" tone="dim">
+          {minutes(a.left)}
+        </Figure>
+      </LordSheet>
+    ))
 }

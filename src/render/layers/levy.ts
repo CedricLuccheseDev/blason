@@ -14,6 +14,9 @@ import type { GameState } from '../../../engine'
 const R = 3.4
 const [DX, DY] = [6, -11]
 const SEEN = 7
+/** A village's width in map units, and on screen the least for its seal to show. */
+const VILLAGE = 20
+const FAR = 16
 
 /** The sleeper's two z, centred on (x, y). */
 function sleep(g: Graphics, x: number, y: number, k: number) {
@@ -45,6 +48,8 @@ export function makeLevySeals() {
     container,
     draw(state: GameState, zoom: number) {
       g.clear()
+      // Too far to see the villages, too far for their seals.
+      if (VILLAGE * zoom < FAR) return
       const k = Math.max(1, SEEN / zoom / R)
       const out = new Set(state.hosts.map((h) => h.from))
       for (const work of state.works) {

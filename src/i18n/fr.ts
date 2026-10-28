@@ -60,8 +60,6 @@ export const fr: Messages = {
     },
   },
   race: {
-    you: (share: number) => `Toi ${share}\u202f%`,
-    leads: (name: string, share: number) => `${name} mène, ${share}\u202f%`,
     toWin: (share: number) => `pour gagner : ${share}\u202f%`,
     dropsIn: (left: string) => `pour gagner, baisse dans ${left}`,
   },

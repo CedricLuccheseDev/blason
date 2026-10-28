@@ -129,8 +129,10 @@ The HUD is React, laid over the map. It is built on a small design system,
   appears; nothing moves under reduced motion;
 - **a compact shape** on phones, upright or sideways (`useCompact.ts`).
 
-The game's pieces (`src/components/game/`: the purse, the race, the bar, the
-cartouche beside the pointer, the alliance letters) are built from these and
+The game's pieces (`src/components/game/`: the lords' list top left, the
+race on one thin line, the letters and the alliances to renew top right, the
+bar at the bottom with the purse in it and the half a click would use lit,
+the lord aimed at, the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 

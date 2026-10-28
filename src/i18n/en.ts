@@ -59,8 +59,6 @@ export const en = {
     },
   },
   race: {
-    you: (share: number) => `You ${share}%`,
-    leads: (name: string, share: number) => `${name} leads, ${share}%`,
     toWin: (share: number) => `to win: ${share}%`,
     dropsIn: (left: string) => `to win, drops in ${left}`,
   },
