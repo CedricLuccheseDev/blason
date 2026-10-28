@@ -48,6 +48,34 @@ export const GLYPHS = {
       open: true,
     },
   ],
+  // The coups, each its own shape before its colour (rules.ts, COUPS). A
+  // torch held up: the troublemaker who sets a land against its lord.
+  torch: [
+    {
+      d: 'M12 1.8 Q17 6.4 15.7 9.2 Q15 10.6 12 10.6 Q9 10.6 8.3 9.2 Q7 6.4 12 1.8 Z',
+    },
+    { d: 'M8.6 10.6 H15.4 V12.8 H8.6 Z' },
+    { d: 'M9.9 12.8 H14.1 L13 21.8 H11 Z' },
+    { d: 'M12 5.4 Q13.8 7.6 12 9.4 Q10.2 7.6 12 5.4', open: true },
+  ],
+  // A bow drawn, its arrow nocked: the archers' volley.
+  bow: [
+    { d: 'M8 2.4 Q21.5 12 8 21.6 M8 2.4 V21.6', open: true },
+    {
+      d: 'M2.6 12 H19.6 M2.6 12 L1.4 9.8 M2.6 12 L1.4 14.2 M4.6 12 L3.4 9.8 M4.6 12 L3.4 14.2',
+      open: true,
+    },
+    { d: 'M22.6 12 L18.6 9.6 L19.6 12 L18.6 14.4 Z' },
+  ],
+  // A round pot of Greek fire, flames out of its neck.
+  firepot: [
+    { d: 'M12 7 Q8.6 4.8 10.6 1.6 Q11.4 3.8 12.8 3 Q15.8 5 12 7 Z' },
+    { d: 'M9.4 6.8 H14.6 V9 H9.4 Z' },
+    {
+      d: 'M9.4 9 Q5.2 10 5.2 14.6 Q5.2 21.6 12 21.6 Q18.8 21.6 18.8 14.6 Q18.8 10 14.6 9 Z',
+    },
+    { d: 'M5.8 14.4 H18.2 M8.6 17.6 Q12 19.2 15.4 17.6', open: true },
+  ],
 } satisfies Record<string, Array<Part>>
 
 export type Icon = keyof typeof GLYPHS

@@ -1,5 +1,5 @@
 import { Ecu } from '../game/svg/kit'
-import { Medallion, Seal } from '../game/svg/seals'
+import { Lozenge, Medallion, Seal } from '../game/svg/seals'
 import { Glyph, INK, PAPER } from '../game/svg/marks'
 import { BADGE, RAISE, SEAL, SHIELD, scaled } from './tokens'
 import type { Mark } from '../game/svg/marks'
@@ -7,8 +7,8 @@ import type { ReactNode } from 'react'
 
 // The HUD's drawn objects at their fixed sizes, each in its own box so the
 // sheets lay them out as they do words: a lord's shield, the wax seal of an
-// army or an act, the medallion of a work, a badge of standing, a key of the
-// keyboard. Drawn at scale 1, grown by the HUD's scale.
+// army or an act, the medallion of a work, the lozenge of a coup, a badge of
+// standing, a key of the keyboard. Drawn at scale 1, grown by the HUD's scale.
 
 /** A drawing's box: drawn on `w` by `h` units, laid out at that size grown by the HUD's scale. */
 const box = (w: number, h: number) => ({
@@ -96,6 +96,19 @@ export function MedallionEmblem({
   return (
     <Round size={size} held={held}>
       {(at) => <Medallion {...at} icon={icon} lifted={held} />}
+    </Round>
+  )
+}
+
+/** A coup's lozenge, ringed in gules; raised and glowing when in hand. */
+export function CoupEmblem({
+  icon,
+  size = 'l',
+  held = false,
+}: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
+  return (
+    <Round size={size} held={held}>
+      {(at) => <Lozenge {...at} icon={icon} lifted={held} />}
     </Round>
   )
 }

@@ -19,14 +19,18 @@ import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
 import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
-import type { GameState, Work, World } from '../../engine'
+import { makeScars } from './layers/scars'
+import { makeStrikes } from './layers/strikes'
+import type { GameState, World } from '../../engine'
+import type { Hand } from './hand'
 import type { Application } from 'pixi.js'
 import type { Placement } from './layers/labels'
 
 // The map, stacked: the page and the sea, the
 // bare land, the lords' washes spreading tile by tile, the borders between
-// allies in green, the coast in ink, the borders at war in red,
-// the villages and the works, the frame; then the armies, the aim, and over
+// allies in green, the coast in ink, what the coups leave (the rebels' land
+// and the ashes), the borders at war in red, the villages and the works,
+// the frame; then the armies, the coups on their way, the aim, and over
 // all each lord's name and peasants at the heart of his land. The grain of
 // the parchment over the whole page, moving with it. Farther out than the
 // whole land, the names and the standards shrink with it, as if the page
@@ -66,6 +70,8 @@ export function makeScene(
   const raids = makeRaids(regions.outline)
   const building = makeBuilding()
   const seals = makeLevySeals()
+  const scars = makeScars()
+  const strikes = makeStrikes(me)
   const world = new Container()
   world.addChild(page.container, drawSea(land), drawLand(land))
   if (page.compass) world.addChild(page.compass)
@@ -73,6 +79,7 @@ export function makeScene(
     regions.container,
     allies.container,
     coast,
+    scars.container,
     raids.container,
     trade.roads,
     marks.container,
@@ -81,6 +88,7 @@ export function makeScene(
     page.frame,
     trade.container,
     armies.container,
+    strikes.container,
     tidings.container,
     aim.container,
     labels.container,
@@ -98,24 +106,20 @@ export function makeScene(
       paper.destroy()
     },
     /** `far`: the land's size against the whole land's, under 1 only farther out than it. */
-    draw(
-      hovered: number,
-      work: Work | null,
-      zoom: number,
-      between = 0,
-      far = 1,
-    ) {
+    draw(hovered: number, hand: Hand, zoom: number, between = 0, far = 1) {
       const now = performance.now()
       const traced = regions.update(now)
       marks.update()
       allies.draw(state, zoom, traced, now)
+      scars.draw(state, zoom)
       raids.draw(state, zoom, traced)
       building.draw(state, zoom)
       seals.draw(state, zoom)
       trade.draw(state, between)
       armies.draw(state, zoom, between, far)
+      strikes.draw(state, zoom, between)
       tidings.draw(state, zoom)
-      aim.draw(hovered, work, zoom)
+      aim.draw(hovered, hand, zoom)
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
       const shown = legible(far)
       labels.update(state, zoom / fit / far, shown)

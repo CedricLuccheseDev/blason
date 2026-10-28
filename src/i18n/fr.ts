@@ -33,6 +33,18 @@ export const fr: Messages = {
       market: 'Marché',
       castle: 'Château',
     },
+    coups: {
+      troublemaker: 'Causeur de troubles',
+      archers: 'Archers',
+      fire: 'Feu grégeois',
+    },
+    launch: 'clic : lancer',
+    beyond: {
+      troublemaker: 'seulement sur la terre d’un autre',
+      archers: 'trop loin de ta frontière',
+      fire: 'trop loin de ta frontière',
+    },
+    noGold: 'pas assez d’or',
     percent: (n: number) => `${n}\u202f%`,
     victory: 'Victoire',
     winner: 'remporte la partie',
@@ -87,6 +99,14 @@ export const fr: Messages = {
     },
     and: 'et',
     fell: 'est tombé',
+    coup: {
+      troublemaker: 'envoie un causeur de troubles chez toi',
+      archers: 'tire une volée sur toi',
+      fire: 'lance le feu grégeois sur toi',
+    },
+    stopped: 'a arrêté ton causeur de troubles',
+    roseAgainst: 'a soulevé ta terre contre toi',
+    roseFrom: 'a perdu sa terre à tes rebelles',
   },
   lord: {
     allied: 'Ton allié',

@@ -85,8 +85,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   pièces sur téléphone, debout ou couché. La
   mise en page en HTML, le SVG pour les seuls objets dessinés.
 - `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
-  les lettres et les alliances à renouveler à droite, la barre en bas avec la bourse dedans, ce qui ne se paie pas à
-  demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
+  les lettres et les alliances à renouveler à droite, la barre en bas avec la bourse dedans, puis les armées
+  en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
+  se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, comme l'écran titre d'un jeu ; le menu sur un parchemin roulé (Jouer,
   Regarder, le Journal ; flèches et Entrée), derrière une partie de bots (`src/components/home/Spectacle.tsx`)
   filmée par le réalisateur ; la terre de la prochaine partie s'y prépare (`src/render/ahead.ts`).

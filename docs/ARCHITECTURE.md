@@ -94,7 +94,9 @@ orders. It decides nothing about the rules.
 
 - `client.ts` mounts a game in a page element: the land (`ahead.ts` makes the
   next one while the home is read), the session, the scene, the camera, the
-  input, and the handle the React screen drives.
+  input, and the handle the React screen drives. What the player holds in
+  hand, an army, a work or a coup, and the order a click sends with it, is
+  `hand.ts` (the keys 1 to 9, `keys.ts`).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
 - `scene.ts` stacks the layers: the page and its frame, the sea and its shore
@@ -107,17 +109,25 @@ orders. It decides nothing about the rules.
   and the seal of each battle (`layers/warning.ts`), the standard-bearer
   among their men (`layers/standard.ts`); the roads as they are drawn, straight and even
   (`roads.ts`); the borders being bitten, in red (`layers/raids.ts`); the works being built
-  (`layers/building.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
+  (`layers/building.ts`); what the coups leave, the rebels' land hatched and
+  their pitchforks, the ashes charred and paling (`layers/scars.ts`); the coups
+  on their way, seen by all: the troublemaker walking with his torch, a volley
+  of arrows, a pot of Greek fire trailing smoke, the land they will strike
+  ringed in red for their victim (`layers/strikes.ts`, drawn by `art/coups.ts`,
+  their ways by `flight.ts`), and how each ends, a rain of arrows, a burst of
+  flames, a land rising, a troublemaker struck out (`layers/impacts.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
   (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
-  (`layers/aim.ts`), the parchment's grain over the whole page, moving with it
+  (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
+  its reach along the border, `layers/aimCoup.ts`), the parchment's grain over the whole page, moving with it
   (`layers/paper.ts`), and the page round the map: its frame (`layers/page.ts`),
   the leaf browning and foxed outwards (`layers/leaf.ts`), the margin's chain,
   ruling and scale in pale ink (`layers/margin.ts`).
 - `camera.ts` is the player's camera, out to twice farther than the whole land,
   where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
   goes to the fiercest fight on its own (the home's background).
-- `summary.ts` reads from the state, once a second, the figures the HUD shows.
+- `summary.ts` reads from the state, once a second, the figures the HUD shows;
+  `news.ts` what the player's letters tell, the coups among it (`coupNews.ts`).
 
 ## The interface
 
@@ -137,7 +147,7 @@ The HUD is React, laid over the map. It is built on a small design system,
 - **one material**, the sheet of parchment (`Sheet.tsx`);
 - **one button**, 44 pixels tall at scale 1 (`Act.tsx`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
-  shields, wax seals, gilt medallions, keys, and the badges of standing
+  shields, wax seals, gilt medallions, the coups' lozenges ringed in gules, keys, and the badges of standing
   (`Emblem.tsx`): an ally the links of a chain in the alliance's green
   (`--color-pact`, the map's `TONE.pact`), a foe at war a sword in gules, a
   felon his shield broken in two on gules; the shape says it before the
@@ -149,7 +159,8 @@ The HUD is React, laid over the map. It is built on a small design system,
 
 The game's pieces (`src/components/game/`: the lords' list top left, the
 race on one thin line, the letters and the alliances to renew top right, the
-bar at the bottom with the purse in it, what cannot be paid at half ink,
+bar at the bottom with the purse in it, then the armies, the works and the
+coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
 the lord aimed at, the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).

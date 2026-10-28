@@ -32,6 +32,18 @@ export const en = {
       market: 'Market',
       castle: 'Castle',
     },
+    coups: {
+      troublemaker: 'Troublemaker',
+      archers: 'Archers',
+      fire: 'Greek fire',
+    },
+    launch: 'click: launch',
+    beyond: {
+      troublemaker: 'only on another lord’s land',
+      archers: 'too far from your border',
+      fire: 'too far from your border',
+    },
+    noGold: 'not enough gold',
     percent: (n: number) => `${n}%`,
     victory: 'Victory',
     winner: 'wins the game',
@@ -86,6 +98,14 @@ export const en = {
     },
     and: 'and',
     fell: 'has fallen',
+    coup: {
+      troublemaker: 'sends a troublemaker at you',
+      archers: 'looses a volley at you',
+      fire: 'throws Greek fire at you',
+    },
+    stopped: 'stopped your troublemaker',
+    roseAgainst: 'raised your land against you',
+    roseFrom: 'lost land to your rebels',
   },
   lord: {
     allied: 'Your ally',

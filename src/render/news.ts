@@ -1,9 +1,13 @@
+import { makeCoupNews } from './coupNews'
+import type { CoupNews } from './coupNews'
 import type { GameState, Work } from '../../engine'
 
 // The news, for the player's letters: who strikes him, who took one of his
 // works (at once: a village, a market lost must never go unseen), an ally
 // who broke faith, a lord who fell, and once a fight with a lord is over, what he took
-// from him and lost to him in all; never the same letter every second. Read
+// from him and lost to him in all; the coups launched at him, his
+// troublemaker stopped, a land risen (coupNews.ts); never the same letter
+// every second. Read
 // once a second by comparing the game with the second before.
 
 export type News =
@@ -13,6 +17,7 @@ export type News =
   | { kind: 'betrayed'; lord: number }
   | { kind: 'fell'; lord: number }
   | { kind: 'seized'; lord: number; works: Partial<Record<Work, number>> }
+  | CoupNews
 
 /** Below so many tiles in a fight, a change of hands is not news. */
 const NOTABLE = 20
@@ -35,6 +40,7 @@ export function makeNews(state: GameState, me: number) {
   /** My works at the last reading, by their tile. */
   let held = new Map<number, Work>()
   let alive = state.players.map((p) => p.alive)
+  const coups = makeCoupNews(state, me)
 
   const alliesOf = () =>
     new Set(
@@ -104,6 +110,7 @@ export function makeNews(state: GameState, me: number) {
     second += 1
     seizures(news)
     strikes(news)
+    news.push(...coups.read())
     exchanges(news)
     const bound = alliesOf()
     for (const lord of allies)

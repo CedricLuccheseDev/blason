@@ -1,11 +1,13 @@
 import {
   ARMIES,
+  COUPS,
   NO_ONE,
   TICKS_PER_SECOND,
   UNIT,
   WORKS,
   capOf,
   costOf,
+  coupPrice,
   hasPicked,
   isAllied,
   isFelon,
@@ -17,7 +19,8 @@ import {
   worksOf,
 } from '../../engine'
 import { PLAYERS } from './palette'
-import type { Army, GameState, Work } from '../../engine'
+import type { Army, Coup, GameState, Work } from '../../engine'
+import type { Hand } from './hand'
 import type { Heraldry } from './palette'
 
 // What the HUD shows, read from the state once a second, as
@@ -54,6 +57,9 @@ export type Summary = {
   /** The work in hand, if any, and what each costs now. */
   work: Work | null
   works: Array<{ work: Work; price: number; can: boolean }>
+  /** The coup in hand, if any, and what each costs now: dearer with each launched. */
+  coup: Coup | null
+  coups: Array<{ coup: Coup; price: number; can: boolean }>
   /** My allies, with the seconds left and whether I may renew now; the offers made to me; the lords I asked. */
   allies: Array<Lord & { left: number; renewable: boolean }>
   /** Every lord, as the card of the one aimed at shows him. */
@@ -122,7 +128,7 @@ function pacts(state: GameState, me: number) {
 export function summarize(
   state: GameState,
   me: number,
-  hand: { army: Army; work: Work | null },
+  hand: Hand,
   /** All the gold the player has gained, in thousandths (earnings.ts). */
   earned = 0,
 ): Summary {
@@ -181,6 +187,11 @@ export function summarize(
     works: WORKS.map((w) => {
       const price = me >= 0 ? priceOf(state, me, w) : 0
       return { work: w, price, can: price <= gold }
+    }),
+    coup: hand.coup,
+    coups: COUPS.map((c) => {
+      const price = me >= 0 ? coupPrice(state, me, c) : 0
+      return { coup: c, price, can: price <= gold }
     }),
     ...pacts(state, me),
     lords: lordsOf(state, me),

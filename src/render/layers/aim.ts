@@ -10,7 +10,9 @@ import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
+import { makeCoupAim } from './aimCoup'
 import type { GameState, Work } from '../../../engine'
+import type { Hand } from '../hand'
 
 // What a click on the tile under the pointer would do. Against another's
 // land or free land: the road the army would march from its village to
@@ -18,7 +20,8 @@ import type { GameState, Work } from '../../../engine'
 // the tile aimed at. With a work in hand: its drawing on the
 // tile, the circle it reaches (the castle's land held, the market's range of
 // trade), red where it may not stand,
-// with the works already standing ringed in red. In the opening:
+// with the works already standing ringed in red. With a coup in hand, the
+// disc it would strike and its way there (layers/aimCoup.ts). In the opening:
 // the free domain one would start on, whole. Sized on screen.
 
 type At = { x: number; y: number }
@@ -34,6 +37,8 @@ export function makeAim(state: GameState, me: number) {
   const marks = container.addChild(new Graphics())
   const ghost = container.addChild(new Graphics())
   ghost.alpha = 0.85
+  const coups = makeCoupAim(state, me)
+  container.addChild(coups.container)
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
@@ -129,13 +134,19 @@ export function makeAim(state: GameState, me: number) {
 
   return {
     container,
-    draw(hovered: number, work: Work | null, zoom: number) {
+    draw(hovered: number, hand: Hand, zoom: number) {
       marks.clear()
       ghost.clear()
       ghost.visible = false
-      if (hovered < 0 || me < 0 || !state.players[me].alive) return
-      if (state.tick < state.rules.openingTicks) opening(hovered)
-      else if (work) building(hovered, work, zoom)
+      coups.clear()
+      if (me < 0 || !state.players[me].alive) return
+      const opened = state.tick >= state.rules.openingTicks
+      // The reach of a coup in hand shows even with the pointer off the land.
+      if (opened && hand.coup && hovered < 0) coups.band(hand.coup)
+      if (hovered < 0) return
+      if (!opened) opening(hovered)
+      else if (hand.coup) coups.draw(hovered, hand.coup, zoom)
+      else if (hand.work) building(hovered, hand.work, zoom)
       else strike(hovered, zoom)
     },
   }

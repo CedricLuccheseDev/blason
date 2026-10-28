@@ -134,6 +134,7 @@ export function GameScreen({
                   summary={summary}
                   onArmy={game.choose}
                   onWork={game.hold}
+                  onCoup={game.aim}
                 />
               </div>
               <div className="pointer-events-auto justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">

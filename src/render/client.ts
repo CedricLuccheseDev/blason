@@ -3,7 +3,7 @@ import { NO_ONE } from '../../engine'
 import { makeAiming } from './aiming'
 import { makeCamera } from './camera'
 import { makeInput } from './input'
-import { ARMY_KEYS, WORK_KEYS } from './keys'
+import { makeHand } from './hand'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
 import { makeDirector } from './director'
@@ -16,7 +16,7 @@ import { makeEarnings } from './earnings'
 import type { Aim } from './aiming'
 import type { News } from './news'
 import type { Room } from './director'
-import type { Army, Level, Work } from '../../engine'
+import type { Army, Coup, Level, Work } from '../../engine'
 import type { Summary } from './summary'
 
 // The game on screen, the land taken bit by bit: the manuscript map
@@ -24,12 +24,16 @@ import type { Summary } from './summary'
 // villages, works and armies. A click on another's land raises the army in
 // hand (1 to 3: a raid, a host, the whole levy) and sends it in where the
 // border is nearest the click; with a work in hand (4 to 6: a village, a
-// castle, a market), a click on one's own land builds it there.
+// castle, a market), a click on one's own land builds it there; with a coup
+// in hand (7 to 9: a troublemaker, archers, Greek fire), a click launches it
+// at the land clicked (hand.ts).
 
 export type GameHandle = {
   destroy: () => void
   choose: (army: Army) => void
   hold: (work: Work | null) => void
+  /** A coup taken in hand, or put down. */
+  aim: (coup: Coup | null) => void
   close: () => void
   /** An order about another lord: to offer or accept an alliance, renew it, or break it. */
   treat: (type: 'ally' | 'breakAlliance', target: number) => void
@@ -86,14 +90,12 @@ export async function mountGame(
 
   const pick = (x: number, y: number) => tileAt(grid, x, y)
 
-  let army: Army = 'host'
-  let work: Work | null = null
+  const hand = makeHand()
   let hovered = -1
   // The aim pinned by a right click.
   let pinned: Aim | null = null
   const aiming = makeAiming(app.canvas, state, me, scene.world)
-  const aimAt = (tile: number, pin: boolean) =>
-    aiming.at(tile, pin, work !== null)
+  const aimAt = (tile: number, pin: boolean) => aiming.at(tile, pin, hand.hand)
 
   function unpin() {
     pinned = null
@@ -107,10 +109,11 @@ export async function mountGame(
     }
     if (state.tick < state.rules.openingTicks)
       session.send({ player: me, type: 'pickStart', tile })
-    else if (work) {
-      session.send({ player: me, type: 'build', tile, work })
-      work = null
-    } else session.send({ player: me, type: 'attack', tile, army })
+    else {
+      const held = hand.holding()
+      session.send(hand.order(me, tile))
+      if (held) refresh()
+    }
   }
   const input =
     me >= 0
@@ -129,23 +132,12 @@ export async function mountGame(
       : null
   const onKey = (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
-    if (e.key === 'Escape') {
-      work = null
-      unpin()
-    }
-    // An army taken in hand puts the work down, as on the bar.
-    const raised = ARMY_KEYS[e.key]
-    if (raised) {
-      army = raised
-      work = null
-    }
-    const held = WORK_KEYS[e.key]
-    if (held) work = work === held ? null : held
-    refresh()
+    if (e.key === 'Escape') unpin()
+    if (hand.key(e.key)) refresh()
   }
-  /** The figures and the aim again, after what is in hand changed: a work in hand aims at nothing. */
+  /** The figures and the aim again, after what is in hand changed. */
   function refresh() {
-    hooks.onSummary(summarize(state, me, { army, work }, earnings.total()))
+    hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
     if (!pinned) hooks.onAim(aimAt(hovered, false))
   }
   if (me >= 0) window.addEventListener('keydown', onKey)
@@ -168,7 +160,7 @@ export async function mountGame(
     else camera.step()
     // Farther than the whole land, the names shrink with it (the director never goes so far).
     const far = director ? 1 : Math.min(1, camera.level())
-    scene.draw(hovered, work, camera.zoom(), between, far)
+    scene.draw(hovered, hand.hand, camera.zoom(), between, far)
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
@@ -182,7 +174,7 @@ export async function mountGame(
         const box = home()
         if (box) camera.focus(box)
       }
-      hooks.onSummary(summarize(state, me, { army, work }, earnings.total()))
+      hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
       const fresh = news.read()
       if (fresh.length > 0) hooks.onNews?.(fresh)
     }
@@ -207,12 +199,15 @@ export async function mountGame(
       scene.destroy()
     },
     choose(next) {
-      army = next
-      work = null
+      hand.choose(next)
       refresh()
     },
     hold(next) {
-      work = next
+      hand.hold(next)
+      refresh()
+    },
+    aim(next) {
+      hand.aim(next)
       refresh()
     },
     close: unpin,
