@@ -8,7 +8,7 @@ import type { Pt, Sketch, Tone } from './kit'
 
 export const IRON = 0x9097a0
 const IRON_DARK = 0x5d636b
-export const STRAW = 0xd9b55c
+const STRAW = 0xd9b55c
 const HAIR = 0x5a3b22
 
 export type Headwear =

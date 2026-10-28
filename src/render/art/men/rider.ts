@@ -63,7 +63,7 @@ function trot(phase: number): Gait {
   return { fore: [bend(a), bend(b)], hind: [bend(b), bend(a)], rear: 0 }
 }
 
-export function seatAt(frame: number): Seat {
+function seatAt(frame: number): Seat {
   if (frame === 0)
     return { gait: STILL, grip: [1, 2.3], angle: 0.42, lean: 0, wave: 0 }
   if (frame <= WALK) {

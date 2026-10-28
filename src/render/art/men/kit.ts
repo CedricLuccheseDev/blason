@@ -58,7 +58,7 @@ function paint(sk: Sketch, path: Path2D, color: number | null) {
 }
 
 /** The path's ink: a line all round, heavier on the shaded side, as a pen pressing down. */
-export function inkOf(sk: Sketch, path: Path2D, width = INK) {
+function inkOf(sk: Sketch, path: Path2D, width = INK) {
   if (sk.layer !== 'base') return
   const { g } = sk
   g.lineJoin = 'round'

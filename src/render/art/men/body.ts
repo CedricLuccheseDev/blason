@@ -9,9 +9,9 @@ import type { Pt, Sketch, Tone } from './kit'
 // drawn darker, behind him. The legs set his height: the foot on the
 // ground carries him, so that he rises and sinks as he walks.
 
-export const SKIN = 0xe3c9a4
-export const THIGH = 2.4
-export const SHIN = 2.5
+const SKIN = 0xe3c9a4
+const THIGH = 2.4
+const SHIN = 2.5
 /** From the hips to the shoulders, and to the middle of the head. */
 const TORSO = 3.3
 const NECK = 1.55
@@ -59,7 +59,7 @@ export function frameOf(pose: Pose): Frame {
 }
 
 /** A leg from the hip, its shoe forward. */
-export function leg(sk: Sketch, hip: Pt, l: Leg, hose: number) {
+function leg(sk: Sketch, hip: Pt, l: Leg, hose: number) {
   const knee = swing(hip, THIGH, l.hip)
   const foot = swing(knee, SHIN, l.hip - l.knee)
   stick(sk, [hip, knee, foot], 1.2, hose)

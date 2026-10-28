@@ -175,7 +175,7 @@ export function makeArmies(me: number) {
   }
 
   /** Each army's standard among its men, following them, faded in and out with them. */
-  function label(zoom: number, shown: number) {
+  function label(zoom: number, shown: number, seconds: number) {
     for (const army of armies.values()) {
       const over = middle(army.troops.men)
       if (!over) continue
@@ -186,13 +186,17 @@ export function makeArmies(me: number) {
       }
       let drawn = standards.get(army)
       if (!drawn) {
-        drawn = makeStandard(army.troops.color)
+        drawn = makeStandard(army.troops.color, army.troops.look)
         standards.set(army, drawn)
         container.addChild(drawn.box)
       }
       drawn.box.alpha = army.troops.alpha
       drawn.box.position.set(army.flag.x, army.flag.y)
-      drawn.show(Math.floor(army.men / UNIT), zoom, shown)
+      drawn.show(Math.floor(army.men / UNIT), zoom, shown, {
+        walking: army.troops.men.some((m) => m.moving),
+        face: army.troops.men[0]?.facing ?? 1,
+        seconds,
+      })
     }
   }
 
@@ -226,7 +230,7 @@ export function makeArmies(me: number) {
       roads.draw(state, marches, zoom)
       troops.draw(sides(), lines(), seconds)
       fallen.draw(seconds)
-      label(zoom / far, legible(far))
+      label(zoom / far, legible(far), seconds)
     },
   }
 }

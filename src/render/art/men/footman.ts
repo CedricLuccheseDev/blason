@@ -25,7 +25,7 @@ export type FootKit = {
 }
 
 /** Where the standard-bearer's hands hold the pole, from his shoulder. */
-export const POLE_HANDS: readonly [Pt, Pt] = [
+const POLE_HANDS: readonly [Pt, Pt] = [
   [2.2, 1.6],
   [2.85, 3.05],
 ]

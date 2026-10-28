@@ -150,7 +150,12 @@ orders. It decides nothing about the rules.
 - Over the works, the
   armies (`armies.ts`): where each one stands and faces (`fronts.ts`), its
   men kept from frame to frame and running to their places in a column or in
-  ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them,
+  ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them;
+  each kind of army its own men, riders for the raid, men-at-arms for the
+  host, the levy as it came, walking and fighting, drawn once for every lord
+  on a sheet per look (`art/men/`: the looks in `looks.ts`, the frames in
+  `pose.ts`, the sheet in `atlas.ts`) and laid as two sprites a man, his dye
+  tinted in his lord's colour under his base, on a shadow (`figures.ts`);
   the dead (`layers/fallen.ts`), the warning of an army coming for the player
   and the seal of each battle (`layers/warning.ts`), the standard-bearer
   among their men (`layers/standard.ts`, its banner drawn by `art/banner.ts`);

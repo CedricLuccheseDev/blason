@@ -8,7 +8,7 @@ import type { Pt, Sketch } from './kit'
 // colour. The spear of the men-at-arms; the bill, the fork, the axe and the
 // club of the levy.
 
-export const SHAFT = 0x7a5634
+const SHAFT = 0x7a5634
 const WOOD = 0x9a7046
 const LIGHT = TONE.parchment
 
