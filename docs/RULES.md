@@ -15,7 +15,8 @@ applies each rule is named beside it.
 - Once the opening is over, the free domains and their villages are gone:
   what no lord holds is one **free land**. It only defends itself, by its
   villagers: each free tile is held by half the men that hold the mean lord's
-  tile (`engine/war.ts`). Each free tile taken brings 0.1 gold: some 60 for
+  tile (`engine/war.ts`), and never fewer than 0.1 man, so that a small army
+  does not nibble for ever. Each free tile taken brings 0.1 gold: some 60 for
   what was a domain.
 
 ## The opening
@@ -49,10 +50,11 @@ Every lord starts with 50 gold.
   villages (`engine/muster.ts`). With every village's army out, a click
   raises none.
 - The army first **marches** to the front over its lord's own land, 6 tiles a
-  second, seen by all; if its road is cut under it, it goes home. Then it
-  enters by the border tile nearest the click and spreads from there towards
-  it, at most 3 tiles a tick, whatever its size: more men go further, never
-  faster (`engine/war.ts`).
+  second, seen by all. Then it enters by the border tile nearest the click and
+  pushes on towards it, in a **band** as wide as its men (6 tiles each side of
+  its line, plus the square root of its men: 16 for 100 men), past the click
+  while it has men, at most 3 tiles a tick, whatever its size: more men go
+  further, never faster; it never swells into a ball (`engine/war.ts`).
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
   while he bears the traitor's mark; the villagers on free land):

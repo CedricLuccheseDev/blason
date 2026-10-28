@@ -24,7 +24,12 @@ describe('an army, tile by tile', () => {
     // A 9 by 9 land; lord 0 holds its middle and his barracks there, lord 1 a corner far away.
     const state = playing(field(9, 9))
     // Free land that costs nothing, to watch the army's course alone.
-    state.rules = { ...state.rules, paceTiles: 1, neutralHold: 0 }
+    state.rules = {
+      ...state.rules,
+      paceTiles: 1,
+      neutralHold: 0,
+      neutralFloor: 0,
+    }
     hold(state, 0, [40])
     muster(state, 0, 40)
     hold(state, 1, [80])
@@ -86,6 +91,31 @@ describe('an army, tile by tile', () => {
     expect(state.hosts[0].men).toBe(85 * UNIT)
   })
 
+  it('pushes on in a band as wide as its men, and swells into no ball', () => {
+    // Lord 0 holds the left column of a wide land, lord 1 all the rest.
+    const [w, h] = [40, 31]
+    const state = playing(field(w, h))
+    // Lord 1 holding nearly all the land would win at once: no one wins here.
+    state.rules = { ...state.rules, victoryShare: 1001, victoryFloor: 1001 }
+    const column = Array.from({ length: h }, (_, r) => r * w)
+    hold(
+      state,
+      1,
+      Array.from({ length: w * h }, (_, t) => t),
+    )
+    hold(state, 0, column)
+    muster(state, 0, 15 * w)
+    endow(state, 0, 400)
+    endow(state, 1, 50)
+    run(state, 40, [attack(0, 15 * w + 39, 'host')])
+    const taken = owned(state, 0).filter((t) => t % w > 0)
+    const wide = state.rules.bandTiles + 10
+    expect(taken.length).toBeGreaterThan(50)
+    expect(taken.every((t) => Math.abs(Math.floor(t / w) - 15) <= wide)).toBe(
+      true,
+    )
+  })
+
   it('stops where it cannot pay for the next tile, its last men fallen there with their worth of its holders', () => {
     const state = playing(field(8))
     hold(state, 0, [0])
@@ -101,7 +131,7 @@ describe('an army, tile by tile', () => {
 
   it('goes home with its survivors when there is nothing left to take', () => {
     const state = playing(field(4))
-    state.rules = { ...state.rules, neutralHold: 0 }
+    state.rules = { ...state.rules, neutralHold: 0, neutralFloor: 0 }
     hold(state, 0, [0])
     muster(state, 0, 0)
     hold(state, 1, [3])

@@ -48,6 +48,10 @@ export type Rules = {
   /** Men holding a free tile, in percent of a lord's tile, the mean of the lords standing: half as many; the gold each free tile taken brings, in thousandths. */
   neutralHold: number
   neutralGold: number
+  /** The least men holding a free tile, in thousandths, so that a small army does not nibble for ever. */
+  neutralFloor: number
+  /** An army's band: so many tiles each side of its line, plus the square root of its men. */
+  bandTiles: number
   /** One free domain for so many tiles, to start on. */
   villageEvery: number
   /** A castle: the land within so many tiles of it fights as the combat table says. */
@@ -104,6 +108,8 @@ export const RULES: Rules = {
   meetTiles: 8,
   neutralHold: 50,
   neutralGold: 100,
+  neutralFloor: 100,
+  bandTiles: 6,
   villageEvery: 600,
   castleRadius: 12,
   workPrice: { village: 100, market: 100, castle: 200 },

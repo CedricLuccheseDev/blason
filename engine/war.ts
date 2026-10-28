@@ -22,9 +22,9 @@ import type { GameState, Host } from './types'
 // fight a battle first (battle.ts).
 
 /**
- * The order an army takes tiles in: it spreads as an egg from where it
- * entered, twice as fast towards the click as to the sides, so its front is
- * a bulge moving on, not a thread. Distances in tenths of a tile.
+ * The order an army takes tiles in: from where it entered, twice as fast
+ * towards the click as to the sides, within its band (inBand), so its front
+ * is a wall moving on, not a thread. Distances in tenths of a tile.
  */
 function priority(
   state: GameState,
@@ -41,6 +41,23 @@ function priority(
   const ahead =
     length === 0 ? 0 : Math.floor((10 * (dx * ax + dy * ay)) / length)
   return 2 * reach - ahead
+}
+
+/**
+ * Whether a tile lies in the army's band: near enough the line from where it
+ * entered towards the click, as wide as its men. An army pushes on along its
+ * line, past the click while it has men, and never swells into a ball.
+ */
+function inBand(state: GameState, host: Host, tile: number): boolean {
+  const w = state.grid.width
+  const dx = (tile % w) - (host.entry % w)
+  const dy = Math.floor(tile / w) - Math.floor(host.entry / w)
+  const ax = (host.aim % w) - (host.entry % w)
+  const ay = Math.floor(host.aim / w) - Math.floor(host.entry / w)
+  const length = ax * ax + ay * ay
+  if (length === 0) return dx * dx + dy * dy <= host.wide * host.wide
+  const across = dx * ay - dy * ax
+  return across * across <= host.wide * host.wide * length
 }
 
 /** Whether a tile borders the lord's land. */
@@ -124,16 +141,18 @@ export function attack(
     along: 0,
     fighting: false,
     closing: -1,
+    wide: state.rules.bandTiles + isqrt(Math.floor(men / UNIT)),
   })
 }
 
-/** The men holding a free tile: so many in a hundred of what holds the mean lord's tile. */
+/** The men holding a free tile: so many in a hundred of what holds the mean lord's tile, never under the floor. */
 function neutralHold(state: GameState): number {
   const standing = state.players.filter((p) => p.alive && p.tiles > 0)
   if (standing.length === 0) return 0
   const peasants = standing.reduce((sum, p) => sum + p.peasants, 0)
   const tiles = standing.reduce((sum, p) => sum + p.tiles, 0)
-  return Math.floor((peasants * state.rules.neutralHold) / 100 / tiles)
+  const half = Math.floor((peasants * state.rules.neutralHold) / 100 / tiles)
+  return Math.max(state.rules.neutralFloor, half)
 }
 
 /** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's. */
@@ -153,7 +172,7 @@ function take(state: GameState, host: Host, tile: number) {
     if (work.tile === tile) work.owner = host.owner
   setOwner(state, tile, host.owner)
   for (const t of around(state.grid, tile))
-    if (struck(state, host.target, t))
+    if (struck(state, host.target, t) && inBand(state, host, t))
       push(host.queue, [priority(state, host, t), t])
 }
 

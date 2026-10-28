@@ -55,6 +55,8 @@ export type Host = {
   fighting: boolean
   /** Ticks before the blows begin, the two armies walking to meet each other; -1 with no enemy upon it. */
   closing: number
+  /** The tiles each side of its line it takes, as wide as its men. */
+  wide: number
 }
 
 /** Two lords who may not strike each other, until it runs out. */
