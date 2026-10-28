@@ -24,3 +24,4 @@ node_modules
 /design/mockups/out/
 /design/mockups/shots/
 /design/mockups/__pycache__/
+/dist-relay/

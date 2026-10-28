@@ -27,9 +27,15 @@ export const GLYPHS = {
       open: true,
     },
   ],
+  // A shield broken in two, its halves pulled apart along the crack: a
+  // felon, never to be read as a lord's whole shield.
   felon: [
-    { d: 'M12 2.5 L20 5.6 V11.8 Q20 18.2 12 21.5 Q4 18.2 4 11.8 V5.6 Z' },
-    { d: 'M12.6 2.8 L10.6 8 L13.6 11.2 L10.4 15.2 L12 21.2', open: true },
+    {
+      d: 'M10.6 2.6 L2.8 5.6 V11.8 Q2.8 18.2 10.6 21.4 L9 15.2 L11.6 11.2 L8.6 8 Z',
+    },
+    {
+      d: 'M13.4 2.6 L21.2 5.6 V11.8 Q21.2 18.2 13.4 21.4 L11.8 15.2 L14.4 11.2 L11.4 8 Z',
+    },
   ],
   // Two links of a chain: an alliance.
   links: [
@@ -41,6 +47,34 @@ export const GLYPHS = {
       d: 'M13 7.5 H16.5 A4.5 4.5 0 0 1 16.5 16.5 H13 A4.5 4.5 0 0 1 13 7.5 Z',
       open: true,
     },
+  ],
+  // The coups, each its own shape before its colour (rules.ts, COUPS). A
+  // torch held up: the troublemaker who sets a land against its lord.
+  torch: [
+    {
+      d: 'M12 1.8 Q17 6.4 15.7 9.2 Q15 10.6 12 10.6 Q9 10.6 8.3 9.2 Q7 6.4 12 1.8 Z',
+    },
+    { d: 'M8.6 10.6 H15.4 V12.8 H8.6 Z' },
+    { d: 'M9.9 12.8 H14.1 L13 21.8 H11 Z' },
+    { d: 'M12 5.4 Q13.8 7.6 12 9.4 Q10.2 7.6 12 5.4', open: true },
+  ],
+  // A bow drawn, its arrow nocked: the archers' volley.
+  bow: [
+    { d: 'M8 2.4 Q21.5 12 8 21.6 M8 2.4 V21.6', open: true },
+    {
+      d: 'M2.6 12 H19.6 M2.6 12 L1.4 9.8 M2.6 12 L1.4 14.2 M4.6 12 L3.4 9.8 M4.6 12 L3.4 14.2',
+      open: true,
+    },
+    { d: 'M22.6 12 L18.6 9.6 L19.6 12 L18.6 14.4 Z' },
+  ],
+  // A round pot of Greek fire, flames out of its neck.
+  firepot: [
+    { d: 'M12 7 Q8.6 4.8 10.6 1.6 Q11.4 3.8 12.8 3 Q15.8 5 12 7 Z' },
+    { d: 'M9.4 6.8 H14.6 V9 H9.4 Z' },
+    {
+      d: 'M9.4 9 Q5.2 10 5.2 14.6 Q5.2 21.6 12 21.6 Q18.8 21.6 18.8 14.6 Q18.8 10 14.6 9 Z',
+    },
+    { d: 'M5.8 14.4 H18.2 M8.6 17.6 Q12 19.2 15.4 17.6', open: true },
   ],
 } satisfies Record<string, Array<Part>>
 

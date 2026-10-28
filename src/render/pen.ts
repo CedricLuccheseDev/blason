@@ -5,7 +5,7 @@ import type { Point } from '../../engine'
 // trembles the same way on both sides.
 
 /** A smooth, repeatable push in [-1, 1] at a place. */
-function tremble(x: number, y: number, phase: number): number {
+export function tremble(x: number, y: number, phase: number): number {
   return (
     Math.sin(x * 0.31 + y * 0.17 + phase) * 0.6 +
     Math.sin(x * 0.07 - y * 0.23 + phase * 2.1) * 0.4
@@ -34,4 +34,14 @@ export function penned(
   }
   if (line.length) out.push(pushed(line[line.length - 1], amount))
   return out
+}
+
+/** The pen of the borders: a line laid along a border, in ink or in a colour, trembles as the border's ink does, so that the two lie on one another. */
+export const alongBorder = (line: ReadonlyArray<Point>) =>
+  penned(line, 0.35, 1.5)
+
+/** A number from 0 to 1 drawn from a place, the same every time: what is scattered there looks the same each time it is drawn. */
+export function hash(x: number, y: number, salt: number): number {
+  const h = Math.sin(x * 12.9898 + y * 78.233 + salt * 37.719) * 43758.5453
+  return h - Math.floor(h)
 }

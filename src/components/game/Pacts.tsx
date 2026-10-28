@@ -1,40 +1,10 @@
 import { Act } from '../hud/Act'
-import { Shield } from '../hud/Emblem'
+import { StandingBadge } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
-import { hex, minutes } from './format'
-import type { ReactNode } from 'react'
-import type { Heraldry } from '~/render/palette'
+import { minutes } from './format'
+import { LordSheet } from './LordSheet'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
-
-/** A lord on a sheet: his shield, his name and a figure beside it, a line under it, and what to do. */
-function LordSheet({
-  lord,
-  aside,
-  children,
-  act,
-}: Readonly<{
-  lord: { key: Heraldry; color: number }
-  aside?: ReactNode
-  children: ReactNode
-  act?: ReactNode
-}>) {
-  const m = useMessages()
-  return (
-    <Sheet className="flex items-center gap-3 p-3">
-      <Shield color={hex(lord.color)} />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex items-center gap-2">
-          <span className="hud-name truncate">{m.game.colors[lord.key]}</span>
-          {aside}
-        </span>
-        {children}
-      </div>
-      {act}
-    </Sheet>
-  )
-}
 
 /**
  * Top right, the emissaries' letters: each lord who offers his alliance, the
@@ -54,33 +24,41 @@ export function Offers({
       }
       act={<Act onClick={() => onAccept(o.seat)}>{m.pacts.accept}</Act>}
     >
-      <span className="hud-note whitespace-nowrap">{m.pacts.offer}</span>
+      <span className="hud-note whitespace-nowrap text-pact">
+        {m.pacts.offer}
+      </span>
     </LordSheet>
   ))
 }
 
 /**
- * Under the purse, the player's allies: each lord bound to him, the time the
- * alliance has left, and in its last moments the seal to renew it.
+ * Among the letters, the alliances in their last moments: each lord bound to
+ * the player, the time left, the seal to renew it. The others are read in
+ * the lords' list, an ally's links ringed by the time he has left.
  */
 export function Allies({
   summary,
   onRenew,
 }: Readonly<{ summary: Summary; onRenew: (seat: number) => void }>) {
   const m = useMessages()
-  return summary.allies.map((a) => (
-    <LordSheet
-      key={a.seat}
-      lord={a}
-      act={
-        a.renewable && (
-          <Act onClick={() => onRenew(a.seat)}>{m.pacts.renew}</Act>
-        )
-      }
-    >
-      <Figure icon="links" size="s" tone="dim">
-        {minutes(a.left)}
-      </Figure>
-    </LordSheet>
-  ))
+  return summary.allies
+    .filter((a) => a.renewable)
+    .map((a) => (
+      <LordSheet
+        key={a.seat}
+        lord={a}
+        act={
+          a.renewable && (
+            <Act onClick={() => onRenew(a.seat)}>{m.pacts.renew}</Act>
+          )
+        }
+      >
+        <span className="flex items-center gap-2">
+          <StandingBadge standing="ally" label={m.lord.allied} />
+          <Figure icon="hourglass" size="s" tone="pact">
+            {minutes(a.left)}
+          </Figure>
+        </span>
+      </LordSheet>
+    ))
 }

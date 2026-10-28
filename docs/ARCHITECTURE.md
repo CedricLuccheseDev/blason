@@ -41,7 +41,7 @@ machine computes the same game, tick for tick.
 ### The state, the orders, the step
 
 - `GameState` (`engine/types.ts`) holds the land (`owner`, the lord of each
-  tile; `realm`, the free domain of each tile), the villages and works, the
+  tile; `realm`, the free domain of each tile, to start on), the villages and works, the
   players (peasants, gold, traitor's mark), the armies on the march (`hosts`),
   the alliances and offers, the caravans, the tick and the winner.
 - An `Order` is everything a player can do: choose where to start, attack a
@@ -63,13 +63,17 @@ can tune them without touching the code. The rules themselves are described in
 | `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                            |
 | `map/`                   | The map generator: from a seed, the shape of the land, its coasts, lakes, rivers and names |
 | `grid.ts`                | The land cut into tiles of four map units                                                  |
-| `land.ts`                | The free domains, the start, the peasants and the gold                                     |
-| `war.ts`                 | Armies: where they enter, how they spread, what each tile costs                            |
-| `works.ts`               | Villages, castles and markets: where they may stand and their price                        |
+| `land.ts`                | The free domains, the start, the peasants                                                  |
+| `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                  |
+| `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs               |
+| `battle.ts`              | Battles between armies that meet, by the combat table                                      |
+| `enclosure.ts`           | Encircled land passing to the lord all round it                                            |
+| `heap.ts`                | The heap that orders the tiles an army strikes next                                        |
+| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time      |
 | `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                   |
 | `caravans.ts`            | The merchants' roads and what they pay                                                     |
 | `step.ts`                | The tick, validation of orders, victory                                                    |
-| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy                   |
+| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `levels.ts`      |
 
 ### The bots
 
@@ -77,7 +81,11 @@ A bot is a function of the state that returns orders (`createBot` in
 `engine/bots/bot.ts`). It reads the same state as a player and sends the same
 `Order`s, through the same validation: the simulation cannot tell a bot from a
 person. Bots are pure and deterministic like the rest of the engine, so in
-multiplayer they will run on every client without a server.
+multiplayer they will run on every client without a server. Their level
+(`engine/bots/levels.ts`: easy, normal, hard), chosen at the home, never lets
+them cheat: it sets how often a bot thinks, how soon it notices an attack, how
+long it rests, how full it waits to be and how often it slips. The arena takes
+it too: `npm run arena -- [games] [players] [easy|normal|hard]`.
 
 ## The rendering
 
@@ -86,18 +94,70 @@ orders. It decides nothing about the rules.
 
 - `client.ts` mounts a game in a page element: the land (`ahead.ts` makes the
   next one while the home is read), the session, the scene, the camera, the
-  input, and the handle the React screen drives.
+  input, and the handle the React screen drives. What the player holds in
+  hand, an army, a work or a coup, and the order a click sends with it, is
+  `hand.ts` (the keys 1 to 9, `keys.ts`).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
-- `scene.ts` stacks the layers: the page and its frame, the sea and its shore
-  lines, the lands (`regions.ts`, traced around their tiles by `trace.ts` and
-  inked with a trembling pen, `pen.ts`), the works (`marks.ts`, `art/`), the
-  armies and their battles (`armies.ts`, `layers/melee.ts`), the caravans
-  (`trade.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
-  (`layers/aim.ts`) and the parchment's grain (`layers/paper.ts`).
-- `camera.ts` is the player's camera; `director.ts` is the spectator's, which
+- `scene.ts` stacks the layers, so that what the game must make read stays
+  above what only adorns it: the page and its frame, the sea and its shore
+  lines (`layers/lands.ts`), the lands' washes (`regions.ts`, traced around
+  their tiles by `trace.ts`), the ground over them (`layers/ground.ts`), the
+  paved roads, the borders (`layers/borders.ts`: a watercolour edge of the
+  lord's colour and a ribbon of ink that swells as a quill's, `ribbon.ts`,
+  `pen.ts`), the works (`marks.ts`) and their life (`layers/life.ts`), the
+  green and the red borders, then the wagons, the armies and the names.
+- The map gains detail with the zoom, by the pixels a tile covers on screen
+  (`ground/detail.ts`): from afar the wash and the works' silhouettes; at mid
+  distance (9 to 18 pixels a tile) hatched hills, groves, rivers, fields round
+  the villages, the works drawn, the mills turning; up close single trees,
+  tufts, close furrows, the sea's ripples, roof tiles, smoke, peasants at work,
+  gold glinting. Each level fades in over a range. The ground (`ground/`) reads
+  each tile's biome once, from the map's nearest cell (`terrain.ts`); lays the
+  wash's blooms (`bloom.ts`) and the woods' and hills' darker tone
+  (`tones.ts`) at every distance, the rivers (`rivers.ts`) from mid distance;
+  and paints the decoration (`ornaments.ts`, `fields.ts`, `paint.ts`, drawn by
+  `art/trees.ts`) chunk by chunk, sixteen tiles a side, on canvases kept on the
+  graphics card per level of zoom (`decor.ts`, `cache.ts`), multiplied into the
+  washes so that its ink takes each land's hue. A chunk is painted again only
+  when the land under it, a work or a road changed there (`changes.ts`, from
+  the tiles' weights, `weights.ts`: nothing on a border, a road or a shore, a
+  clearing round each work) or the zoom passed to another level, a few each
+  frame, the middle of the screen first, the new one fading in over the old.
+- The works (`art/works.ts`) are drawn once per lord's colour and level of
+  detail into a texture: a silhouette cut out by a parchment halo, never under
+  thirty pixels on screen; a drawing; an illustration (`art/village.ts`,
+  `art/house.ts`, `art/castle.ts`, `art/ramparts.ts`, `art/market.ts`,
+  `art/stall.ts`, `art/gold.ts`, with the pen of `art/ink.ts`); their life,
+  sails, smoke, glints and peasants (`art/life.ts`), only on screen, still
+  under reduced motion.
+- Over the works, the
+  armies (`armies.ts`): where each one stands and faces (`fronts.ts`), its
+  men kept from frame to frame and running to their places in a column or in
+  ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them,
+  the dead (`layers/fallen.ts`), the warning of an army coming for the player
+  and the seal of each battle (`layers/warning.ts`), the standard-bearer
+  among their men (`layers/standard.ts`); the roads as they are drawn, straight and even
+  (`roads.ts`); the borders being bitten, in red (`layers/raids.ts`); the works being built
+  (`layers/building.ts`); what the coups leave, the rebels' land hatched and
+  their pitchforks, the ashes charred and paling (`layers/scars.ts`); the coups
+  on their way, seen by all: the troublemaker walking with his torch, a volley
+  of arrows, a pot of Greek fire trailing smoke, the land they will strike
+  ringed in red for their victim (`layers/strikes.ts`, drawn by `art/coups.ts`,
+  their ways by `flight.ts`), and how each ends, a rain of arrows, a burst of
+  flames, a land rising, a troublemaker struck out (`layers/impacts.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
+  their roads of beaten earth (`trade.ts`), what the player's works bring
+  (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
+  (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
+  its reach along the border, `layers/aimCoup.ts`), the parchment's grain over the whole page, moving with it
+  (`layers/paper.ts`), and the page round the map: its frame (`layers/page.ts`),
+  the leaf browning and foxed outwards (`layers/leaf.ts`), the margin's chain,
+  ruling and scale in pale ink (`layers/margin.ts`).
+- `camera.ts` is the player's camera, out to twice farther than the whole land,
+  where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
   goes to the fiercest fight on its own (the home's background).
-- `summary.ts` reads from the state, once a second, the figures the HUD shows.
+- `summary.ts` reads from the state, once a second, the figures the HUD shows;
+  `news.ts` what the player's letters tell, the coups among it (`coupNews.ts`).
 
 ## The interface
 
@@ -105,27 +165,58 @@ The HUD is React, laid over the map. It is built on a small design system,
 `src/components/hud/`, so that every piece shares the same measures:
 
 - **tokens** (`tokens.ts`, and `src/styles/app.css` for the type and the
-  shadow): four type sizes through four roles (`.hud-word`, `.hud-name`,
-  `.hud-note`, `.hud-figure`), and spacing only on the steps 4, 8, 12, 16 and
-  24 pixels;
+  shadow): four type sizes, 13, 16, 20 and 28 pixels, through four roles
+  (`.hud-word`, `.hud-name`, `.hud-note`, `.hud-figure`), and spacing only on
+  the steps 4, 8, 12, 16 and 24 pixels;
+- **one scale**, `--hud` in `app.css`: 1 on a phone or a small screen, 1.2 on
+  a screen at least 1280 by 640. The type, the spacing inside `.hud` (the
+  game's screen) and the drawn objects all grow by it together, so that the
+  measures above are written once, as drawn, and nothing is resized piece by
+  piece (on a desk: type 15.6, 19.2, 24 and 33.6, steps 4.8 to 28.8, the
+  button 53);
 - **one material**, the sheet of parchment (`Sheet.tsx`);
-- **one button**, 44 pixels tall (`Act.tsx`);
+- **one button**, 44 pixels tall at scale 1 (`Act.tsx`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
-  shields, wax seals, gilt medallions, keys (`Emblem.tsx`).
+  shields, wax seals, gilt medallions, the coups' lozenges ringed in gules, keys, and the badges of standing
+  (`Emblem.tsx`): an ally the links of a chain in the alliance's green
+  (`--color-pact`, the map's `TONE.pact`), a foe at war a sword in gules, a
+  felon his shield broken in two on gules; the shape says it before the
+  colour, the same badges as beside the names on the map;
+- **one motion**: a single curve and two durations, through two roles,
+  `.hud-press` on whatever is touched and `.hud-enter` on every sheet that
+  appears; nothing moves under reduced motion;
+- **a compact shape** on phones, upright or sideways (`useCompact.ts`).
 
-The game's pieces (`src/components/game/`: the purse, the race, the bar, the
-cartouche beside the pointer, the alliance letters) are built from these and
+The game's pieces (`src/components/game/`: the lords' list top left, the
+race on one thin line, the letters and the alliances to renew top right, the
+bar at the bottom with the purse in it, then the armies, the works and the
+coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
+the lord aimed at, the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 
-## Multiplayer, next
+## Multiplayer
 
-The engine is built for lockstep, as in OpenFront: the server will run no
-simulation. It will gather every player's orders for a turn, every 100
-milliseconds, and send the turn to all; each browser applies it to its own
-copy of the game. A client sends back a fingerprint of its state now and then
-so that the server can spot one that diverges. Watching a game, or replaying
-one, is then receiving or replaying the list of turns.
+The engine is built for lockstep, as in OpenFront: the server runs no
+simulation.
+
+- `net/protocol.ts`, shared by the browser and the server, says the
+  messages: join a room (the public one, a private one by its code, or a new
+  private one), start, an order, a fingerprint; and back the lobby, the
+  beginning (the seed, the bots' level, the players by seat), each numbered
+  turn, a desync.
+- `server/` is the relay, a small Node WebSocket server of its own
+  (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Its rooms
+  (`server/rooms.ts`) gather up to eight players, the rest of the twenty
+  seats being bots; then every 100 milliseconds it sends everyone the turn:
+  the orders received since the last, each signed with its sender's seat.
+  A player who leaves during a game gives his seat to a bot, on every browser
+  at the same turn. Every 50 turns each browser tells the fingerprint of its
+  state, and the relay names the first turn where two differ.
+- Each browser applies the turns to its own copy of the game, bots included:
+  a distant player is one more seat the session receives from outside, as a
+  bot is. Watching a game, or replaying one, is receiving or replaying the
+  list of turns.
 
 ## SOLID
 

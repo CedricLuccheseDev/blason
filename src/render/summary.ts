@@ -1,19 +1,26 @@
 import {
   ARMIES,
+  COUPS,
   NO_ONE,
+  TICKS_PER_SECOND,
   UNIT,
   WORKS,
   capOf,
   costOf,
+  coupPrice,
   hasPicked,
-  incomeOf,
+  isAllied,
+  isFelon,
   menFor,
   nextDrop,
   priceOf,
+  sicknessOf,
   victoryShare,
+  worksOf,
 } from '../../engine'
 import { PLAYERS } from './palette'
-import type { Army, GameState, Work } from '../../engine'
+import type { Army, Coup, GameState, Work } from '../../engine'
+import type { Hand } from './hand'
 import type { Heraldry } from './palette'
 
 // What the HUD shows, read from the state once a second, as
@@ -32,14 +39,16 @@ export type Summary = {
   winner: Heraldry | null
   me:
     | (Seat & {
-        /** His peasants and what his land feeds, his gold, and what each brings a second. */
+        /** His peasants and what his villages feed, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
         peasants: number
         cap: number
         growth: number
         gold: number
-        income: number
+        earned: number
         alive: boolean
         picked: boolean
+        /** His villages with no army out: an attack leaves from one of them. */
+        free: number
       })
     | null
   /** The army in hand, and the men each would take now and their gold. */
@@ -48,8 +57,22 @@ export type Summary = {
   /** The work in hand, if any, and what each costs now. */
   work: Work | null
   works: Array<{ work: Work; price: number; can: boolean }>
+  /** The coup in hand, if any, and what each costs now: dearer with each launched. */
+  coup: Coup | null
+  coups: Array<{ coup: Coup; price: number; can: boolean }>
   /** My allies, with the seconds left and whether I may renew now; the offers made to me; the lords I asked. */
   allies: Array<Lord & { left: number; renewable: boolean }>
+  /** Every lord, as the card of the one aimed at shows him. */
+  lords: Array<
+    Lord & {
+      share: number
+      men: number
+      alive: boolean
+      felon: boolean
+      allied: boolean
+      atWar: boolean
+    }
+  >
   offers: Array<Lord & { left: number }>
   asked: Array<number>
 }
@@ -61,6 +84,23 @@ const lordOf = (seat: number): Lord => ({
   key: PLAYERS[seat].key,
   color: PLAYERS[seat].color,
 })
+
+/** Every lord: his share of the land, his men, and how he stands with the player. */
+function lordsOf(state: GameState, me: number) {
+  return state.players.map((p, seat) => ({
+    ...lordOf(seat),
+    share: Math.round((100 * p.tiles) / state.grid.area),
+    men: Math.floor(p.peasants / UNIT),
+    alive: p.alive,
+    felon: isFelon(state, seat),
+    allied: me >= 0 && isAllied(state, me, seat),
+    atWar: state.hosts.some(
+      (h) =>
+        (h.owner === me && h.target === seat) ||
+        (h.owner === seat && h.target === me),
+    ),
+  }))
+}
 
 /** Where the player stands with the other lords. */
 function pacts(state: GameState, me: number) {
@@ -88,7 +128,9 @@ function pacts(state: GameState, me: number) {
 export function summarize(
   state: GameState,
   me: number,
-  hand: { army: Army; work: Work | null },
+  hand: Hand,
+  /** All the gold the player has gained, in thousandths (earnings.ts). */
+  earned = 0,
 ): Summary {
   const area = state.grid.area
   const share = (seat: number) =>
@@ -121,12 +163,15 @@ export function summarize(
       cap: Math.floor(cap / UNIT),
       growth:
         lord.peasants >= cap
-          ? 0
+          ? -Math.ceil((sicknessOf(state, me) * TICKS_PER_SECOND) / UNIT)
           : Math.floor(cap / UNIT / state.rules.fillSeconds),
       gold,
-      income: Math.floor(incomeOf(state, me) / UNIT),
+      earned: Math.floor(earned / UNIT),
       alive: lord.alive,
       picked: hasPicked(state, me),
+      free:
+        worksOf(state, me, 'village') -
+        state.hosts.filter((h) => h.owner === me).length,
     },
     army: hand.army,
     armies: ARMIES.map((a) => {
@@ -143,6 +188,12 @@ export function summarize(
       const price = me >= 0 ? priceOf(state, me, w) : 0
       return { work: w, price, can: price <= gold }
     }),
+    coup: hand.coup,
+    coups: COUPS.map((c) => {
+      const price = me >= 0 ? coupPrice(state, me, c) : 0
+      return { coup: c, price, can: price <= gold }
+    }),
     ...pacts(state, me),
+    lords: lordsOf(state, me),
   }
 }

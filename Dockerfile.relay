@@ -1,0 +1,23 @@
+# The relay for games online (server/relay.ts): one bundled file run by Node,
+# beside the site, in a container of its own. See docs/ARCHITECTURE.md.
+ARG NPM_VERSION=11.17.0
+
+FROM node:24-alpine AS builder
+ARG NPM_VERSION
+RUN npm i -g npm@${NPM_VERSION}
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npx esbuild server/relay.ts --bundle --platform=node --format=cjs \
+  --target=node24 --outfile=dist-relay/relay.cjs \
+  --external:bufferutil --external:utf-8-validate
+
+FROM node:24-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=8787
+COPY --from=builder /app/dist-relay/relay.cjs ./relay.cjs
+EXPOSE 8787
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:8787/health || exit 1
+CMD ["node", "relay.cjs"]

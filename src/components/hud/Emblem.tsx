@@ -1,13 +1,20 @@
 import { Ecu } from '../game/svg/kit'
-import { INK } from '../game/svg/marks'
-import { Medallion, Seal } from '../game/svg/seals'
-import { RAISE, SEAL, SHIELD } from './tokens'
+import { Lozenge, Medallion, Seal } from '../game/svg/seals'
+import { Glyph, INK, PAPER } from '../game/svg/marks'
+import { BADGE, RAISE, SEAL, SHIELD, scaled } from './tokens'
 import type { Mark } from '../game/svg/marks'
 import type { ReactNode } from 'react'
 
 // The HUD's drawn objects at their fixed sizes, each in its own box so the
 // sheets lay them out as they do words: a lord's shield, the wax seal of an
-// army or an act, the medallion of a work, a key of the keyboard.
+// army or an act, the medallion of a work, the lozenge of a coup, a badge of
+// standing, a key of the keyboard. Drawn at scale 1, grown by the HUD's scale.
+
+/** A drawing's box: drawn on `w` by `h` units, laid out at that size grown by the HUD's scale. */
+const box = (w: number, h: number) => ({
+  viewBox: `0 0 ${w} ${h}`,
+  style: { width: scaled(w), height: scaled(h) },
+})
 
 /** A lord's shield; with a level, his colour fills it as a vessel. */
 export function Shield({
@@ -18,8 +25,7 @@ export function Shield({
   const { w, h } = SHIELD[size]
   return (
     <svg
-      width={w + 2}
-      height={h + 2}
+      {...box(w + 2, h + 2)}
       aria-hidden="true"
       className="shrink-0 overflow-visible"
     >
@@ -40,20 +46,22 @@ function Round({
   held: boolean
   children: (c: { cx: number; cy: number; r: number }) => ReactNode
 }>) {
-  const box = boxOf(size)
-  const c = box / 2
+  const side = boxOf(size)
+  const c = side / 2
+  const r = SEAL[size]
+  // In hand, it rises and grows by RAISE, gliding there (the HUD's motion).
+  const lift = held
+    ? `translateY(-${RAISE}px) scale(${(r + RAISE) / r})`
+    : undefined
+  const { viewBox, style } = box(side, side)
   return (
     <svg
-      width={box}
-      height={box}
+      viewBox={viewBox}
       aria-hidden="true"
-      className="shrink-0 overflow-visible"
+      className="shrink-0 overflow-visible transition-transform duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none"
+      style={{ ...style, transform: lift }}
     >
-      {children({
-        cx: c,
-        cy: held ? c - RAISE : c,
-        r: SEAL[size] + (held ? RAISE : 0),
-      })}
+      {children({ cx: c, cy: c, r })}
     </svg>
   )
 }
@@ -92,6 +100,97 @@ export function MedallionEmblem({
   )
 }
 
+/** A coup's lozenge, ringed in gules; raised and glowing when in hand. */
+export function CoupEmblem({
+  icon,
+  size = 'l',
+  held = false,
+}: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
+  return (
+    <Round size={size} held={held}>
+      {(at) => <Lozenge {...at} icon={icon} lifted={held} />}
+    </Round>
+  )
+}
+
+/**
+ * How a lord stands with the player, each by a badge whose shape says it
+ * before its colour does, as on the map (render/art/icons.ts): an ally the
+ * links of a chain in the alliance's green, a foe at war a sword in gules,
+ * a felon his broken shield on gules.
+ */
+const STANDINGS = {
+  ally: {
+    icon: 'links',
+    ground: PAPER,
+    rim: 'var(--color-pact)',
+    fill: PAPER,
+    stroke: 'var(--color-pact)',
+  },
+  foe: {
+    icon: 'sword',
+    ground: PAPER,
+    rim: 'var(--color-gules)',
+    fill: 'var(--color-wax)',
+    stroke: 'var(--color-gules-deep)',
+  },
+  felon: {
+    icon: 'felon',
+    ground: 'var(--color-gules)',
+    rim: INK,
+    fill: 'var(--color-wax)',
+    stroke: INK,
+  },
+} as const satisfies Record<
+  string,
+  { icon: Mark; ground: string; rim: string; fill: string; stroke: string }
+>
+
+export type Standing = keyof typeof STANDINGS
+
+/** A badge of standing: a disc ringed in its colour, its mark in it; named by `label` where no word stands beside it. */
+export function StandingBadge({
+  standing,
+  label,
+  size = 's',
+}: Readonly<{
+  standing: Standing
+  label?: string
+  size?: keyof typeof BADGE
+}>) {
+  const { icon, ground, rim, fill, stroke } = STANDINGS[standing]
+  const side = BADGE[size] + 2
+  const c = side / 2
+  return (
+    <svg
+      {...box(side, side)}
+      role={label ? 'img' : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+      className="shrink-0 overflow-visible"
+    >
+      {label && <title>{label}</title>}
+      <circle
+        cx={c}
+        cy={c}
+        r={c - 1.5}
+        fill={ground}
+        stroke={rim}
+        strokeWidth="2.2"
+      />
+      <Glyph
+        name={icon}
+        cx={c}
+        cy={c}
+        size={side * 0.66}
+        fill={fill}
+        stroke={stroke}
+        sw={1.8}
+      />
+    </svg>
+  )
+}
+
 /** A key of the keyboard, in its lozenge. */
 export function KeyCap({ k }: Readonly<{ k: string }>) {
   return (
@@ -108,7 +207,7 @@ export function KeyCap({ k }: Readonly<{ k: string }>) {
 /** A mouse with its right button lit: what a right click opens. */
 export function RightClick() {
   return (
-    <svg width={20} height={30} aria-hidden="true" className="shrink-0">
+    <svg {...box(20, 30)} aria-hidden="true" className="shrink-0">
       <rect
         x={1}
         y={1}

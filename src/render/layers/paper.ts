@@ -1,17 +1,34 @@
-import { Texture, TilingSprite } from 'pixi.js'
-import type { Application } from 'pixi.js'
+import { CanvasSource, Texture, TilingSprite } from 'pixi.js'
 
-// The parchment's grain over the whole screen, laid once and multiplied
-// into what lies under it: fine fibres and a few soft stains, so that the
-// map and the page read as one sheet. It stays still while the map moves,
-// like the light on a page.
+// The parchment's grain, laid once over the whole page and multiplied into
+// what lies under it, so that the map, its frame and the leaf round it read
+// as one sheet. It lies on the page, not on the screen: it moves and grows
+// with the map, as the skin of a real leaf would. Fine fibres over a slow
+// mottling of the skin, soft at every zoom; no stains, which the leaf's
+// foxing gives where they belong (leaf.ts).
 
 const SIZE = 512
+/** Map units a pixel of the grain covers: its fibres a pixel or so at the whole land's zoom. */
+const PIXEL = 1.2
 
-/** A repeatable value in [0, 1) for a number: the grain is the same on every load. */
-function hash(n: number): number {
-  const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453
-  return x - Math.floor(x)
+/** A repeatable value in [0, 1) for a cell of a lattice so many cells wide and high, wrapping round. */
+function hash(x: number, y: number, wide: number, high = wide): number {
+  const n = (((x % wide) + wide) % wide) + (((y % high) + high) % high) * 4099
+  const v = Math.sin(n * 12.9898 + wide * 78.233 + high * 3.17) * 43758.5453
+  return v - Math.floor(v)
+}
+
+/** Smooth noise over a lattice of cells so many pixels wide and high, wrapping at the tile's edge. */
+function smooth(x: number, y: number, cell: number, tall = cell): number {
+  const [wide, high] = [SIZE / cell, SIZE / tall]
+  const [fx, fy] = [x / cell, y / tall]
+  const [i, j] = [Math.floor(fx), Math.floor(fy)]
+  const ease = (t: number) => t * t * (3 - 2 * t)
+  const [u, v] = [ease(fx - i), ease(fy - j)]
+  const at = (a: number, b: number) => hash(a, b, wide, high)
+  const top = at(i, j) * (1 - u) + at(i + 1, j) * u
+  const bottom = at(i, j + 1) * (1 - u) + at(i + 1, j + 1) * u
+  return top * (1 - v) + bottom * v
 }
 
 function grain(): HTMLCanvasElement {
@@ -20,52 +37,48 @@ function grain(): HTMLCanvasElement {
   canvas.height = SIZE
   const g = canvas.getContext('2d')
   if (!g) return canvas
-  g.fillStyle = '#ffffff'
-  g.fillRect(0, 0, SIZE, SIZE)
-  // Soft stains, wrapped round the tile's edges so the tiling never shows.
-  for (let i = 0; i < 14; i++) {
-    const x = hash(i * 3) * SIZE
-    const y = hash(i * 3 + 1) * SIZE
-    const r = 60 + hash(i * 3 + 2) * 140
-    for (const [dx, dy] of [
-      [0, 0],
-      [SIZE, 0],
-      [-SIZE, 0],
-      [0, SIZE],
-      [0, -SIZE],
-    ]) {
-      const stain = g.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r)
-      stain.addColorStop(0, 'rgba(176, 140, 82, 0.13)')
-      stain.addColorStop(1, 'rgba(176, 140, 82, 0)')
-      g.fillStyle = stain
-      g.fillRect(0, 0, SIZE, SIZE)
-    }
-  }
-  const pixels = g.getImageData(0, 0, SIZE, SIZE)
+  const pixels = g.createImageData(SIZE, SIZE)
   const data = pixels.data
-  for (let i = 0; i < data.length; i += 4) {
-    const fibre = 1 - hash(i + 101) * 0.075
-    data[i] *= fibre
-    data[i + 1] *= fibre * 0.985
-    data[i + 2] *= fibre * 0.96
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) {
+      // The skin's slow mottling, its fibres, and a speck here and there.
+      const mottle = smooth(x, y, 128) * 0.6 + smooth(x, y, 32) * 0.4
+      const fibre = smooth(x, y, 2, 5) * 0.5 + hash(x, y, SIZE) * 0.5
+      const shade = 1 - mottle * 0.04 - fibre * 0.03
+      const k = (y * SIZE + x) * 4
+      data[k] = 255 * shade
+      data[k + 1] = 255 * shade * 0.988
+      data[k + 2] = 255 * shade * 0.965
+      data[k + 3] = 255
+    }
   }
   g.putImageData(pixels, 0, 0)
   return canvas
 }
 
-export function makePaper(app: Application) {
-  const sprite = new TilingSprite({
-    texture: Texture.from(grain()),
-    width: app.screen.width,
-    height: app.screen.height,
+/** The grain over the page, as far as `reach` map units round a map so large. */
+export function makePaper(
+  size: { width: number; height: number },
+  reach: number,
+) {
+  const texture = new Texture({
+    source: new CanvasSource({
+      resource: grain(),
+      addressMode: 'repeat',
+      autoGenerateMipmaps: true,
+    }),
   })
+  const sprite = new TilingSprite({
+    texture,
+    width: (size.width + 2 * reach) / PIXEL,
+    height: (size.height + 2 * reach) / PIXEL,
+  })
+  sprite.position.set(-reach, -reach)
+  sprite.scale.set(PIXEL)
   sprite.blendMode = 'multiply'
   sprite.eventMode = 'none'
   return {
     sprite,
-    resize() {
-      sprite.width = app.screen.width
-      sprite.height = app.screen.height
-    },
+    destroy: () => texture.destroy(true),
   }
 }

@@ -1,6 +1,6 @@
 // The colours of the game's world, a map drawn on a manuscript: brown-black
 // ink on parchment, each lord's land a wash of his colour, gold for what is
-// mine and red for a fight. Every other tone is muted earth, so that only a
+// mine, red for a fight and green for an alliance. Every other tone is muted earth, so that only a
 // player's colour stands out.
 
 /** Twenty heraldic colours, one per seat; their names live in the messages. */
@@ -36,6 +36,7 @@ export const TONE = {
   seaLine: 0x8fa39a,
   gold: 0xd9a41e,
   goldLight: 0xf4d277,
+  goldDeep: 0x946512,
   glint: 0xfff6cf,
   rampart: 0xd8ccae,
   wall: 0xe6dcc4,
@@ -44,8 +45,13 @@ export const TONE = {
   amber: 0xf0a83a,
   fight: 0xe8432f,
   fightDark: 0x741c16,
+  /** The border shared with an ally: a calm green, quieter than a fight's red. */
+  pact: 0x3f7f4a,
+  /** A traitor's badge, the heralds' gules (the HUD's --color-gules). */
+  gules: 0xb3302a,
   outline: 0x3a2e22,
-  frame: 0xefe3c4,
+  /** The parchment far out from the map, browned at the page's edge. */
+  edge: 0xdccba5,
   neutral: 0xe8e1cd,
   neutralPill: 0x6e665a,
   parchment: 0xf1e8d2,
@@ -54,6 +60,8 @@ export const TONE = {
   white: 0xffffff,
   stone: 0xd9d1be,
   stoneDark: 0xb7ad97,
+  /** A castle's rampart round the land it holds. */
+  lead: 0x8d8574,
   slate: 0x6a635e,
   door: 0x4a3b2c,
   roofs: [0x8e5f48, 0x7d6650, 0x94704f, 0x73604e],

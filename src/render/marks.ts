@@ -1,14 +1,19 @@
-import { Container, Graphics } from 'pixi.js'
+import { Container, Graphics, Sprite } from 'pixi.js'
+import { standing } from '../../engine'
 import { drawVillage } from './art/settlements'
-import { drawWork } from './art/works'
+import { BOX, WORK_SPAN, workLod, workScale, workTexture } from './art/works'
+import { playerColor } from './palette'
 import type { Box } from './camera'
 import type { GameState, Grid } from '../../engine'
 
 // What stands on the land, drawn at its scale as on the boards: the free
-// villages, houses on the parchment, and the lords' works, small ink
-// drawings (a village in its fields, a castle, a market). The land a castle
-// holds is not ringed here: the territory tints it with stone. Drawn again
-// when a work is built or changes hands.
+// villages, houses on the parchment, and the lords' works, each at the
+// level of detail its size on screen allows (art/works.ts): from afar a
+// silhouette never under thirty pixels, cut out of the wash by a halo of
+// parchment; at mid distance the drawing; up close the illustration. The
+// land a castle holds is not ringed here: the territory tints it with
+// stone. Laid again when a work is built or changes hands; pale while it is
+// being built.
 
 export function makeMarks(state: GameState) {
   const container = new Container()
@@ -29,21 +34,32 @@ export function makeMarks(state: GameState) {
     }
     for (const work of state.works) {
       const { x, y } = at(work.tile)
-      const drawn = works.addChild(new Graphics())
-      drawWork(drawn, work.work)
+      const drawn = works.addChild(new Sprite())
+      drawn.anchor.set(-BOX.left / BOX.width, -BOX.top / BOX.height)
       drawn.position.set(x, y)
     }
   }
 
   return {
     container,
-    update() {
+    /** At so many pixels per map unit. */
+    update(zoom: number) {
       const built = state.works.map((w) => [w.tile, w.owner].join(':'))
       const now = [state.villages.length, ...built].join(',')
       if (now !== key) {
         key = now
         redraw()
       }
+      const k = workScale(zoom)
+      const lod = workLod(WORK_SPAN * zoom * k)
+      // A work being built stands pale until it is done (layers/building.ts).
+      state.works.forEach((work, i) => {
+        const drawn = works.children.at(i)
+        if (!(drawn instanceof Sprite)) return
+        drawn.texture = workTexture(work.work, playerColor(work.owner), lod)
+        drawn.scale.set((k * BOX.width) / drawn.texture.width)
+        drawn.alpha = standing(state, work) ? 1 : 0.4
+      })
     },
   }
 }

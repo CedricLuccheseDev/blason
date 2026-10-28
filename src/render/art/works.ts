@@ -1,118 +1,103 @@
+import { CanvasSource, Texture } from 'pixi.js'
 import { TONE } from '../palette'
+import { castleFar, castleNear } from './castle'
+import { marketFar, marketNear } from './market'
+import { villageFar, villageNear } from './village'
 import type { Graphics } from 'pixi.js'
+import type { Detail } from './house'
+import type { Pen } from './ink'
 import type { Work } from '../../../engine'
 
-// The works as the boards draw them, small ink drawings at the land's
-// scale, centred on (0, 0), some twenty map units across: a village of
-// houses round its church amid its fields, a castle's curtain wall with its
-// towers and keep, a market's two stalls and its heaped gold.
+// The works as the close-up boards draw them, each at three levels of
+// detail: 0 the silhouette from afar, a bold shape cut out of the wash by a
+// halo of parchment; 1 the drawing at mid distance; 2 the illustration up
+// close. Each drawn once per lord's colour and level into a texture, centred
+// on (0, 0) in local units, a work some 22 across as the map's.
 
-const LINE = { color: TONE.outline, width: 0.3 } as const
+export type Lod = 0 | Detail
 
-/** Six patches of fields round the village, furrows across. */
-function fields(g: Graphics) {
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + 0.4
-    const cx = Math.cos(a) * 11
-    const cy = Math.sin(a) * 8
-    // Furrows along the ring, four lines a patch.
-    const ux = -Math.sin(a)
-    const uy = Math.cos(a)
-    for (let j = 0; j < 4; j++) {
-      const off = -1.5 + j
-      const px = cx + Math.cos(a) * off
-      const py = cy + Math.sin(a) * off
-      g.moveTo(px - ux * 3.4, py - uy * 3.4).lineTo(
-        px + ux * 3.4,
-        py + uy * 3.4,
-      )
-    }
+const ART: Record<
+  Work,
+  {
+    far: (p: Pen, color: number) => void
+    near: (p: Pen, color: number, lod: Detail) => void
   }
-  g.stroke({ color: TONE.ink, alpha: 0.45, width: 0.45 })
+> = {
+  village: { far: villageFar, near: villageNear },
+  castle: { far: castleFar, near: castleNear },
+  market: { far: marketFar, near: marketNear },
 }
 
-const HOUSES: ReadonlyArray<[number, number, number, number]> = [
-  [-4.6, -2.6, 3.4, 2.3],
-  [5.6, -1.2, 3.2, 2.2],
-  [-6.2, 1, 3.8, 2.5],
-  [-1.6, 1.4, 3.9, 2.6],
-  [3.4, 1.9, 3.5, 2.4],
-]
+/** A work's span on the map, in map units, and the least it may show on screen, in pixels. */
+export const WORK_SPAN = 22
+const MIN_PX = 30
+/** The level of detail of a work drawn so many pixels across: the silhouette, the drawing, the illustration. */
+export function workLod(px: number): Lod {
+  if (px < 64) return 0
+  return px < 130 ? 1 : 2
+}
+/** A work's scale against the map, at so many pixels per map unit: never under 30 pixels on screen. */
+export const workScale = (zoom: number) =>
+  Math.max(1, MIN_PX / (WORK_SPAN * zoom))
 
-function village(g: Graphics) {
-  fields(g)
-  g.ellipse(0, 1, 9.5, 2.66).fill({ color: TONE.ink, alpha: 0.16 })
-  // The church behind, then the houses from the back to the front.
-  g.rect(-0.4, -8.6, 2.2, 6.4).fill(TONE.stone).stroke(LINE)
-  g.poly([-0.7, -8.6, 0.7, -12, 2.1, -8.6]).fill(TONE.slate).stroke(LINE)
-  ;[...HOUSES]
-    .sort((a, b) => a[1] - b[1])
-    .forEach(([x, y, w, h], n) => {
-      g.rect(x - w / 2, y - h, w, h)
-        .fill(TONE.wall)
-        .stroke(LINE)
-      g.poly([
-        x - w / 2 - 0.4,
-        y - h,
-        x - w / 2 + 0.8,
-        y - h - h * 0.9,
-        x + w / 2 - 0.8,
-        y - h - h * 0.9,
-        x + w / 2 + 0.4,
-        y - h,
-      ])
-        .fill(TONE.roofs[n % TONE.roofs.length])
-        .stroke(LINE)
-    })
+/** The box every drawing fits in, in local units, and the screen pixels per unit each level is drawn for. */
+export const BOX = { left: -15, top: -19, width: 32, height: 30 }
+const SHARP: Record<Lod, number> = { 0: 2.2, 1: 4.4, 2: 9 }
+
+type Frame = typeof BOX
+
+/** A canvas drawn at so many pixels per local unit, over a box. */
+export function canvasFor(
+  px: number,
+  draw: (p: Pen) => void,
+  box: Frame = BOX,
+): HTMLCanvasElement {
+  const density = Math.min(2, window.devicePixelRatio || 1)
+  const res = px * density
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.ceil(box.width * res)
+  canvas.height = Math.ceil(box.height * res)
+  const g = canvas.getContext('2d')
+  if (!g) return canvas
+  g.setTransform(res, 0, 0, res, -box.left * res, -box.top * res)
+  draw({ g, px })
+  return canvas
 }
 
-function castle(g: Graphics) {
-  const r = 5.6
-  g.ellipse(0, 4.6, 7.5, 2).fill({ color: TONE.ink, alpha: 0.16 })
-  g.ellipse(0, 0, r, r * 0.8).stroke({ color: TONE.ink, width: 2.4 })
-  g.ellipse(0, 0, r, r * 0.8).stroke({ color: TONE.rampart, width: 1.5 })
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + 0.3
-    g.rect(Math.cos(a) * r - 1.3, Math.sin(a) * r * 0.8 - 1.6, 2.6, 2.8)
-      .fill(TONE.rampart)
-      .stroke({ color: TONE.ink, width: 0.45 })
+export const textureOf = (canvas: HTMLCanvasElement) =>
+  new Texture({
+    source: new CanvasSource({ resource: canvas, autoGenerateMipmaps: true }),
+  })
+
+const made = new Map<string, Texture>()
+
+/** A work in a lord's colour at a level of detail, drawn the first time it is asked for; the texture spans BOX. */
+export function workTexture(work: Work, color: number, lod: Lod): Texture {
+  const key = `${work}:${color}:${lod}`
+  let texture = made.get(key)
+  if (!texture) {
+    texture = textureOf(
+      canvasFor(SHARP[lod], (p) =>
+        lod === 0 ? ART[work].far(p, color) : ART[work].near(p, color, lod),
+      ),
+    )
+    made.set(key, texture)
   }
-  g.rect(-2, -4.4, 4, 5)
-    .fill(TONE.rampart)
-    .stroke({ color: TONE.ink, width: 0.5 })
-  g.poly([-2.4, -4.4, 0, -7, 2.4, -4.4])
-    .fill(TONE.slate)
-    .stroke({ color: TONE.ink, width: 0.45 })
+  return texture
 }
 
-function stall(g: Graphics, x: number, y: number) {
-  g.rect(x - 2.4, y - 1.8, 4.8, 2.2)
-    .fill(TONE.wall)
-    .stroke({ color: TONE.ink, width: 0.35 })
-  g.poly([x - 3, y - 1.8, x - 2, y - 3.8, x + 2, y - 3.8, x + 3, y - 1.8])
-    .fill(TONE.loss)
-    .stroke({ color: TONE.ink, width: 0.35 })
-}
-
-const COINS: ReadonlyArray<[number, number]> = [
-  [-1.6, 3.2],
-  [0.6, 3.6],
-  [2.6, 3],
-  [-0.4, 2.2],
-  [1.6, 2],
-]
-
-function market(g: Graphics) {
-  g.ellipse(0, 4.4, 7, 1.8).fill({ color: TONE.ink, alpha: 0.16 })
-  stall(g, -3.6, -0.6)
-  stall(g, 3.4, -1.4)
-  for (const [x, y] of COINS)
-    g.circle(x, y, 1.2).fill(TONE.gold).stroke({ color: TONE.ink, width: 0.3 })
-}
-
-/** A work drawn as on the boards, centred on (0, 0). */
-export function drawWork(g: Graphics, work: Work): void {
-  if (work === 'village') village(g)
-  else if (work === 'castle') castle(g)
-  else market(g)
+/** A work's silhouette laid in a graphics, centred on (0, 0) at the map's scale: the ghost of a work about to be built. */
+export function drawWork(
+  g: Graphics,
+  work: Work,
+  color: number = TONE.stoneDark,
+): void {
+  g.texture(
+    workTexture(work, color, 0),
+    0xffffff,
+    BOX.left,
+    BOX.top,
+    BOX.width,
+    BOX.height,
+  )
 }

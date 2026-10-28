@@ -53,8 +53,8 @@ export const aboutEn: About = {
       heading: 'The step of a game',
       diagram: 'step',
       body: [
-        'A game is a state (who holds each tile, the peasants and the gold of each lord, the armies on the march, the alliances, the caravans) and a step that moves it on, ten times a second. Everything a player can do is an order: attack, build, offer or break an alliance. The bots send the same orders as you, through the same checks: the rules cannot tell a bot from a person.',
-        'Each step applies the valid orders, then the rules of a tick, always in the same order: the peasants grow, the armies advance tile by tile, the markets send their caravans, the caravans move, alliances run out, and the game is judged. Every figure is a whole number and every draw of chance comes from the seed: given the same orders, every machine computes the same game, tick for tick. That is what will let several players share a game with a server that only passes the orders along.',
+        'A game is a state (who holds each tile, the peasants and the gold of each lord, the armies on the march, the alliances, the caravans) and a step that moves it on, ten times a second. Everything a player can do is an order: attack, build, launch a coup, offer or break an alliance. The bots send the same orders as you, through the same checks: the rules cannot tell a bot from a person.',
+        'Each step applies the valid orders, then the rules of a tick, always in the same order: the peasants grow (and those the villages cannot feed fall sick), the armies advance tile by tile, the coups on their way fall, the markets send their caravans along the trade network, the caravans move, alliances run out, and the game is judged. Every figure is a whole number and every draw of chance comes from the seed: given the same orders, every machine computes the same game, tick for tick. That is what will let several players share a game with a server that only passes the orders along.',
       ],
     },
     {
@@ -68,7 +68,7 @@ export const aboutEn: About = {
     {
       heading: 'What is not there yet',
       body: [
-        'Blason is played alone against nineteen bots for now. Playing together comes next: each browser will keep running its own copy of the game, and a small server will gather everyone’s orders every tenth of a second and send them to all. There are no accounts, no advertising and no audience measurement.',
+        'Blason is played alone against nineteen bots for now, easy, fair or hard as you choose at the home. Playing together comes next: each browser will keep running its own copy of the game, and a small server will gather everyone’s orders every tenth of a second and send them to all. There are no accounts, no advertising and no audience measurement.',
         'The code is free software under the AGPL-3.0 licence: it can be read, studied and improved, and whoever runs a modified version on a server must publish it.',
       ],
     },
@@ -111,8 +111,8 @@ export const aboutFr: About = {
       heading: 'Le pas de la partie',
       diagram: 'step',
       body: [
-        'Une partie, c’est un état (qui tient chaque tuile, les paysans et l’or de chaque seigneur, les armées en marche, les alliances, les caravanes) et un pas qui le fait avancer, dix fois par seconde. Tout ce qu’un joueur peut faire est un ordre : attaquer, bâtir, proposer ou rompre une alliance. Les bots envoient les mêmes ordres que vous, par les mêmes contrôles : les règles ne distinguent pas un bot d’une personne.',
-        'Chaque pas applique les ordres valides, puis les règles d’un pas, toujours dans le même ordre : les paysans croissent, les armées avancent tuile par tuile, les marchés envoient leurs caravanes, les caravanes cheminent, les alliances expirent, et la partie est jugée. Chaque chiffre est un nombre entier et chaque tirage du hasard vient de la graine : avec les mêmes ordres, toutes les machines calculent la même partie, pas pour pas. C’est ce qui permettra à plusieurs joueurs de partager une partie avec un serveur qui ne fait que passer les ordres.',
+        'Une partie, c’est un état (qui tient chaque tuile, les paysans et l’or de chaque seigneur, les armées en marche, les alliances, les caravanes) et un pas qui le fait avancer, dix fois par seconde. Tout ce qu’un joueur peut faire est un ordre : attaquer, bâtir, lancer un coup d’éclat, proposer ou rompre une alliance. Les bots envoient les mêmes ordres que vous, par les mêmes contrôles : les règles ne distinguent pas un bot d’une personne.',
+        'Chaque pas applique les ordres valides, puis les règles d’un pas, toujours dans le même ordre : les paysans croissent (et ceux que les villages ne nourrissent pas tombent malades), les armées avancent tuile par tuile, les coups d’éclat en chemin tombent, les marchés envoient leurs caravanes sur le réseau des routes, les caravanes cheminent, les alliances expirent, et la partie est jugée. Chaque chiffre est un nombre entier et chaque tirage du hasard vient de la graine : avec les mêmes ordres, toutes les machines calculent la même partie, pas pour pas. C’est ce qui permettra à plusieurs joueurs de partager une partie avec un serveur qui ne fait que passer les ordres.',
       ],
     },
     {
@@ -126,7 +126,7 @@ export const aboutFr: About = {
     {
       heading: 'Ce qui n’y est pas encore',
       body: [
-        'Pour l’instant, Blason se joue seul contre dix-neuf bots. Jouer ensemble viendra ensuite : chaque navigateur continuera de faire tourner sa propre copie de la partie, et un petit serveur réunira les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a ni compte, ni publicité, ni mesure d’audience.',
+        'Pour l’instant, Blason se joue seul contre dix-neuf bots, faciles, moyens ou difficiles au choix de l’accueil. Jouer ensemble viendra ensuite : chaque navigateur continuera de faire tourner sa propre copie de la partie, et un petit serveur réunira les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a ni compte, ni publicité, ni mesure d’audience.',
         'Le code est un logiciel libre, sous licence AGPL-3.0 : on peut le lire, l’étudier et l’améliorer, et quiconque en fait tourner une version modifiée sur un serveur doit la publier.',
       ],
     },

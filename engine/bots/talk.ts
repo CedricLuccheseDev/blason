@@ -25,6 +25,21 @@ function alliesOf(state: GameState, me: number): Array<number> {
   })
 }
 
+/** Share of the land, in percent, from which a lord is a rival for the win, no one's ally; lords standing at most when all are rivals. */
+const RIVAL = 25
+const LAST = 3
+
+/**
+ * Whether a lord is too strong to ally with: he holds a quarter of the
+ * land, or so few are left that any of them may win. Alliances that would
+ * shelter the winner forever lapse, and the game ends.
+ */
+function rival(state: GameState, other: number): boolean {
+  const standing = state.players.filter((p) => p.alive).length
+  if (standing <= LAST) return true
+  return state.players[other].tiles * 100 >= state.grid.area * RIVAL
+}
+
 /** Its alliance offered to the strongest neighbour it is not fighting, while it has none. */
 function offer(
   state: GameState,
@@ -32,7 +47,9 @@ function offer(
   fronts: Map<number, Array<number>>,
   foes: Set<number>,
 ): Array<Order> {
-  const neighbours = [...fronts.keys()].filter((o) => o >= 0 && !foes.has(o))
+  const neighbours = [...fronts.keys()].filter(
+    (o) => o >= 0 && !foes.has(o) && !rival(state, o),
+  )
   neighbours.sort(
     (a, b) => state.players[b].tiles - state.players[a].tiles || a - b,
   )
@@ -50,6 +67,7 @@ function renewals(
   boldness: number,
 ): Array<Order> {
   return allies.flatMap((other) => {
+    if (rival(state, other)) return []
     const roll = drawInt(state.seed, 100, 'renew', me, other, state.tick)
     return roll * 2 >= boldness
       ? [{ player: me, type: 'ally' as const, target: other }]
@@ -62,7 +80,9 @@ function renewals(
  * not fighting while it has fewer than two allies, offers its own to the
  * strongest neighbour while it has none, renews what it holds unless bold
  * enough to let it lapse, and, bolder still, betrays an ally whose land is
- * held much thinner than its own, to fall on it.
+ * held much thinner than its own, to fall on it. It allies with no rival for
+ * the win: a lord holding a quarter of the land, or anyone once three are
+ * left.
  */
 export function talk(
   state: GameState,
@@ -81,7 +101,7 @@ export function talk(
   const orders = renewals(state, me, allies, boldness)
   if (allies.length < 2)
     for (const r of state.requests)
-      if (r.to === me && !foes.has(r.from))
+      if (r.to === me && !foes.has(r.from) && !rival(state, r.from))
         orders.push({ player: me, type: 'ally', target: r.from })
   if (allies.length === 0) orders.push(...offer(state, me, fronts, foes))
   return orders

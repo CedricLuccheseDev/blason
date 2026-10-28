@@ -2,8 +2,8 @@ import { Glyph, INK, PAPER } from './marks'
 import { LIFT } from './kit'
 import type { Mark } from './marks'
 
-// The round pieces of the mockups: the wax seal of an army or an act, the
-// gilt medallion of a work.
+// The pieces of the bar: the wax seal of an army or an act, the gilt
+// medallion of a work, the lozenge of a coup ringed in gules.
 
 const GLOW = 'url(#blason-glow)'
 
@@ -106,6 +106,45 @@ export function Medallion({
         strokeWidth="0.8"
       />
       <Glyph name={icon} cx={cx} cy={cy + 0.5} size={r * 1.12} sw={1.8} />
+    </g>
+  )
+}
+
+/** A coup's lozenge: a parchment diamond ringed in gules, its drawing in ink; lifted and glowing when in hand. */
+export function Lozenge({
+  cx,
+  cy,
+  r,
+  icon,
+  lifted = false,
+}: Readonly<{
+  cx: number
+  cy: number
+  r: number
+  icon: Mark
+  lifted?: boolean
+}>) {
+  // A diamond looks smaller than a disc of its radius: it reaches a little further.
+  const diamond = (k: number) =>
+    `M${cx} ${cy - k} L${cx + k} ${cy} L${cx} ${cy + k} L${cx - k} ${cy} Z`
+  const reach = r * 1.2
+  return (
+    <g filter={lifted ? GLOW : LIFT}>
+      <path
+        d={diamond(reach)}
+        fill={PAPER}
+        stroke={INK}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d={diamond(reach - 5)}
+        fill="none"
+        stroke="var(--color-gules)"
+        strokeWidth="2.6"
+        strokeLinejoin="round"
+      />
+      <Glyph name={icon} cx={cx} cy={cy} size={r * 1.05} sw={1.8} />
     </g>
   )
 }

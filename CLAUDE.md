@@ -1,9 +1,12 @@
 # Blason
 
 Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : vingt seigneurs, joueurs et bots, sur une terre
-redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent la terre, l'or qui paie les hommes
-qu'on lève, des constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
+redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent la terre et qu'on lève en armées,
+l'or qui paie les constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
 navigateur.
+
+**La doctrine** (Cédric, 28/10) : « un jeu qui prend plusieurs briques des rts complexes, mais en simplifié rapide et
+fun. Et agréable visuellement ». Chaque règle et chaque écran se jugent à cette aune.
 
 Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est un écran titre avec
 une partie de bots filmée derrière le menu. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
@@ -55,7 +58,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   millièmes, `UNIT`, jamais l'horloge, 10 pas par seconde). Son seul contrat est `engine/index.ts` : hors du moteur,
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ;
-    `grid.ts` les tuiles ; `land.ts` les domaines libres, le départ, les paysans et l'or ; `war.ts` les armées ;
+    `grid.ts` les tuiles ; `land.ts` les domaines libres, le départ et les paysans ; `muster.ts` la levée aux villages
+    et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.
   - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.
@@ -65,15 +69,28 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   le jeu tourne ; le plaisir et la lisibilité se jugent en jouant.
 - `src/render/` : le rendu (PixiJS) et les gestes, qui ne décident rien. `client.ts` monte une partie, `session.ts`
   la fait tourner dans la page, `scene.ts` empile les calques ; chaque terre tracée en lignes autour de ses tuiles et
-  repassée à la plume (`regions.ts`, `trace.ts`, `pen.ts`), comme les planches ; `camera.ts` la caméra du joueur,
+  repassée à la plume (`regions.ts`, `trace.ts`, `pen.ts`, le ruban `layers/borders.ts`), comme les planches ; la
+  carte gagne du détail en zoomant, par paliers de pixels par tuile (`ground/detail.ts`) : le décor (`ground/`,
+  collines, bois, champs, rivières) peint par morceaux de seize tuiles gardés par palier et multiplié dans le lavis,
+  les constructions à trois niveaux (`art/works.ts`) et leur vie (`layers/life.ts`) ; `camera.ts` la caméra du joueur,
   `director.ts` celle du spectateur ; `summary.ts` ce que lit le HUD, une fois par seconde.
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (13, 16, 20, 28) par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note`, `.hud-figure`),
-  l'espace sur les pas 4, 8, 12, 16 et 24 ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
-  (`Act.tsx`) ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons et touches (`Emblem.tsx`). La
+  l'espace sur les pas 4, 8, 12, 16 et 24 ; une échelle, `--hud` (`app.css`), 1 sur téléphone et petit écran,
+  1,2 à partir de 1280 × 640 : le texte, l'espace (dans `.hud`) et les dessins grandissent ensemble, les mesures
+  s'écrivent une fois, telles que dessinées ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
+  (`Act.tsx`) ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons, touches et insignes de
+  rapport (`Emblem.tsx`, `StandingBadge` : l'allié en vert `pact`, des maillons ; l'ennemi en gueules, une épée ;
+  le félon, l'écu brisé sur gueules ; la forme dit avant la couleur, les mêmes qu'à côté des noms sur la carte) ;
+  un mouvement unifié, acté le 28/10 (« chaque élément hud interactif soit animé ... des animations unifiés ») :
+  une courbe (`ease-hud`), deux durées (120 ms pour ce qu'on touche, 200 ms pour ce qui apparaît), deux rôles
+  (`.hud-press`, `.hud-enter`), rien sous `prefers-reduced-motion` ; `useCompact` donne la forme compacte des
+  pièces sur téléphone, debout ou couché. La
   mise en page en HTML, le SVG pour les seuls objets dessinés.
-- `src/components/game/` : le HUD de la partie (la bourse, les alliés, la course, les lettres, la barre, le
-  cartouche près de la souris), et ses dessins SVG (`svg/`).
+- `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
+  les lettres et les alliances à renouveler à droite, la barre en bas avec la bourse dedans, puis les armées
+  en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
+  se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, comme l'écran titre d'un jeu ; le menu sur un parchemin roulé (Jouer,
   Regarder, le Journal ; flèches et Entrée), derrière une partie de bots (`src/components/home/Spectacle.tsx`)
   filmée par le réalisateur ; la terre de la prochaine partie s'y prépare (`src/render/ahead.ts`).

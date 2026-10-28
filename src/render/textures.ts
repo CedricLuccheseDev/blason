@@ -1,5 +1,6 @@
 import { Graphics } from 'pixi.js'
 import { drawCart } from './art/cart'
+import { drawPeasant } from './art/peasant'
 import { drawSoldier } from './art/soldier'
 import type { Renderer, Texture } from 'pixi.js'
 
@@ -14,6 +15,8 @@ type Stamp = { texture: Texture; anchor: { x: number; y: number } }
 export type Stamps = {
   /** A soldier of the battles in a lord's colour, drawn the first time it is needed. */
   soldier: (color: number) => Stamp
+  /** A peasant defending his land with a pitchfork, likewise. */
+  peasant: (color: number) => Stamp
   /** A caravan under a lord's pennant, likewise. */
   cart: (color: number) => Stamp
 }
@@ -53,6 +56,7 @@ function byColor(
 export function makeStamps(renderer: Renderer): Stamps {
   return {
     soldier: byColor(renderer, drawSoldier),
+    peasant: byColor(renderer, drawPeasant),
     cart: byColor(renderer, drawCart),
   }
 }

@@ -13,24 +13,41 @@ export type { Point } from './map/points'
 export { apart, around, makeGrid } from './grid'
 
 // A game: its rules, its state, the orders and the step that applies them.
-export { ARMIES, RULES, WORKS } from './rules'
-export type { Army, Work } from './rules'
+export { ARMIES, COUPS, RULES, WORKS } from './rules'
+export type { Army, Coup, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
-export type { Caravan, GameState, Grid, Host, Order } from './types'
+export type {
+  Caravan,
+  GameState,
+  Grid,
+  Host,
+  Order,
+  Scar,
+  Strike,
+} from './types'
 export {
   canStart,
   capOf,
   createGame,
   hasPicked,
-  incomeOf,
+  sicknessOf,
+  standing,
   worksOf,
 } from './land'
-export { nextDrop, step, victoryShare } from './step'
+export { nextDrop, stateHash, step, victoryShare } from './step'
 
 // What the screen and the bots ask of the rules.
-export { costOf, entryFor, menFor } from './war'
+export { costOf, entryFor, menFor, paceOf } from './war'
 export { canBuild, priceOf } from './works'
+export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
+export { burnt, rebelled } from './scars'
+export { freeVillages, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
+export { meet } from './battle'
+export { tradeLinks } from './network'
+export type { Link } from './network'
 
-// The bots, players like the others.
+// The bots, players like the others, at the level chosen.
 export { createBot } from './bots/bot'
+export { LEVELS } from './bots/levels'
+export type { Level } from './bots/levels'

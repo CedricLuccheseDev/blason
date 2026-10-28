@@ -3,10 +3,13 @@ import { fingerprint } from './numbers'
 import { moveCaravans, sendCaravans } from './caravans'
 import { ally, breakAlliance, expireDiplomacy } from './diplomacy'
 import { assignMissingStarts, grow, pickStart } from './land'
-import { WORKS } from './rules'
+import { COUPS, WORKS } from './rules'
 import { NO_ONE } from './types'
+import { clash } from './battle'
+import { enclose } from './enclosure'
 import { advanceHosts, attack } from './war'
 import { build } from './works'
+import { launch, strikeCoups } from './coups'
 import type { GameState, Order } from './types'
 
 const MINUTE = 60 * TICKS_PER_SECOND
@@ -63,8 +66,18 @@ function isSeat(state: GameState, seat: number): boolean {
   )
 }
 
+/** The orders there are: any other word, which a distant player could send, is none. */
+const KINDS: ReadonlySet<string> = new Set<Order['type']>([
+  'pickStart',
+  'attack',
+  'build',
+  'coup',
+  'ally',
+  'breakAlliance',
+])
+
 function isValid(state: GameState, order: Order): boolean {
-  if (!isSeat(state, order.player)) return false
+  if (!KINDS.has(order.type) || !isSeat(state, order.player)) return false
   if (order.type === 'ally' || order.type === 'breakAlliance')
     return isSeat(state, order.target)
   const { tile } = order
@@ -73,6 +86,7 @@ function isValid(state: GameState, order: Order): boolean {
   if (order.type === 'attack')
     return Object.hasOwn(state.rules.armies, order.army)
   if (order.type === 'build') return WORKS.includes(order.work)
+  if (order.type === 'coup') return COUPS.includes(order.coup)
   return true
 }
 
@@ -87,6 +101,8 @@ function apply(state: GameState, order: Order): void {
     attack(state, order.player, order.tile, order.army)
   else if (order.type === 'build')
     build(state, order.player, order.tile, order.work)
+  else if (order.type === 'coup')
+    launch(state, order.player, order.tile, order.coup)
   else if (order.type === 'ally') ally(state, order.player, order.target)
   else breakAlliance(state, order.player, order.target)
 }
@@ -98,7 +114,10 @@ export function step(state: GameState, orders: Array<Order> = []) {
   if (state.tick === state.rules.openingTicks - 1) assignMissingStarts(state)
   if (state.tick >= state.rules.openingTicks) {
     grow(state)
+    clash(state)
     advanceHosts(state)
+    strikeCoups(state)
+    enclose(state)
     sendCaravans(state)
     moveCaravans(state)
     expireDiplomacy(state)

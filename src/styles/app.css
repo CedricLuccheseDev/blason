@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* A phone on its side: too low for the HUD's full pieces (components/hud/useCompact.ts). */
+@custom-variant short (@media (max-height: 499px));
+
 /* Shared identity (see ~/Perso/CLAUDE.md): cold paper ground, print ink, a
    single accent stamp. Square corners, hairline rules, no shadows.
    Two typefaces, no more (NORM): Anton for titles, the wordmark and big
@@ -38,17 +41,39 @@
   --font-caps: 'IM Fell English SC', Georgia, serif;
   --font-figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
   /* The HUD's measures (src/components/hud/tokens.ts): four sizes of type
-     and nothing between them, one shadow for whatever lies on the map. */
-  --text-hud-s: 13px;
+     and nothing between them, 13, 16, 20 and 28 as drawn, grown by the
+     HUD's scale (--hud, below); one shadow for whatever lies on the map. */
+  --text-hud-s: calc(13px * var(--hud));
   --text-hud-s--line-height: 1.2;
-  --text-hud-m: 16px;
+  --text-hud-m: calc(16px * var(--hud));
   --text-hud-m--line-height: 1.2;
-  --text-hud-l: 20px;
+  --text-hud-l: calc(20px * var(--hud));
   --text-hud-l--line-height: 1.15;
-  --text-hud-xl: 28px;
+  --text-hud-xl: calc(28px * var(--hud));
   --text-hud-xl--line-height: 1;
+  /* The alliance's green, as the heralds' vert: an ally in the HUD as on
+     the map, his shared border and his badge (render/palette.ts, TONE.pact). */
+  --color-pact: #3f7f4a;
   /* norm-ok: the shadow of what lies on the map, the game's art direction. */
   --shadow-lift: 0 2px 4px rgb(43 30 18 / 0.35);
+  /* The HUD's motion: one curve, quick to leave and soft to land, and two
+     durations, for what is touched and for what appears. */
+  --ease-hud: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-hud-press: 120ms;
+  --duration-hud-enter: 200ms;
+}
+
+/* The HUD's scale, its one knob: its type, its spacing and its drawn
+   emblems grow by it together. A phone and a small screen keep the
+   measures as drawn; a desk's screen, read from farther away and wide
+   enough for the bar so grown, has them a fifth larger. */
+:root {
+  --hud: 1;
+}
+@media (min-width: 1280px) and (min-height: 640px) {
+  :root {
+    --hud: 1.2;
+  }
 }
 
 @layer base {
@@ -146,6 +171,13 @@
   }
 }
 
+@keyframes hud-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 @keyframes fade {
   from {
     opacity: 0;
@@ -158,6 +190,12 @@
 /* The HUD's type roles: words in IM Fell, figures in Alegreya Sans, at the
    sizes above. A piece picks a role, never a font or a size of its own. */
 @layer components {
+  /* What the HUD is laid out in: Tailwind's spacing steps (4, 8, 12, 16,
+     24) grown by the HUD's scale, so that its gaps and widths follow its
+     type. */
+  .hud {
+    --spacing: calc(0.25rem * var(--hud));
+  }
   .hud-word {
     @apply font-fell text-hud-m text-quill;
   }
@@ -166,6 +204,22 @@
   }
   .hud-note {
     @apply font-fell text-hud-s text-quill/70 italic;
+  }
+  /* The HUD's motion roles: what is touched lifts under the pointer and
+     sinks when pressed; a sheet that appears rises a little as it comes. */
+  .hud-press {
+    transition-property: transform, background-color, box-shadow, opacity;
+    transition-duration: var(--duration-hud-press);
+    transition-timing-function: var(--ease-hud);
+  }
+  .hud-press:hover {
+    transform: translateY(-1px);
+  }
+  .hud-press:active {
+    transform: translateY(1px) scale(0.97);
+  }
+  .hud-enter {
+    animation: hud-enter var(--duration-hud-enter) var(--ease-hud) both;
   }
   .hud-figure {
     @apply font-figures font-extrabold text-quill;
@@ -200,7 +254,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .rise-in,
-  .fade-in {
+  .fade-in,
+  .hud-enter {
     animation: none;
+  }
+  .hud-press,
+  .hud-press:hover,
+  .hud-press:active {
+    transition: none;
+    transform: none;
   }
 }

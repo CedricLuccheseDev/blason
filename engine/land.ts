@@ -2,6 +2,8 @@ import { TICKS_PER_SECOND, UNIT } from './units'
 import { drawInt } from './numbers'
 import { apart, around } from './grid'
 import { RULES } from './rules'
+import { isFelon } from './diplomacy'
+import { rebelled } from './scars'
 import { NEUTRAL, NO_ONE, SEA } from './types'
 import type { Rules } from './rules'
 import type { GameState, Grid } from './types'
@@ -67,16 +69,19 @@ export function createGame(
     villages,
     works: [],
     players: Array.from({ length: players }, () => ({
-      peasants: rules.peasants.base * UNIT,
+      peasants: 0,
       gold: rules.startGold * UNIT,
       alive: true,
       felonUntil: 0,
       tiles: 0,
+      coups: {},
     })),
     hosts: [],
     alliances: [],
     requests: [],
     caravans: [],
+    strikes: [],
+    scars: [],
     winner: NO_ONE,
   }
 }
@@ -86,17 +91,16 @@ export function worksOf(state: GameState, lord: number, work: string) {
   return state.works.filter((w) => w.owner === lord && w.work === work).length
 }
 
-/** The peasants a lord's land feeds: a base, so many a tile, so many a village. */
-export function capOf(state: GameState, lord: number): number {
-  const { base, tile, village } = state.rules.peasants
-  const tiles = state.players[lord].tiles
-  const villages = worksOf(state, lord, 'village')
-  return (base + village * villages) * UNIT + tile * tiles
-}
+/** Whether a work stands done and serves: one being built does nothing yet. */
+export const standing = (state: GameState, work: GameState['works'][number]) =>
+  (work.ready ?? 0) <= state.tick
 
-/** The gold a lord earns each second, in thousandths, the same for all: his markets' caravans bring more. */
-export function incomeOf(state: GameState, lord: number): number {
-  return state.players[lord].alive ? state.rules.gold : 0
+/** The peasants a lord's villages feed, those built: so many each; the land alone feeds none. */
+export function capOf(state: GameState, lord: number): number {
+  const villages = state.works.filter(
+    (w) => w.owner === lord && w.work === 'village' && standing(state, w),
+  ).length
+  return state.rules.peasants.village * villages * UNIT
 }
 
 /** The men holding each of a lord's tiles: his peasants spread over his land. */
@@ -105,12 +109,24 @@ export function density(state: GameState, lord: number): number {
   return Math.floor(peasants / Math.max(1, tiles))
 }
 
-/** Each tick, gold for every lord, and peasants born up to what his land feeds. */
+/** The peasants a lord loses a tick to sickness: so much of those over what his villages feed, one at least while any are. */
+export function sicknessOf(state: GameState, lord: number): number {
+  const over = state.players[lord].peasants - capOf(state, lord)
+  if (over <= 0 || state.rules.sickness === 0) return 0
+  const lost = (over * state.rules.sickness) / 100 / TICKS_PER_SECOND
+  return Math.min(over, Math.max(UNIT, Math.floor(lost)))
+}
+
+/**
+ * Each tick, peasants born up to what a lord's villages feed; those over it,
+ * a village lost or an army come home, fall sick and die away. Gold comes
+ * only by the merchants (caravans.ts).
+ */
 export function grow(state: GameState): void {
   state.players.forEach((lord, id) => {
     if (!lord.alive) return
-    lord.gold += Math.floor(incomeOf(state, id) / TICKS_PER_SECOND)
     const cap = capOf(state, id)
+    lord.peasants -= sicknessOf(state, id)
     if (lord.peasants >= cap) return
     const born = Math.floor(cap / (state.rules.fillSeconds * TICKS_PER_SECOND))
     lord.peasants = Math.min(cap, lord.peasants + born)
@@ -171,7 +187,7 @@ export function pickStart(state: GameState, player: number, tile: number) {
   settle(state, player, tile)
 }
 
-/** At the end of the opening, who picked nothing gets the free domain farthest from all. */
+/** At the end of the opening, who picked nothing gets the free domain farthest from all; then the free villages are gone. */
 export function assignMissingStarts(state: GameState): void {
   state.players.forEach((_, id) => {
     if (hasPicked(state, id)) return
@@ -192,4 +208,29 @@ export function assignMissingStarts(state: GameState): void {
     }
     if (best >= 0) settle(state, id, best)
   })
+  // The opening over, the free domains and their villages are gone: what
+  // no lord holds is one free land, held by its villagers.
+  state.villages = []
+}
+
+/** The men holding a free tile: so many in a hundred of what holds the mean lord's tile, never under the floor. */
+function neutralHold(state: GameState): number {
+  const lords = state.players.filter((p) => p.alive && p.tiles > 0)
+  if (lords.length === 0) return 0
+  const peasants = lords.reduce((sum, p) => sum + p.peasants, 0)
+  const tiles = lords.reduce((sum, p) => sum + p.tiles, 0)
+  const half = Math.floor((peasants * state.rules.neutralHold) / 100 / tiles)
+  return Math.max(state.rules.neutralFloor, half)
+}
+
+/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's, more where rebels hold it. */
+export function holdOf(state: GameState, tile: number): number {
+  const owner = state.owner[tile]
+  const { rules } = state
+  if (owner === NEUTRAL)
+    return rebelled(state, tile)
+      ? Math.floor((neutralHold(state) * rules.rebelHold) / 100)
+      : neutralHold(state)
+  const mark = isFelon(state, owner) ? rules.felonHold : 100
+  return Math.floor((density(state, owner) * mark) / 100)
 }

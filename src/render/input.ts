@@ -1,11 +1,13 @@
 import type { Container } from 'pixi.js'
 
 // The player's gestures: a click on a tile, or off the land (-1). A press
-// that moves is the camera's drag, not a click; the right button is kept
-// for the cards.
+// that moves is the camera's drag, not a click; the right button, or a long
+// press of a finger, opens what binds the player to the tile's lord.
 
 /** How far a press may wander, in pixels, and still be a click. */
 const SLOP = 6
+/** How long a finger rests before its press is the right button's. */
+const LONG_PRESS_MS = 500
 
 export function makeInput(
   canvas: HTMLCanvasElement,
@@ -22,6 +24,7 @@ export function makeInput(
   },
 ) {
   let press: { x: number; y: number } | null = null
+  let long: ReturnType<typeof setTimeout> | undefined
 
   function tileAt(e: PointerEvent): number {
     const { x, y } = view.toLocal({ x: e.offsetX, y: e.offsetY })
@@ -29,11 +32,18 @@ export function makeInput(
   }
 
   const onDown = (e: PointerEvent) => {
-    if (e.button === 0 || e.button === 2) {
-      press = { x: e.clientX, y: e.clientY }
-    }
+    clearTimeout(long)
+    if (e.button !== 0 && e.button !== 2) return
+    press = { x: e.clientX, y: e.clientY }
+    if (e.pointerType !== 'touch') return
+    const tile = tileAt(e)
+    long = setTimeout(() => {
+      press = null
+      on.menu(tile)
+    }, LONG_PRESS_MS)
   }
   const onUp = (e: PointerEvent) => {
+    clearTimeout(long)
     if (!press || (e.button !== 0 && e.button !== 2)) return
     const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y)
     press = null
@@ -46,7 +56,11 @@ export function makeInput(
     else on.click(tile)
   }
   const onWheel = () => on.away()
-  const onMove = (e: PointerEvent) => on.hover(press ? -1 : tileAt(e))
+  const onMove = (e: PointerEvent) => {
+    if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > SLOP)
+      clearTimeout(long)
+    on.hover(press ? -1 : tileAt(e))
+  }
   const onLeave = () => on.hover(-1)
   const onMenu = (e: Event) => e.preventDefault()
   canvas.addEventListener('pointerdown', onDown)
@@ -58,6 +72,7 @@ export function makeInput(
 
   return {
     destroy() {
+      clearTimeout(long)
       canvas.removeEventListener('pointerdown', onDown)
       canvas.removeEventListener('pointerup', onUp)
       canvas.removeEventListener('pointermove', onMove)

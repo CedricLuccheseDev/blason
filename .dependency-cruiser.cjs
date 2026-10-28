@@ -32,6 +32,20 @@ module.exports = {
       to: { path: '^engine/', pathNot: '^engine/index\\.ts$' },
     },
     {
+      name: 'relay-apart-from-the-app',
+      comment:
+        'The protocol and the relay run on the server too: they import neither the app nor the browser (SOLID, D)',
+      severity: 'error',
+      from: { path: '^(net|server)/' },
+      to: {
+        path: [
+          '^src/',
+          '^scripts/',
+          'node_modules/(react|react-dom|pixi\\.js)/',
+        ],
+      },
+    },
+    {
       name: 'convex-stays-isolated',
       comment: 'Convex functions deploy alone: they never import app code',
       severity: 'error',
