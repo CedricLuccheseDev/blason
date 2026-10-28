@@ -46,6 +46,8 @@ export const TONE = {
   fightDark: 0x741c16,
   /** The border shared with an ally: a calm green, quieter than a fight's red. */
   pact: 0x3f7f4a,
+  /** A traitor's badge, the heralds' gules (the HUD's --color-gules). */
+  gules: 0xb3302a,
   outline: 0x3a2e22,
   /** The parchment far out from the map, browned at the page's edge. */
   edge: 0xdccba5,

@@ -41,15 +41,19 @@
   --font-caps: 'IM Fell English SC', Georgia, serif;
   --font-figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
   /* The HUD's measures (src/components/hud/tokens.ts): four sizes of type
-     and nothing between them, one shadow for whatever lies on the map. */
-  --text-hud-s: 13px;
+     and nothing between them, 13, 16, 20 and 28 as drawn, grown by the
+     HUD's scale (--hud, below); one shadow for whatever lies on the map. */
+  --text-hud-s: calc(13px * var(--hud));
   --text-hud-s--line-height: 1.2;
-  --text-hud-m: 16px;
+  --text-hud-m: calc(16px * var(--hud));
   --text-hud-m--line-height: 1.2;
-  --text-hud-l: 20px;
+  --text-hud-l: calc(20px * var(--hud));
   --text-hud-l--line-height: 1.15;
-  --text-hud-xl: 28px;
+  --text-hud-xl: calc(28px * var(--hud));
   --text-hud-xl--line-height: 1;
+  /* The alliance's green, as the heralds' vert: an ally in the HUD as on
+     the map, his shared border and his badge (render/palette.ts, TONE.pact). */
+  --color-pact: #3f7f4a;
   /* norm-ok: the shadow of what lies on the map, the game's art direction. */
   --shadow-lift: 0 2px 4px rgb(43 30 18 / 0.35);
   /* The HUD's motion: one curve, quick to leave and soft to land, and two
@@ -57,6 +61,19 @@
   --ease-hud: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-hud-press: 120ms;
   --duration-hud-enter: 200ms;
+}
+
+/* The HUD's scale, its one knob: its type, its spacing and its drawn
+   emblems grow by it together. A phone and a small screen keep the
+   measures as drawn; a desk's screen, read from farther away and wide
+   enough for the bar so grown, has them a fifth larger. */
+:root {
+  --hud: 1;
+}
+@media (min-width: 1280px) and (min-height: 640px) {
+  :root {
+    --hud: 1.2;
+  }
 }
 
 @layer base {
@@ -173,6 +190,12 @@
 /* The HUD's type roles: words in IM Fell, figures in Alegreya Sans, at the
    sizes above. A piece picks a role, never a font or a size of its own. */
 @layer components {
+  /* What the HUD is laid out in: Tailwind's spacing steps (4, 8, 12, 16,
+     24) grown by the HUD's scale, so that its gaps and widths follow its
+     type. */
+  .hud {
+    --spacing: calc(0.25rem * var(--hud));
+  }
   .hud-word {
     @apply font-fell text-hud-m text-quill;
   }

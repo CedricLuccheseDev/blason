@@ -94,7 +94,13 @@ export function Cursor({
         {strikes && <ArmyHalf summary={summary} />}
         {strikes && pact && <Rule />}
         {seat !== null && pact && (
-          <PactHalf aim={aim} seat={seat} pact={pact} onTreat={onTreat} />
+          <PactHalf
+            aim={aim}
+            seat={seat}
+            summary={summary}
+            pact={pact}
+            onTreat={onTreat}
+          />
         )}
       </Sheet>
     </div>

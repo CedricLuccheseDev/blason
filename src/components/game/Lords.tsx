@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Act } from '../hud/Act'
-import { Shield } from '../hud/Emblem'
+import { Shield, StandingBadge } from '../hud/Emblem'
 import { useCompact } from '../hud/useCompact'
-import { Icon } from '../hud/Figure'
-import { ICON } from '../hud/tokens'
 import { Sheet } from '../hud/Sheet'
 import { count, hex } from './format'
+import { standingsOf } from './standing'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
@@ -16,8 +15,9 @@ const SHOWN = 8
  * Top left, the lords still standing, as on OpenFront, the list folded away
  * at a click: the first by
  * their share of the land, the player among them or under them, each with
- * his shield, his share and his men, the links of an ally, the broken shield
- * of a traitor; the lord under the pointer stands out
+ * his shield, his share and his men, and his badges: an ally's links on a
+ * line ruled in green, a foe's sword, a traitor's broken shield; the lord
+ * under the pointer stands out
  * in the list as on the map.
  */
 export function Lords({
@@ -72,12 +72,15 @@ export function Lords({
         rows.map(({ lord, rank }) => {
           const lit = lord.seat === aimed
           const self = lord.key === me
+          // An ally's line is ruled in the alliance's green down its left,
+          // and washed in it, as his border is on the map.
+          let wash = 'border-transparent'
+          if (lit) wash = 'border-transparent bg-gilt/25'
+          else if (lord.allied) wash = 'border-pact bg-pact/10'
           return (
             <div
               key={lord.seat}
-              className={`flex items-center gap-2 px-1 transition-colors duration-(--duration-hud-press) ease-hud ${
-                lit ? 'bg-gilt/25' : ''
-              }`}
+              className={`flex items-center gap-2 border-l-[3px] px-1 transition-colors duration-(--duration-hud-press) ease-hud ${wash}`}
             >
               <span className="hud-figure text-hud-s w-4 text-right opacity-60">
                 {rank}
@@ -89,9 +92,16 @@ export function Lords({
                 {m.game.colors[lord.key]}
                 {self && <span className="hud-note"> ({m.lord.you})</span>}
               </span>
-              {lord.allied && <Icon name="links" size={ICON.s} />}
-              {lord.felon && <Icon name="felon" size={ICON.s} />}
-              <span className="hud-figure text-hud-s w-9 text-right">
+              <span className="flex shrink-0 gap-0.5 empty:hidden">
+                {standingsOf(lord, m).map((s) => (
+                  <StandingBadge
+                    key={s.standing}
+                    standing={s.standing}
+                    label={s.label}
+                  />
+                ))}
+              </span>
+              <span className="hud-figure text-hud-s w-8 text-right">
                 {m.game.percent(lord.share)}
               </span>
               <span className="hud-figure text-hud-s w-12 text-right opacity-70">

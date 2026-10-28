@@ -78,11 +78,11 @@ function clearOf(state: GameState, lord: number, piece: Piece) {
   return best
 }
 
-/** The alliance's green, as the heralds' vert. */
-const ALLY = 0x2f7d3f
+/** A badge's size on screen, its ring round it, in pixels. */
+const BADGE = 34
 
-/** A badge's size on screen, in pixels. */
-const BADGE = 24
+/** The radius of the ring round an ally's badge, the time left to the alliance, in the badge's units. */
+const RING = 21.5
 
 type Name = { x: number; y: number; half: number; tall: number }
 
@@ -125,7 +125,7 @@ export function makeBadges(state: GameState, me: number) {
           icons.forEach((icon, k) => {
             const one = g.addChild(new Graphics())
             drawIcon(one, icon)
-            one.position.set(k * 40, 0)
+            one.position.set(k * 50, 0)
           })
           const ring = g.addChild(new Graphics())
           mark = { icons: key, g, ring }
@@ -134,22 +134,22 @@ export function makeBadges(state: GameState, me: number) {
         const name = nameOf(lord)
         mark.g.visible = name !== null && icons.length > 0
         if (!name) return
-        const s = BADGE / 35 / zoom
+        const s = BADGE / (2 * RING) / zoom
         mark.g.scale.set(s)
         mark.g.position.set(
-          name.x + name.half + 6 / zoom,
-          name.y - BADGE / 2 / zoom,
+          name.x + name.half + (BADGE / 2 - 6) / zoom,
+          name.y - 12 / zoom,
         )
         // Round the links, the time left to the alliance, emptying as it runs out.
         mark.ring.clear()
         if (!icons.includes('links')) return
         const end = -Math.PI / 2 + Math.PI * 2 * left(lord)
         mark.ring
-          .circle(0, 0, 16)
-          .stroke({ width: 3, color: TONE.ink, alpha: 0.25 })
-          .moveTo(0, -16)
-          .arc(0, 0, 16, -Math.PI / 2, end)
-          .stroke({ width: 3.4, color: ALLY, cap: 'round' })
+          .circle(0, 0, RING)
+          .stroke({ width: 3, color: TONE.ink, alpha: 0.2 })
+          .moveTo(0, -RING)
+          .arc(0, 0, RING, -Math.PI / 2, end)
+          .stroke({ width: 3.6, color: TONE.pact, cap: 'round' })
       })
     },
   }

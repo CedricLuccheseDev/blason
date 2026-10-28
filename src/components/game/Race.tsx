@@ -88,7 +88,7 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
     <Sheet className="flex items-center gap-3 px-3 py-1">
       <Figure size="m">{minutes(summary.seconds)}</Figure>
       <Rule />
-      <div className="w-60 max-sm:w-24">
+      <div className="w-44 max-sm:w-24 short:w-32">
         <Track summary={summary} />
       </div>
       {dropIn === null ? (

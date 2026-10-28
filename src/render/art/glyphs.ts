@@ -27,9 +27,15 @@ export const GLYPHS = {
       open: true,
     },
   ],
+  // A shield broken in two, its halves pulled apart along the crack: a
+  // felon, never to be read as a lord's whole shield.
   felon: [
-    { d: 'M12 2.5 L20 5.6 V11.8 Q20 18.2 12 21.5 Q4 18.2 4 11.8 V5.6 Z' },
-    { d: 'M12.6 2.8 L10.6 8 L13.6 11.2 L10.4 15.2 L12 21.2', open: true },
+    {
+      d: 'M10.6 2.6 L2.8 5.6 V11.8 Q2.8 18.2 10.6 21.4 L9 15.2 L11.6 11.2 L8.6 8 Z',
+    },
+    {
+      d: 'M13.4 2.6 L21.2 5.6 V11.8 Q21.2 18.2 13.4 21.4 L11.8 15.2 L14.4 11.2 L11.4 8 Z',
+    },
   ],
   // Two links of a chain: an alliance.
   links: [

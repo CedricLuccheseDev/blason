@@ -125,13 +125,23 @@ The HUD is React, laid over the map. It is built on a small design system,
 `src/components/hud/`, so that every piece shares the same measures:
 
 - **tokens** (`tokens.ts`, and `src/styles/app.css` for the type and the
-  shadow): four type sizes through four roles (`.hud-word`, `.hud-name`,
-  `.hud-note`, `.hud-figure`), and spacing only on the steps 4, 8, 12, 16 and
-  24 pixels;
+  shadow): four type sizes, 13, 16, 20 and 28 pixels, through four roles
+  (`.hud-word`, `.hud-name`, `.hud-note`, `.hud-figure`), and spacing only on
+  the steps 4, 8, 12, 16 and 24 pixels;
+- **one scale**, `--hud` in `app.css`: 1 on a phone or a small screen, 1.2 on
+  a screen at least 1280 by 640. The type, the spacing inside `.hud` (the
+  game's screen) and the drawn objects all grow by it together, so that the
+  measures above are written once, as drawn, and nothing is resized piece by
+  piece (on a desk: type 15.6, 19.2, 24 and 33.6, steps 4.8 to 28.8, the
+  button 53);
 - **one material**, the sheet of parchment (`Sheet.tsx`);
-- **one button**, 44 pixels tall (`Act.tsx`);
+- **one button**, 44 pixels tall at scale 1 (`Act.tsx`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
-  shields, wax seals, gilt medallions, keys (`Emblem.tsx`);
+  shields, wax seals, gilt medallions, keys, and the badges of standing
+  (`Emblem.tsx`): an ally the links of a chain in the alliance's green
+  (`--color-pact`, the map's `TONE.pact`), a foe at war a sword in gules, a
+  felon his shield broken in two on gules; the shape says it before the
+  colour, the same badges as beside the names on the map;
 - **one motion**: a single curve and two durations, through two roles,
   `.hud-press` on whatever is touched and `.hud-enter` on every sheet that
   appears; nothing moves under reduced motion;

@@ -1,8 +1,19 @@
+import { StandingBadge } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { count } from './format'
 import { LordSheet } from './LordSheet'
+import { standingsOf } from './standing'
+import type { Standing } from '../hud/Emblem'
+
 import type { Aim, Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
+
+/** The word beside each badge, in its colour. */
+const TONES: Record<Standing, string> = {
+  ally: 'text-pact',
+  foe: 'text-gules',
+  felon: 'text-gules-deep',
+}
 
 /**
  * Bottom left, the lord under the pointer: his shield and name, his share of
@@ -16,11 +27,6 @@ export function Aimed({
   const m = useMessages()
   const lord = aim?.lord == null ? null : summary.lords[aim.lord]
   if (!lord || !lord.alive) return null
-  const status = [
-    lord.allied && m.lord.allied,
-    lord.atWar && m.lord.atWar,
-    lord.felon && m.lord.felon,
-  ].filter(Boolean)
   return (
     <LordSheet
       lord={lord}
@@ -34,9 +40,13 @@ export function Aimed({
         <Figure icon="soldier" size="s">
           {count(lord.men)}
         </Figure>
-        {status.map((word) => (
-          <span key={String(word)} className="hud-note">
-            {word}
+        {standingsOf(lord, m).map(({ standing, label }) => (
+          <span
+            key={standing}
+            className={`hud-note flex items-center gap-1 ${TONES[standing]}`}
+          >
+            <StandingBadge standing={standing} />
+            {label}
           </span>
         ))}
       </span>

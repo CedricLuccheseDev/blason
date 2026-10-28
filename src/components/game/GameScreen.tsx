@@ -93,7 +93,7 @@ export function GameScreen({
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it.
   return (
-    <main className="relative h-dvh w-full touch-none overflow-hidden bg-vellum select-none">
+    <main className="hud relative h-dvh w-full touch-none overflow-hidden bg-vellum select-none">
       <div
         ref={host}
         className="absolute inset-0"
@@ -105,14 +105,14 @@ export function GameScreen({
       {game && summary && (
         <>
           <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
-            <div className="relative flex w-64 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
+            <div className="relative flex w-72 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
               <Lords summary={summary} aimed={aim?.lord ?? null} />
             </div>
             <div className="flex flex-col items-center gap-2">
               <Race summary={summary} />
               <Moment summary={summary} />
             </div>
-            <div className="flex w-80 flex-col gap-2 justify-self-end max-sm:col-span-2 max-sm:row-start-2 max-sm:w-64 short:w-60">
+            <div className="flex w-72 flex-col gap-2 justify-self-end max-sm:col-span-2 max-sm:row-start-2 max-sm:w-64 short:w-60">
               <Offers
                 summary={summary}
                 onAccept={(seat) => game.treat('ally', seat)}
@@ -124,10 +124,12 @@ export function GameScreen({
               <Letters letters={letters} />
             </div>
             <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-4 max-sm:grid-cols-1 max-sm:gap-2">
-              <div className="flex w-72 flex-col gap-2 max-sm:w-full short:w-60">
+              {/* Above the bar's row, at its left, taking none of its room: the
+                  bar has the width of the screen less the camera on either side. */}
+              <div className="absolute bottom-full left-0 mb-4 flex w-72 flex-col gap-2 max-sm:mb-2 max-sm:w-[calc(100%-3.5rem)] short:mb-2 short:w-60">
                 <Aimed aim={aim} summary={summary} />
               </div>
-              <div className="flex justify-center">
+              <div className="col-start-2 flex justify-center max-sm:col-start-1">
                 <Bar
                   summary={summary}
                   onArmy={game.choose}

@@ -1,4 +1,5 @@
 import { Act } from '../hud/Act'
+import { StandingBadge } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { minutes } from './format'
 import { LordSheet } from './LordSheet'
@@ -23,7 +24,9 @@ export function Offers({
       }
       act={<Act onClick={() => onAccept(o.seat)}>{m.pacts.accept}</Act>}
     >
-      <span className="hud-note whitespace-nowrap">{m.pacts.offer}</span>
+      <span className="hud-note whitespace-nowrap text-pact">
+        {m.pacts.offer}
+      </span>
     </LordSheet>
   ))
 }
@@ -50,9 +53,12 @@ export function Allies({
           )
         }
       >
-        <Figure icon="links" size="s" tone="dim">
-          {minutes(a.left)}
-        </Figure>
+        <span className="flex items-center gap-2">
+          <StandingBadge standing="ally" label={m.lord.allied} />
+          <Figure icon="hourglass" size="s" tone="pact">
+            {minutes(a.left)}
+          </Figure>
+        </span>
       </LordSheet>
     ))
 }

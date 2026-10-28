@@ -2,6 +2,11 @@
 // measures and from the pieces of this folder, never from measures of its
 // own.
 //
+// One knob scales it all: the HUD's scale, --hud in src/styles/app.css, 1 on
+// a phone or a small screen, 1.2 from 1280 by 640. The measures are given as drawn,
+// at scale 1; the type, the spacing (inside .hud) and the emblems all grow
+// by it together.
+//
 // In CSS, on Tailwind's own steps (src/styles/app.css):
 // - space: 4 (gap-1) between an icon and its figure; 8 (gap-2) between the
 //   lines of a piece and between pieces stacked in a corner; 12 (p-3, gap-3)
@@ -13,6 +18,9 @@
 // - one material, the sheet (Sheet.tsx), one button (Act.tsx), one shadow
 //   (shadow-lift), one rounding (rounded-md, its rule rounded-sm);
 // - what cannot be had is at half ink (opacity-50).
+// - an alliance is green (pact), a war gules, a felony ink on gules; each
+//   by its badge (Emblem.tsx, Standing), whose shape says it before its
+//   colour does.
 // - motion: one curve (ease-hud) and two durations, 120 ms for what is
 //   touched and 200 ms for what appears, through two roles: .hud-press on
 //   whatever is touched (it lifts under the pointer and sinks when pressed),
@@ -31,6 +39,9 @@ export const TEXT: Record<Size, string> = {
   xl: 'text-hud-xl',
 }
 
+/** A drawn measure on the screen: its pixels at scale 1, grown by the HUD's scale. */
+export const scaled = (px: number): string => `calc(${px}px * var(--hud))`
+
 /** An icon beside a figure, sized on its type. */
 export const ICON: Record<Size, number> = { s: 14, m: 16, l: 20, xl: 24 }
 
@@ -43,6 +54,9 @@ export const SHIELD = {
 
 /** A seal's or a medallion's radius: in the cartouche, on the bar. */
 export const SEAL = { s: 18, l: 26 } as const
+
+/** A badge of standing (an ally, a foe, a felon): its diameter, beside a name in a list or on a sheet. */
+export const BADGE = { s: 20, m: 24 } as const
 
 /** What a piece in hand grows by and rises. */
 export const RAISE = 3

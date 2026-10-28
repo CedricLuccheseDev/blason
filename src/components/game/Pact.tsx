@@ -1,8 +1,9 @@
 import { Act } from '../hud/Act'
-import { RightClick, Shield } from '../hud/Emblem'
+import { RightClick, Shield, StandingBadge } from '../hud/Emblem'
 import { Icon } from '../hud/Figure'
 import { ICON } from '../hud/tokens'
 import { hex } from './format'
+import { standingsOf } from './standing'
 import type { Tone } from '../hud/Act'
 import type { Aim, Summary } from '~/render/client'
 import type { Messages } from '~/i18n/en'
@@ -37,11 +38,13 @@ export function pactWith(summary: Summary, seat: number, m: Messages): Pact {
 export function PactHalf({
   aim,
   seat,
+  summary,
   pact,
   onTreat,
 }: Readonly<{
   aim: Aim
   seat: number
+  summary: Summary
   pact: Pact
   onTreat: (type: 'ally' | 'breakAlliance', target: number) => void
 }>) {
@@ -56,6 +59,9 @@ export function PactHalf({
         <span className="hud-name whitespace-nowrap">
           {m.game.colors[lord.key]}
         </span>
+        {standingsOf(summary.lords[seat], m).map(({ standing, label }) => (
+          <StandingBadge key={standing} standing={standing} label={label} />
+        ))}
       </div>
       {act ? (
         <Act
