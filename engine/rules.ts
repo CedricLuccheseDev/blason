@@ -78,7 +78,7 @@ export const RULES: Rules = {
   gold: 5000,
   peasants: { base: 50, tile: 300, village: 50 },
   fillSeconds: 60,
-  menPrice: 1000,
+  menPrice: 0,
   armies: { raid: 10, host: 25, ban: 50 },
   paceTiles: 3,
   militia: 200,

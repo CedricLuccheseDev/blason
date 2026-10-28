@@ -63,7 +63,7 @@ function Piece({
 /**
  * At the bottom, on a band of parchment rolled at both ends: the three
  * armies as wax seals, the one in hand raised in the player's colour, each
- * with its share, its men and its gold; a gold rule; the three works as gilt
+ * with its share, its men and their gold if men cost any; a gold rule; the three works as gilt
  * medallions, the one in hand raised, each with its price, in gules when it
  * cannot be paid. Keys 1 to 6. With a work in hand, the armies wait at half
  * ink.
@@ -109,9 +109,11 @@ export function Bar({
                 <Figure icon="soldier" size="s">
                   {count(a.men)}
                 </Figure>
-                <Figure icon="coins" size="s">
-                  {count(a.gold)}
-                </Figure>
+                {a.gold > 0 && (
+                  <Figure icon="coins" size="s">
+                    {count(a.gold)}
+                  </Figure>
+                )}
               </>
             }
           />

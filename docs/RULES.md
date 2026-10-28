@@ -29,7 +29,9 @@ given one when the opening ends. Every lord starts with 50 gold.
 - The peasants hold the land, spread over it: a tile is held by its lord's
   peasants divided among his tiles.
 - **Gold** comes at 5 a second for every lord, plus what the caravans bring.
-- A man raised from the peasants costs 1 gold.
+- Men are raised from the peasants for free: gold pays for works. (Paying a
+  man in gold stalled the games past forty minutes; the price stays in
+  `RULES.menPrice`, at 0.)
 
 ## War
 

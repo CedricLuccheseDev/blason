@@ -69,8 +69,19 @@ describe('an army, tile by tile', () => {
     expect(state.owner[44]).toBe(0)
   })
 
-  it('raises a share of the peasants, paid in gold, as many as the gold pays', () => {
+  it('raises a share of the peasants for free, the gold left for the works', () => {
     const state = playing(field(6))
+    hold(state, 0, [0])
+    hold(state, 1, [5])
+    endow(state, 0, 100, 10)
+    run(state, 1, [attack(0, 2, 'host')])
+    expect(state.players[0].peasants).toBe(75 * UNIT)
+    expect(state.players[0].gold).toBe(10 * UNIT)
+  })
+
+  it('raises no more men than the gold pays, when men are given a price', () => {
+    const state = playing(field(6))
+    state.rules = { ...state.rules, menPrice: UNIT }
     hold(state, 0, [0])
     hold(state, 1, [5])
     endow(state, 0, 100, 10)
@@ -164,8 +175,8 @@ describe('the works', () => {
     expect(state.owner[2]).toBe(0)
     expect(state.villages).toEqual([])
     expect(state.works).toEqual([{ work: 'village', tile: 2, owner: 0 }])
-    // Its fifty gold all paid for men, then the village's.
-    expect(state.players[0].gold).toBe(state.rules.villageGold * UNIT)
+    // Its fifty gold untouched, the men being free, and the village's.
+    expect(state.players[0].gold).toBe((50 + state.rules.villageGold) * UNIT)
   })
 })
 

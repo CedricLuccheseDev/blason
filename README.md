@@ -2,7 +2,7 @@
 
 Blason is a medieval real-time strategy game played in the browser. Twenty
 lords share a land drawn anew for each game and take it from one another tile
-by tile: peasants hold the land, gold pays the men raised from them, alliances
+by tile: peasants hold the land and march out as armies, gold builds, alliances
 are short and traitors are marked for all to see. The whole map is drawn in
 ink on a manuscript.
 
@@ -17,8 +17,9 @@ It is inspired by [OpenFront](https://openfront.io) and written from scratch.
   single seed.
 - **Land taken tile by tile** from the point you click, at a pace you can see
   and answer.
-- **Peasants and gold**: your land feeds peasants who hold it; gold pays the
-  men you raise from them, in three armies (a raid, a host, the whole levy).
+- **Peasants and gold**: your land feeds peasants who hold it and whom you
+  raise in three armies (a raid, a host, the whole levy); gold pays for the
+  works.
 - **Works placed freely**: villages feed more peasants, castles hold their
   land three times better, markets send caravans.
 - **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord

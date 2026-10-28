@@ -1,8 +1,8 @@
 # Blason
 
 Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : vingt seigneurs, joueurs et bots, sur une terre
-redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent la terre, l'or qui paie les hommes
-qu'on lève, des constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
+redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent la terre et qu'on lève en armées,
+l'or qui paie les constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
 navigateur.
 
 Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est un écran titre avec

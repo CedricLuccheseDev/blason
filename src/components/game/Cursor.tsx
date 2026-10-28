@@ -32,9 +32,11 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
         <Figure icon="soldier" size="l">
           {count(army.men)}
         </Figure>
-        <Figure icon="coins" size="l">
-          {count(army.gold)}
-        </Figure>
+        {army.gold > 0 && (
+          <Figure icon="coins" size="l">
+            {count(army.gold)}
+          </Figure>
+        )}
       </div>
       <span className="hud-note">{m.game.click}</span>
     </div>

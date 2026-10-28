@@ -48,7 +48,7 @@ export async function llmsTxt() {
   return [
     '# Blason',
     '',
-    '> A medieval real-time strategy game in the browser, inspired by OpenFront: twenty lords on a land drawn anew each game take it from one another tile by tile. Peasants hold the land, gold pays the men raised from them, alliances are short, traitors are marked, merchants carry gold between markets. Played alone against nineteen bots for now; the simulation is deterministic, ready for lockstep multiplayer. Free software under the AGPL-3.0.',
+    '> A medieval real-time strategy game in the browser, inspired by OpenFront: twenty lords on a land drawn anew each game take it from one another tile by tile. Peasants hold the land and are raised as armies, gold pays for works, alliances are short, traitors are marked, merchants carry gold between markets. Played alone against nineteen bots for now; the simulation is deterministic, ready for lockstep multiplayer. Free software under the AGPL-3.0.',
     '',
     '## Pages',
     '',
@@ -61,7 +61,7 @@ export async function llmsTxt() {
     ...blog,
     '## The game',
     '',
-    '- Three armies raised from the peasants and paid in gold: the raid (10 %), the host (25 %), the levy (50 %). An army enters by the border nearest the click and spreads at most three tiles a tick; each tile costs the men who hold it.',
+    '- Three armies raised from the peasants: the raid (10 %), the host (25 %), the levy (50 %). An army enters by the border nearest the click and spreads at most three tiles a tick; each tile costs the men who hold it.',
     '- Villages feed more peasants, castles hold their land three times better, markets send caravans to other lords’ markets.',
     '- Alliances last five minutes; breaking one marks the breaker a traitor for thirty seconds.',
     '- A lord wins with 80 % of the land, a share that drops from the tenth minute down to 50 %.',
