@@ -46,7 +46,7 @@ export const aboutEn: About = {
       diagram: 'seed',
       body: [
         'Each game starts from a seed, a short word drawn at random. From it the generator scatters some two thousand points, cuts the frame into cells around them, raises a land in the middle of the sea, draws its coast, a few lakes and rivers. The same seed always draws the same land, on every machine: to share a land, one only has to share its seed.',
-        'The land is then cut into a fine grid of tiles, four map units a side, and shared into free domains, one around each village, so that no land is empty. Each lord starts on a whole domain he chooses during the first ten seconds.',
+        'The land is then cut into a fine grid of tiles, four map units a side, and shared into free domains, one around each village, so that no land is empty. During the first ten seconds each lord plants his standard on the domain he wants, and may move it; when the count ends, that domain is his, whole.',
       ],
     },
     {
@@ -104,7 +104,7 @@ export const aboutFr: About = {
       diagram: 'seed',
       body: [
         'Chaque partie part d’une graine, un mot court tiré au hasard. Le générateur en tire quelque deux mille points, découpe le cadre en cellules autour d’eux, élève une terre au milieu de la mer, trace sa côte, quelques lacs et rivières. La même graine dessine toujours la même terre, sur toutes les machines : pour partager une terre, il suffit de partager sa graine.',
-        'La terre est ensuite découpée en un fin quadrillage de tuiles, de quatre unités de côté, et partagée en domaines libres, un autour de chaque village, si bien qu’aucune terre n’est vide. Chaque seigneur commence sur un domaine entier, qu’il choisit pendant les dix premières secondes.',
+        'La terre est ensuite découpée en un fin quadrillage de tuiles, de quatre unités de côté, et partagée en domaines libres, un autour de chaque village, si bien qu’aucune terre n’est vide. Pendant les dix premières secondes, chaque seigneur plante son étendard sur le domaine qu’il veut, et peut le déplacer ; à la fin du compte, ce domaine est à lui, entier.',
       ],
     },
     {

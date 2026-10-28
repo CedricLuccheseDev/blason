@@ -26,6 +26,8 @@ type Lord = {
   tiles: number
   /** How many of each coup he has launched: its price doubles with each. */
   coups: Partial<Record<Coup, number>>
+  /** The free domain his standard stands on, by its village's tile: moved at will during the opening, his start once it ends; -1 while he has planted none. */
+  standard: number
 }
 
 /** A coup on its way: whose, which, the lord it strikes, where it left from and where it falls, and when it falls (a troublemaker walks, and falls when he gets there). */

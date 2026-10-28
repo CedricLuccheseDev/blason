@@ -75,6 +75,7 @@ export function createGame(
       felonUntil: 0,
       tiles: 0,
       coups: {},
+      standard: -1,
     })),
     hosts: [],
     alliances: [],
@@ -139,78 +140,6 @@ export function setOwner(state: GameState, tile: number, owner: number) {
   if (was >= 0) state.players[was].tiles--
   if (owner >= 0) state.players[owner].tiles++
   state.owner[tile] = owner
-}
-
-/** Whether a lord holds land yet. */
-export function hasPicked(state: GameState, player: number): boolean {
-  return state.players[player].tiles > 0
-}
-
-/** The domains no lord may start on any more, read once a tick: any of whose land is taken or borders a lord. */
-const closed = new WeakMap<GameState, { tick: number; realms: Set<number> }>()
-
-function closedRealms(state: GameState): Set<number> {
-  const known = closed.get(state)
-  if (known && known.tick === state.tick) return known.realms
-  const realms = new Set<number>()
-  state.owner.forEach((o, t) => {
-    if (o < 0) return
-    realms.add(state.realm[t])
-    for (const n of around(state.grid, t)) realms.add(state.realm[n])
-  })
-  closed.set(state, { tick: state.tick, realms })
-  return realms
-}
-
-/** Whether a lord may start on the free domain of this tile: none of it taken, none of it bordering a lord. */
-export function canStart(state: GameState, tile: number): boolean {
-  const realm = state.realm[tile]
-  if (state.owner[tile] !== NEUTRAL || realm < 0) return false
-  return !closedRealms(state).has(realm)
-}
-
-/** A lord settles on a free domain, all of it, its village his, his peasants at the full. */
-function settle(state: GameState, player: number, tile: number): void {
-  const realm = state.realm[tile]
-  state.realm.forEach((r, t) => {
-    if (r === realm && state.owner[t] === NEUTRAL) setOwner(state, t, player)
-  })
-  state.villages = state.villages.filter((v) => v !== realm)
-  state.works.push({ work: 'village', tile: realm, owner: player })
-  state.players[player].peasants = capOf(state, player)
-  closed.delete(state)
-}
-
-/** During the opening, first come, first served. */
-export function pickStart(state: GameState, player: number, tile: number) {
-  if (hasPicked(state, player) || !canStart(state, tile)) return
-  settle(state, player, tile)
-}
-
-/** At the end of the opening, who picked nothing gets the free domain farthest from all; then the free villages are gone. */
-export function assignMissingStarts(state: GameState): void {
-  state.players.forEach((_, id) => {
-    if (hasPicked(state, id)) return
-    const taken = state.owner.flatMap((o, t) => (o >= 0 ? [t] : []))
-    let best = -1
-    let score = -1
-    for (const v of state.villages) {
-      if (!canStart(state, v)) continue
-      const near = taken.reduce(
-        (m, o) => Math.min(m, apart(state.grid, o, v)),
-        1e12,
-      )
-      const s = near * 16 + drawInt(state.seed, 16, 'start', id, v)
-      if (s > score) {
-        score = s
-        best = v
-      }
-    }
-    if (best >= 0) settle(state, id, best)
-  })
-  // The opening over, the free domains and their villages are gone: what
-  // no lord holds is one free land, held by its villagers.
-  state.villages = []
 }
 
 /** The men holding a free tile: so many in a hundred of what holds the mean lord's tile, never under the floor. */

@@ -21,9 +21,13 @@ applies each rule is named beside it.
 
 ## The opening
 
-For the first 10 seconds each lord chooses where he starts by clicking a free
-domain; he takes it whole, its village included. A lord who has not chosen
-is given one when the opening ends.
+For the first 10 seconds no land is anyone's: each lord plants his
+**standard** on the free domain he wants by clicking it, and may move it as
+often as he likes until the count ends. The first to plant holds a domain:
+no other standard may stand on it, nor on a domain touching it. When the
+opening ends each lord receives his standard's domain whole, its village
+included; a lord who has planted none is given the free domain farthest from
+the others' standards.
 Every lord starts with 50 gold.
 
 ## Peasants and gold

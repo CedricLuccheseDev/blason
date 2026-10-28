@@ -63,7 +63,8 @@ can tune them without touching the code. The rules themselves are described in
 | `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                            |
 | `map/`                   | The map generator: from a seed, the shape of the land, its coasts, lakes, rivers and names |
 | `grid.ts`                | The land cut into tiles of four map units                                                  |
-| `land.ts`                | The free domains, the start, the peasants                                                  |
+| `land.ts`                | The free domains, the peasants, the men holding a tile                                     |
+| `opening.ts`             | The opening: each lord's standard, moved at will, then the domains granted when it ends    |
 | `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                  |
 | `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs               |
 | `battle.ts`              | Battles between armies that meet, by the combat table                                      |

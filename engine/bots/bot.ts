@@ -1,6 +1,7 @@
 import { drawInt } from '../numbers'
 import { apart, around } from '../grid'
-import { canStart, capOf, hasPicked, worksOf } from '../land'
+import { capOf, worksOf } from '../land'
+import { canStart, hasPicked, standards } from '../opening'
 import { NEUTRAL } from '../types'
 import { menFor } from '../war'
 import { canBuild, priceOf } from '../works'
@@ -22,15 +23,15 @@ import type { GameState, Order } from '../types'
 
 export type Bot = (state: GameState, me: number) => Array<Order>
 
-/** During the opening: of the free domains, the one farthest from the lords already settled. */
+/** During the opening: of the free domains, the one farthest from the standards already planted; a bot keeps his first. */
 function opening(state: GameState, me: number): Array<Order> {
   if (hasPicked(state, me) || state.tick < 20 + (me % 10) * 5) return []
-  const taken = state.owner.flatMap((o, t) => (o >= 0 ? [t] : []))
+  const planted = standards(state, me)
   let best = -1
   let score = -1
   for (const v of state.villages) {
-    if (!canStart(state, v)) continue
-    const near = taken.reduce(
+    if (!canStart(state, me, v)) continue
+    const near = planted.reduce(
       (m, o) => Math.min(m, apart(state.grid, o, v)),
       1e12,
     )

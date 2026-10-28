@@ -105,9 +105,11 @@ export function makeAim(state: GameState, me: number) {
   }
 
   function opening(tile: number) {
-    if (state.players[me].tiles > 0 || !canStart(state, tile)) return
+    const realm = state.realm[tile]
+    if (state.players[me].standard === realm || !canStart(state, me, tile))
+      return
     const s = state.grid.size
-    for (const t of tilesOf(state.realm[tile])) {
+    for (const t of tilesOf(realm)) {
       const p = siteOf(state, t)
       marks.rect(p.x - s / 2, p.y - s / 2, s, s)
     }

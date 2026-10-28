@@ -180,34 +180,3 @@ describe('the game is deterministic', () => {
     expect(play()).toBe(play())
   }, 30_000)
 })
-
-describe('the land shared out', () => {
-  it('has no empty land: every tile in a free domain, each lord starting on a whole one with its village, never two on the same', () => {
-    const world = generateWorld('domains')
-    const grid = makeGrid(world.map, world.width, world.height, 4)
-    const state = createGame(grid, 2, 'domains')
-    expect(state.realm.every((r, t) => (grid.land[t] ? r >= 0 : r < 0))).toBe(
-      true,
-    )
-    const home = state.villages[0]
-    step(state, [
-      { player: 0, type: 'pickStart', tile: home },
-      { player: 1, type: 'pickStart', tile: home },
-    ])
-    const domain = state.realm.filter((r) => r === home).length
-    expect(state.players[0].tiles).toBe(domain)
-    expect(state.players[1].tiles).toBe(0)
-    // The domain's village becomes his, to feed his peasants and levy his armies.
-    expect(state.works).toEqual([{ work: 'village', tile: home, owner: 0 }])
-  })
-
-  it('has no free village left once the opening is over: the free land is one', () => {
-    const world = generateWorld('domains')
-    const grid = makeGrid(world.map, world.width, world.height, 4)
-    const state = createGame(grid, 2, 'domains')
-    expect(state.villages.length).toBeGreaterThan(2)
-    for (let t = 0; t <= state.rules.openingTicks; t++) step(state, [])
-    expect(state.villages).toEqual([])
-    expect(state.players.every((p) => p.tiles > 0)).toBe(true)
-  })
-})

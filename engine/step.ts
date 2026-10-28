@@ -2,7 +2,8 @@ import { TICKS_PER_SECOND } from './units'
 import { fingerprint } from './numbers'
 import { moveCaravans, sendCaravans } from './caravans'
 import { ally, breakAlliance, expireDiplomacy } from './diplomacy'
-import { assignMissingStarts, grow, pickStart } from './land'
+import { grow } from './land'
+import { grantStarts, pickStart } from './opening'
 import { COUPS, WORKS } from './rules'
 import { NO_ONE } from './types'
 import { clash } from './battle'
@@ -111,7 +112,7 @@ function apply(state: GameState, order: Order): void {
 export function step(state: GameState, orders: Array<Order> = []) {
   if (state.winner !== NO_ONE) return
   for (const order of orders) if (isValid(state, order)) apply(state, order)
-  if (state.tick === state.rules.openingTicks - 1) assignMissingStarts(state)
+  if (state.tick === state.rules.openingTicks - 1) grantStarts(state)
   if (state.tick >= state.rules.openingTicks) {
     grow(state)
     clash(state)
