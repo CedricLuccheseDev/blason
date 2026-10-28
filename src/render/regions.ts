@@ -61,9 +61,8 @@ export function makeRegions(state: GameState, land: World, me: number) {
     const s = shore[t]
     if (s < 0) return SEA_KEY
     const owner = state.owner[s]
-    if (owner !== NEUTRAL) return owner
-    // The free domains are drawn during the opening only: then the free land is one.
-    return state.tick < state.rules.openingTicks ? -3 - state.realm[s] : -3
+    // The free land is one, in the opening too: no domain is drawn, only the standards planted.
+    return owner !== NEUTRAL ? owner : -3
   }
   let keys = new Int32Array(shore.length).fill(UNSET)
   const drawn = new Map<number, Array<Graphics>>()

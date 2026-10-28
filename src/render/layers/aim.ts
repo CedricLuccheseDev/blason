@@ -22,7 +22,8 @@ import type { Hand } from '../hand'
 // trade), red where it may not stand,
 // with the works already standing ringed in red. With a coup in hand, the
 // disc it would strike and its way there (layers/aimCoup.ts). In the opening:
-// the free domain one would start on, whole. Sized on screen.
+// a dotted ring round the village where one's standard would be planted, no
+// land drawn. Sized on screen.
 
 type At = { x: number; y: number }
 
@@ -91,29 +92,19 @@ export function makeAim(state: GameState, me: number) {
     ghost.visible = true
   }
 
-  /** The tiles of a domain, gathered again only when the pointer enters another. */
-  let domain = { realm: Number.NaN, tiles: [] as Array<number> }
-  function tilesOf(realm: number) {
-    if (domain.realm !== realm) {
-      const tiles: Array<number> = []
-      state.realm.forEach((r, t) => {
-        if (r === realm) tiles.push(t)
-      })
-      domain = { realm, tiles }
-    }
-    return domain.tiles
-  }
-
-  function opening(tile: number) {
+  /** Where the standard would be planted: a dotted ring round the domain's village, no land drawn. */
+  function opening(tile: number, zoom: number) {
     const realm = state.realm[tile]
     if (state.players[me].standard === realm || !canStart(state, me, tile))
       return
-    const s = state.grid.size
-    for (const t of tilesOf(realm)) {
-      const p = siteOf(state, t)
-      marks.rect(p.x - s / 2, p.y - s / 2, s, s)
+    const p = siteOf(state, realm)
+    const r = 14 / zoom
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2
+      marks.moveTo(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r)
+      marks.arc(p.x, p.y, r, a, a + Math.PI / 16)
     }
-    marks.fill({ color, alpha: 0.35 })
+    marks.stroke({ width: 2.4 / zoom, color, cap: 'round' })
   }
 
   function strike(tile: number, zoom: number) {
@@ -146,7 +137,7 @@ export function makeAim(state: GameState, me: number) {
       // The reach of a coup in hand shows even with the pointer off the land.
       if (opened && hand.coup && hovered < 0) coups.band(hand.coup)
       if (hovered < 0) return
-      if (!opened) opening(hovered)
+      if (!opened) opening(hovered, zoom)
       else if (hand.coup) coups.draw(hovered, hand.coup, zoom)
       else if (hand.work) building(hovered, hand.work, zoom)
       else strike(hovered, zoom)

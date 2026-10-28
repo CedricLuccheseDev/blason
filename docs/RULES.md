@@ -36,7 +36,8 @@ often as he likes until the count ends. The first to plant holds a domain:
 no other standard may stand on it, nor on a domain touching it. When the
 opening ends each lord receives his standard's domain whole, its village
 included; a lord who has planted none is given the free domain farthest from
-the others' standards.
+the others' standards. While the count runs, no land nor domain is drawn on
+the map: only the bare land, the free villages and the standards.
 Every lord starts with 50 gold.
 
 ## Peasants and gold
