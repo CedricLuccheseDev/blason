@@ -34,12 +34,12 @@ export type Summary = {
   winner: Heraldry | null
   me:
     | (Seat & {
-        /** His peasants and what his villages feed, and how many are born a second; his gold, and what it gained a second of late, in tenths. */
+        /** His peasants and what his villages feed, and how many are born a second; his gold, and all he has gained since the start, the purse's "+" read from it. */
         peasants: number
         cap: number
         growth: number
         gold: number
-        income: number
+        earned: number
         alive: boolean
         picked: boolean
         /** His villages with no army out: an attack leaves from one of them. */
@@ -121,8 +121,8 @@ export function summarize(
   state: GameState,
   me: number,
   hand: { army: Army; work: Work | null },
-  /** Gold the player gained a second of late, in thousandths (income.ts). */
-  income = 0,
+  /** All the gold the player has gained, in thousandths (earnings.ts). */
+  earned = 0,
 ): Summary {
   const area = state.grid.area
   const share = (seat: number) =>
@@ -158,7 +158,7 @@ export function summarize(
           ? 0
           : Math.floor(cap / UNIT / state.rules.fillSeconds),
       gold,
-      income: Math.floor(income / (UNIT / 10)),
+      earned: Math.floor(earned / UNIT),
       alive: lord.alive,
       picked: hasPicked(state, me),
       free:

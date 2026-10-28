@@ -17,8 +17,8 @@ export type Session = {
   state: GameState
   me: number
   send: (order: Order) => void
-  /** Advance the clock; returns how far into the next tick we are, 0 to 1. */
-  advance: (ms: number) => number
+  /** Advance the clock, calling `each` after every tick played; returns how far into the next tick we are, 0 to 1. */
+  advance: (ms: number, each?: () => void) => number
 }
 
 export function startSession(
@@ -37,7 +37,7 @@ export function startSession(
     state,
     me,
     send: (order) => pending.push(order),
-    advance(ms) {
+    advance(ms, each) {
       clock += ms
       while (clock >= TICK_MS && state.winner === NO_ONE) {
         clock -= TICK_MS
@@ -50,6 +50,7 @@ export function startSession(
         ]
         pending = []
         step(state, orders)
+        each?.()
       }
       return Math.min(1, clock / TICK_MS)
     },
