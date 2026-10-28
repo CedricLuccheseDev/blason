@@ -16,3 +16,12 @@ export function minutes(seconds: number): string {
 export function count(n: number): string {
   return n.toLocaleString('fr-FR').replace(/\s/g, '\u2006')
 }
+
+/** A count in tenths, as the game writes it: its tenth below ten, whole above. */
+export function tenths(n: number): string {
+  const digits = n < 100 ? 1 : 0
+  return (n / 10).toLocaleString('fr-FR', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  })
+}

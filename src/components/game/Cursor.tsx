@@ -56,7 +56,7 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
  * sheet whose left, at full ink, is the army in hand, what a left click
  * sends, and whose right is the lord and the alliance to offer, accept or
  * break, faint until a right click sets it down. Over free land, the left
- * alone; over an ally's land, the right alone.
+ * alone; over an ally's land or a lord's beyond reach, the right alone.
  */
 export function Cursor({
   aim,

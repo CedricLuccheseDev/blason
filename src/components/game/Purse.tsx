@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Shield } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { useCompact } from '../hud/useCompact'
-import { count, hex } from './format'
+import { count, hex, tenths } from './format'
 import type { Summary } from '~/render/client'
 
 /** Seconds the cap stays red after it fell. */
@@ -22,7 +22,8 @@ function useShrunk(cap: number): boolean {
 /**
  * At the left of the bar, what the player has beside what he spends: the
  * shield filling with the peasants; the peasants over what the villages
- * feed, red a moment when that falls, a village lost; and the gold.
+ * feed, red a moment when that falls, a village lost, and how many are born
+ * a second; the gold, and what it gained a second of late.
  */
 export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   const { me } = summary
@@ -61,6 +62,9 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
         </Figure>
         <Figure icon="coins" size={compact ? 'm' : 'l'}>
           {count(me.gold)}
+        </Figure>
+        <Figure size="s" tone="thrive">
+          {me.income > 0 ? `+${tenths(me.income)}/s` : ''}
         </Figure>
       </div>
     </div>

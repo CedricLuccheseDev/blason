@@ -12,6 +12,7 @@ import { makeScene } from './scene'
 import { startSession } from './session'
 import { makeNews } from './news'
 import { summarize } from './summary'
+import { makeIncome } from './income'
 import type { Aim } from './aiming'
 import type { News } from './news'
 import type { Room } from './director'
@@ -142,7 +143,7 @@ export async function mountGame(
   }
   /** The figures and the aim again, after what is in hand changed: a work in hand aims at nothing. */
   function refresh() {
-    hooks.onSummary(summarize(state, me, { army, work }))
+    hooks.onSummary(summarize(state, me, { army, work }, income.rate()))
     if (!pinned) hooks.onAim(aimAt(hovered, false))
   }
   if (me >= 0) window.addEventListener('keydown', onKey)
@@ -151,6 +152,7 @@ export async function mountGame(
   let found = false
   let reported = -1
   const news = makeNews(state, me)
+  const income = makeIncome(me)
   let announced = false
   app.ticker.add((ticker) => {
     // How far the game is into its next tick, for what moves between two.
@@ -161,6 +163,7 @@ export async function mountGame(
     if (director) director.step(ticker.elapsedMS)
     else camera.step()
     scene.draw(hovered, work, camera.zoom(), between)
+    income.watch(state)
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
@@ -174,7 +177,7 @@ export async function mountGame(
         const box = home()
         if (box) camera.focus(box)
       }
-      hooks.onSummary(summarize(state, me, { army, work }))
+      hooks.onSummary(summarize(state, me, { army, work }, income.rate()))
       const fresh = news.read()
       if (fresh.length > 0) hooks.onNews?.(fresh)
     }
