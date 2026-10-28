@@ -1,3 +1,4 @@
+import { hash } from '../pen'
 import { TONE } from '../palette'
 import type { Graphics } from 'pixi.js'
 import type { Spot } from '../roads'
@@ -15,12 +16,6 @@ const ACROSS = 0.48
 const SIZE = 0.36
 /** Out of a hundred, the stones gone. */
 const GONE = 18
-
-/** A number from 0 to 1 drawn from a place, the same every time: the road looks the same each time it is drawn. */
-function hash(x: number, y: number, salt: number): number {
-  const h = Math.sin(x * 12.9898 + y * 78.233 + salt * 37.719) * 43758.5453
-  return h - Math.floor(h)
-}
 
 /** One worn stone: four corners pushed about. */
 function stone(g: Graphics, x: number, y: number, angle: number) {
