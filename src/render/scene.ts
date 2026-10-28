@@ -41,7 +41,8 @@ export function makeScene(
   // Where the lords are written, read once a tick for the names and their marks.
   let read = { tick: -1, places: new Map() as Placement }
   const placesOf = (s: GameState) => {
-    if (read.tick !== s.tick) read = { tick: s.tick, places: tilePlaces(s) }
+    if (read.tick !== s.tick)
+      read = { tick: s.tick, places: tilePlaces(s, read.places) }
     return read.places
   }
   const labels = makeLabels(
@@ -72,10 +73,10 @@ export function makeScene(
   return {
     world,
     resize: paper.resize,
-    draw(hovered: number, work: Work | null, zoom: number) {
+    draw(hovered: number, work: Work | null, zoom: number, between = 0) {
       regions.update(performance.now())
       marks.update()
-      trade.draw(state, zoom)
+      trade.draw(state, zoom, between)
       armies.draw(state, zoom)
       aim.draw(hovered, work, zoom)
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))

@@ -41,6 +41,8 @@ export function makeRegions(state: GameState, land: World, me: number) {
   const washes = container.addChild(new Container())
   washes.sortableChildren = true
   const stone = container.addChild(new Graphics())
+  /** Each region's outline, as last traced: an ally's is ringed in green. */
+  const outlines = new Map<number, Array<Array<Point>>>()
   const rims = container.addChild(new Container())
   const inks = container.addChild(new Container())
   const friends = container.addChild(new Graphics())
@@ -110,12 +112,23 @@ export function makeRegions(state: GameState, land: World, me: number) {
       parts.push(rim)
     }
     drawn.set(key, parts)
+    outlines.set(key, loops)
     if (key === me) mine = loops
   }
 
-  /** Where my land meets an ally's, its border in green: the points of my outline whose outside is his. */
+  /**
+   * My allies in green, to be told at a glance: a green line inside each
+   * ally's whole border, and where my land meets his, my border in green too
+   * (the points of my outline whose outside is his).
+   */
   function befriend() {
     friends.clear()
+    for (const [key, loops] of outlines) {
+      if (key < 0 || key === me || !isAllied(state, me, key)) continue
+      for (const loop of loops)
+        friends.poly(flatten(inside(loop, RIM + 1.5)), true)
+    }
+    friends.stroke({ width: 1.6, color: ALLY, alpha: 0.85, join: 'round' })
     for (const loop of mine) {
       let run: Array<Point> = []
       loop.forEach((p, i) => {

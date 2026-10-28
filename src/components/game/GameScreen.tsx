@@ -6,10 +6,14 @@ import { Rule, Sheet } from '../hud/Sheet'
 import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
+import { Aimed } from './Aimed'
+import { CameraButtons } from './CameraButtons'
+import { Letters } from './News'
 import { Allies, Offers } from './Pacts'
 import { Bar } from './Bar'
 import { Purse } from './Purse'
-import type { Aim, GameHandle, Summary } from '~/render/client'
+import type { Letter } from './News'
+import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
@@ -23,6 +27,9 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * opening and the end; top right the letters; at the bottom the bar; the
  * cartouche beside the pointer.
  */
+/** How many pieces of news at once, and for how long each. */
+const [LETTERS, LETTER_MS] = [4, 6000]
+
 export function GameScreen({ me }: Readonly<{ me: number }>) {
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
@@ -31,6 +38,20 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
   const [aim, setAim] = useState<Aim | null>(null)
   // The game could not start (no WebGL, a failed load): said, not a blank page.
   const [failed, setFailed] = useState(false)
+  // The news on screen, each for a few seconds.
+  const [letters, setLetters] = useState<Array<Letter>>([])
+  const told = useRef(0)
+  const tell = (news: Array<News>) => {
+    const first = told.current
+    told.current += news.length
+    const fresh = news.map((n, i) => ({ ...n, id: first + i + 1 }))
+    setLetters((now) => [...now, ...fresh].slice(-LETTERS))
+    const ids = new Set(fresh.map((l) => l.id))
+    setTimeout(
+      () => setLetters((now) => now.filter((l) => !ids.has(l.id))),
+      LETTER_MS,
+    )
+  }
 
   useEffect(() => {
     const element = host.current
@@ -42,6 +63,7 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
         const mounted = await mountGame(element, seedOf(), me, {
           onSummary: setSummary,
           onAim: setAim,
+          onNews: tell,
           names: PLAYERS.map((p) => m.game.colors[p.key]),
         })
         if (cancelled) mounted.destroy()
@@ -88,9 +110,22 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
                 summary={summary}
                 onAccept={(seat) => game.treat('ally', seat)}
               />
+              <Letters letters={letters} />
             </div>
-            <div className="col-span-3 row-start-3 flex justify-center max-sm:col-span-1 max-sm:row-start-5">
-              <Bar summary={summary} onArmy={game.choose} onWork={game.hold} />
+            <div className="col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-1 max-sm:row-start-5 max-sm:grid-cols-1">
+              <div className="w-80 max-sm:hidden short:w-60">
+                <Aimed aim={aim} summary={summary} />
+              </div>
+              <div className="flex justify-center">
+                <Bar
+                  summary={summary}
+                  onArmy={game.choose}
+                  onWork={game.hold}
+                />
+              </div>
+              <div className="pointer-events-auto justify-self-end max-sm:hidden">
+                <CameraButtons game={game} summary={summary} />
+              </div>
             </div>
           </div>
           <Cursor summary={summary} aim={aim} onTreat={game.treat} />

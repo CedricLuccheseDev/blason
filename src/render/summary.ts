@@ -7,6 +7,8 @@ import {
   costOf,
   hasPicked,
   incomeOf,
+  isAllied,
+  isFelon,
   menFor,
   nextDrop,
   priceOf,
@@ -50,6 +52,17 @@ export type Summary = {
   works: Array<{ work: Work; price: number; can: boolean }>
   /** My allies, with the seconds left and whether I may renew now; the offers made to me; the lords I asked. */
   allies: Array<Lord & { left: number; renewable: boolean }>
+  /** Every lord, as the card of the one aimed at shows him. */
+  lords: Array<
+    Lord & {
+      share: number
+      men: number
+      alive: boolean
+      felon: boolean
+      allied: boolean
+      atWar: boolean
+    }
+  >
   offers: Array<Lord & { left: number }>
   asked: Array<number>
 }
@@ -61,6 +74,23 @@ const lordOf = (seat: number): Lord => ({
   key: PLAYERS[seat].key,
   color: PLAYERS[seat].color,
 })
+
+/** Every lord: his share of the land, his men, and how he stands with the player. */
+function lordsOf(state: GameState, me: number) {
+  return state.players.map((p, seat) => ({
+    ...lordOf(seat),
+    share: Math.round((100 * p.tiles) / state.grid.area),
+    men: Math.floor(p.peasants / UNIT),
+    alive: p.alive,
+    felon: isFelon(state, seat),
+    allied: me >= 0 && isAllied(state, me, seat),
+    atWar: state.hosts.some(
+      (h) =>
+        (h.owner === me && h.target === seat) ||
+        (h.owner === seat && h.target === me),
+    ),
+  }))
+}
 
 /** Where the player stands with the other lords. */
 function pacts(state: GameState, me: number) {
@@ -144,5 +174,6 @@ export function summarize(
       return { work: w, price, can: price <= gold }
     }),
     ...pacts(state, me),
+    lords: lordsOf(state, me),
   }
 }

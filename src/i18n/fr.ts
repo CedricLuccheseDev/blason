@@ -68,6 +68,23 @@ export const fr: Messages = {
     renew: 'Renouveler',
     break: 'Rompre',
   },
+  news: {
+    attacked: 't’attaque',
+    took: (tiles: number) => `tu lui prends ${tiles} tuiles`,
+    lost: (tiles: number) => `te prend ${tiles} tuiles`,
+    betrayed: 'a rompu votre alliance',
+    fell: 'est tombé',
+  },
+  lord: {
+    allied: 'Ton allié',
+    atWar: 'En guerre avec toi',
+    felon: 'Félon',
+  },
+  camera: {
+    zoomIn: 'Rapprocher',
+    zoomOut: 'Éloigner',
+    home: 'Revenir à ta terre',
+  },
   errors: {
     title: 'Une erreur est survenue',
     tryReload: 'Essayez de recharger la page.',

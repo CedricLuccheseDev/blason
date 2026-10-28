@@ -26,6 +26,8 @@ type Label = {
   mark: Graphics
   size: number
   at: { x: number; y: number }
+  /** Where it is drawn now, gliding towards `at`. */
+  shown: { x: number; y: number } | null
   /** The army as counted at the last beat. */
   count: number
 }
@@ -39,7 +41,13 @@ function soldier(): Graphics {
 }
 
 /** Where each lord is written, and how big on screen: the heart of his land, the bigger the land the bigger the words. */
-export type Placement = Map<number, { x: number; y: number; size: number }>
+/** Share of the way a label glides each frame towards its new place. */
+const GLIDE = 0.08
+
+export type Placement = Map<
+  number,
+  { x: number; y: number; size: number; tile?: number }
+>
 
 export function makeLabels<TState extends { tick: number }>(
   me: number,
@@ -89,7 +97,16 @@ export function makeLabels<TState extends { tick: number }>(
     )
     army.anchor.set(0, 0.5)
     const mark = box.addChild(soldier())
-    label = { box, name, army, mark, size: 0, at: { x: 0, y: 0 }, count: -1 }
+    label = {
+      box,
+      name,
+      army,
+      mark,
+      size: 0,
+      at: { x: 0, y: 0 },
+      shown: null,
+      count: -1,
+    }
     labels.set(lord, label)
     return label
   }
@@ -107,9 +124,29 @@ export function makeLabels<TState extends { tick: number }>(
       const figure = count(state, lord)
       if (figure !== label.count) {
         label.count = figure
-        label.army.text = figure.toLocaleString('fr-FR').replace(/\s/g, ' ')
+        label.army.text = figure
+          .toLocaleString('fr-FR')
+          .replace(/\s/g, '\u2006')
       }
     }
+  }
+
+  /** Each label a little nearer where it belongs, never a jump; whether any moved. */
+  function glide(): boolean {
+    let any = false
+    for (const label of labels.values()) {
+      const to = label.at
+      const from = label.shown ?? to
+      const dx = to.x - from.x
+      const dy = to.y - from.y
+      const near = Math.abs(dx) + Math.abs(dy) < 0.05
+      label.shown = near
+        ? to
+        : { x: from.x + dx * GLIDE, y: from.y + dy * GLIDE }
+      label.box.position.set(label.shown.x, label.shown.y)
+      any ||= !near
+    }
+    return any
   }
 
   /** The name over the army and its soldier; sizes in pixels on screen. */
@@ -117,7 +154,6 @@ export function makeLabels<TState extends { tick: number }>(
     for (const label of labels.values()) {
       const big = label.size / zoom
       const small = Math.max(NAME_MIN, label.size * NAME) / zoom
-      label.box.position.set(label.at.x, label.at.y)
       label.name.scale.set(small / SHARP)
       label.name.position.set(0, -small * 0.62)
       label.army.scale.set(big / SHARP)
@@ -141,6 +177,7 @@ export function makeLabels<TState extends { tick: number }>(
         settle(state)
         moved = true
       }
+      if (glide()) moved = true
       if (!moved) return
       placed = zoom
       layout(zoom)

@@ -12,9 +12,9 @@ import type { Placement } from './layers/labels'
 /**
  * Each lord written on the tile deepest inside his land, farthest from any
  * edge, the bigger the land the bigger the words: a walk inward from every
- * edge.
+ * edge. A name already written keeps its tile while it stays deep enough.
  */
-export function tilePlaces(state: GameState): Placement {
+export function tilePlaces(state: GameState, before?: Placement): Placement {
   const { width } = state.grid
   const depth = state.owner.map(() => -1)
   const queue: Array<number> = []
@@ -29,7 +29,9 @@ export function tilePlaces(state: GameState): Placement {
   }
   state.owner.forEach((o, t) => {
     if (o < 0) return
-    if (sides(t).some((n) => state.owner[n] !== o)) {
+    // The frame's edge counts as a border: a name is never written against it.
+    const around = sides(t)
+    if (around.length < 4 || around.some((n) => state.owner[n] !== o)) {
       depth[t] = 0
       queue.push(t)
     }
@@ -47,12 +49,21 @@ export function tilePlaces(state: GameState): Placement {
     if (o >= 0 && (best[o] < 0 || depth[t] > depth[best[o]])) best[o] = t
   })
   const places: Placement = new Map()
-  best.forEach((tile, lord) => {
-    if (tile < 0) return
+  best.forEach((deepest, lord) => {
+    if (deepest < 0) return
+    // A name keeps its place while that stays nearly as deep: it moves only
+    // when its land has really changed shape.
+    const kept = before?.get(lord)?.tile
+    const tile =
+      kept !== undefined &&
+      state.owner[kept] === lord &&
+      depth[kept] * 10 >= depth[deepest] * 7
+        ? kept
+        : deepest
     const { x, y } = siteOf(state, tile)
     const tiles = state.players[lord].tiles
     const size = Math.min(46, 24 + 4 * Math.sqrt(tiles / 25))
-    places.set(lord, { x, y, size })
+    places.set(lord, { x, y, size, tile })
   })
   return places
 }

@@ -1,15 +1,19 @@
 import { Application } from 'pixi.js'
-import { NEUTRAL, NO_ONE, entryFor } from '../../engine'
+import { NO_ONE } from '../../engine'
+import { makeAiming } from './aiming'
 import { makeCamera } from './camera'
 import { makeInput } from './input'
 import { ARMY_KEYS, WORK_KEYS } from './keys'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
 import { makeDirector } from './director'
-import { landBox, siteOf, tileAt } from './marks'
+import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
 import { startSession } from './session'
+import { makeNews } from './news'
 import { summarize } from './summary'
+import type { Aim } from './aiming'
+import type { News } from './news'
 import type { Room } from './director'
 import type { Army, Work } from '../../engine'
 import type { Summary } from './summary'
@@ -21,16 +25,6 @@ import type { Summary } from './summary'
 // border is nearest the click; with a work in hand (4 to 6: a village, a
 // castle, a market), a click on one's own land builds it there.
 
-/** Where the pointer aims at another's land, in pixels of the map's element: where the army would enter, whose land, and whether a right click pinned it there. */
-export type Aim = {
-  x: number
-  y: number
-  /** Where an army would enter, or none on an ally's land, which no army strikes. */
-  entry: { x: number; y: number } | null
-  lord: number | null
-  pinned: boolean
-}
-
 export type GameHandle = {
   destroy: () => void
   choose: (army: Army) => void
@@ -38,9 +32,14 @@ export type GameHandle = {
   close: () => void
   /** An order about another lord: to offer or accept an alliance, renew it, or break it. */
   treat: (type: 'ally' | 'breakAlliance', target: number) => void
+  /** The camera: one step closer (1) or farther (-1), back to the player's land. */
+  zoom: (step: 1 | -1) => void
+  home: () => void
 }
 
 export type { Summary } from './summary'
+export type { Aim } from './aiming'
+export type { News } from './news'
 export { prepareGame, randomSeed } from './ahead'
 
 export async function mountGame(
@@ -51,6 +50,8 @@ export async function mountGame(
     onSummary: (summary: Summary) => void
     /** The pointer over land a click would strike, or the one right clicked; none elsewhere. */
     onAim: (aim: Aim | null) => void
+    /** What happened in the last second that the player should read. */
+    onNews?: (news: Array<News>) => void
     names: Array<string>
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
@@ -84,31 +85,12 @@ export async function mountGame(
   let army: Army = 'host'
   let work: Work | null = null
   let hovered = -1
-  // Where the pointer is on the map's element, and the aim pinned by a right click.
-  const pointer = { x: 0, y: 0 }
+  // The aim pinned by a right click.
   let pinned: Aim | null = null
-  const onPointer = (e: PointerEvent) => {
-    pointer.x = e.offsetX
-    pointer.y = e.offsetY
-  }
-  app.canvas.addEventListener('pointermove', onPointer)
-  app.canvas.addEventListener('pointerdown', onPointer)
+  const aiming = makeAiming(app.canvas, state, me, scene.world)
+  const aimAt = (tile: number, pin: boolean) =>
+    aiming.at(tile, pin, work !== null)
 
-  /** The aim at a tile: another's land or free land a click would strike; none elsewhere, in the opening, or with a work in hand. */
-  function aimAt(tile: number, pin: boolean): Aim | null {
-    if (tile < 0 || work || state.tick < state.rules.openingTicks) return null
-    const gate = entryFor(state, me, tile)
-    const owner = state.owner[tile]
-    // An ally's land: nothing to strike, but a right click opens what binds us.
-    if (gate < 0 && !(pin && owner >= 0 && owner !== me)) return null
-    const at = gate < 0 ? null : scene.world.toGlobal(siteOf(state, gate))
-    return {
-      ...pointer,
-      entry: at && { x: at.x, y: at.y },
-      lord: owner === NEUTRAL ? null : owner,
-      pinned: pin,
-    }
-  }
   function unpin() {
     pinned = null
     hooks.onAim(aimAt(hovered, false))
@@ -167,13 +149,17 @@ export async function mountGame(
   let drawn = false
   let found = false
   let reported = -1
+  const news = makeNews(state, me)
   let announced = false
   app.ticker.add((ticker) => {
-    if (drawn) session.advance(Math.min(ticker.elapsedMS, 1000))
+    // How far the game is into its next tick, for what moves between two.
+    const between = drawn
+      ? session.advance(Math.min(ticker.elapsedMS, 1000))
+      : 0
     drawn = true
     if (director) director.step(ticker.elapsedMS)
     else camera.step()
-    scene.draw(hovered, work, camera.zoom())
+    scene.draw(hovered, work, camera.zoom(), between)
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
@@ -188,6 +174,8 @@ export async function mountGame(
         if (box) camera.focus(box)
       }
       hooks.onSummary(summarize(state, me, { army, work }))
+      const fresh = news.read()
+      if (fresh.length > 0) hooks.onNews?.(fresh)
     }
   })
 
@@ -200,8 +188,7 @@ export async function mountGame(
 
   return {
     destroy() {
-      app.canvas.removeEventListener('pointermove', onPointer)
-      app.canvas.removeEventListener('pointerdown', onPointer)
+      aiming.destroy()
       frame.disconnect()
       input?.destroy()
       window.removeEventListener('keydown', onKey)
@@ -218,6 +205,8 @@ export async function mountGame(
       refresh()
     },
     close: unpin,
+    zoom: (step) => camera.zoomBy(step),
+    home: () => camera.home(),
     treat(type, target) {
       session.send({ player: me, type, target })
       unpin()

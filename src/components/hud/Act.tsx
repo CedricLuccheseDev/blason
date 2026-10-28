@@ -21,22 +21,26 @@ export function actClass(tone: Tone = 'gilt'): string {
   return `${PLATE} ${TONES[tone]}`
 }
 
-/** Asleep, it is shown but neither takes the pointer nor the keyboard. */
+/** Asleep, it is shown but neither takes the pointer nor the keyboard; a label names a button that shows only a sign. */
 export function Act({
   children,
   onClick,
   tone = 'gilt',
   asleep = false,
+  label,
 }: Readonly<{
   children: ReactNode
   onClick: () => void
   tone?: Tone
   asleep?: boolean
+  label?: string
 }>) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={label}
+      title={label}
       tabIndex={asleep ? -1 : undefined}
       className={`${actClass(tone)} ${asleep ? 'pointer-events-none' : ''}`}
     >

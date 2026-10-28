@@ -67,6 +67,23 @@ export const en = {
     renew: 'Renew',
     break: 'Break',
   },
+  news: {
+    attacked: 'strikes you',
+    took: (tiles: number) => `you take ${tiles} of his tiles`,
+    lost: (tiles: number) => `takes ${tiles} of your tiles`,
+    betrayed: 'broke your alliance',
+    fell: 'has fallen',
+  },
+  lord: {
+    allied: 'Your ally',
+    atWar: 'At war with you',
+    felon: 'Traitor',
+  },
+  camera: {
+    zoomIn: 'Closer',
+    zoomOut: 'Farther',
+    home: 'Back to your land',
+  },
   errors: {
     title: 'Something went wrong',
     tryReload: 'Try reloading the page.',

@@ -1,12 +1,12 @@
 import { drawInt } from '../numbers'
 import { apart, around } from '../grid'
-import { canStart, capOf, density, hasPicked } from '../land'
-import { isAllied } from '../diplomacy'
+import { canStart, capOf, hasPicked } from '../land'
 import { NEUTRAL } from '../types'
 import { menFor } from '../war'
 import { canBuild, priceOf } from '../works'
 import { TALK_EVERY, talk } from './talk'
-import type { Army, Work } from '../rules'
+import { attack, war } from './war'
+import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
 
 // The bots, plain on purpose and calm: they read the land as a
@@ -22,13 +22,6 @@ export type Bot = (state: GameState, me: number) => Array<Order>
 /** A bot thinks once a second, each at its own moment, and notices an attack after a moment. */
 const EVERY = 10
 const NOTICE = 15
-
-const attack = (player: number, tile: number, army: Army): Order => ({
-  player,
-  type: 'attack',
-  tile,
-  army,
-})
 
 /** During the opening: of the free domains, the one farthest from the lords already settled. */
 function opening(state: GameState, me: number): Array<Order> {
@@ -136,46 +129,6 @@ function expand(state: GameState, me: number, free: Array<number>) {
   const realm = state.realm[edge]
   const aim = state.villages.includes(realm) ? realm : edge
   return [attack(me, aim, 'host')]
-}
-
-/** The neighbour whose land is held thinnest, and how thin. */
-function thinnest(
-  state: GameState,
-  me: number,
-  fronts: Map<number, Array<number>>,
-) {
-  let prey = -1
-  let thin = Infinity
-  for (const owner of fronts.keys()) {
-    if (owner < 0 || isAllied(state, me, owner)) continue
-    const held = density(state, owner)
-    if (held < thin) {
-      thin = held
-      prey = owner
-    }
-  }
-  return { prey, thin }
-}
-
-/** One war at a time, on the neighbour held thinnest, when it holds thicker; it waits for the gold to pay most of the army. */
-function war(
-  state: GameState,
-  me: number,
-  fronts: Map<number, Array<number>>,
-  boldness: number,
-): Array<Order> {
-  const { prey, thin } = thinnest(state, me, fronts)
-  const mine = density(state, me)
-  if (prey < 0 || mine * 100 < thin * (130 - boldness / 2)) return []
-  let army: Army = 'host'
-  const roll = drawInt(state.seed, 100, 'army', me, state.tick)
-  if (roll < 20) army = 'raid'
-  else if (boldness > 60 && mine > thin * 1.5) army = 'ban'
-  const share = (state.players[me].peasants * state.rules.armies[army]) / 100
-  if (menFor(state, me, army) * 10 < share * 8) return []
-  const cells = fronts.get(prey) ?? []
-  const aim = cells[drawInt(state.seed, cells.length, 'aim', me, state.tick)]
-  return [attack(me, aim, army)]
 }
 
 export function createBot(self: number, seed: string): Bot {
