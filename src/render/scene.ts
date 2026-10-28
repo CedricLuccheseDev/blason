@@ -59,7 +59,7 @@ export function makeScene(
   lines.mask = lines.addChild(drawLand(land))
   const marks = makeMarks(state)
   const life = makeLife(ground.fieldsNear)
-  const armies = makeArmies(makeStamps(app.renderer), me)
+  const armies = makeArmies(me)
   const aim = makeAim(state, me)
   const planted = makePlanted(me)
   // Where the lords are written, read once a tick for the names and their marks.

@@ -1,5 +1,6 @@
 import { pointOn } from './roads'
 import type { Spot } from './fronts'
+import type { Look } from './figures'
 
 // The men drawn for a side of a fight: an army's soldiers, or the peasants
 // holding the land before it. Each man is kept from frame to frame, with his
@@ -10,8 +11,6 @@ import type { Spot } from './fronts'
 // into his place; the others keep theirs. A fresh man comes in at the back
 // while the side is big enough for him. A few men stand for many, more for a
 // greater side.
-
-export type Kind = 'soldier' | 'peasant'
 
 export type Man = {
   x: number
@@ -26,7 +25,8 @@ export type Man = {
 }
 
 export type Squad = {
-  kind: Kind
+  /** How its men look: the army's kind, or the peasants holding their land. */
+  look: Look
   color: number
   men: Array<Man>
   /** Men a rank, set when the side forms; the side faded in or out as a whole; the men lost not yet shown falling. */
@@ -40,12 +40,22 @@ export type Shape =
   | { line: 'ranks'; at: Spot; facing: Spot }
   | { line: 'column'; path: Array<Spot>; head: number }
 
-/** Room between two men of a rank and between the ranks, between two men of a column, in map units. */
-const ROOM = 3.6
-const DEPTH = 3.4
-const STRIDE = 4
-/** A man's pace to his place, in map units a second: the armies' march (6 tiles a second), however far he is; nearer than so much, he stands. */
-const RUN = 24
+/**
+ * Room between two men of a rank and between the ranks, between two men of a
+ * column, in map units; a man's pace to his place, in map units a second: the
+ * army's march however far he is (the host's 6 tiles a second). Riders take
+ * more room, and ride a quarter faster.
+ */
+const ROOMS: Record<
+  Look,
+  { room: number; depth: number; stride: number; run: number }
+> = {
+  raid: { room: 4.6, depth: 5.4, stride: 6.4, run: 30 },
+  host: { room: 3.6, depth: 3.4, stride: 4, run: 24 },
+  ban: { room: 3.6, depth: 3.4, stride: 4, run: 24 },
+  peasant: { room: 3.6, depth: 3.4, stride: 4, run: 24 },
+}
+/** Nearer his place than so much, in map units, a man stands. */
 const STAND = 1.5
 /** The least pace near his place, and how far he must run, in map units, before he turns his back on the enemy. */
 const EASE = 6
@@ -64,21 +74,22 @@ export function figuresOf(men: number): number {
   )
 }
 
-export function makeSquad(kind: Kind, color: number): Squad {
-  return { kind, color, men: [], wide: 0, alpha: 0, owed: 0 }
+export function makeSquad(look: Look, color: number): Squad {
+  return { look, color, men: [], wide: 0, alpha: 0, owed: 0 }
 }
 
 /** Where a place of the side stands, as the side stands now. */
 function placeOf(squad: Squad, slot: number, shape: Shape): Spot {
+  const { room, depth: deep, stride } = ROOMS[squad.look]
   if (shape.line === 'column')
-    return pointOn(shape.path, shape.head - (slot * STRIDE) / 4)
+    return pointOn(shape.path, shape.head - (slot * stride) / 4)
   const { at, facing } = shape
   const { wide } = squad
   const across = { x: -facing.y, y: facing.x }
   const j = slot % wide
   const k = j % 2 === 0 ? j / 2 : -(j + 1) / 2
-  const lateral = (k + (wide % 2 === 0 ? 0.5 : 0)) * ROOM
-  const depth = Math.floor(slot / wide) * DEPTH
+  const lateral = (k + (wide % 2 === 0 ? 0.5 : 0)) * room
+  const depth = Math.floor(slot / wide) * deep
   return {
     x: at.x + across.x * lateral - facing.x * depth,
     y: at.y + across.y * lateral - facing.y * depth,
@@ -154,13 +165,14 @@ export function rally(squad: Squad, n: number, shape: Shape, dt: number) {
           y: 0,
         }
   const look: 1 | -1 = ahead.x >= 0 ? 1 : -1
+  const { run } = ROOMS[squad.look]
   for (const man of squad.men) {
     const to = placeOf(squad, man.slot, shape)
     const dx = to.x - man.x
     const dy = to.y - man.y
     const d = Math.hypot(dx, dy)
     // He slows as he nears his place, never stopping short nor jerking.
-    const step = Math.min(d, Math.min(RUN, EASE + d * 3) * dt)
+    const step = Math.min(d, Math.min(run, EASE + d * 3) * dt)
     if (d > 0) {
       man.x += (dx / d) * step
       man.y += (dy / d) * step

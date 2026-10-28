@@ -9,11 +9,11 @@ import { makeWarning } from './layers/warning'
 import { TONE, playerColor } from './palette'
 import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
+import { warmFigures } from './figures'
 import type { Front, Spot } from './fronts'
 import type { Drawn, Line } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
 import type { GameState, Host } from '../../engine'
-import type { Stamps } from './textures'
 
 // The armies, as one picture. Each army is a few men kept from frame to
 // frame (squads.ts) who walk its road in a column, then stand in ranks at
@@ -43,7 +43,7 @@ const peasantColor = (owner: number) =>
 
 /** An army as it is first seen: no men yet, they walk in. */
 const enlist = (host: Host): Army => ({
-  troops: makeSquad('soldier', playerColor(host.owner)),
+  troops: makeSquad(host.army, playerColor(host.owner)),
   peasants: makeSquad('peasant', peasantColor(host.target)),
   men: host.men,
   front: null,
@@ -51,11 +51,12 @@ const enlist = (host: Host): Army => ({
   gone: false,
 })
 
-export function makeArmies(stamps: Stamps, me: number) {
+export function makeArmies(me: number) {
+  warmFigures()
   const container = new Container()
   const roads = makeRoads()
-  const fallen = makeFallen(stamps, 0.2)
-  const troops = makeTroops(stamps)
+  const fallen = makeFallen(0.2)
+  const troops = makeTroops()
   const warning = makeWarning(me)
   container.addChild(
     warning.container,
@@ -70,7 +71,7 @@ export function makeArmies(stamps: Stamps, me: number) {
   let last = performance.now() / 1000
 
   const fall = (squad: Squad) => (man: Man) =>
-    fallen.fall(man.x, man.y, squad.color, squad.kind, man.facing)
+    fallen.fall(man.x, man.y, squad.color, squad.look, man.facing, man.seed)
 
   /** The men lost since the last tick fall, the army's and, at the front, the peasants it killed. */
   function count(state: GameState, host: Host, army: Army) {
