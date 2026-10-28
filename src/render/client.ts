@@ -38,8 +38,6 @@ export type GameHandle = {
 }
 
 export type { Summary } from './summary'
-/** Whose ground the pointer is over, for the bar to light what a click there would do. */
-export type Ground = 'own' | 'foreign' | null
 export type { Aim } from './aiming'
 export type { News } from './news'
 export { prepareGame, randomSeed } from './ahead'
@@ -55,8 +53,6 @@ export async function mountGame(
     onAim: (aim: Aim | null) => void
     /** What happened in the last second that the player should read. */
     onNews?: (news: Array<News>) => void
-    /** Whose ground the pointer is over: the player's own, another's or free, or none (sea, off the map). */
-    onGround?: (ground: Ground) => void
     names: Array<string>
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
@@ -90,15 +86,6 @@ export async function mountGame(
   let army: Army = 'host'
   let work: Work | null = null
   let hovered = -1
-  let ground: Ground = null
-  /** The ground under the pointer told again when it changes. */
-  function tread(tile: number) {
-    let now: Ground = null
-    if (tile >= 0) now = state.owner[tile] === me ? 'own' : 'foreign'
-    if (now === ground) return
-    ground = now
-    hooks.onGround?.(now)
-  }
   // The aim pinned by a right click.
   let pinned: Aim | null = null
   const aiming = makeAiming(app.canvas, state, me, scene.world)
@@ -127,7 +114,6 @@ export async function mountGame(
       ? makeInput(app.canvas, scene.world, pick, {
           hover(tile) {
             hovered = tile
-            tread(tile)
             if (!pinned) hooks.onAim(aimAt(tile, false))
           },
           click,

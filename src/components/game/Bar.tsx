@@ -28,7 +28,7 @@ function Piece({
   aside,
   figures,
   held,
-  faint,
+  faint = false,
   narrow,
   onClick,
 }: Readonly<{
@@ -38,7 +38,8 @@ function Piece({
   aside?: ReactNode
   figures: ReactNode
   held: boolean
-  faint: boolean
+  /** At half ink: what cannot be paid. */
+  faint?: boolean
   narrow: boolean
   onClick: () => void
 }>) {
@@ -86,20 +87,16 @@ function Divide({ narrow }: Readonly<{ narrow: boolean }>) {
  * left what the player has (the purse); then the three armies as wax seals,
  * the one in hand raised in his colour, each with its men; then the three
  * works as gilt medallions, each with its price, in gules when it cannot be
- * paid. Keys 1 to 6. The half a click would use where the pointer is lights
- * up, the other waits at half ink: the armies over another's land, the works
- * over one's own or with a work in hand. On a phone, the purse on a row of
- * its own over the pieces.
+ * paid, then at half ink: half ink says only that, never where the pointer
+ * is, so that no one thinks he lacks the gold when he does not. Keys 1 to 6.
+ * On a phone, the purse on a row of its own over the pieces.
  */
 export function Bar({
   summary,
-  lit,
   onArmy,
   onWork,
 }: Readonly<{
   summary: Summary
-  /** The half of the bar a click where the pointer is would use; none off the land. */
-  lit: 'armies' | 'works' | null
   onArmy: (army: Army) => void
   onWork: (work: Work | null) => void
 }>) {
@@ -108,9 +105,6 @@ export function Bar({
   const { me } = summary
   if (!me) return null
   const size = 's'
-  const works = summary.work !== null || lit === 'works'
-  const armiesFaint = works
-  const worksFaint = !works && lit === 'armies'
   return (
     <Sheet
       rolled="sides"
@@ -127,7 +121,6 @@ export function Bar({
               k={i + 1}
               held={held}
               narrow={narrow}
-              faint={armiesFaint}
               onClick={() => onArmy(a.army)}
               emblem={
                 <SealEmblem
@@ -167,7 +160,7 @@ export function Bar({
               k={i + 4}
               held={held}
               narrow={narrow}
-              faint={worksFaint || (!w.can && !held)}
+              faint={!w.can && !held}
               onClick={() => onWork(held ? null : w.work)}
               emblem={<MedallionEmblem icon={w.work} size={size} held={held} />}
               name={m.game.works[w.work]}

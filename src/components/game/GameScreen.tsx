@@ -13,7 +13,7 @@ import { Letters } from './News'
 import { Allies, Offers } from './Pacts'
 import { Bar } from './Bar'
 import type { Letter } from './News'
-import type { Aim, GameHandle, Ground, News, Summary } from '~/render/client'
+import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
@@ -28,12 +28,6 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * the lord aimed at, while one is; at the bottom the bar, the purse in it;
  * bottom right the camera; the cartouche beside the pointer.
  */
-/** The half of the bar a click where the pointer is would use. */
-const litOf = (ground: Ground) => {
-  if (ground === 'own') return 'works'
-  return ground === 'foreign' ? 'armies' : null
-}
-
 /** How many pieces of news at once, and for how long each. */
 const [LETTERS, LETTER_MS] = [4, 6000]
 
@@ -43,7 +37,6 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
   const [game, setGame] = useState<GameHandle | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [aim, setAim] = useState<Aim | null>(null)
-  const [ground, setGround] = useState<Ground>(null)
   // The game could not start (no WebGL, a failed load): said, not a blank page.
   const [failed, setFailed] = useState(false)
   // The news on screen, each for a few seconds.
@@ -77,7 +70,6 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
           onSummary: setSummary,
           onAim: setAim,
           onNews: tell,
-          onGround: setGround,
           names: PLAYERS.map((p) => m.game.colors[p.key]),
         })
         if (off()) mounted.destroy()
@@ -133,7 +125,6 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
               <div className="flex justify-center">
                 <Bar
                   summary={summary}
-                  lit={litOf(ground)}
                   onArmy={game.choose}
                   onWork={game.hold}
                 />
