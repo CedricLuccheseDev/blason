@@ -3,6 +3,7 @@ import { drawInt } from './numbers'
 import { apart, around } from './grid'
 import { RULES } from './rules'
 import { isFelon } from './diplomacy'
+import { rebelled } from './scars'
 import { NEUTRAL, NO_ONE, SEA } from './types'
 import type { Rules } from './rules'
 import type { GameState, Grid } from './types'
@@ -73,11 +74,14 @@ export function createGame(
       alive: true,
       felonUntil: 0,
       tiles: 0,
+      coups: {},
     })),
     hosts: [],
     alliances: [],
     requests: [],
     caravans: [],
+    strikes: [],
+    scars: [],
     winner: NO_ONE,
   }
 }
@@ -219,11 +223,14 @@ function neutralHold(state: GameState): number {
   return Math.max(state.rules.neutralFloor, half)
 }
 
-/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's. */
+/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's, more where rebels hold it. */
 export function holdOf(state: GameState, tile: number): number {
   const owner = state.owner[tile]
   const { rules } = state
-  if (owner === NEUTRAL) return neutralHold(state)
+  if (owner === NEUTRAL)
+    return rebelled(state, tile)
+      ? Math.floor((neutralHold(state) * rules.rebelHold) / 100)
+      : neutralHold(state)
   const mark = isFelon(state, owner) ? rules.felonHold : 100
   return Math.floor((density(state, owner) * mark) / 100)
 }

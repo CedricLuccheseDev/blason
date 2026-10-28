@@ -11,9 +11,26 @@ export type Army = 'raid' | 'host' | 'ban'
 /** What a lord may build anywhere on his land, one thing a place. */
 export type Work = 'village' | 'market' | 'castle'
 
-/** The armies and the works, in the order the bar shows them: one more is one more entry here. */
+/** The coups that may turn a game, each its own deed: take land, kill troops, ruin an economy. */
+export type Coup = 'troublemaker' | 'archers' | 'fire'
+
+/** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. */
 export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
 export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
+export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
+
+/**
+ * A coup's figures: its first price in gold; how far from its lord's border
+ * it may strike, in tiles (none: anywhere a walk over land reaches); the
+ * radius it strikes, in tiles; the ticks before it falls (none: it walks
+ * there at the armies' pace).
+ */
+export type CoupRule = {
+  price: number
+  reach: number | null
+  radius: number
+  flight: number | null
+}
 
 export type Rules = {
   /** Ticks during which each lord picks where he starts. */
@@ -93,6 +110,12 @@ export type Rules = {
   victoryDropStart: number
   victoryDropPerMinute: number
   victoryFloor: number
+  /** The coups; how many times a coup's price doubles at most, with each launched; the share of its men a volley of arrows kills, in percent; how much better rebels hold their land than free land, in percent; how long burnt land may not be built on. */
+  coups: Readonly<Record<Coup, CoupRule>>
+  coupDoublings: number
+  arrowToll: number
+  rebelHold: number
+  ashTicks: number
 }
 
 const SECOND = TICKS_PER_SECOND
@@ -143,4 +166,13 @@ export const RULES: Rules = {
   victoryDropStart: 10 * MINUTE,
   victoryDropPerMinute: 50,
   victoryFloor: 500,
+  coups: {
+    troublemaker: { price: 300, reach: null, radius: 6, flight: null },
+    archers: { price: 200, reach: 5, radius: 4, flight: 2 * SECOND },
+    fire: { price: 600, reach: 15, radius: 5, flight: 4 * SECOND },
+  },
+  coupDoublings: 3,
+  arrowToll: 30,
+  rebelHold: 200,
+  ashTicks: MINUTE,
 }

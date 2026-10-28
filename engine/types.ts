@@ -1,4 +1,4 @@
-import type { Army, Rules, Work } from './rules'
+import type { Army, Coup, Rules, Work } from './rules'
 
 export const NEUTRAL = -1
 export const SEA = -2
@@ -24,6 +24,26 @@ type Lord = {
   felonUntil: number
   /** The tiles he holds. */
   tiles: number
+  /** How many of each coup he has launched: its price doubles with each. */
+  coups: Partial<Record<Coup, number>>
+}
+
+/** A coup on its way: whose, which, the lord it strikes, where it left from and where it falls, and when it falls (a troublemaker walks, and falls when he gets there). */
+export type Strike = {
+  coup: Coup
+  owner: number
+  victim: number
+  from: number
+  target: number
+  lands: number
+}
+
+/** What a coup leaves on the land, round a tile: rebels holding it, or ashes no one may build on until a tick. */
+export type Scar = {
+  kind: 'rebels' | 'ash'
+  tile: number
+  radius: number
+  until: number
 }
 
 /** Something a lord built on a tile of his: it passes to whoever takes the tile. */
@@ -102,6 +122,8 @@ export type GameState = {
   alliances: Array<Alliance>
   requests: Array<Request>
   caravans: Array<Caravan>
+  strikes: Array<Strike>
+  scars: Array<Scar>
   winner: number
 }
 
@@ -111,4 +133,5 @@ export type Order = { player: number } & (
   | { type: 'build'; tile: number; work: Work }
   | { type: 'ally'; target: number }
   | { type: 'breakAlliance'; target: number }
+  | { type: 'coup'; tile: number; coup: Coup }
 )

@@ -13,10 +13,18 @@ export type { Point } from './map/points'
 export { apart, around, makeGrid } from './grid'
 
 // A game: its rules, its state, the orders and the step that applies them.
-export { ARMIES, RULES, WORKS } from './rules'
-export type { Army, Work } from './rules'
+export { ARMIES, COUPS, RULES, WORKS } from './rules'
+export type { Army, Coup, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
-export type { Caravan, GameState, Grid, Host, Order } from './types'
+export type {
+  Caravan,
+  GameState,
+  Grid,
+  Host,
+  Order,
+  Scar,
+  Strike,
+} from './types'
 export {
   canStart,
   capOf,
@@ -31,6 +39,8 @@ export { nextDrop, step, victoryShare } from './step'
 // What the screen and the bots ask of the rules.
 export { costOf, entryFor, menFor } from './war'
 export { canBuild, priceOf } from './works'
+export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
+export { burnt, rebelled } from './scars'
 export { freeVillages, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
 export { meet } from './battle'

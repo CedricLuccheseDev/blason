@@ -1,6 +1,7 @@
 import { UNIT } from './units'
 import { apart } from './grid'
 import { worksOf } from './land'
+import { burnt } from './scars'
 import type { Work } from './rules'
 import type { GameState } from './types'
 
@@ -28,7 +29,7 @@ export function canBuild(
   tile: number,
   work: Work,
 ): boolean {
-  if (state.owner[tile] !== lord) return false
+  if (state.owner[tile] !== lord || burnt(state, tile)) return false
   const { castleGap, workGap } = state.rules
   return state.works.every((w) => {
     const gap = work === 'castle' && w.work === 'castle' ? castleGap : workGap
