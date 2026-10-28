@@ -117,13 +117,21 @@ orders. It decides nothing about the rules.
   wash's blooms (`bloom.ts`) and the woods' and hills' darker tone
   (`tones.ts`) at every distance, the rivers (`rivers.ts`) from mid distance;
   and paints the decoration (`ornaments.ts`, `fields.ts`, `paint.ts`, drawn by
-  `art/trees.ts`) chunk by chunk, sixteen tiles a side, on canvases kept on the
+  `art/trees.ts` and `art/hill.ts`, quieter up close so that it bears the
+  washes up) chunk by chunk, sixteen tiles a side, on canvases kept on the
   graphics card per level of zoom (`decor.ts`, `cache.ts`), multiplied into the
   washes so that its ink takes each land's hue. A chunk is painted again only
   when the land under it, a work or a road changed there (`changes.ts`, from
   the tiles' weights, `weights.ts`: nothing on a border, a road or a shore, a
   clearing round each work) or the zoom passed to another level, a few each
   frame, the middle of the screen first, the new one fading in over the old.
+- One light over the whole map, from the upper left (`art/light.ts`), so that
+  what stands on it stands: each tree, hill and work casts a soft shadow to
+  the lower right, as long as it is high, with a darker contact at its foot,
+  its faces turned from the light in shade. The shadows are painted with what
+  casts them, once, into the decoration's chunks and the works' textures: the
+  silhouettes laid flat by a shear on a small canvas, where they merge, then
+  stretched over the drawing, which softens their edge; never each frame.
 - The works (`art/works.ts`) are drawn once per lord's colour and level of
   detail into a texture: a silhouette cut out by a parchment halo, never under
   thirty pixels on screen; a drawing; an illustration (`art/village.ts`,
