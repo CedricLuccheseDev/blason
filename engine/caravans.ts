@@ -84,8 +84,12 @@ function onward(
   const to = link.a === from.end ? link.b : link.a
   const owner = owners.get(to) ?? NEUTRAL
   const road = link.a === from.end ? link.road : [...link.road].reverse()
-  if (!road.every((t) => open(state, lord, t) || state.owner[t] === owner))
-    return null
+  // Open land, or the land of a lord whose market it goes to or through.
+  const may = (t: number) =>
+    open(state, lord, t) ||
+    state.owner[t] === owner ||
+    from.via.includes(state.owner[t])
+  if (!road.every(may)) return null
   const via = owner === lord ? from.via : [...from.via, owner]
   return { end: to, road: [...from.road, ...road.slice(1)], via }
 }
@@ -218,9 +222,10 @@ export function moveCaravans(state: GameState) {
     const market = state.works.find(
       (w) => w.tile === end && w.work === 'market',
     )
+    // A market gone (burnt, taken down) pays no one: the trade is lost.
+    if (!market) return false
     state.players[c.owner].gold += c.gold
-    if (market && market.owner !== c.owner)
-      state.players[market.owner].gold += c.gold
+    if (market.owner !== c.owner) state.players[market.owner].gold += c.gold
     return false
   })
 }

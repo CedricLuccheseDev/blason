@@ -36,8 +36,10 @@ wss.on('connection', (socket) => {
     if (!message) return
     if (message.t === 'join') {
       if (room) return
+      // Anything may come down the wire: a room is a code, 'new' or none.
+      const code = typeof message.room === 'string' ? message.room : null
       player.name = String(message.name).slice(0, 24)
-      room = join(player, message.room)
+      room = join(player, code)
     } else if (room) hear(room, player, message)
   })
   socket.on('close', () => {

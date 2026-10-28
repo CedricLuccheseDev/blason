@@ -25,9 +25,14 @@ export function connect(url: string): Promise<Link> {
   return new Promise((resolve, reject) => {
     const socket = new WebSocket(url)
     const listeners = new Set<(message: FromRelay) => void>()
+    // What came while no one listened (the first turns, while the game is
+    // being made) waits for the next listener, so that no turn is lost.
+    const waiting: Array<FromRelay> = []
     socket.addEventListener('message', (event) => {
       const message = parse<FromRelay>(event.data)
-      if (message) for (const hear of listeners) hear(message)
+      if (!message) return
+      if (listeners.size === 0) waiting.push(message)
+      for (const hear of listeners) hear(message)
     })
     socket.addEventListener('error', () => reject(new Error('relay')))
     socket.addEventListener('open', () =>
@@ -38,6 +43,7 @@ export function connect(url: string): Promise<Link> {
         },
         listen: (hear) => {
           listeners.add(hear)
+          for (const message of waiting.splice(0)) hear(message)
           return () => listeners.delete(hear)
         },
         close: () => socket.close(),

@@ -66,8 +66,18 @@ function isSeat(state: GameState, seat: number): boolean {
   )
 }
 
+/** The orders there are: any other word, which a distant player could send, is none. */
+const KINDS: ReadonlySet<string> = new Set<Order['type']>([
+  'pickStart',
+  'attack',
+  'build',
+  'coup',
+  'ally',
+  'breakAlliance',
+])
+
 function isValid(state: GameState, order: Order): boolean {
-  if (!isSeat(state, order.player)) return false
+  if (!KINDS.has(order.type) || !isSeat(state, order.player)) return false
   if (order.type === 'ally' || order.type === 'breakAlliance')
     return isSeat(state, order.target)
   const { tile } = order

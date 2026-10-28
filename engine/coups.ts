@@ -164,7 +164,9 @@ function fall(state: GameState, strike: Strike) {
   // The troublemaker: the land round him rises, free and held by rebels.
   for (const t of round)
     if (state.owner[t] === strike.victim) setOwner(state, t, NEUTRAL)
-  state.works = state.works.filter((w) => state.owner[w.tile] >= 0)
+  state.works = state.works.filter(
+    (w) => !round.has(w.tile) || state.owner[w.tile] >= 0,
+  )
   state.scars.push({ kind: 'rebels', tile: target, radius, until: -1 })
 }
 
