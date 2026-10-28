@@ -1,13 +1,13 @@
 import { UNIT } from './units'
 import { isqrt } from './numbers'
-import { apart } from './grid'
+import { apart, overLand } from './grid'
 import { standing } from './land'
 import { isAllied } from './diplomacy'
 import { marching, positionOf } from './muster'
 import type { GameState, Host } from './types'
 
 // The battles: an army in a lord's land, taking it, and an army of that lord
-// that come near each other (any other army passes by, so that none is drawn
+// that come near each other over land (any other army passes by, so that none is drawn
 // into a war it was not sent to) stop,
 // walk to meet halfway, which takes them as long as the way, then fight
 // there, and neither moves on until one is gone. An even battle lasts a few
@@ -37,12 +37,13 @@ function rate(state: GameState, other: Host, at: number): number {
 /** Whether an army is in another lord's land, taking it: it is there, and no longer on its road. */
 const intrudes = (a: Host, lord: number) => a.target === lord && !marching(a)
 
-/** Two armies that fight: near enough, and one of them in the land of the other's lord, taking it; any other army passes by, so that none is drawn into a war it was not sent to. */
-function meet(state: GameState, a: Host, b: Host): boolean {
+/** Two armies that fight: near enough, with no sea between them, and one of them in the land of the other's lord, taking it; any other army passes by, so that none is drawn into a war it was not sent to. */
+export function meet(state: GameState, a: Host, b: Host): boolean {
   if (a.owner === b.owner || isAllied(state, a.owner, b.owner)) return false
   if (!intrudes(a, b.owner) && !intrudes(b, a.owner)) return false
   const reach = state.rules.meetTiles
-  return apart(state.grid, positionOf(a), positionOf(b)) <= reach * reach
+  const [p, q] = [positionOf(a), positionOf(b)]
+  return apart(state.grid, p, q) <= reach * reach && overLand(state.grid, p, q)
 }
 
 /** Ticks two armies so far apart take to walk to each other, each going half the way. */

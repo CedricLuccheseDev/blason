@@ -32,6 +32,7 @@ export { costOf, entryFor, menFor } from './war'
 export { canBuild, priceOf } from './works'
 export { freeVillages, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
+export { meet } from './battle'
 
 // The bots, players like the others.
 export { createBot } from './bots/bot'

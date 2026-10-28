@@ -1,8 +1,8 @@
 import { UNIT } from './units'
 import { isqrt } from './numbers'
 import { apart, around } from './grid'
-import { isAllied, isFelon } from './diplomacy'
-import { density, setOwner } from './land'
+import { isAllied } from './diplomacy'
+import { holdOf, setOwner } from './land'
 import { NEUTRAL } from './types'
 import { pop, push } from './heap'
 import { walled } from './battle'
@@ -145,25 +145,6 @@ export function attack(
   })
 }
 
-/** The men holding a free tile: so many in a hundred of what holds the mean lord's tile, never under the floor. */
-function neutralHold(state: GameState): number {
-  const standing = state.players.filter((p) => p.alive && p.tiles > 0)
-  if (standing.length === 0) return 0
-  const peasants = standing.reduce((sum, p) => sum + p.peasants, 0)
-  const tiles = standing.reduce((sum, p) => sum + p.tiles, 0)
-  const half = Math.floor((peasants * state.rules.neutralHold) / 100 / tiles)
-  return Math.max(state.rules.neutralFloor, half)
-}
-
-/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's. */
-export function holdOf(state: GameState, tile: number): number {
-  const owner = state.owner[tile]
-  const { rules } = state
-  if (owner === NEUTRAL) return neutralHold(state)
-  const mark = isFelon(state, owner) ? rules.felonHold : 100
-  return Math.floor((density(state, owner) * mark) / 100)
-}
-
 /** A tile taken: its new lord, and its work; a free one, a little gold. */
 function take(state: GameState, host: Host, tile: number) {
   if (state.owner[tile] === NEUTRAL)
@@ -176,7 +157,6 @@ function take(state: GameState, host: Host, tile: number) {
       push(host.queue, [priority(state, host, t), t])
 }
 
-/** One tick of an army: it takes the next tiles it can pay for, a few at most. */
 /**
  * The army fights for a tile: a soldier is worth two peasants, one under the
  * castle of the tile's lord. Whether it took it; if not, its last men fell
@@ -197,6 +177,7 @@ function fight(state: GameState, host: Host, tile: number): boolean {
   return paid === cost
 }
 
+/** One tick of an army: it takes the next tiles it can pay for, a few at most. */
 function march(state: GameState, host: Host) {
   const taken: Array<number> = []
   while (taken.length < state.rules.paceTiles && host.men > 0) {

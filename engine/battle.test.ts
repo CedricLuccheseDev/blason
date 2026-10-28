@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { overLand } from './grid'
 import { attack, endow, field, hold, muster, playing, run } from './testing'
 import type { GameState } from './types'
 
@@ -62,5 +63,15 @@ describe('the battles', () => {
     run(state, 3)
     expect(state.hosts).toHaveLength(2)
     expect(state.hosts.some((h) => h.fighting)).toBe(false)
+  })
+
+  it('never join two armies across the sea', () => {
+    // A gulf cuts a 9 by 9 land from its top to its middle: the two shores face each other.
+    const grid = field(9, 9)
+    for (let y = 0; y < 5; y++) grid.land[y * 9 + 4] = false
+    expect(overLand(grid, 2 * 9 + 2, 2 * 9 + 6)).toBe(false)
+    expect(overLand(grid, 7 * 9 + 2, 7 * 9 + 6)).toBe(true)
+    // Round the gulf's end, the line keeps to the land.
+    expect(overLand(grid, 6 * 9 + 1, 5 * 9 + 7)).toBe(true)
   })
 })

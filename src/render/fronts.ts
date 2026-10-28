@@ -1,4 +1,4 @@
-import { marching } from '../../engine'
+import { marching, meet } from '../../engine'
 import { siteOf } from './marks'
 import { headOf, pathOf } from './layers/column'
 import { pointOn } from './roads'
@@ -80,12 +80,14 @@ export function makeFronts() {
         (best === undefined || score(t) > score(best))
       )
         best = t
-    if (best === undefined) return siteOf(state, host.entry)
-    reached.set(host, best)
-    return siteOf(state, best)
+    // All it took lost a moment, it stands where it last stood, not at its entry.
+    const at = best ?? reached.get(host)
+    if (at === undefined) return siteOf(state, host.entry)
+    reached.set(host, at)
+    return siteOf(state, at)
   }
 
-  /** Battles kept while their armies stand and fight, or pause a moment; new ones joined by armies free of any. */
+  /** Battles kept while their armies stand and fight, or pause a moment; new ones joined by armies free of any, each with an army the game makes it fight. */
   function judge(state: GameState, anchor: (h: Host) => Spot) {
     const standing = new Set(state.hosts)
     for (const battle of new Set(battles.values())) {
@@ -101,7 +103,7 @@ export function makeFronts() {
       if (battles.has(a)) continue
       const here = anchor(a)
       const b = free
-        .filter((h) => h !== a && !battles.has(h) && h.owner !== a.owner)
+        .filter((h) => !battles.has(h) && meet(state, a, h))
         .sort((p, q) => {
           const [u, v] = [anchor(p), anchor(q)]
           return (

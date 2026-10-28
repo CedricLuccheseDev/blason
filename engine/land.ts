@@ -2,6 +2,7 @@ import { TICKS_PER_SECOND, UNIT } from './units'
 import { drawInt } from './numbers'
 import { apart, around } from './grid'
 import { RULES } from './rules'
+import { isFelon } from './diplomacy'
 import { NEUTRAL, NO_ONE, SEA } from './types'
 import type { Rules } from './rules'
 import type { GameState, Grid } from './types'
@@ -193,4 +194,23 @@ export function assignMissingStarts(state: GameState): void {
   // The opening over, the free domains and their villages are gone: what
   // no lord holds is one free land, held by its villagers.
   state.villages = []
+}
+
+/** The men holding a free tile: so many in a hundred of what holds the mean lord's tile, never under the floor. */
+function neutralHold(state: GameState): number {
+  const lords = state.players.filter((p) => p.alive && p.tiles > 0)
+  if (lords.length === 0) return 0
+  const peasants = lords.reduce((sum, p) => sum + p.peasants, 0)
+  const tiles = lords.reduce((sum, p) => sum + p.tiles, 0)
+  const half = Math.floor((peasants * state.rules.neutralHold) / 100 / tiles)
+  return Math.max(state.rules.neutralFloor, half)
+}
+
+/** The men holding a tile: its lord's share of his peasants, half as many while he is a traitor; on free land, half what holds a lord's. */
+export function holdOf(state: GameState, tile: number): number {
+  const owner = state.owner[tile]
+  const { rules } = state
+  if (owner === NEUTRAL) return neutralHold(state)
+  const mark = isFelon(state, owner) ? rules.felonHold : 100
+  return Math.floor((density(state, owner) * mark) / 100)
 }

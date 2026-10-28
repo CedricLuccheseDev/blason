@@ -70,9 +70,9 @@ Every lord starts with 50 gold.
   home.
 
 - **Battles**: an army in a lord's land, taking it, and an army of that lord
-  that come within 8 tiles of each other stop and walk to meet halfway, which
-  takes them as long as the way, then fight there until one is gone; an even
-  battle lasts some 4 seconds, so that it is seen. Any other army passes by:
+  that come within 8 tiles of each other, with no sea between them, stop and
+  walk to meet halfway, which takes them as long as the way, then fight there
+  until one is gone; an even battle lasts some 4 seconds, so that it is seen. Any other army passes by:
   none is drawn into a war it was not sent to (`engine/battle.ts`).
 - An army whose road is cut by the lord it marches on strikes him from where
   it stands; cut by anyone else, it goes home.

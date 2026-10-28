@@ -82,13 +82,21 @@ export function makeArmies(stamps: Stamps, me: number) {
     lose(peasants, killed, peasants.men.length, fall(peasants))
   }
 
-  /** The peasants of the land before an army at its front, in two ranks facing it. */
+  /**
+   * The peasants of the land before an army at its front, in two ranks facing
+   * it. Once faded out they are forgotten, so that at the next front they
+   * stand up where they are, in the colour of the land they hold, and never
+   * run there across the map.
+   */
   function defend(state: GameState, host: Host, army: Army, dt: number) {
-    const { front, peasants } = army
+    const { front } = army
     if (front?.phase !== 'front' || !front.line) {
-      peasants.alpha = Math.max(0, peasants.alpha - dt / FADE)
+      army.peasants.alpha = Math.max(0, army.peasants.alpha - dt / FADE)
       return
     }
+    if (army.peasants.alpha === 0)
+      army.peasants = makeSquad('peasant', peasantColor(host.target))
+    const { peasants } = army
     const held =
       host.target >= 0 ? state.players[host.target].peasants / UNIT / 3 : 30
     const facing = { x: -front.facing.x, y: -front.facing.y }

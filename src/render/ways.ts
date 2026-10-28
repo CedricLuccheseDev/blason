@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import { around } from '../../engine'
+import { around, standing } from '../../engine'
 import { drawPaving } from './art/paving'
 import { drawRoad } from './roads'
 import type { GameState } from '../../engine'
@@ -7,6 +7,7 @@ import type { GameState } from '../../engine'
 // The roads within a realm: each market of a lord is joined to his nearest
 // other market by a paved road over his own land, so that his markets make
 // a web of their own beside the roads of trade with the others (trade.ts).
+// A market still being built has no road yet.
 // Drawn again only when the markets change. At the land's scale.
 
 /** Tiles searched at most for a road, so that two markets far apart cost little. */
@@ -39,7 +40,9 @@ function wayOver(state: GameState, lord: number, from: number, to: number) {
 /** Each market of a lord with his nearest other market, each pair once. */
 function pairsOf(state: GameState) {
   const { width } = state.grid
-  const markets = state.works.filter((w) => w.work === 'market')
+  const markets = state.works.filter(
+    (w) => w.work === 'market' && standing(state, w),
+  )
   const pairs = new Map<string, [number, number, number]>()
   for (const a of markets) {
     let near: number | null = null
@@ -70,7 +73,7 @@ export function makeWays(me: number) {
     draw(state: GameState) {
       if (state.tick % 10 !== 0) return
       const markets = state.works
-        .filter((w) => w.work === 'market')
+        .filter((w) => w.work === 'market' && standing(state, w))
         .map((w) => `${w.tile}:${w.owner}`)
         .join()
       if (markets === known) return

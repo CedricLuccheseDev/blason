@@ -79,3 +79,17 @@ export function apart(grid: Grid, a: number, b: number): number {
   const dy = Math.floor(a / grid.width) - Math.floor(b / grid.width)
   return dx * dx + dy * dy
 }
+
+/** Whether the straight line between two tiles stays on land, crossing no sea. */
+export function overLand(grid: Grid, a: number, b: number): boolean {
+  const [ax, ay] = [a % grid.width, Math.floor(a / grid.width)]
+  const [dx, dy] = [(b % grid.width) - ax, Math.floor(b / grid.width) - ay]
+  const steps = Math.max(Math.abs(dx), Math.abs(dy))
+  // Rounded to the nearest tile in whole numbers, the same on every machine.
+  const near = (d: number, s: number) =>
+    Math.floor((2 * d * s + steps) / (2 * steps))
+  for (let s = 1; s < steps; s++)
+    if (!grid.land[(ay + near(dy, s)) * grid.width + ax + near(dx, s)])
+      return false
+  return true
+}

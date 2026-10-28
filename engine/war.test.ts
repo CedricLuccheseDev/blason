@@ -3,9 +3,8 @@ import { TICKS_PER_SECOND, UNIT } from './units'
 import { generateWorld } from './map/generate'
 import { createBot } from './bots/bot'
 import { makeGrid } from './grid'
-import { createGame } from './land'
+import { createGame, holdOf } from './land'
 import { stateHash, step } from './step'
-import { holdOf } from './war'
 import {
   attack,
   endow,

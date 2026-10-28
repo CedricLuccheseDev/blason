@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { UNIT } from './units'
 import { moveCaravans, sendCaravans } from './caravans'
 import { isAllied } from './diplomacy'
-import { createGame, setOwner } from './land'
+import { createGame, holdOf, setOwner } from './land'
 import { RULES } from './rules'
 import { step } from './step'
-import { holdOf } from './war'
 import type { GameState, Grid, Order } from './types'
 
 function field(width: number, height = 1): Grid {
