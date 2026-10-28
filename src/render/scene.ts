@@ -16,6 +16,7 @@ import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
+import { makePacts } from './layers/pacts'
 import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
 import { makeScars } from './layers/scars'
@@ -27,6 +28,7 @@ import type { GameState, World } from '../../engine'
 import type { Hand } from './hand'
 import type { Application } from 'pixi.js'
 import type { Placement } from './layers/labels'
+import type { Anchor } from './heralds'
 
 // The map, stacked so that what the game must make read stays above what
 // only adorns it: the page and the sea, the bare land, the lords' washes
@@ -38,7 +40,8 @@ import type { Placement } from './layers/labels'
 // allies in green and those at war in red; the frame; the wagons, the
 // armies, the coups on their way, the aim, the standards planted in the
 // opening, and over all each lord's name and peasants at the heart of his
-// land. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
+// land. The alliances' ribbons and cords run between the names, under the
+// wagons and the armies. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
 // names and the standards shrink with it, as if the page were held farther
 // away, and the small writing fades out.
 
@@ -75,6 +78,7 @@ export function makeScene(
     placesOf,
   )
   const badges = makeBadges(state, me)
+  const pacts = makePacts(me, labels.nameOf)
   const trade = makeTrade(makeStamps(app.renderer), me)
   const tidings = makeTidings(me)
   const allies = makeAllies(me, regions.outline)
@@ -99,6 +103,7 @@ export function makeScene(
     raids.container,
     seals.container,
     building.container,
+    pacts.container,
     page.frame,
     trade.container,
     armies.container,
@@ -126,6 +131,14 @@ export function makeScene(
 
   return {
     world,
+    /** Where the HUD lays its pieces on the map this frame: the seal of each of my alliances. */
+    anchors(): Array<Anchor> {
+      return state.alliances.flatMap(({ a, b }) => {
+        const ally = a === me ? b : a
+        const at = me === a || me === b ? pacts.middleOf(ally) : null
+        return at ? [{ key: `pact:${ally}`, kind: 'pact', lord: ally, at }] : []
+      })
+    },
     /** The page's textures, which the game's end does not take with it. */
     destroy() {
       page.destroy()
@@ -160,6 +173,8 @@ export function makeScene(
       labels.update(state, zoom / fit / far, shown)
       badges.update(labels.nameOf, zoom / fit / far)
       badges.container.alpha = shown
+      pacts.draw(state, zoom)
+      pacts.container.alpha = shown
     },
   }
 }

@@ -7,6 +7,15 @@ import type { Mark } from './marks'
 
 const GLOW = 'url(#blason-glow)'
 
+/** The wax's edge, a little uneven, round (cx, cy): the points of its polygon. */
+export function waxEdge(cx: number, cy: number, r: number): string {
+  return Array.from({ length: 22 }, (_, i) => {
+    const a = (i / 22) * Math.PI * 2
+    const rr = r * (1 + 0.06 * Math.sin(i * 2.7) + 0.04 * Math.cos(i * 1.3))
+    return `${cx + Math.cos(a) * rr},${cy + Math.sin(a) * rr}`
+  }).join(' ')
+}
+
 /** A wax seal, its drawing pressed into it; lifted and glowing when in hand. */
 export function Seal({
   cx,
@@ -27,11 +36,7 @@ export function Seal({
   dim?: boolean
   lifted?: boolean
 }>) {
-  const points = Array.from({ length: 22 }, (_, i) => {
-    const a = (i / 22) * Math.PI * 2
-    const rr = r * (1 + 0.06 * Math.sin(i * 2.7) + 0.04 * Math.cos(i * 1.3))
-    return `${cx + Math.cos(a) * rr},${cy + Math.sin(a) * rr}`
-  }).join(' ')
+  const points = waxEdge(cx, cy, r)
   return (
     <g filter={lifted ? GLOW : LIFT} opacity={dim ? 0.55 : 1}>
       <polygon

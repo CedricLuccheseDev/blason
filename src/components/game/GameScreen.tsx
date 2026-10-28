@@ -8,7 +8,8 @@ import { Aimed } from './Aimed'
 import { Lords } from './Lords'
 import { CameraButtons } from './CameraButtons'
 import { Letters } from './News'
-import { Allies, Offers } from './Pacts'
+import { Offers } from './Pacts'
+import { Heralds } from './Heralds'
 import { Bar } from './Bar'
 import { Moment } from './Moment'
 import type { Letter } from './News'
@@ -25,7 +26,8 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * over it a HUD kept to the edges, every piece a sheet of the design system
  * (components/hud) set in a grid kept 16 pixels from them: top left the
  * lords; top centre the race, thin, and under it the opening and the end;
- * top right the letters, the offers and the alliances to renew; bottom left
+ * top right the letters and the offers; the seals of the alliances on the
+ * map, at the middle of their ribbons (Heralds.tsx); bottom left
  * the lord aimed at, while one is; at the bottom the bar, the purse in it;
  * bottom right the camera; the cartouche beside the pointer.
  */
@@ -113,6 +115,7 @@ export function GameScreen({
       {failed && <Failed />}
       {game && summary && (
         <>
+          <Heralds game={game} summary={summary} />
           <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
             <div className="relative flex w-72 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
               <Lords summary={summary} aimed={aim?.lord ?? null} />
@@ -125,10 +128,6 @@ export function GameScreen({
               <Offers
                 summary={summary}
                 onAccept={(seat) => game.treat('ally', seat)}
-              />
-              <Allies
-                summary={summary}
-                onRenew={(seat) => game.treat('ally', seat)}
               />
               <Letters letters={letters} />
             </div>

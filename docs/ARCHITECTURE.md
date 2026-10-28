@@ -219,7 +219,10 @@ orders. It decides nothing about the rules.
   their ways by `flight.ts`), and how each ends, a rain of arrows, a burst of
   flames, a land rising, a troublemaker struck out (`layers/impacts.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
-  (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
+  (`layers/tidings.ts`), the alliances between the lords' capitals, the
+  player's own a ribbon of green silk hemmed in gold, the others' a thin dotted
+  cord of ink with a tiny seal parted in both lords' colours (`layers/pacts.ts`,
+  their bowed line `cord.ts`, drawn by `art/cords.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
   (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
   its reach along the border, `layers/aimCoup.ts`), the parchment's grain over the whole page, moving with it
   (`layers/paper.ts`), and the page round the map: its frame (`layers/page.ts`),
@@ -228,6 +231,10 @@ orders. It decides nothing about the rules.
 - `camera.ts` is the player's camera, out to twice farther than the whole land,
   where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
   goes to the fiercest fight on its own (the game on the home's board).
+- `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
+  of the player's alliances at the middle of its ribbon), in pixels of the
+  screen, each time they move, to the HUD that listens (`GameHandle.heralds`,
+  `handle.ts`).
 - `summary.ts` reads from the state, once a second, the figures the HUD shows;
   `news.ts` what the player's letters tell, the coups among it (`coupNews.ts`).
 
@@ -256,11 +263,15 @@ The HUD is React, laid over the map. It is built on a small design system,
   colour, the same badges as beside the names on the map;
 - **one motion**: a single curve and two durations, through two roles,
   `.hud-press` on whatever is touched and `.hud-enter` on every sheet that
-  appears; nothing moves under reduced motion;
+  appears, and `.hud-glow` on what waits on the map for a click (a seal to
+  renew); nothing moves under reduced motion;
 - **a compact shape** on phones, upright or sideways (`useCompact.ts`).
 
 The game's pieces (`src/components/game/`: the lords' list top left, the
-race on one thin line, the letters and the alliances to renew top right, the
+race on one thin line, the letters top right, the seals of the player's
+alliances on the map at the middle of their ribbons, a click to renew in their
+last moments, waiting at the screen's edge with an arrow when out of view
+(`Heralds.tsx`, `PactSeal.tsx`, `edge.ts`), the
 bar at the bottom with the purse in it, then the armies, the works and the
 coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
 the lord aimed at, the cartouche beside the pointer) are built from these and

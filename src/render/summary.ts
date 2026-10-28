@@ -60,8 +60,21 @@ export type Summary = {
   /** The coup in hand, if any, and what each costs now: dearer with each launched. */
   coup: Coup | null
   coups: Array<{ coup: Coup; price: number; can: boolean }>
-  /** My allies, with the seconds left and whether I may renew now; the offers made to me; the lords I asked. */
-  allies: Array<Lord & { left: number; renewable: boolean }>
+  /**
+   * My allies: the seconds left and the share of its time still to run, of
+   * the whole or, in its last moments, of them; whether those have come,
+   * and whether I and he pressed the seal to renew. The offers made to me,
+   * with the share of their time left too; the lords I asked.
+   */
+  allies: Array<
+    Lord & {
+      left: number
+      ring: number
+      closing: boolean
+      pressed: boolean
+      theirs: boolean
+    }
+  >
   /** Every lord, as the card of the one aimed at shows him. */
   lords: Array<
     Lord & {
@@ -106,15 +119,19 @@ function lordsOf(state: GameState, me: number) {
 function pacts(state: GameState, me: number) {
   if (me < 0) return { allies: [], offers: [], asked: [] }
   const seconds = (ticks: number) => Math.max(0, Math.ceil(ticks / 10))
+  const { allianceTicks, renewTicks } = state.rules
   const allies = state.alliances.flatMap((x) => {
     if (x.a !== me && x.b !== me) return []
     const left = x.expires - state.tick
-    const done = x.a === me ? x.renewA : x.renewB
+    const closing = left <= renewTicks
     return [
       {
         ...lordOf(x.a === me ? x.b : x.a),
         left: seconds(left),
-        renewable: left <= state.rules.renewTicks && !done,
+        ring: Math.max(0, left / (closing ? renewTicks : allianceTicks)),
+        closing,
+        pressed: x.a === me ? x.renewA : x.renewB,
+        theirs: x.a === me ? x.renewB : x.renewA,
       },
     ]
   })

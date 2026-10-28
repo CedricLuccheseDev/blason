@@ -14,10 +14,12 @@ import { startRemoteSession } from './remote'
 import { makeNews } from './news'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
+import { makeHeralds } from './heralds'
+import type { GameHandle } from './handle'
 import type { Aim } from './aiming'
 import type { News } from './news'
 import type { Room } from './director'
-import type { Army, Coup, Level, MapSize, Work } from '../../engine'
+import type { Level, MapSize } from '../../engine'
 import type { Summary } from './summary'
 import type { Online } from './online'
 
@@ -30,23 +32,11 @@ import type { Online } from './online'
 // in hand (7 to 9: a troublemaker, archers, Greek fire), a click launches it
 // at the land clicked (hand.ts).
 
-export type GameHandle = {
-  destroy: () => void
-  choose: (army: Army) => void
-  hold: (work: Work | null) => void
-  /** A coup taken in hand, or put down. */
-  aim: (coup: Coup | null) => void
-  close: () => void
-  /** An order about another lord: to offer or accept an alliance, renew it, or break it. */
-  treat: (type: 'ally' | 'breakAlliance', target: number) => void
-  /** The camera: one step closer (1) or farther (-1), back to the player's land. */
-  zoom: (step: 1 | -1) => void
-  home: () => void
-}
-
+export type { GameHandle } from './handle'
 export type { Summary } from './summary'
 export type { Aim } from './aiming'
 export type { News } from './news'
+export type { Herald, Heralds } from './heralds'
 export { prepareGame, randomSeed } from './ahead'
 export { faces } from './faces'
 
@@ -96,6 +86,7 @@ export async function mountGame(
     : startSession(grid, land.seed, me, hooks.level)
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
+  const heralds = makeHeralds(scene.world, () => app.screen)
 
   const home = () => (me < 0 ? null : landBox(state, me))
   const camera = makeCamera(app, scene.world, land, home)
@@ -178,6 +169,7 @@ export async function mountGame(
     // Farther than the whole land, the names shrink with it (the director never goes so far).
     const far = director ? 1 : Math.min(1, camera.level())
     scene.draw(hovered, hand.hand, camera.zoom(), between, far)
+    if (!director) heralds.show(scene.anchors())
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
@@ -231,6 +223,7 @@ export async function mountGame(
     close: unpin,
     zoom: (step) => camera.zoomBy(step),
     home: () => camera.home(),
+    heralds: heralds.listen,
     treat(type, target) {
       session.send({ player: me, type, target })
       unpin()

@@ -178,6 +178,14 @@
   }
 }
 
+/* norm-ok: a seal to press, in its last moments, glows and dims slowly (the game's art direction). */
+@keyframes hud-glow {
+  50% {
+    filter: drop-shadow(0 0 8px var(--color-gilt-light))
+      drop-shadow(0 0 2px var(--color-gilt));
+  }
+}
+
 @keyframes fade {
   from {
     opacity: 0;
@@ -221,6 +229,10 @@
   .hud-enter {
     animation: hud-enter var(--duration-hud-enter) var(--ease-hud) both;
   }
+  /* What waits on the map for a click: its glow comes and goes. */
+  .hud-glow {
+    animation: hud-glow 1.4s ease-in-out infinite;
+  }
   .hud-figure {
     @apply font-figures font-extrabold text-quill;
     font-variant-numeric: lining-nums tabular-nums;
@@ -255,7 +267,8 @@
 @media (prefers-reduced-motion: reduce) {
   .rise-in,
   .fade-in,
-  .hud-enter {
+  .hud-enter,
+  .hud-glow {
     animation: none;
   }
   .hud-press,
