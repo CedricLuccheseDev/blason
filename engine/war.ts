@@ -129,6 +129,7 @@ export function attack(
   const target = state.owner[tile]
   state.hosts.push({
     owner: player,
+    army,
     target,
     men,
     aim: tile,
@@ -177,10 +178,25 @@ function fight(state: GameState, host: Host, tile: number): boolean {
   return paid === cost
 }
 
+/** How far an army goes on the march a tick, in thousandths of a tile: the armies' pace, faster for a raid, slower for the levy. */
+export function paceOf(state: GameState, host: Host): number {
+  return Math.floor(
+    (state.rules.marchPace * state.rules.armySpeed[host.army]) / 100,
+  )
+}
+
+/** The tiles an army may take this tick: the front's pace at its army's speed, the fraction carried tick to tick. */
+function strideOf(state: GameState, host: Host): number {
+  const per = state.rules.paceTiles * state.rules.armySpeed[host.army]
+  const t = state.tick - host.departs
+  return Math.floor(((t + 1) * per) / 100) - Math.floor((t * per) / 100)
+}
+
 /** One tick of an army: it takes the next tiles it can pay for, a few at most. */
 function march(state: GameState, host: Host) {
   const taken: Array<number> = []
-  while (taken.length < state.rules.paceTiles && host.men > 0) {
+  const stride = strideOf(state, host)
+  while (taken.length < stride && host.men > 0) {
     const next = pop(host.queue)
     if (!next) break
     const tile = next[1]
@@ -200,7 +216,7 @@ function march(state: GameState, host: Host) {
 function walk(state: GameState, host: Host) {
   const next = Math.min(
     host.road.length - 1,
-    Math.floor((host.along + state.rules.marchPace) / 1000),
+    Math.floor((host.along + paceOf(state, host)) / 1000),
   )
   for (let i = Math.floor(host.along / 1000) + 1; i <= next; i++) {
     const tile = host.road[i]
@@ -219,7 +235,7 @@ function walk(state: GameState, host: Host) {
   }
   host.along = Math.min(
     (host.road.length - 1) * 1000,
-    host.along + state.rules.marchPace,
+    host.along + paceOf(state, host),
   )
 }
 

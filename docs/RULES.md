@@ -44,8 +44,10 @@ Every lord starts with 50 gold.
 
 ## War
 
-- Three armies, which differ only by their size: the **raid** takes 10 % of
-  the peasants, the **host** 25 % and the **levy** 50 % (keys 1 to 3).
+- Three armies, which differ by their size and their pace: the **raid**
+  takes 10 % of the peasants and goes a quarter faster, the **host** 25 % at
+  the common pace, the **levy** 50 % and goes a quarter slower, on the march
+  and at the front alike (keys 1 to 3).
 - A left click on another's land, or on free land, raises the army in hand
   at the lord's free **village** nearest the front: each village levies one
   army at a time from its people, so a lord has as many armies out as he has

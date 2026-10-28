@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
+import { paceOf } from '../../../engine'
 import { playerColor } from '../palette'
 import { siteOf } from '../marks'
 import { drawRoad } from '../roads'
@@ -30,7 +31,7 @@ export function pathOf(state: GameState, host: Host): Array<Spot> {
 /** How far along its road an army's head is, in tiles, so far into the next tick. */
 export function headOf(state: GameState, host: Host, between: number) {
   const end = host.road.length - 1
-  const moved = host.fighting ? 0 : state.rules.marchPace * between
+  const moved = host.fighting ? 0 : paceOf(state, host) * between
   return Math.min(end, (host.along + moved) / 1000)
 }
 

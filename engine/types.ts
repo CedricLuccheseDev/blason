@@ -57,6 +57,8 @@ type Building = { work: Work; tile: number; owner: number; ready?: number }
  */
 export type Host = {
   owner: number
+  /** Which army it is: its share of the peasants, and its pace. */
+  army: Army
   target: number
   men: number
   /** The tile clicked, and the tile it entered by. */
