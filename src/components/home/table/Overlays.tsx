@@ -99,7 +99,7 @@ export function DieAndBoard({ touch }: Readonly<{ touch: Touch }>) {
         <Hit pick={{ kind: 'die' }} label={t.die} touch={touch} round />
       </div>
       <div className="ovi" data-ov="die-word">
-        <span className="lbl" aria-hidden="true">
+        <span className="die-word" aria-hidden="true">
           {t.dieWord}
         </span>
       </div>

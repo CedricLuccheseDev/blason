@@ -135,7 +135,7 @@
 }
 
 /* A little word set by a thing: the die's. */
-.lbl {
+.die-word {
   transform-origin: 50% 0;
   white-space: nowrap;
   font-style: italic;
