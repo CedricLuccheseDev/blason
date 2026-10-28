@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
+import { standing } from '../../engine'
 import { drawVillage } from './art/settlements'
 import { drawWork } from './art/works'
 import type { Box } from './camera'
@@ -52,6 +53,12 @@ export function makeMarks(state: GameState) {
       const out = new Set(state.hosts.map((h) => h.from))
       for (const [tile, drawn] of barracks)
         drawn.alpha = out.has(tile) ? 0.55 : 1
+      // A work being built stands pale until it is done (layers/building.ts).
+      state.works.forEach((work, i) => {
+        const drawn = works.children[i] as Container | undefined
+        if (drawn && !standing(state, work)) drawn.alpha = 0.4
+        else if (drawn && work.work !== 'barracks') drawn.alpha = 1
+      })
     },
   }
 }

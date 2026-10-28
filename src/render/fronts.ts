@@ -5,11 +5,10 @@ import { pointOn } from './roads'
 import type { GameState, Host } from '../../engine'
 
 // Where each army stands and which way it faces, read from the game every
-// frame. On the march, its head on its road. At the front, the point its
-// attack has reached on the line from where it entered towards the tile
-// clicked, the click a direction and no halt: the simulation takes the tiles
-// nearest that line first, so the front moves along it, past the click if
-// the army goes on, and never back, however the bulge widens. In a battle,
+// frame. On the march, its head on its road. At the front, the tile its
+// attack has taken furthest towards the click, the click a direction and no
+// halt: the front moves on with the land taken, past the click if the army
+// goes on, and never stands on land the army does not hold. In a battle,
 // its side of the ground halfway between it and the enemy army, facing it:
 // the two armies charge into each other there.
 
@@ -43,7 +42,7 @@ type Battle = { a: Host; b: Host; site: Spot; back: Spot; quiet: number }
 const QUIET = 10
 
 export function makeFronts() {
-  /** How far along its line each army's attack has gone, in map units: it never goes back. */
+  /** The tile each army's attack has reached furthest, while it holds it. */
   const reached = new Map<Host, number>()
   /** The battles going on, each army in one at most, each kept on the ground where it began. */
   const battles = new Map<Host, Battle>()
@@ -61,16 +60,29 @@ export function makeFronts() {
     return { from, dir }
   }
 
-  /** The point an attack has reached on its line. */
+  /**
+   * The point an attack has reached: of the tiles it took, the one furthest
+   * towards the click, a little less if it lies far aside; always one it
+   * still holds, so that its men never stand on land it does not have.
+   */
   function front(state: GameState, host: Host): Spot {
     const { from, dir } = axis(state, host)
-    let far = reached.get(host) ?? 0
-    for (const t of host.edge) {
+    const score = (t: number) => {
       const p = siteOf(state, t)
-      far = Math.max(far, (p.x - from.x) * dir.x + (p.y - from.y) * dir.y)
+      const [dx, dy] = [p.x - from.x, p.y - from.y]
+      return dx * dir.x + dy * dir.y - 0.5 * Math.abs(dx * dir.y - dy * dir.x)
     }
-    reached.set(host, far)
-    return { x: from.x + dir.x * far, y: from.y + dir.y * far }
+    let best = reached.get(host)
+    if (best !== undefined && state.owner[best] !== host.owner) best = undefined
+    for (const t of host.edge)
+      if (
+        state.owner[t] === host.owner &&
+        (best === undefined || score(t) > score(best))
+      )
+        best = t
+    if (best === undefined) return siteOf(state, host.entry)
+    reached.set(host, best)
+    return siteOf(state, best)
   }
 
   /** Battles kept while their armies stand and fight, or pause a moment; new ones joined by armies free of any. */

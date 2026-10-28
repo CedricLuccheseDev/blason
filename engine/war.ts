@@ -123,6 +123,7 @@ export function attack(
     road,
     along: 0,
     fighting: false,
+    closing: -1,
   })
 }
 
@@ -190,13 +191,26 @@ function march(state: GameState, host: Host) {
   if (taken.length) host.edge = [...taken, ...host.edge].slice(0, 9)
 }
 
-/** An army on its road a tick further; its road cut under it, it goes home. */
+/**
+ * An army on its road a tick further. Its road cut by the lord it marches
+ * on, it strikes him from where it stands; cut by anyone else, it goes home.
+ */
 function walk(state: GameState, host: Host) {
   const next = Math.min(
     host.road.length - 1,
     Math.floor((host.along + state.rules.marchPace) / 1000),
   )
-  if (state.owner[host.road[next]] !== host.owner) {
+  for (let i = Math.floor(host.along / 1000) + 1; i <= next; i++) {
+    const tile = host.road[i]
+    const owner = state.owner[tile]
+    if (owner === host.owner) continue
+    if (owner === host.target) {
+      host.road = host.road.slice(0, i)
+      host.along = (host.road.length - 1) * 1000
+      host.entry = tile
+      host.queue = [[0, tile]]
+      return
+    }
     state.players[host.owner].peasants += host.men
     host.men = 0
     return

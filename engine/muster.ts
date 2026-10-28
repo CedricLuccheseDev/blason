@@ -1,4 +1,5 @@
 import { apart, around } from './grid'
+import { standing } from './land'
 import type { GameState, Host } from './types'
 
 // Raising an army: each barracks sends one army at a time, so a lord has as
@@ -15,7 +16,11 @@ export function freeBarracks(
   const busy = new Set(state.hosts.map((h) => h.from))
   return state.works
     .filter(
-      (w) => w.owner === lord && w.work === 'barracks' && !busy.has(w.tile),
+      (w) =>
+        w.owner === lord &&
+        w.work === 'barracks' &&
+        standing(state, w) &&
+        !busy.has(w.tile),
     )
     .map((w) => w.tile)
     .sort(

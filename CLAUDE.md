@@ -59,7 +59,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ;
     `grid.ts` les tuiles ; `land.ts` les domaines libres, le départ et les paysans ; `muster.ts` la levée aux casernes
-    et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ;
+    et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.
   - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.

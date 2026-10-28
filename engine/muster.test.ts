@@ -41,4 +41,27 @@ describe('the armies raised at the barracks', () => {
     run(state, 20)
     expect(state.owner[15]).toBe(0)
   })
+
+  it('strike from where they stand when the lord they march on cuts their road', () => {
+    // Lord 1 marches from the far end of his row on lord 0, who takes the middle of it.
+    const state = playing(field(30))
+    hold(
+      state,
+      0,
+      Array.from({ length: 10 }, (_, t) => t),
+    )
+    hold(
+      state,
+      1,
+      Array.from({ length: 20 }, (_, t) => t + 10),
+    )
+    muster(state, 1, 29)
+    endow(state, 0, 40)
+    endow(state, 1, 800)
+    run(state, 1, [attack(1, 5, 'host')])
+    hold(state, 0, [18, 19, 20, 21])
+    // At a walk it reaches the cut and takes back the land there, instead of going home.
+    run(state, 20)
+    expect([18, 19, 20, 21].map((t) => state.owner[t])).toEqual([1, 1, 1, 1])
+  })
 })

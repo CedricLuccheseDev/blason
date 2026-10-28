@@ -27,7 +27,8 @@ type Lord = {
 }
 
 /** Something a lord built on a tile of his: it passes to whoever takes the tile. */
-type Building = { work: Work; tile: number; owner: number }
+/** A work on its tile; while it is being built, the tick it is done (none once it stands). */
+type Building = { work: Work; tile: number; owner: number; ready?: number }
 
 /**
  * An army raised against a lord or a free domain: it enters by the border
@@ -50,8 +51,10 @@ export type Host = {
   from: number
   road: Array<number>
   along: number
-  /** Whether it is fighting another army this tick, and stands still. */
+  /** Whether an enemy army is upon it this tick: it stands, and goes to meet it. */
   fighting: boolean
+  /** Ticks before the blows begin, the two armies walking to meet each other; -1 with no enemy upon it. */
+  closing: number
 }
 
 /** Two lords who may not strike each other, until it runs out. */

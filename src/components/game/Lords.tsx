@@ -1,4 +1,6 @@
 import { Shield } from '../hud/Emblem'
+import { Icon } from '../hud/Figure'
+import { ICON } from '../hud/tokens'
 import { Sheet } from '../hud/Sheet'
 import { count, hex } from './format'
 import type { Summary } from '~/render/client'
@@ -10,7 +12,8 @@ const SHOWN = 8
 /**
  * Bottom left, the lords still standing, as on OpenFront: the first by
  * their share of the land, the player among them or under them, each with
- * his shield, his share and his men; the lord under the pointer stands out
+ * his shield, his share and his men, the links of an ally, the broken shield
+ * of a traitor; the lord under the pointer stands out
  * in the list as on the map.
  */
 export function Lords({
@@ -50,6 +53,8 @@ export function Lords({
               {m.game.colors[lord.key]}
               {self && <span className="hud-note"> ({m.lord.you})</span>}
             </span>
+            {lord.allied && <Icon name="links" size={ICON.s} />}
+            {lord.felon && <Icon name="felon" size={ICON.s} />}
             <span className="hud-figure text-hud-s w-9 text-right">
               {m.game.percent(lord.share)}
             </span>

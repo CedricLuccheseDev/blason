@@ -1,13 +1,21 @@
 import { Container, Graphics } from 'pixi.js'
-import { canBuild, canStart, entryFor } from '../../../engine'
+import {
+  canBuild,
+  canStart,
+  entryFor,
+  freeBarracks,
+  roadTo,
+} from '../../../engine'
+import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
 import type { GameState, Work } from '../../../engine'
 
 // What a click on the tile under the pointer would do. Against another's
-// land or free land: where the army would enter, ringed, and a dotted line
-// from there to the tile aimed at. With a work in hand: its drawing on the
+// land or free land: the road the army would march from its barracks to
+// the border, where it would enter, ringed, and a dotted line from there to
+// the tile aimed at. With a work in hand: its drawing on the
 // tile, the castle's circle, red where it may not stand,
 // with the works already standing ringed in red. In the opening:
 // the free domain one would start on, whole. Sized on screen.
@@ -20,13 +28,26 @@ export function makeAim(state: GameState, me: number) {
   const ghost = container.addChild(new Graphics())
   ghost.alpha = 0.85
   const color = playerColor(me)
-  let read = { key: '', entry: -1 }
+  let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** Where an army would enter, read again only when the pointer or the land moves. */
+  /** The road the army would march from the free barracks nearest the front, as it would be drawn; none if no barracks is free. */
+  function roadOf(entry: number): Array<At> {
+    if (entry < 0) return []
+    for (const barracks of freeBarracks(state, me, entry)) {
+      const road = roadTo(state, me, barracks, entry)
+      if (road) return drawRoad(state, road, (t) => state.owner[t] === me, 0)
+    }
+    return []
+  }
+
+  /** Where an army would enter, and its road there, read again only when the pointer or the land moves. */
   function entryAt(tile: number) {
     const key = `${tile}:${state.tick}`
-    if (key !== read.key) read = { key, entry: entryFor(state, me, tile) }
-    return read.entry
+    if (key !== read.key) {
+      const entry = entryFor(state, me, tile)
+      read = { key, entry, road: roadOf(entry) }
+    }
+    return read
   }
 
   function line(a: At, b: At, zoom: number) {
@@ -81,10 +102,13 @@ export function makeAim(state: GameState, me: number) {
   }
 
   function strike(tile: number, zoom: number) {
-    const entry = entryAt(tile)
+    const { entry, road } = entryAt(tile)
     if (entry < 0) return
     const e = siteOf(state, entry)
     const p = siteOf(state, tile)
+    // From the barracks to the border, the road the army would walk, then on to the tile aimed at.
+    for (let i = 1; i < road.length; i++) line(road[i - 1], road[i], zoom)
+    if (road.length > 0) line(road[road.length - 1], e, zoom)
     line(e, p, zoom)
     marks
       .circle(e.x, e.y, 7 / zoom)

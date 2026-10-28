@@ -1,4 +1,5 @@
 import { around } from './grid'
+import { standing } from './land'
 import { isAllied, isFriendly } from './diplomacy'
 import { NEUTRAL } from './types'
 import type { GameState } from './types'
@@ -68,7 +69,7 @@ function roadFrom(state: GameState, market: number): Array<number> | null {
 export function sendCaravans(state: GameState) {
   const { caravanTicks, caravanGold, allyTrade } = state.rules
   for (const work of state.works) {
-    if (work.work !== 'market') continue
+    if (work.work !== 'market' || !standing(state, work)) continue
     if ((state.tick + work.tile * 7) % caravanTicks !== 0) continue
     if (state.caravans.some((c) => c.road[0] === work.tile)) continue
     const road = roadFrom(state, work.tile)

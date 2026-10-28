@@ -19,7 +19,8 @@ const paths = new WeakMap<Host, Array<Spot>>()
 /** An army's road as it is drawn, in straight lines over its lord's land, made once: its land may change under it, the drawing does not. */
 export function pathOf(state: GameState, host: Host): Array<Spot> {
   let path = paths.get(host)
-  if (!path) {
+  // A road cut short under the army is drawn again, as far as it goes now.
+  if (!path || path.length !== host.road.length) {
     path = drawRoad(state, host.road, (t) => state.owner[t] === host.owner, 0)
     paths.set(host, path)
   }

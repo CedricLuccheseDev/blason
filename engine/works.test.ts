@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { UNIT } from './units'
-import { endow, field, hold, playing } from './testing'
+import { capOf } from './land'
+import { endow, field, hold, playing, run } from './testing'
 import { build, priceOf } from './works'
 
 describe('the works', () => {
@@ -28,5 +29,21 @@ describe('the works', () => {
     build(state, 0, 30, 'castle')
     const castles = state.works.filter((w) => w.work === 'castle')
     expect(castles.map((w) => w.tile)).toEqual([14, 30])
+  })
+
+  it('take their time to build, and serve only once done', () => {
+    // Lord 0 holds half the row, short of winning, so that time runs.
+    const state = playing(field(20))
+    hold(
+      state,
+      0,
+      Array.from({ length: 10 }, (_, i) => i),
+    )
+    hold(state, 1, [15])
+    endow(state, 0, 0, 1000)
+    build(state, 0, 0, 'village')
+    expect(capOf(state, 0)).toBe(0)
+    run(state, state.rules.buildTicks.village)
+    expect(capOf(state, 0)).toBe(state.rules.peasants.village * UNIT)
   })
 })

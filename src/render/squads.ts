@@ -44,8 +44,8 @@ export type Shape =
 const ROOM = 3.6
 const DEPTH = 3.4
 const STRIDE = 4
-/** A man's pace when he runs to his place, in map units a second, a charge at most however far he is; nearer than so much, he stands. */
-const RUN = 30
+/** A man's pace to his place, in map units a second: the armies' march (6 tiles a second), however far he is; nearer than so much, he stands. */
+const RUN = 24
 const STAND = 1.5
 /** Men lost for each man shown falling, and men shown falling a tick at most. */
 const PER_FALL = 10

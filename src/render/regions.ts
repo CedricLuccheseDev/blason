@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import { NEUTRAL, isAllied } from '../../engine'
+import { NEUTRAL } from '../../engine'
 import { mixColor } from './ease'
 import { flatten } from './geometry'
 import { drawLand } from './layers/lands'
@@ -25,8 +25,6 @@ const RIM = 3
 const RIM_ALPHA = 0.55
 /** How much stone tints the land a castle holds. */
 const STONE_ALPHA = 0.22
-/** The border shared with an ally, in green as the heralds' vert. */
-const ALLY = 0x2f7d3f
 /** How often the lands are traced again, in ms. */
 const EVERY_MS = 200
 
@@ -45,13 +43,8 @@ export function makeRegions(state: GameState, land: World, me: number) {
   const washes = container.addChild(new Container())
   washes.sortableChildren = true
   const stone = container.addChild(new Graphics())
-  /** Each region's outline, as last traced: an ally's is ringed in green. */
-  const outlines = new Map<number, Array<Array<Point>>>()
   const rims = container.addChild(new Container())
   const inks = container.addChild(new Container())
-  const friends = container.addChild(new Graphics())
-  let mine: Array<Array<Point>> = []
-  let pacts = ''
   const mask = container.addChild(drawLand(land))
   container.mask = mask
   // Each tile under the sea near a shore takes the nearest land's region, so the washes reach the coast and the coast clips them.
@@ -125,52 +118,6 @@ export function makeRegions(state: GameState, land: World, me: number) {
       parts.push(rim)
     }
     drawn.set(key, parts)
-    outlines.set(key, loops)
-    if (key === me) mine = loops
-  }
-
-  /**
-   * My allies in green, to be told at a glance: a green line inside each
-   * ally's whole border, and where my land meets his, my border in green too
-   * (the points of my outline whose outside is his).
-   */
-  function befriend() {
-    friends.clear()
-    for (const [key, loops] of outlines) {
-      if (key < 0 || key === me || !isAllied(state, me, key)) continue
-      for (const loop of loops)
-        friends.poly(flatten(inside(loop, RIM + 1.5)), true)
-    }
-    friends.stroke({ width: 1.6, color: ALLY, alpha: 0.85, join: 'round' })
-    for (const loop of mine) {
-      let run: Array<Point> = []
-      loop.forEach((p, i) => {
-        const a = loop[(i + loop.length - 1) % loop.length]
-        const b = loop[(i + 1) % loop.length]
-        const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
-        const out: Point = [
-          p[0] + ((b[1] - a[1]) / d) * 2.5,
-          p[1] - ((b[0] - a[0]) / d) * 2.5,
-        ]
-        const t =
-          Math.floor(out[1] / grid.size) * width +
-          Math.floor(out[0] / grid.size)
-        const other = t >= 0 && t < state.owner.length ? state.owner[t] : -1
-        if (other >= 0 && isAllied(state, me, other)) run.push(p)
-        else {
-          if (run.length > 1) friends.poly(flatten(run), false)
-          run = []
-        }
-      })
-      if (run.length > 1) friends.poly(flatten(run), false)
-    }
-    friends.stroke({
-      width: 2.6,
-      color: ALLY,
-      alpha: 0.9,
-      join: 'round',
-      cap: 'round',
-    })
   }
 
   /** The land each lord's castles hold, tinted with stone. */
@@ -215,9 +162,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
       traced = now
       const { next, dirty } = changes()
       const works = state.works.map((w) => [w.tile, w.owner].join(':')).join()
-      const allied = state.alliances.map((x) => [x.a, x.b].join(':')).join()
-      if (dirty.size === 0 && works === built && allied === pacts) return
-      pacts = allied
+      if (dirty.size === 0 && works === built) return
       const tiles = tilesOf(next, dirty)
       for (const key of dirty)
         if (key !== SEA_KEY && key !== UNSET)
@@ -225,7 +170,6 @@ export function makeRegions(state: GameState, land: World, me: number) {
       keys = next
       built = works
       wall(next)
-      befriend()
     },
   }
 }

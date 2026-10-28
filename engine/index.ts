@@ -17,13 +17,20 @@ export { ARMIES, RULES, WORKS } from './rules'
 export type { Army, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
 export type { Caravan, GameState, Grid, Host, Order } from './types'
-export { canStart, capOf, createGame, hasPicked, worksOf } from './land'
+export {
+  canStart,
+  capOf,
+  createGame,
+  hasPicked,
+  standing,
+  worksOf,
+} from './land'
 export { nextDrop, step, victoryShare } from './step'
 
 // What the screen and the bots ask of the rules.
 export { costOf, entryFor, menFor } from './war'
 export { canBuild, priceOf } from './works'
-export { marching } from './muster'
+export { freeBarracks, marching, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
 
 // The bots, players like the others.

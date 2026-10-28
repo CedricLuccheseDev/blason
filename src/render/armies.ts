@@ -147,8 +147,14 @@ export function makeArmies(stamps: Stamps, me: number) {
       const { front } = army
       if (!front?.line || army.gone || told.has(host)) continue
       if (front.foe) told.add(front.foe)
+      // The dust rises where the men stand, which never jump, before them.
+      const men = middle(army.troops.men)
+      if (!men) continue
       drawn.push({
-        at: front.line,
+        at: {
+          x: men.x + front.facing.x * GAP,
+          y: men.y + front.facing.y * GAP,
+        },
         across: { x: -front.facing.y, y: front.facing.x },
         width: Math.ceil(army.troops.men.length / 2) * 3.6,
         alpha: army.troops.alpha,

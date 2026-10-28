@@ -6,6 +6,7 @@ import { assignMissingStarts, grow, pickStart } from './land'
 import { WORKS } from './rules'
 import { NO_ONE } from './types'
 import { clash } from './battle'
+import { enclose } from './enclosure'
 import { advanceHosts, attack } from './war'
 import { build } from './works'
 import type { GameState, Order } from './types'
@@ -101,6 +102,7 @@ export function step(state: GameState, orders: Array<Order> = []) {
     grow(state)
     clash(state)
     advanceHosts(state)
+    enclose(state)
     sendCaravans(state)
     moveCaravans(state)
     expireDiplomacy(state)

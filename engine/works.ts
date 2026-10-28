@@ -36,7 +36,7 @@ export function canBuild(
   })
 }
 
-/** A work on one of the lord's tiles, for its price. */
+/** A work on one of the lord's tiles, for its price; it serves once built. */
 export function build(
   state: GameState,
   lord: number,
@@ -48,5 +48,6 @@ export function build(
   const player = state.players[lord]
   if (player.gold < price) return
   player.gold -= price
-  state.works.push({ work, tile, owner: lord })
+  const ready = state.tick + state.rules.buildTicks[work]
+  state.works.push({ work, tile, owner: lord, ready })
 }

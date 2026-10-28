@@ -14,6 +14,8 @@ import { makeBadges, tilePlaces } from './places'
 import { makeRegions } from './regions'
 import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
+import { makeRaids } from './layers/raids'
+import { makeBuilding } from './layers/building'
 import { makeBarracksSeals } from './layers/barracks'
 import type { GameState, Work, World } from '../../engine'
 import type { Application } from 'pixi.js'
@@ -55,6 +57,8 @@ export function makeScene(
   const badges = makeBadges(state, me)
   const trade = makeTrade(makeStamps(app.renderer), me)
   const tidings = makeTidings(me)
+  const raids = makeRaids()
+  const building = makeBuilding()
   const seals = makeBarracksSeals()
   const world = new Container()
   world.addChild(page.container, drawSea(land), drawLand(land))
@@ -62,9 +66,11 @@ export function makeScene(
   world.addChild(
     regions.container,
     coast,
+    raids.container,
     trade.roads,
     marks.container,
     seals.container,
+    building.container,
     page.frame,
     trade.container,
     armies.container,
@@ -82,15 +88,16 @@ export function makeScene(
     draw(hovered: number, work: Work | null, zoom: number, between = 0) {
       regions.update(performance.now())
       marks.update()
+      raids.draw(state, zoom)
+      building.draw(state, zoom)
       seals.draw(state, zoom)
-      trade.draw(state, zoom, between)
+      trade.draw(state, between)
       armies.draw(state, zoom, between)
       tidings.draw(state, zoom)
       aim.draw(hovered, work, zoom)
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
       labels.update(state, zoom / fit)
-      if (state.tick % 10 === 0 || read.tick === state.tick)
-        badges.update(placesOf(state), zoom / fit)
+      badges.update(labels.nameOf, zoom / fit)
     },
   }
 }

@@ -63,11 +63,14 @@ export type Rules = {
    * Works stand a few tiles apart (workGap), castles further (castleGap).
    */
   workPrice: Record<Work, number>
+  /** Ticks each work takes to build before it serves. */
+  buildTicks: Record<Work, number>
   firstFree: ReadonlyArray<Work>
   priceDoublings: number
   castleGap: number
-  /** Tiles kept between any two works, so that their drawings never lie on one another. */
+  /** Tiles kept between any two works, so that their drawings never lie on one another; between a lord's first village and his first barracks. */
   workGap: number
+  barracksGap: number
   /** An alliance lasts so long; both may renew it in its last moments; an offer waits so long. */
   allianceTicks: number
   renewTicks: number
@@ -108,10 +111,17 @@ export const RULES: Rules = {
   villageEvery: 600,
   castleRadius: 12,
   workPrice: { village: 100, market: 100, barracks: 150, castle: 200 },
+  buildTicks: {
+    village: 10 * SECOND,
+    market: 10 * SECOND,
+    barracks: 12 * SECOND,
+    castle: 20 * SECOND,
+  },
   firstFree: ['village', 'market', 'barracks'],
   priceDoublings: 3,
   castleGap: 10,
   workGap: 4,
+  barracksGap: 10,
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,

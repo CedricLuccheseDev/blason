@@ -86,9 +86,15 @@ export function worksOf(state: GameState, lord: number, work: string) {
   return state.works.filter((w) => w.owner === lord && w.work === work).length
 }
 
-/** The peasants a lord's villages feed: so many each; the land alone feeds none. */
+/** Whether a work stands done and serves: one being built does nothing yet. */
+export const standing = (state: GameState, work: GameState['works'][number]) =>
+  (work.ready ?? 0) <= state.tick
+
+/** The peasants a lord's villages feed, those built: so many each; the land alone feeds none. */
 export function capOf(state: GameState, lord: number): number {
-  const villages = worksOf(state, lord, 'village')
+  const villages = state.works.filter(
+    (w) => w.owner === lord && w.work === 'village' && standing(state, w),
+  ).length
   return state.rules.peasants.village * villages * UNIT
 }
 
@@ -153,9 +159,9 @@ function settle(state: GameState, player: number, tile: number): void {
   })
   state.villages = state.villages.filter((v) => v !== realm)
   state.works.push({ work: 'village', tile: realm, owner: player })
-  // And a barracks near the village, to send his first army from: the
-  // nearest of his tiles far enough from it that the two stand apart.
-  const gap = state.rules.workGap
+  // And a barracks some way from the village, to send his first army from:
+  // the nearest of his tiles that far from it.
+  const gap = state.rules.barracksGap
   let beside: number | undefined
   state.owner.forEach((o, t) => {
     if (o !== player) return

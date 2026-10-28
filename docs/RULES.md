@@ -20,8 +20,8 @@ applies each rule is named beside it.
 ## The opening
 
 For the first 10 seconds each lord chooses where he starts by clicking a free
-domain; he takes it whole, its village included, and a barracks rises near
-that village. A lord who has not chosen is given one when the opening ends.
+domain; he takes it whole, its village included, and a barracks rises some
+10 tiles from that village. A lord who has not chosen is given one when the opening ends.
 Every lord starts with 50 gold.
 
 ## Peasants and gold
@@ -65,9 +65,17 @@ Every lord starts with 50 gold.
   The army fights until it cannot pay the next tile, then its survivors go
   home.
 
-- **Battles**: two enemy armies that come within 8 tiles of each other stop
-  and fight where they meet, until one is gone; an even battle lasts some 4
-  seconds, so that it is seen (`engine/battle.ts`).
+- **Battles**: an army in a lord's land, taking it, and an army of that lord
+  that come within 8 tiles of each other stop and walk to meet halfway, which
+  takes them as long as the way, then fight there until one is gone; an even
+  battle lasts some 4 seconds, so that it is seen. Any other army passes by:
+  none is drawn into a war it was not sent to (`engine/battle.ts`).
+- An army whose road is cut by the lord it marches on strikes him from where
+  it stands; cut by anyone else, it goes home.
+- **Encircled land**: a piece of a lord's land, or of the free land, that
+  touches one lord alone all round (no sea, no edge of the map) passes to him
+  whole, with its works; a lord wholly ringed by one other loses everything.
+  Allies never take each other's land so (`engine/enclosure.ts`).
 
 ## Works
 
@@ -86,6 +94,9 @@ The first village, market and barracks cost nothing, so that a lord can always
 start again from nothing; then each costs double the one before (100 gold for
 the second village or market, 150 for the second barracks). A castle costs 200
 gold, then double. Three doublings at most. A work is taken with its tile.
+
+A work takes time to build, and serves only once done: 10 seconds for a
+village or a market, 12 for a barracks, 20 for a castle.
 
 ## Alliances and traitors
 

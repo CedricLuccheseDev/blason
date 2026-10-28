@@ -44,4 +44,23 @@ describe('the battles', () => {
     const [mine, his] = state.hosts
     expect(200 * 1000 - mine.men).toBe(2 * (200 * 1000 - his.men))
   })
+
+  it('let armies of other wars pass each other by', () => {
+    // Lords 0 and 1 side by side, each striking lord 2, their armies near.
+    const state = playing(field(30, 3), 3)
+    const row = (r: number, from: number, to: number) =>
+      Array.from({ length: to - from }, (_, c) => r * 30 + from + c)
+    hold(state, 0, row(0, 0, 15))
+    hold(state, 1, row(2, 0, 15))
+    hold(state, 2, [...row(1, 0, 30), ...row(0, 15, 30), ...row(2, 15, 30)])
+    muster(state, 0, 14)
+    muster(state, 1, 74)
+    endow(state, 0, 800)
+    endow(state, 1, 800)
+    endow(state, 2, 400)
+    run(state, 1, [attack(0, 59, 'host'), attack(1, 59, 'host')])
+    run(state, 3)
+    expect(state.hosts).toHaveLength(2)
+    expect(state.hosts.some((h) => h.fighting)).toBe(false)
+  })
 })

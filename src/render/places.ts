@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js'
 import { around, isAllied, isFelon } from '../../engine'
 import { drawIcon } from './art/icons'
+import { TONE } from './palette'
 import type { GameState } from '../../engine'
 import type { Placement } from './layers/labels'
 
@@ -77,31 +78,79 @@ function clearOf(state: GameState, lord: number, piece: Piece) {
   return best
 }
 
-/** A badge's size on screen, in pixels. */
-const BADGE = 20
+/** The alliance's green, as the heralds' vert. */
+const ALLY = 0x2f7d3f
 
-/** The marks beside the lords' names: my allies, the traitors. */
+/** A badge's size on screen, in pixels. */
+const BADGE = 24
+
+type Name = { x: number; y: number; half: number; tall: number }
+
+/** The marks beside the lords' names, gliding with them: my allies' links, a traitor's broken shield. */
 export function makeBadges(state: GameState, me: number) {
   const container = new Container()
+  /** Each lord's marks, by the icons they show, drawn again only when these change; the alliance's ring, every time. */
+  const drawn = new Map<
+    number,
+    { icons: string; g: Container; ring: Graphics }
+  >()
+
+  /** The share of my alliance with a lord still to run, 0 to 1. */
+  function left(lord: number): number {
+    const pact = state.alliances.find(
+      (x) => (x.a === me && x.b === lord) || (x.b === me && x.a === lord),
+    )
+    if (!pact) return 0
+    const share = (pact.expires - state.tick) / state.rules.allianceTicks
+    return Math.max(0, Math.min(1, share))
+  }
+
+  function marksOf(lord: number): Array<'links' | 'felon'> {
+    const icons: Array<'links' | 'felon'> = []
+    if (me >= 0 && lord !== me && isAllied(state, me, lord)) icons.push('links')
+    if (isFelon(state, lord)) icons.push('felon')
+    return icons
+  }
+
   return {
     container,
-    update(places: Placement, zoom: number) {
-      container.removeChildren().forEach((c) => c.destroy())
-      for (const [lord, { x, y, size }] of places) {
-        const icons: Array<'links' | 'felon'> = []
-        if (me >= 0 && isAllied(state, me, lord)) icons.push('links')
-        if (isFelon(state, lord)) icons.push('felon')
-        icons.forEach((icon, k) => {
-          const g = container.addChild(new Graphics())
-          drawIcon(g, icon)
-          const s = BADGE / 35 / zoom
-          g.scale.set(s)
-          g.position.set(
-            x + ((k - (icons.length - 1) / 2) * (BADGE + 4)) / zoom,
-            y - (size * 1.25) / zoom,
-          )
-        })
-      }
+    update(nameOf: (lord: number) => Name | null, zoom: number) {
+      state.players.forEach((_, lord) => {
+        const icons = marksOf(lord)
+        const key = icons.join()
+        let mark = drawn.get(lord)
+        if (mark?.icons !== key) {
+          mark?.g.destroy({ children: true })
+          const g = container.addChild(new Container())
+          icons.forEach((icon, k) => {
+            const one = g.addChild(new Graphics())
+            drawIcon(one, icon)
+            one.position.set(k * 40, 0)
+          })
+          const ring = g.addChild(new Graphics())
+          mark = { icons: key, g, ring }
+          drawn.set(lord, mark)
+        }
+        const name = nameOf(lord)
+        mark.g.visible = name !== null && icons.length > 0
+        if (!name) return
+        const s = BADGE / 35 / zoom
+        mark.g.scale.set(s)
+        mark.g.position.set(
+          name.x + name.half + 6 / zoom,
+          name.y - BADGE / 2 / zoom,
+        )
+        // Round the links, the time left to the alliance, emptying as it runs out.
+        mark.ring.clear()
+        if (!icons.includes('links')) return
+        const end = -Math.PI / 2 + Math.PI * 2 * left(lord)
+        mark.ring
+          .circle(0, 0, 16)
+          .stroke({ width: 3, color: TONE.ink, alpha: 0.25 })
+          .moveTo(0, -16)
+          .arc(0, 0, 16, -Math.PI / 2, end)
+          .stroke({ width: 3.4, color: ALLY, cap: 'round' })
+      })
     },
   }
 }

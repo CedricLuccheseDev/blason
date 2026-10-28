@@ -166,6 +166,18 @@ export function makeLabels<TState extends { tick: number }>(
 
   return {
     container,
+    /** Where a lord's name is drawn now, and its half width and height, in map units; none while he is not written. */
+    nameOf(lord: number) {
+      const label = labels.get(lord)
+      if (!label?.box.visible || !label.shown) return null
+      const { name, shown } = label
+      return {
+        x: shown.x + name.x,
+        y: shown.y + name.y,
+        half: name.width / 2,
+        tall: name.height,
+      }
+    },
     update(state: TState, zoom: number) {
       const now = Math.floor(state.tick / BEAT)
       let moved = zoom !== placed
