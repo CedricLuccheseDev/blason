@@ -6,7 +6,8 @@ import { useMessages } from '~/i18n'
 
 // A sheet laid over the home for one thing to set (the solo game, a private
 // room), as OpenFront's dialogs: the browser's own modal dialog, so the
-// keyboard stays inside it and Escape puts it down.
+// keyboard stays inside it and Escape puts it down. The control marked
+// `data-first` takes the keyboard as it opens.
 
 export function Dialog({
   open,
@@ -25,7 +26,11 @@ export function Dialog({
   useEffect(() => {
     const dialog = ref.current
     if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
+    if (open && !dialog.open) {
+      dialog.showModal()
+      // The browser hands the keyboard to the first control; a sheet may name another.
+      dialog.querySelector<HTMLElement>('[data-first]')?.focus()
+    }
     if (!open && dialog.open) dialog.close()
   }, [open])
 

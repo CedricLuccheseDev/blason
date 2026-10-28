@@ -32,10 +32,9 @@ export function PrivateRoom({
   const boxes = useRef<Array<HTMLInputElement | null>>([])
   const shown = inside ? room.lobby.room.split('') : typed
 
-  // The host's room is made as the sheet opens; a friend starts typing.
+  // The host's room is made as the sheet opens; a friend types (Dialog.tsx gives him the first box).
   useEffect(() => {
     if (way === 'create') actions.join('new')
-    else boxes.current[0]?.focus()
   }, [way])
 
   // The code typed whole: the room is joined.
@@ -72,6 +71,7 @@ export function PrivateRoom({
                 autoCapitalize="characters"
                 spellCheck={false}
                 aria-label={t.char(i + 1)}
+                data-first={i === 0 && way === 'join' ? true : undefined}
                 onChange={(e) => type(i, e.target.value)}
                 onKeyDown={(e) => back(i, e)}
                 className={BOX}
