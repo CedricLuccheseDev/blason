@@ -145,8 +145,10 @@ export function holdOf(state: GameState, tile: number): number {
   return Math.floor((density(state, owner) * mark) / 100)
 }
 
-/** A tile taken: its new lord, and its work. */
+/** A tile taken: its new lord, and its work; a free one, a little gold. */
 function take(state: GameState, host: Host, tile: number) {
+  if (state.owner[tile] === NEUTRAL)
+    state.players[host.owner].gold += state.rules.neutralGold
   for (const work of state.works)
     if (work.tile === tile) work.owner = host.owner
   setOwner(state, tile, host.owner)

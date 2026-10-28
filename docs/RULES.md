@@ -15,7 +15,8 @@ applies each rule is named beside it.
 - Once the opening is over, the free domains and their villages are gone:
   what no lord holds is one **free land**. It only defends itself, by its
   villagers: each free tile is held by half the men that hold the mean lord's
-  tile (`engine/war.ts`). Taking it gives land, nothing else.
+  tile (`engine/war.ts`). Each free tile taken brings 0.1 gold: some 60 for
+  what was a domain.
 
 ## The opening
 
