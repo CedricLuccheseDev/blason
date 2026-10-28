@@ -95,8 +95,12 @@ orders. It decides nothing about the rules.
 - `scene.ts` stacks the layers: the page and its frame, the sea and its shore
   lines, the lands (`regions.ts`, traced around their tiles by `trace.ts` and
   inked with a trembling pen, `pen.ts`), the works (`marks.ts`, `art/`), the
-  armies, their columns on the march and their battles (`armies.ts`,
-  `layers/column.ts`, `layers/melee.ts`), the caravans and their roads
+  armies, followed from frame to frame so that nothing jumps (`armies.ts`,
+  `tracks.ts`), their columns on the march (`layers/column.ts`), their fights
+  against peasants or other armies (`layers/melee.ts`), the dead
+  (`layers/fallen.ts`), the warning of an army coming for the player
+  (`layers/warning.ts`) and the pill of their men (`layers/pill.ts`); the
+  barracks' seals (`layers/barracks.ts`), the caravans and their roads
   (`trade.ts`), what the player's works bring (`layers/tidings.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
   (`layers/aim.ts`) and the parchment's grain (`layers/paper.ts`).
 - `camera.ts` is the player's camera; `director.ts` is the spectator's, which

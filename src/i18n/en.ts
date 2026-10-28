@@ -75,8 +75,8 @@ export const en = {
   },
   news: {
     attacked: 'strikes you',
-    took: (tiles: number) => `you take ${tiles} of his tiles`,
-    lost: (tiles: number) => `takes ${tiles} of your tiles`,
+    took: (tiles: number) => `you took ${tiles} of his tiles`,
+    lost: (tiles: number) => `took ${tiles} of your tiles`,
     betrayed: 'broke your alliance',
     fell: 'has fallen',
   },
@@ -84,6 +84,8 @@ export const en = {
     allied: 'Your ally',
     atWar: 'At war with you',
     felon: 'Traitor',
+    list: 'The lords',
+    you: 'you',
   },
   camera: {
     zoomIn: 'Closer',

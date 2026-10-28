@@ -19,7 +19,7 @@ applies each rule is named beside it.
 ## The opening
 
 For the first 10 seconds each lord chooses where he starts by clicking a free
-domain; he takes it whole, its village included, and a barracks rises beside
+domain; he takes it whole, its village included, and a barracks rises near
 that village. A lord who has not chosen is given one when the opening ends.
 Every lord starts with 50 gold.
 
@@ -71,8 +71,8 @@ Every lord starts with 50 gold.
 ## Works
 
 Four works, one resource each, placed anywhere on one's own land (keys 4 to
-7), one a tile, side by side if need be; castles alone stand at least 10 tiles
-from one another (`engine/works.ts`):
+7), at least 4 tiles from any other work so that none lies on another;
+castles stand at least 10 tiles from one another (`engine/works.ts`):
 
 - the **village** feeds 250 peasants;
 - the **market** sends the caravans that bring the gold;

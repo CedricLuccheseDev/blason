@@ -9,7 +9,7 @@ import type { GameState, Grid } from '../../engine'
 // drawings (a village in its fields, a castle, a market). The land a castle
 // holds is not ringed here: the territory tints it with stone. Drawn again
 // when a work is built or changes hands. A barracks whose army is out stands
-// faded, empty until it comes home.
+// faded until it comes home; its seal says so (layers/barracks.ts).
 
 export function makeMarks(state: GameState) {
   const container = new Container()
@@ -51,7 +51,7 @@ export function makeMarks(state: GameState) {
       }
       const out = new Set(state.hosts.map((h) => h.from))
       for (const [tile, drawn] of barracks)
-        drawn.alpha = out.has(tile) ? 0.4 : 1
+        drawn.alpha = out.has(tile) ? 0.55 : 1
     },
   }
 }

@@ -6,8 +6,8 @@ import type { GameState } from './types'
 
 // The works, one resource each: a village feeds the peasants, a market
 // brings gold, a barracks sends the armies, a castle makes the land round it
-// hold three times better. Built anywhere on one's own land, one a tile, side
-// by side if need be, castles alone kept apart. The first village, market and
+// hold three times better. Built anywhere on one's own land, a few tiles
+// from any other work so that none lies on another, castles further apart. The first village, market and
 // barracks cost nothing, so that a lord can always start again from nothing;
 // each one more costs double the one before.
 
@@ -21,7 +21,7 @@ export function priceOf(state: GameState, lord: number, work: Work): number {
   return workPrice[work] * (1 << doublings)
 }
 
-/** Whether the lord may build this work on the tile: his own, bare, and a castle clear of every other castle. */
+/** Whether the lord may build this work on the tile: his own, a few tiles from any work, and a castle clear of every other castle. */
 export function canBuild(
   state: GameState,
   lord: number,
@@ -29,12 +29,11 @@ export function canBuild(
   work: Work,
 ): boolean {
   if (state.owner[tile] !== lord) return false
-  if (state.works.some((w) => w.tile === tile)) return false
-  if (work !== 'castle') return true
-  const gap = state.rules.castleGap
-  return state.works.every(
-    (w) => w.work !== 'castle' || apart(state.grid, w.tile, tile) >= gap * gap,
-  )
+  const { castleGap, workGap } = state.rules
+  return state.works.every((w) => {
+    const gap = work === 'castle' && w.work === 'castle' ? castleGap : workGap
+    return apart(state.grid, w.tile, tile) >= gap * gap
+  })
 }
 
 /** A work on one of the lord's tiles, for its price. */

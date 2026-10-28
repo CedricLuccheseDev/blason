@@ -4,9 +4,11 @@ import { TONE } from '../palette'
 import type { Point } from '../../../engine'
 import type { Stamps } from '../textures'
 
-// A battle as the player watches it: two ranks of soldiers in their lords'
-// colours face each other across the border, each man lunging in and
-// stepping back on his own beat, in a cloud of dust struck with sparks.
+// A battle as the player watches it: two ranks in their lords' colours face
+// each other across the border, soldiers against soldiers, or soldiers
+// against the peasants who hold the land with their pitchforks, each man
+// lunging in and stepping back on his own beat, in a cloud of dust struck
+// with sparks.
 // The ranks grow with the armies by orders of magnitude: a handful of men
 // for a skirmish, a wall of them for a great battle. Drawn at the map's
 // scale: they grow and shrink with the zoom, in proportion to the land.
@@ -25,12 +27,18 @@ const DUST = 0xb59a72
 export const rankOf = (count: number) =>
   Math.max(2, Math.min(9, 2 + Math.floor(Math.log2(1 + (count * 10) / 6))))
 
+/** What a side of a fight is made of: an army's soldiers, or the peasants who hold their land. */
+export type Kind = 'soldier' | 'peasant'
+
 export type Clash = {
   at: Point
   /** From the defended land towards the attacker, of length one. */
   out: Point
   colors: [attacker: number, defender: number]
   ranks: [attacker: number, defender: number]
+  kinds: [attacker: Kind, defender: Kind]
+  /** How far it has faded in, 0 to 1: a fight comes and goes, it never blinks. */
+  alpha: number
   seed: number
 }
 
@@ -44,10 +52,11 @@ export function makeMelee(stamps: Stamps, scale = WORLD) {
   const pool: Array<Sprite> = []
   let used = 0
 
-  function man(color: number): Sprite {
+  function man(color: number, kind: Kind, alpha: number): Sprite {
     const sprite = pool[used] ?? troops.addChild(new Sprite())
     pool[used++] = sprite
-    const stamp = stamps.soldier(color)
+    const stamp = stamps[kind](color)
+    sprite.alpha = alpha
     sprite.texture = stamp.texture
     sprite.anchor.set(stamp.anchor.x, stamp.anchor.y)
     sprite.visible = true
@@ -67,7 +76,7 @@ export function makeMelee(stamps: Stamps, scale = WORLD) {
       const lunge = Math.max(0, Math.sin(seconds * 5 + phase)) * 5
       const depth = GAP + (i % 2) * SPACING * 0.7 - lunge
       const lateral = (i - (n - 1) / 2) * SPACING
-      const sprite = man(clash.colors[side])
+      const sprite = man(clash.colors[side], clash.kinds[side], clash.alpha)
       const x = at[0] + (out[0] * sign * depth + along[0] * lateral) * k
       const y = at[1] + (out[1] * sign * depth + along[1] * lateral) * k
       const step = Math.abs(Math.sin(seconds * 9 + phase)) * 1.8 * k
@@ -92,7 +101,7 @@ export function makeMelee(stamps: Stamps, scale = WORLD) {
         at[1] + (along[1] * drift * width * 0.6 - (1 - Math.abs(drift)) * 6) * k
       dust.circle(x, y, (7 + (d % 3) * 3) * k)
     }
-    dust.fill({ color: DUST, alpha: 0.16 })
+    dust.fill({ color: DUST, alpha: 0.16 * clash.alpha })
     for (let s = 0; s < 3; s++) {
       const u = jitter(seed * 3 + s, seconds) * width * 0.5
       const v = jitter(seed * 5 - s, seconds) * 3
@@ -105,7 +114,12 @@ export function makeMelee(stamps: Stamps, scale = WORLD) {
         .moveTo(x, y - r)
         .lineTo(x, y + r)
     }
-    sparks.stroke({ width: 1.1 * k, color: TONE.goldLight, cap: 'round' })
+    sparks.stroke({
+      width: 1.1 * k,
+      color: TONE.goldLight,
+      cap: 'round',
+      alpha: clash.alpha,
+    })
   }
 
   return {

@@ -38,6 +38,10 @@ export function makeRegions(state: GameState, land: World, me: number) {
   const { grid } = state
   const { width, height } = grid
   const container = new Container()
+  // Under the smoothed washes, each region's tiles as they are: where three
+  // regions meet, their rounded corners leave a gap, filled from here.
+  const under = container.addChild(new Container())
+  under.sortableChildren = true
   const washes = container.addChild(new Container())
   washes.sortableChildren = true
   const stone = container.addChild(new Graphics())
@@ -83,13 +87,20 @@ export function makeRegions(state: GameState, land: World, me: number) {
     for (const g of drawn.get(key) ?? []) g.destroy()
     drawn.delete(key)
     if (tiles.length === 0) return
-    const loops = corners(width, height, (t) => now[t] === key, tiles).map(
-      (l) => smooth(l, grid.size),
-    )
+    const raw = corners(width, height, (t) => now[t] === key, tiles)
+    const loops = raw.map((l) => smooth(l, grid.size))
     const color = washOf(key)
+    const base = under.addChild(new Graphics())
+    for (const loop of raw)
+      base
+        .poly(
+          flatten(loop.map(([x, y]): Point => [x * grid.size, y * grid.size])),
+        )
+        .fill(color)
     const wash = washes.addChild(new Graphics())
     for (const loop of loops) wash.poly(flatten(loop)).fill(color)
     wash.zIndex = -spread(loops)
+    base.zIndex = wash.zIndex
     const ink = inks.addChild(new Graphics())
     for (const loop of loops)
       ink.poly(flatten(penned([...loop, loop[0]], 0.35, 3)), false)
@@ -99,7 +110,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
       alpha: key < 0 ? 0.4 : 0.8,
       join: 'round',
     })
-    const parts = [wash, ink]
+    const parts = [base, wash, ink]
     if (key >= 0) {
       const rim = rims.addChild(new Graphics())
       for (const loop of loops) rim.poly(flatten(inside(loop, RIM / 2)))

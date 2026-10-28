@@ -14,6 +14,7 @@ import { makeBadges, tilePlaces } from './places'
 import { makeRegions } from './regions'
 import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
+import { makeBarracksSeals } from './layers/barracks'
 import type { GameState, Work, World } from '../../engine'
 import type { Application } from 'pixi.js'
 import type { Placement } from './layers/labels'
@@ -37,7 +38,7 @@ export function makeScene(
   for (const run of land.coast) coast.poly(flatten(run), false)
   coast.stroke({ width: 1.5, color: TONE.ink, alpha: 0.9, join: 'round' })
   const marks = makeMarks(state)
-  const armies = makeArmies(makeStamps(app.renderer))
+  const armies = makeArmies(makeStamps(app.renderer), me)
   const aim = makeAim(state, me)
   // Where the lords are written, read once a tick for the names and their marks.
   let read = { tick: -1, places: new Map() as Placement }
@@ -54,6 +55,7 @@ export function makeScene(
   const badges = makeBadges(state, me)
   const trade = makeTrade(makeStamps(app.renderer), me)
   const tidings = makeTidings(me)
+  const seals = makeBarracksSeals()
   const world = new Container()
   world.addChild(page.container, drawSea(land), drawLand(land))
   if (page.compass) world.addChild(page.compass)
@@ -61,6 +63,7 @@ export function makeScene(
     regions.container,
     coast,
     marks.container,
+    seals.container,
     page.frame,
     trade.container,
     armies.container,
@@ -78,6 +81,7 @@ export function makeScene(
     draw(hovered: number, work: Work | null, zoom: number, between = 0) {
       regions.update(performance.now())
       marks.update()
+      seals.draw(state, zoom)
       trade.draw(state, zoom, between)
       armies.draw(state, zoom, between)
       tidings.draw(state, zoom)

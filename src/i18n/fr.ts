@@ -76,8 +76,8 @@ export const fr: Messages = {
   },
   news: {
     attacked: 't’attaque',
-    took: (tiles: number) => `tu lui prends ${tiles} tuiles`,
-    lost: (tiles: number) => `te prend ${tiles} tuiles`,
+    took: (tiles: number) => `tu lui as pris ${tiles} tuiles`,
+    lost: (tiles: number) => `t’a pris ${tiles} tuiles`,
     betrayed: 'a rompu votre alliance',
     fell: 'est tombé',
   },
@@ -85,6 +85,8 @@ export const fr: Messages = {
     allied: 'Ton allié',
     atWar: 'En guerre avec toi',
     felon: 'Félon',
+    list: 'Les seigneurs',
+    you: 'toi',
   },
   camera: {
     zoomIn: 'Rapprocher',

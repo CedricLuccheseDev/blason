@@ -1,8 +1,9 @@
 import type { GameState } from '../../engine'
 
-// The news of the last second, for the player's letters: who strikes him,
-// what he took and lost and from whom, an ally who broke faith, a lord who
-// fell. Read once a second by comparing the game with the second before.
+// The news, for the player's letters: who strikes him, an ally who broke
+// faith, a lord who fell, and once a fight with a lord is over, what he took
+// from him and lost to him in all; never the same letter every second. Read
+// once a second by comparing the game with the second before.
 
 export type News =
   | { kind: 'attacked'; lord: number }
@@ -11,12 +12,23 @@ export type News =
   | { kind: 'betrayed'; lord: number }
   | { kind: 'fell'; lord: number }
 
-/** Below so many tiles in a second, a change of hands is not news. */
+/** Below so many tiles in a fight, a change of hands is not news. */
 const NOTABLE = 20
+/** Seconds without a tile changing hands with a lord before the fight with him is told. */
+const QUIET = 3
+/** Seconds a lord who struck may strike again before it is news once more. */
+const AGAIN = 30
 
 export function makeNews(state: GameState, me: number) {
   let owner = Int32Array.from(state.owner)
-  let attackers = new Set<number>()
+  /** When each lord last had an army against me, in seconds read. */
+  const struck = new Map<number, number>()
+  /** Each running fight: the tiles taken and lost with a lord, and the seconds since one changed hands. */
+  const fights = new Map<
+    number,
+    { took: number; lost: number; still: number }
+  >()
+  let second = 0
   let allies = new Set<number>()
   let alive = state.players.map((p) => p.alive)
 
@@ -28,29 +40,50 @@ export function makeNews(state: GameState, me: number) {
       }),
     )
 
+  /** The lords whose armies come for me, told once, and again only after a while. */
+  function strikes(news: Array<News>) {
+    for (const host of state.hosts) {
+      if (host.target !== me) continue
+      const last = struck.get(host.owner)
+      if (last === undefined || second - last > AGAIN)
+        news.push({ kind: 'attacked', lord: host.owner })
+      struck.set(host.owner, second)
+    }
+  }
+
+  /** The tiles changing hands with each lord counted; a fight gone quiet told in all. */
+  function exchanges(news: Array<News>) {
+    for (const fight of fights.values()) fight.still += 1
+    state.owner.forEach((o, t) => {
+      const was = owner[t]
+      const mine = o === me
+      if (o === was || (!mine && was !== me)) return
+      const lord = mine ? was : o
+      if (lord < 0) return
+      const fight = fights.get(lord) ?? { took: 0, lost: 0, still: 0 }
+      if (mine) fight.took += 1
+      else fight.lost += 1
+      fight.still = 0
+      fights.set(lord, fight)
+    })
+    owner = Int32Array.from(state.owner)
+    for (const [lord, fight] of fights) {
+      if (fight.still < QUIET) continue
+      fights.delete(lord)
+      if (fight.took >= NOTABLE)
+        news.push({ kind: 'took', lord, tiles: fight.took })
+      if (fight.lost >= NOTABLE)
+        news.push({ kind: 'lost', lord, tiles: fight.lost })
+    }
+  }
+
   /** What happened since the last reading. */
   function read(): Array<News> {
     if (me < 0) return []
     const news: Array<News> = []
-    const now = new Set(
-      state.hosts.filter((h) => h.target === me).map((h) => h.owner),
-    )
-    for (const lord of now)
-      if (!attackers.has(lord)) news.push({ kind: 'attacked', lord })
-    attackers = now
-    const took = new Map<number, number>()
-    const lost = new Map<number, number>()
-    state.owner.forEach((o, t) => {
-      const was = owner[t]
-      if (o === was) return
-      if (o === me && was >= 0) took.set(was, (took.get(was) ?? 0) + 1)
-      if (was === me && o >= 0) lost.set(o, (lost.get(o) ?? 0) + 1)
-    })
-    owner = Int32Array.from(state.owner)
-    for (const [lord, tiles] of took)
-      if (tiles >= NOTABLE) news.push({ kind: 'took', lord, tiles })
-    for (const [lord, tiles] of lost)
-      if (tiles >= NOTABLE) news.push({ kind: 'lost', lord, tiles })
+    second += 1
+    strikes(news)
+    exchanges(news)
     const bound = alliesOf()
     for (const lord of allies)
       if (!bound.has(lord) && state.players[lord].felonUntil > state.tick)

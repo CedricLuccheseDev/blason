@@ -63,12 +63,14 @@ export type Rules = {
    * Price of each work, in gold, doubled for each one of its kind the lord
    * holds (so many times at most); the first of the kinds in `firstFree`
    * costs nothing, so that a lord can always start again from nothing.
-   * Works stand side by side, castles alone kept so many tiles apart.
+   * Works stand a few tiles apart (workGap), castles further (castleGap).
    */
   workPrice: Record<Work, number>
   firstFree: ReadonlyArray<Work>
   priceDoublings: number
   castleGap: number
+  /** Tiles kept between any two works, so that their drawings never lie on one another. */
+  workGap: number
   /** An alliance lasts so long; both may renew it in its last moments; an offer waits so long. */
   allianceTicks: number
   renewTicks: number
@@ -115,6 +117,7 @@ export const RULES: Rules = {
   firstFree: ['village', 'market', 'barracks'],
   priceDoublings: 3,
   castleGap: 10,
+  workGap: 4,
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,

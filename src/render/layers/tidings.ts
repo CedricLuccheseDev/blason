@@ -6,21 +6,21 @@ import type { Caravan, GameState } from '../../../engine'
 
 // What the player's works bring, written where they bring it: a "+" of gold
 // rises from a market when a caravan arrives there, a "+" of peasants from
-// each village every few seconds while they are born. The player's alone,
+// each village every second while they are born. The player's alone,
 // so that the map does not swarm with figures. Sized on screen.
 
 const SHARP = 8
 /** How long a figure rises, in seconds, and how high, in pixels. */
-const LIFE = 1.6
+const LIFE = 1.2
 const RISE = 22
 /** Seconds between two figures over the villages. */
-const VILLAGE_EVERY = 5
+const VILLAGE_EVERY = 1
 
 const styleOf = (fill: number) =>
   new TextStyle({
     fontFamily: "'Alegreya Sans', 'Trebuchet MS', sans-serif",
     fontWeight: '900',
-    fontSize: 13 * SHARP,
+    fontSize: 16 * SHARP,
     fill,
     stroke: { color: TONE.ink, width: 3 * SHARP, join: 'round' },
   })

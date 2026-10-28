@@ -7,6 +7,7 @@ import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
 import { Aimed } from './Aimed'
+import { Lords } from './Lords'
 import { CameraButtons } from './CameraButtons'
 import { Letters } from './News'
 import { Allies, Offers } from './Pacts'
@@ -113,7 +114,10 @@ export function GameScreen({ me }: Readonly<{ me: number }>) {
               <Letters letters={letters} />
             </div>
             <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-1 max-sm:row-start-5 max-sm:grid-cols-1 max-sm:gap-2">
-              <div className="w-80 max-sm:w-full short:w-60">
+              <div className="flex w-80 flex-col gap-2 max-sm:w-full short:w-60">
+                <div className="max-sm:hidden short:hidden">
+                  <Lords summary={summary} aimed={aim?.lord ?? null} />
+                </div>
                 <Aimed aim={aim} summary={summary} />
               </div>
               <div className="flex justify-center">
