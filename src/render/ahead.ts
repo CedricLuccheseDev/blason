@@ -1,5 +1,5 @@
 import { RULES, generateWorld, makeGrid } from '../../engine'
-import type { Grid, World } from '../../engine'
+import type { Grid, MapSize, World } from '../../engine'
 
 // The next game's land, made ahead while the player is still on the home
 // page, so that the click on Play lands straight in the opening, as on
@@ -8,8 +8,8 @@ import type { Grid, World } from '../../engine'
 export type Land = { land: World; grid: Grid }
 let prepared: Land | null = null
 
-function makeLand(seed: string): Land {
-  const land = generateWorld(seed)
+function makeLand(seed: string, size: MapSize = 'standard'): Land {
+  const land = generateWorld(seed, { size })
   const grid = makeGrid(land.map, land.width, land.height, RULES.tileSize)
   return { land, grid }
 }
@@ -23,9 +23,12 @@ export function prepareGame(): void {
   prepared ??= makeLand(randomSeed())
 }
 
-/** The land for a seed asked for, or the one made ahead, or a new one. */
-export function takeLand(seed: string | null): Land {
-  if (seed) return makeLand(seed)
+/** The land for a seed asked for, or the one made ahead (standard), or a new one. */
+export function takeLand(
+  seed: string | null,
+  size: MapSize = 'standard',
+): Land {
+  if (seed || size !== 'standard') return makeLand(seed ?? randomSeed(), size)
   const made = prepared ?? makeLand(randomSeed())
   prepared = null
   return made

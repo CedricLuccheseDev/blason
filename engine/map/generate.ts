@@ -1,4 +1,5 @@
 import { isqrt } from '../numbers'
+import { MAP_SIZES } from '../rules'
 import { placeBiomes } from './biomes'
 import { makeBorders } from './borders'
 import { buildCells } from './cells'
@@ -8,6 +9,7 @@ import { relax, scatter } from './points'
 import { makeRivers } from './rivers'
 import { pickShape } from './shapes'
 import { findSea, makeTerrain } from './terrain'
+import type { MapSize } from '../rules'
 import type { Biome } from './biomes'
 import type { GameMap } from './types'
 import type { Cells } from './cells'
@@ -24,6 +26,7 @@ type WorldCell = {
 export type World = {
   seed: string
   shape: ShapeKind
+  size: MapSize
   /** The frame of the map, which grows with the sea so a cell keeps its size. */
   width: number
   height: number
@@ -45,10 +48,15 @@ const LAKE_EVERY = 500
 const RIVER_EVERY = 300
 
 /**
- * A land of `scale` times the standard area, its cells the same size: a
- * larger map has more of them, and more lakes, rivers, woods and ranges.
+ * A land of the size asked for (rules.ts, MAP_SIZES), its cells the same
+ * size whatever it is: a larger map has more of them, and more lakes,
+ * rivers, woods and ranges, not larger ones.
  */
-export function generateWorld(seed: string, scale = 1): World {
+export function generateWorld(
+  seed: string,
+  { size = 'standard' }: { size?: MapSize } = {},
+): World {
+  const scale = MAP_SIZES[size]
   const shape = pickShape(seed)
   const count = CELLS * scale
   const area = Math.floor((count * 1000) / (1000 - shape.seaShare)) * CELL_AREA
@@ -96,6 +104,7 @@ export function generateWorld(seed: string, scale = 1): World {
   return {
     seed,
     shape: shape.kind,
+    size,
     width,
     height,
     map,

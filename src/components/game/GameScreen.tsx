@@ -13,7 +13,7 @@ import { Bar } from './Bar'
 import { Moment } from './Moment'
 import type { Letter } from './News'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
-import type { Level } from '../../../engine'
+import type { Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
@@ -36,7 +36,13 @@ export function GameScreen({
   me,
   level,
   online,
-}: Readonly<{ me: number; level: Level; online?: Online }>) {
+  size = 'standard',
+}: Readonly<{
+  me: number
+  level: Level
+  online?: Online
+  size?: MapSize
+}>) {
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
   const [game, setGame] = useState<GameHandle | null>(null)
@@ -78,6 +84,7 @@ export function GameScreen({
           names: PLAYERS.map((p) => m.game.colors[p.key]),
           level,
           online,
+          size,
         })
         if (off()) mounted.destroy()
         else {
@@ -90,7 +97,7 @@ export function GameScreen({
       cancelled = true
       handle?.destroy()
     }
-  }, [me, level, online])
+  }, [me, level, online, size])
 
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it.

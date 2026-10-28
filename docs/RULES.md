@@ -14,6 +14,10 @@ applies each rule is named beside it.
   mountains, hills, woods and plains are drawn only: they change nothing to
   the rules. The land is cut into a fine grid of tiles, four map units a side
   (`engine/grid.ts`), some 53,000 tiles of land.
+- A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
+  huge (four times), chosen by `/play?size=large` or `huge` until the home
+  offers it. Its tiles, cells and free domains keep their size: a larger
+  land has more of them, and more lakes, rivers, ranges and woods.
 - At the start the whole land is shared into **free domains**, each around its
   village, one village for some 600 tiles, for the lords to choose where they
   start (`engine/land.ts`).

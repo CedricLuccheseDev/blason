@@ -3,19 +3,22 @@ import {
   createGame,
   generateWorld,
   makeGrid,
+  MAP_SIZES,
   NEUTRAL,
   NO_ONE,
   RULES,
   step,
   TICKS_PER_SECOND,
 } from '../engine'
-import type { Host, Level } from '../engine'
+import type { Host, Level, MapSize } from '../engine'
 
 // The arena: twenty bots play whole games on a land of small
 // tiles, and the arena tells how long an attack lasts, when the free land is
 // gone, how far ahead the first is, how a game ends. It says whether the
-// game turns; the pleasure is judged by playing.
-// npm run arena -- [games] [players] [easy|normal|hard]
+// game turns; the pleasure is judged by playing. It also times the land's
+// making and each tick (the bots' thinking and the step), and weighs the
+// memory a game holds, which tells what a larger map costs.
+// npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]
 
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
@@ -70,35 +73,48 @@ function watcher(state: ReturnType<typeof createGame>) {
   }
 }
 
-function play(seed: string, players: number, level: Level) {
-  const world = generateWorld(seed)
+const megabytes = () => process.memoryUsage().heapUsed / 1e6
+
+function play(seed: string, players: number, level: Level, size: MapSize) {
+  const made = performance.now()
+  const world = generateWorld(seed, { size })
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
   const state = createGame(grid, players, seed)
+  const making = (performance.now() - made) / 1000
   const bots = state.players.map((_, id) => createBot(id, seed, level))
   const watch = watcher(state)
+  let [busy, worst, heap] = [0, 0, megabytes()]
   while (state.winner === NO_ONE && state.tick < LIMIT) {
+    const start = performance.now()
     step(
       state,
       state.players.flatMap((p, id) => (p.alive ? bots[id](state, id) : [])),
     )
+    const spent = performance.now() - start
+    busy += spent
+    worst = Math.max(worst, spent)
     watch.tick()
+    if (state.tick % MINUTE === 0) heap = Math.max(heap, megabytes())
   }
   const alive = state.players.filter((p) => p.alive).length
   let end = 'unfinished'
   if (state.winner !== NO_ONE) end = alive === 1 ? 'last standing' : 'share'
-  return { seed, minutes: state.tick / MINUTE, end, ...watch.result() }
+  const cost = { making, tick: busy / state.tick, worst, heap }
+  return { seed, minutes: state.tick / MINUTE, end, cost, ...watch.result() }
 }
 
 const write = (text: string) => process.stdout.write(`${text}\n`)
 const cols = (values: Array<string | number>, widths: Array<number>) =>
   values.map((v, i) => String(v).padStart(widths[i])).join(' ')
-const WIDTHS = [9, 7, 10, 10, 7, 6, 15, 14]
+const WIDTHS = [9, 7, 10, 10, 7, 6, 15, 14, 8, 8, 8, 8]
 
 const games = Number(process.argv[2] ?? 4)
 const players = Number(process.argv[3] ?? 20)
 const level = (process.argv[4] ?? 'normal') as Level
+const size = (process.argv[5] ?? 'standard') as MapSize
+if (!(size in MAP_SIZES)) throw new Error(`No map size ${size}`)
 write(
-  `Arena: ${games} games of ${players} ${level} bots on a land of small tiles`,
+  `Arena: ${games} games of ${players} ${level} bots on a ${size} land of small tiles`,
 )
 write(
   cols(
@@ -111,12 +127,16 @@ write(
       '90%',
       'takes/lord/min',
       'end',
+      'land s',
+      'ms/tick',
+      'worst',
+      'heap MB',
     ],
     WIDTHS,
   ),
 )
 for (let i = 0; i < games; i++) {
-  const r = play(`arena-${i}`, players, level)
+  const r = play(`arena-${i}`, players, level, size)
   const leader = Math.round(r.leaderAt10 * 100)
   write(
     cols(
@@ -129,6 +149,10 @@ for (let i = 0; i < games; i++) {
         r.attackLong.toFixed(0) + ' s',
         r.takesPerLordMinute.toFixed(1),
         r.end,
+        r.cost.making.toFixed(1),
+        r.cost.tick.toFixed(1),
+        r.cost.worst.toFixed(0),
+        r.cost.heap.toFixed(0),
       ],
       WIDTHS,
     ),

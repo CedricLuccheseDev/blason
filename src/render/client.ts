@@ -17,7 +17,7 @@ import { makeEarnings } from './earnings'
 import type { Aim } from './aiming'
 import type { News } from './news'
 import type { Room } from './director'
-import type { Army, Coup, Level, Work } from '../../engine'
+import type { Army, Coup, Level, MapSize, Work } from '../../engine'
 import type { Summary } from './summary'
 import type { Online } from './online'
 
@@ -63,6 +63,8 @@ export async function mountGame(
     names: Array<string>
     /** The bots' level, chosen at the home; normal if none. */
     level?: Level
+    /** The land's size; standard if none, and online. */
+    size?: MapSize
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
     /** A game online (online.ts): its land, its turns and my seat come from the relay. */
@@ -70,8 +72,8 @@ export async function mountGame(
   },
 ): Promise<GameHandle> {
   const app = new Application()
-  const { online } = hooks
-  const { land, grid } = takeLand(online?.seed ?? seed)
+  // Online, the standard land: the relay sends no size yet.
+  const { land, grid } = takeLand(hooks.online?.seed ?? seed, hooks.size)
   await app.init({
     preference: 'webgl',
     resizeTo: element,
@@ -83,14 +85,14 @@ export async function mountGame(
     preserveDrawingBuffer: hooks.spectate !== undefined,
   })
   element.appendChild(app.canvas)
-  const session = online
+  const session = hooks.online
     ? startRemoteSession(
         grid,
         land.seed,
         me,
-        online.level,
-        online.players,
-        online.link,
+        hooks.online.level,
+        hooks.online.players,
+        hooks.online.link,
       )
     : startSession(grid, land.seed, me, hooks.level)
   const { state } = session
@@ -213,7 +215,7 @@ export async function mountGame(
       // next game on the page, which a destroyed one would break.
       app.destroy(true, { children: true })
       scene.destroy()
-      online?.link.close()
+      hooks.online?.link.close()
     },
     choose(next) {
       hand.choose(next)

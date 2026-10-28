@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { makeGrid } from '../grid'
+import { RULES } from '../rules'
 import { generateWorld } from './generate'
 import { pickShape } from './shapes'
 import type { ShapeKind } from './shapes'
@@ -125,5 +127,29 @@ describe('the map generator', () => {
       expect(w.rivers.length).toBeGreaterThanOrEqual(3)
       expect(w.rivers.length).toBeLessThanOrEqual(6)
     }
+  })
+
+  it('draws larger lands at larger sizes, their tiles and cells the same, the same from the same seed', () => {
+    const tiles = (w: typeof world) =>
+      makeGrid(w.map, w.width, w.height, RULES.tileSize).area
+    const standard = tiles(world)
+    const large = generateWorld('valbrune', { size: 'large' })
+    const huge = generateWorld('valbrune', { size: 'huge' })
+    expect(world.size).toBe('standard')
+    expect(large.size).toBe('large')
+    expect(tiles(large) / standard).toBeGreaterThan(1.8)
+    expect(tiles(large) / standard).toBeLessThan(2.2)
+    expect(tiles(huge) / standard).toBeGreaterThan(3.6)
+    expect(tiles(huge) / standard).toBeLessThan(4.4)
+    for (const w of [large, huge]) {
+      const area = (w.width * w.height) / (w.map.land.length + w.map.sea.length)
+      expect(area).toBeGreaterThan(380)
+      expect(area).toBeLessThan(490)
+      expect(pieces(w.map.land)).toBe(1)
+    }
+    // More rivers and lakes on a larger land, not longer ones only.
+    expect(huge.rivers.length).toBeGreaterThan(world.rivers.length * 2)
+    expect(pieces(huge.map.sea)).toBeGreaterThan(pieces(world.map.sea))
+    expect(generateWorld('valbrune', { size: 'huge' })).toEqual(huge)
   })
 })

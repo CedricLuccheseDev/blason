@@ -111,6 +111,17 @@ machine draws the same land):
 The tiles (`grid.ts`) then follow the cells: a tile is land when the cell
 nearest its middle is.
 
+A map's size (`MAP_SIZES` in `rules.ts`, `generateWorld(seed, { size })`)
+multiplies its area, 1, 2 or 4 times the standard land's: the cells keep
+their area, so there are more of them, and the noise that raises the ranges
+and brings the rain is measured in map units, so a larger land has more
+ranges and woods rather than larger ones; its shape takes an octave of noise
+more at the largest size, and more coast features, smaller. The game reads
+the size from the grid alone: the free domains, one for some 600 tiles, grow
+in number with it. The rendering reads the world's own width and height;
+only the camera's closest zoom reads the size, so that it comes as close on
+a larger land as on the standard one.
+
 ### The bots
 
 A bot is a function of the state that returns orders (`createBot` in
@@ -121,7 +132,9 @@ multiplayer they will run on every client without a server. Their level
 (`engine/bots/levels.ts`: easy, normal, hard), chosen at the home, never lets
 them cheat: it sets how often a bot thinks, how soon it notices an attack, how
 long it rests, how full it waits to be and how often it slips. The arena takes
-it too: `npm run arena -- [games] [players] [easy|normal|hard]`.
+it too: `npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]`,
+and times there the land's making and each tick, and weighs the memory a game
+holds.
 
 ## The rendering
 

@@ -14,6 +14,19 @@ export type Work = 'village' | 'market' | 'castle'
 /** The coups that may turn a game, each its own deed: take land, kill troops, ruin an economy. */
 export type Coup = 'troublemaker' | 'archers' | 'fire'
 
+/** The sizes a map may be drawn at. */
+export type MapSize = 'standard' | 'large' | 'huge'
+
+/**
+ * Each size's land, so many times the standard one's area (some 53,000
+ * tiles): its tiles, cells and free domains the same size, more of them.
+ */
+export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
+  standard: 1,
+  large: 2,
+  huge: 4,
+}
+
 /** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. */
 export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
 export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
