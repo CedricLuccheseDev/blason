@@ -13,7 +13,10 @@ import {
   shade,
   wob,
 } from './ink'
+import { CASTLE } from './plans'
 import { banner, moat, pairs, tower, wallRun } from './ramparts'
+import { workShadows } from './shadows'
+import { trodden } from './solid'
 import type { Detail } from './house'
 import type { Pen, Pt } from './ink'
 
@@ -21,19 +24,19 @@ import type { Pen, Pt } from './ink'
 // cones of slate, the keep flying the lord's banner, the gatehouse; up
 // close the portcullis and the bridge over the moat. From afar, a
 // crenellated wall between two towers, the keep above with its banner:
-// grey stone, the crenels the tell. Local units, some 24 across.
-
-const KEEP = { x: -0.6, y: 1.2, w: 4.6, h: 9.4 }
+// grey stone, the crenels the tell. Up close and at mid distance it stands
+// in the map's one light, its faces turned from it in shade, its shadows
+// cast over the bailey's trodden earth (art/shadows.ts). Local units, some
+// 24 across.
 
 /** The keep: its two faces, its crenels, its windows, its banner. */
 function keep(p: Pen, color: number, lod: Detail) {
-  const { x: kx, y: ky, w: kw, h: kh } = KEEP
-  const o: Pt = [1.8, -1.2]
+  const { x: kx, y: ky, w: kw, h: kh, back: o } = CASTLE.keep
   const ink = lod === 2 ? 0.9 : 1
   const right: Pt = [kx + kw / 2, ky]
   const rightTop: Pt = [kx + kw / 2, ky - kh]
   wob(p, [right, add(right, o), add(rightTop, o), rightTop], 0.04, 66)
-  fillInk(p, shade(TONE.rampart, 0.2), ink)
+  fillInk(p, shade(TONE.rampart, 0.32), ink)
   wob(p, [[kx - kw / 2, ky], right, rightTop, [kx - kw / 2, ky - kh]], 0.04, 67)
   fillInk(p, TONE.rampart, ink)
   const g = p.g
@@ -129,22 +132,23 @@ function gate(p: Pen, lod: Detail) {
 /** The castle drawn, at mid distance (1) or up close (2). */
 export function castleNear(p: Pen, color: number, lod: Detail) {
   moat(p, lod)
-  const BL: Pt = [-7, -1.2]
-  const BR: Pt = [7, -1.2]
-  const FL: Pt = [-8, 4.6]
-  const FR: Pt = [8, 4.6]
-  const wh = 3.2
-  wallRun(p, BL, BR, wh, lod, 61)
-  tower(p, [BL[0], BL[1], 1.4, 4.6], lod, 62, color)
-  tower(p, [BR[0], BR[1], 1.4, 4.6], lod, 63, color)
-  wallRun(p, BL, FL, wh, lod, 64)
-  wallRun(p, FR, BR, wh, lod, 65)
+  trodden(p, [0.4, 2.6, 9.6, 4.2], 0.25)
+  workShadows(p, 'castle', lod)
+  const { BL, BR, FL, FR } = CASTLE.corners
+  const wh = CASTLE.wall
+  const [back, front] = [CASTLE.backTower, CASTLE.frontTower]
+  // The back wall's face and the east wall are turned from the light.
+  wallRun(p, BL, BR, wh, lod, [61, 0.14])
+  tower(p, [BL[0], BL[1], ...back], lod, 62, color)
+  tower(p, [BR[0], BR[1], ...back], lod, 63, color)
+  wallRun(p, BL, FL, wh, lod, [64, 0])
+  wallRun(p, FR, BR, wh, lod, [65, 0.3])
   keep(p, color, lod)
-  wallRun(p, FL, [-2, 4.6], wh, lod, 68)
-  wallRun(p, [2, 4.6], FR, wh, lod, 69)
+  wallRun(p, FL, [-2, 4.6], wh, lod, [68, 0])
+  wallRun(p, [2, 4.6], FR, wh, lod, [69, 0])
   gate(p, lod)
-  tower(p, [FL[0], FL[1], 1.75, 5.4], lod, 72, color)
-  tower(p, [FR[0], FR[1], 1.75, 5.4], lod, 73, color)
+  tower(p, [FL[0], FL[1], ...front], lod, 72, color)
+  tower(p, [FR[0], FR[1], ...front], lod, 73, color)
 }
 
 const OUTLINE: ReadonlyArray<Pt> = pairs([

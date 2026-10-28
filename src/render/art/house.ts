@@ -1,24 +1,16 @@
-import { hash } from '../pen'
 import { TONE } from '../palette'
-import {
-  WOOD_DARK,
-  add,
-  arch,
-  css,
-  fillInk,
-  lerp,
-  line,
-  lw,
-  shade,
-  wob,
-} from './ink'
+import { WOOD_DARK, add, arch, css, fillInk, lerp, lw, shade, wob } from './ink'
+import { RIDGE, back } from './plans'
 import type { Pen, Pt } from './ink'
+import type { HousePlan } from './plans'
 
-// A house and a church as an engraver draws a village in three-quarter
-// view: the gable to the front in the light, the long side going back to
-// the right in the shade. At mid distance a door; up close the roof's tile
-// courses, a window, the timber frame. In local units, a house some three
-// wide.
+// A house as an engraver draws a village in three-quarter view, standing
+// in the map's one light (art/light.ts): the gable to the front in the
+// light, the long side going back to the right in shade, a line of shade
+// under the eaves and under the verge where the roof overhangs, the roof
+// darkening down to its eaves under a lit ridge. At mid distance a door; up
+// close the roof's tile courses, a window, the timber frame. In local
+// units, a house some three wide.
 
 /** 1 the drawing at mid distance, 2 the illustration up close. */
 export type Detail = 1 | 2
@@ -102,22 +94,26 @@ function front(
 /** A house, its gable's foot centred at (x, y); returns its chimney's top, if it has one. */
 export function house(
   p: Pen,
-  [x, y, w, h, d]: readonly [number, number, number, number, number],
+  [x, y, w, h, d]: HousePlan,
   roof: number,
   lod: Detail,
   seed: number,
   look: HouseLook = {},
 ): Pt | null {
-  const o: Pt = [d * 0.62, -d * 0.42]
+  const o = back(d)
   const A: Pt = [x - w / 2, y]
   const B: Pt = [x + w / 2, y]
   const Bt: Pt = [x + w / 2, y - h]
   const At: Pt = [x - w / 2, y - h]
-  const apex: Pt = [x, y - h - w * 0.62]
+  const apex: Pt = [x, y - h - w * RIDGE]
   const ink = lod === 2 ? 0.9 : 1
   const amt = lod === 2 ? 0.07 : 0.04
   wob(p, [B, add(B, o), add(Bt, o), Bt], amt, seed)
-  fillInk(p, shade(TONE.wall, 0.16), ink)
+  fillInk(p, shade(TONE.wall, 0.3), ink)
+  // The eaves' shade on the side wall.
+  wob(p, [Bt, add(Bt, o), add(add(Bt, o), [0, 0.55]), add(Bt, [0, 0.55])], 0)
+  p.g.fillStyle = css(TONE.ink, 0.2)
+  p.g.fill()
   const r: ReadonlyArray<Pt> = [
     add(apex, [0, -0.1]),
     add(add(apex, o), [0.1, -0.1]),
@@ -126,6 +122,7 @@ export function house(
   ]
   wob(p, r, amt, seed + 1)
   fillInk(p, roof, ink)
+  slope(p, r, amt, seed + 1)
   if (lod === 2) tiles(p, r, roof, amt, seed + 1)
   let chimney: Pt | null = null
   if (look.chimney !== false) {
@@ -149,62 +146,53 @@ export function house(
   wob(p, [A, B, Bt, apex, At], amt, seed + 3)
   fillInk(p, look.wall ?? TONE.wall, ink)
   front(p, [x, y, w, h], apex[1], lod, look)
+  verge(p, [At, apex, Bt], roof, ink)
   return chimney
 }
 
-/** The church: a nave going back, a square tower at its front with a spire of slate, a cross on it. */
-export function church(
-  p: Pen,
-  x: number,
-  y: number,
-  lod: Detail,
-  seed: number,
-) {
-  house(p, [x + 1.6, y - 0.4, 3.4, 2.6, 6.5], TONE.slate, lod, seed, {
-    chimney: false,
-    wall: TONE.stone,
-    timber: false,
-  })
-  const [tw, th] = [2.4, 6.2]
-  const o: Pt = [1.3, -0.85]
-  const A: Pt = [x - tw / 2, y]
-  const B: Pt = [x + tw / 2, y]
-  const Bt: Pt = [x + tw / 2, y - th]
-  const At: Pt = [x - tw / 2, y - th]
-  const ink = lod === 2 ? 0.9 : 1
-  wob(p, [B, add(B, o), add(Bt, o), Bt], 0.04, seed + 5)
-  fillInk(p, shade(TONE.stone, 0.18), ink)
-  wob(p, [A, B, Bt, At], 0.04, seed + 6)
-  fillInk(p, TONE.stone, ink)
-  const top: Pt = [x + o[0] * 0.5, y - th - 4.6]
-  wob(p, [Bt, add(Bt, o), top], 0.03, seed + 7)
-  fillInk(p, shade(TONE.slate, 0.25), ink)
-  wob(p, [At, Bt, top], 0.03, seed + 8)
-  fillInk(p, TONE.slate, ink)
-  // The bell's opening, and the cross.
-  arch(p, x, y - th + 2, 0.8, 1.2)
-  fillInk(p, TONE.door, 0)
-  line(p, [top, [top[0], top[1] - 1.5]], 1, TONE.ink)
-  line(
-    p,
-    [
-      [top[0] - 0.5, top[1] - 1],
-      [top[0] + 0.5, top[1] - 1],
-    ],
-    1,
-    TONE.ink,
-  )
-  if (lod < 2) return
+/** The roof's slope in the light: darker down to its eaves, its ridge lit. */
+function slope(p: Pen, r: ReadonlyArray<Pt>, amt: number, seed: number) {
   const g = p.g
+  const [top, eave] = [lerp(r[0], r[1], 0.5), lerp(r[3], r[2], 0.5)]
+  const wash = g.createLinearGradient(top[0], top[1], eave[0], eave[1])
+  wash.addColorStop(0, css(TONE.ink, 0))
+  wash.addColorStop(1, css(TONE.ink, 0.22))
+  wob(p, r, amt, seed)
+  g.fillStyle = wash
+  g.fill()
   g.beginPath()
-  for (let r = 1; r < 6; r++) {
-    const yy = y - (th * r) / 6
-    g.moveTo(A[0] + 0.2, yy)
-    g.lineTo(A[0] + 0.2 + tw * (0.3 + 0.3 * hash(r, seed, 2)), yy)
-  }
-  g.lineWidth = lw(p, 0.5)
-  g.strokeStyle = css(TONE.ink, 0.25)
+  g.moveTo(r[0][0] + 0.15, r[0][1] + 0.12)
+  g.lineTo(r[1][0] - 0.1, r[1][1] + 0.12)
+  g.lineWidth = lw(p, 1.1)
+  g.strokeStyle = css(TONE.white, 0.35)
   g.stroke()
-  arch(p, x, y, 0.9, 1.75)
-  fillInk(p, TONE.door, 0.5)
+}
+
+/** The roof's edge over the gable, overhanging it, a line of shade under it. */
+function verge(
+  p: Pen,
+  [At, apex, Bt]: readonly [Pt, Pt, Pt],
+  roof: number,
+  ink: number,
+) {
+  const g = p.g
+  const edge = (dy: number, out: number) => {
+    g.beginPath()
+    g.moveTo(At[0] - out, At[1] + dy + out * 0.6)
+    g.lineTo(apex[0], apex[1] + dy - out * 0.4)
+    g.lineTo(Bt[0] + out, Bt[1] + dy + out * 0.6)
+  }
+  edge(0.42, 0)
+  g.lineWidth = 0.5
+  g.strokeStyle = css(TONE.ink, 0.2)
+  g.lineJoin = 'round'
+  g.stroke()
+  edge(0, 0.3)
+  g.lineWidth = 0.32 + lw(p, 1.6 * ink)
+  g.strokeStyle = css(TONE.ink, 0.85)
+  g.lineCap = 'round'
+  g.stroke()
+  g.lineWidth = 0.32
+  g.strokeStyle = css(shade(roof, 0.08))
+  g.stroke()
 }

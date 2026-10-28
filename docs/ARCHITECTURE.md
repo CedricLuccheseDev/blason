@@ -136,8 +136,15 @@ orders. It decides nothing about the rules.
 - The works (`art/works.ts`) are drawn once per lord's colour and level of
   detail into a texture: a silhouette cut out by a parchment halo, never under
   thirty pixels on screen; a drawing; an illustration (`art/village.ts`,
-  `art/house.ts`, `art/castle.ts`, `art/ramparts.ts`, `art/market.ts`,
-  `art/stall.ts`, `art/gold.ts`, with the pen of `art/ink.ts`); their life,
+  `art/house.ts`, `art/church.ts`, `art/castle.ts`, `art/ramparts.ts`,
+  `art/market.ts`, `art/stall.ts`, `art/gold.ts`, with the pen of
+  `art/ink.ts`), each piece where its plan sets it (`art/plans.ts`). Drawn and
+  illustrated, they stand in the map's light with volume: the faces turned from
+  it in shade, a line of shade under the eaves and the verges, the towers lit
+  round, and, laid on their ground before them, the shadows of their volumes
+  and a darker contact at their foot (`art/shadows.ts`, from the hulls of
+  `art/solid.ts`) on a patch of trodden earth; the silhouette from afar has
+  none. Their life,
   sails, smoke, glints and peasants (`art/life.ts`), only on screen, still
   under reduced motion.
 - Over the works, the

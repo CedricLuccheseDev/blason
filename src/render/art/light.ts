@@ -10,7 +10,7 @@ import type { Pen } from './ink'
 // works' textures, never each frame.
 
 /** How far a point so high above the ground falls from its foot, across and down, per unit of height. */
-export const LIGHT = { across: 0.62, down: 0.3 }
+export const LIGHT = { across: 0.7, down: 0.34 }
 
 /**
  * Draws what stands on a foot line laid flat on the ground by the light: a

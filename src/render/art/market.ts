@@ -13,13 +13,17 @@ import {
   scaled,
 } from './ink'
 import { crates, goldHeap } from './gold'
+import { MARKET } from './plans'
+import { workShadows } from './shadows'
 import { stall } from './stall'
 import type { Detail } from './house'
 import type { Pen, Pt } from './ink'
 
 // A lord's market: three stalls under awnings striped in his colour round a
 // heap of gold, on a paved square; up close the cobbles, the crates and the
-// sacks, and the coins that glint (ground/life.ts). From afar, an awning
+// sacks, and the coins that glint (ground/life.ts); all standing in the
+// map's one light, casting their shadows on the square (art/shadows.ts).
+// From afar, an awning
 // over a counter and the gold heap before it: the gold the tell, the only
 // gilt heap of the map. Local units, some 24 across.
 
@@ -52,11 +56,13 @@ export function marketNear(p: Pen, color: number, lod: Detail) {
     g.strokeStyle = css(TONE.ink, 0.22)
     g.stroke()
   }
-  stall(p, -5.4, -0.6, 4.6, color, lod, 81)
-  stall(p, 5.2, -1.4, 4.2, color, lod, 82)
-  goldHeap(p, -0.2, 2.6, 3, lod)
-  crates(p, -8.6, 5.2, lod)
-  stall(p, 6.4, 5.4, 4.0, color, lod, 83)
+  workShadows(p, 'market', lod)
+  const [a, b, c] = MARKET.stalls
+  stall(p, a, color, lod, 81)
+  stall(p, b, color, lod, 82)
+  goldHeap(p, ...MARKET.heap, lod)
+  crates(p, ...MARKET.crates, lod)
+  stall(p, c, color, lod, 83)
 }
 
 /** From afar: an awning striped in the lord's colour over a counter, a gold heap before it. */
