@@ -1,27 +1,15 @@
 import { blogFr } from './blog'
-import { tableFr } from './table'
+import { homeFr } from './home'
 import type { Messages } from './en'
 
 export const fr: Messages = {
   blog: blogFr,
-  table: tableFr,
   common: {
     author: 'Cédric Lucchese',
     about: 'Comment ça marche',
     legal: 'Mentions légales',
   },
-  home: {
-    tagline:
-      'Un jeu de stratégie médiéval : vingt seigneurs, une terre redessinée à chaque partie.',
-    play: 'Jouer',
-    rivals: 'Adversaires',
-    levels: { easy: 'Faciles', normal: 'Moyens', hard: 'Difficiles' },
-    levelHint: 'Change avec ← →',
-    watch: 'Regarder une partie',
-    journal: 'Journal',
-    back: 'Retour au menu',
-    menu: 'Menu',
-  },
+  home: homeFr,
   game: {
     map: 'La terre de la partie, vue d’en haut',
     choose: 'Plante ton étendard',

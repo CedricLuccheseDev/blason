@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Link } from '~/render/link'
 import type { Online } from '~/render/online'
-import type { FromRelay, Lobby } from '../../../../net/protocol'
+import type { FromRelay, Lobby } from '../../../net/protocol'
 import { connect, relayUrl } from '~/render/link'
 
 // A seat in a room of the relay (server/rooms.ts), from the home: the public
@@ -15,7 +15,12 @@ export type Room =
   | { status: 'unavailable' }
   | { status: 'joining'; code: string | null }
   | { status: 'seated'; seat: number; lobby: Lobby; heardAt: number }
-  | { status: 'error'; reason: 'full' | 'unknown' | 'started' | 'lost' }
+  | {
+      status: 'error'
+      /** The room that failed: the public one (null), or a code or 'new'. */
+      code: string | null
+      reason: 'full' | 'unknown' | 'started' | 'lost'
+    }
 
 export type RoomActions = {
   /** Sits at the public room (null), a private one by its code, or a new one ('new'). */
@@ -67,7 +72,7 @@ export function useRoom(
               heardAt: Date.now(),
             })
           } else if (message.t === 'error')
-            setRoom({ status: 'error', reason: message.reason })
+            setRoom({ status: 'error', code, reason: message.reason })
           else if (message.t === 'begin') {
             // From here the turns wait for the game: no one here listens any more.
             stop()
@@ -80,7 +85,7 @@ export function useRoom(
       })
       .catch(() => {
         if (mine === opened.current)
-          setRoom({ status: 'error', reason: 'lost' })
+          setRoom({ status: 'error', code, reason: 'lost' })
       })
   }
 
@@ -97,6 +102,16 @@ export function useRoom(
 
   return [room, { join, leave, start }]
 }
+
+/** Whether the public room is the one sat at, being joined, or that failed. */
+export const atPublic = (room: Room): boolean =>
+  (room.status === 'seated' && room.lobby.open) ||
+  ((room.status === 'joining' || room.status === 'error') && room.code === null)
+
+/** Whether a private room is the one sat at, being joined, or that failed. */
+export const atPrivate = (room: Room): boolean =>
+  (room.status === 'seated' && !room.lobby.open) ||
+  ((room.status === 'joining' || room.status === 'error') && room.code !== null)
 
 /** Ms left before the public room starts, now, or none. */
 export function leftOf(room: Room, now: number): number | null {

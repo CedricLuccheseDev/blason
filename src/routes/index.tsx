@@ -1,12 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import tableCss from '~/components/home/table/table.css?url'
-import wordsCss from '~/components/home/table/words.css?url'
-import backsCss from '~/components/home/table/backs.css?url'
-import roomsCss from '~/components/home/table/rooms.css?url'
 import { Home } from '~/components/home/Home'
 import { fetchBlogIndex } from '~/content/posts.runtime'
 
-// The home: the game's table, the journal on it reading the blog's posts.
+// The home: the menu, the next public game, the journal reading the blog's posts.
 export const Route = createFileRoute('/')({
   staticData: { chrome: false },
   loader: async () => {
@@ -22,12 +18,6 @@ export const Route = createFileRoute('/')({
         (a, b) => b.date.localeCompare(a.date) || b.slug.localeCompare(a.slug),
       )
   },
-  head: () => ({
-    links: [tableCss, wordsCss, backsCss, roomsCss].map((href) => ({
-      rel: 'stylesheet',
-      href,
-    })),
-  }),
   component: Index,
 })
 

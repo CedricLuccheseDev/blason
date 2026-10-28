@@ -269,39 +269,28 @@ nothing else. The look follows the design boards, whose sources are in
 
 ## The home
 
-The home is a board game on a wooden table, in 3D (Three.js, loaded on the
-home alone; `.dependency-cruiser.cjs` keeps it there, so the game's route
-stays light). `src/table/` is the scene and decides nothing; its contract is
-`src/table/index.ts`:
+The home is built as OpenFront's, in the game's own materials: one column
+on a quiet ground, the player at its head (his shield and "Lord" until
+profiles come), the next public game first and biggest, with one click to
+sit at it, then the solo game and the private rooms, each set on a sheet of
+its own (the browser's modal `<dialog>`); the journal beside it, reading the
+blog's posts. Every piece is the HUD's (`Sheet`, `Act`, `Figure`,
+`Shield`), so the home costs no CSS of its own.
 
-- the things, cut and painted once: the sizes and the two layouts, a desk's
-  and a phone's (`sizes.ts`); the painted surfaces (`paint/`: the walnut, the
-  board's printed frame, the lid, the cards' stock, the seal's wax, the die,
-  the journal's pages) and their textures (`assets.ts`); the meshes
-  (`objects/`); the scene, the candle for light, every thing in its place
-  (`stage.ts`);
-- each frame (`motion.ts`, `press.ts`, `ease.ts`): the camera's drift, the
-  flame, a card lifted, turned and held up, the seal pressed, the die thrown
-  (`dice.ts`), the journal raised; the candle's shadows are drawn again only
-  when a thing moves; under reduced motion everything is where it goes at
-  once;
-- the words stay HTML: each piece the home lays over the table names its
-  thing (`data-ov`), and `pins.ts` and `overlays.ts` map it there every frame
-  by a projective transform (`quad.ts`), so that it follows the thing's
-  perspective and stays crisp text, a real button for the keyboard;
-- the pointer: a ray from the eye to the first thing it meets (`touch.ts`).
+Behind the column, the bots' game: the spectator's game of twenty bots
+(`client.ts` with the director) drawn by PixiJS straight into the page's
+background under a veil of parchment, at no more than 1.5 pixels per CSS
+pixel and 30 frames a second. It starts once the menu is painted and the
+browser is idle, and only where WebGL is; elsewhere the parchment stays. The
+veil lifts to watch it full screen. Nothing else on the home runs a loop:
+the room's clock ticks once a second, and only while a room is sat at.
 
-The board shows a real game: the spectator's game of twenty bots
-(`client.ts` with the director), drawn by PixiJS out of sight and read by the
-table a few times a second as the board's picture. Clicking the board dives
-the camera into it, and the same game then takes the screen.
-
-The React side, `src/components/home/`: `Home.tsx` (the table, or where no
-WebGL is, the plain menu, `PlainMenu.tsx`), and `table/`: the overlays (the
-cards' faces, the backs with each mode's settings, the ribbon, the journal
-reading the blog's posts, the player's card), what a touch means
-(`useChoice.ts`: a card turned, the seal playing the card turned, the die),
-the rooms of the relay (`useRoom.ts`), the spectator (`useSpectator.ts`).
+`src/components/home/`: `Home.tsx` lays it out; `PublicCard.tsx` the next
+public game, `SoloSettings.tsx` (the land's size and the bots' level, then
+`/play?level=…&size=…`), `PrivateRoom.tsx` (a room made and its code to
+share, or a code typed to join, and the host's start), `Seats.tsx`,
+`Journal.tsx`, `Masthead.tsx`, `Foot.tsx`; the rooms of the relay
+(`useRoom.ts`), the background game (`useSpectator.ts`, `Backdrop.tsx`).
 
 ## Multiplayer
 
@@ -321,8 +310,8 @@ simulation.
   A player who leaves during a game gives his seat to a bot, on every browser
   at the same turn. Every 50 turns each browser tells the fingerprint of its
   state, and the relay names the first turn where two differ.
-- In the browser, `link.ts` is the line to the relay; the home's cards sit
-  the player at a room and show it live (`useRoom.ts`); when the relay says
+- In the browser, `link.ts` is the line to the relay; the home sits the
+  player at a room and shows it live (`useRoom.ts`); when the relay says
   the game begins, the open line is left in `online.ts` and `/play?online`
   mounts the game with `remote.ts`'s session, stepped by the relay's turns,
   instead of the local one.

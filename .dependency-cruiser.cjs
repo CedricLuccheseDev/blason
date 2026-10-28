@@ -46,14 +46,6 @@ module.exports = {
       },
     },
     {
-      name: 'three-on-the-table-only',
-      comment:
-        'Three.js is the home table\'s alone (src/table), loaded there on demand: the rest of the app, the game first, stays light',
-      severity: 'error',
-      from: { pathNot: '^src/table/' },
-      to: { path: 'node_modules/three/' },
-    },
-    {
       name: 'convex-stays-isolated',
       comment: 'Convex functions deploy alone: they never import app code',
       severity: 'error',

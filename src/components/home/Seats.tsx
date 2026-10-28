@@ -1,0 +1,55 @@
+import { SEATS } from '../../../net/protocol'
+import type { Room } from './useRoom'
+import { Shield } from '~/components/hud/Emblem'
+import { Figure } from '~/components/hud/Figure'
+import { useMessages } from '~/i18n'
+import { PLAYERS } from '~/render/palette'
+
+// A room's seats, as the public game and a private room show them: a shield
+// for each, those taken in their lord's colour; and what a room that is not
+// (or no longer) sat in says.
+
+/** A seat's colour, as CSS. */
+const seatColour = (seat: number) =>
+  `#${PLAYERS[seat % PLAYERS.length].color.toString(16).padStart(6, '0')}`
+
+/** The seats of a room, those taken in their lord's colour, and their count. */
+export function Seats({ taken }: Readonly<{ taken: number }>) {
+  const t = useMessages().home.room
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <span className="flex gap-1" aria-hidden="true">
+        {Array.from({ length: SEATS }, (_, i) => (
+          <Shield
+            key={i}
+            size="s"
+            color={seatColour(i)}
+            level={i < taken ? undefined : 0}
+          />
+        ))}
+      </span>
+      <span className="flex items-baseline gap-2">
+        <span className="hud-note">{t.seated}</span>
+        <Figure icon="soldier" size="l">
+          {taken} / {SEATS}
+        </Figure>
+      </span>
+    </div>
+  )
+}
+
+/** What a room being joined, or that failed, says. */
+export function RoomTrouble({ room }: Readonly<{ room: Room }>) {
+  const t = useMessages().home.room
+  if (room.status === 'error')
+    return (
+      <p className="hud-word" role="alert">
+        {room.reason === 'lost' ? t.lost : t.errors[room.reason]}
+      </p>
+    )
+  return (
+    <p className="hud-note">
+      {room.status === 'unavailable' ? t.unavailable : t.joining}
+    </p>
+  )
+}

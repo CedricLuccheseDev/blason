@@ -50,9 +50,9 @@ npm install
 npm run dev
 ```
 
-Then open the address `npm run dev` prints: the home is a board game on a
-wooden table, a game of bots on the board; the seal plays the card turned,
-against nineteen bots by default.
+Then open the address `npm run dev` prints: the home offers the next public
+game, a solo game against nineteen bots, and private rooms, a game of bots
+playing behind. Online play needs the relay beside it (`npm run relay`).
 
 ## Commands
 
@@ -80,8 +80,8 @@ against nineteen bots by default.
 - `src/render/`: the map on screen (PixiJS) and the player's gestures
 - `src/components/hud/`: the HUD's design system
 - `src/components/game/`: the game's HUD, built on it
-- `src/table/`: the home's table in 3D (Three.js)
-- `src/components/home/`: the home, the words and settings laid on the table
+- `src/components/home/`: the home: the next public game, the solo game, the
+  private rooms, the journal, the bots' game behind
 - `src/i18n/`: French and English
 - `src/content/`: the journal's posts
 - `scripts/`: the arena and the style checks

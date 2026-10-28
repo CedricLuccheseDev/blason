@@ -79,10 +79,9 @@ export async function mountGame(
     resizeTo: element,
     background: TONE.edge,
     antialias: true,
-    resolution: Math.min(window.devicePixelRatio || 1, 2),
+    // Behind the home's menu, fewer pixels: a sharp game is not worth it there.
+    resolution: Math.min(devicePixelRatio || 1, hooks.spectate ? 1.5 : 2),
     autoDensity: true,
-    // A watched game is also read as a picture (the home's board): its frame must stay readable.
-    preserveDrawingBuffer: hooks.spectate !== undefined,
   })
   element.appendChild(app.canvas)
   const session = hooks.online

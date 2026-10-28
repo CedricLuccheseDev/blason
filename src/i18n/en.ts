@@ -1,26 +1,14 @@
 import { blogEn } from './blog'
-import { tableEn } from './table'
+import { homeEn } from './home'
 
 export const en = {
   blog: blogEn,
-  table: tableEn,
   common: {
     author: 'Cédric Lucchese',
     about: 'How it works',
     legal: 'Legal notice',
   },
-  home: {
-    tagline:
-      'A medieval strategy game: twenty lords, one land drawn anew each game.',
-    play: 'Play',
-    rivals: 'Rivals',
-    levels: { easy: 'Easy', normal: 'Fair', hard: 'Hard' },
-    levelHint: 'Change with ← →',
-    watch: 'Watch a game',
-    journal: 'Journal',
-    back: 'Back to the menu',
-    menu: 'Menu',
-  },
+  home: homeEn,
   game: {
     map: 'The land of the game, seen from above',
     choose: 'Plant your standard',
