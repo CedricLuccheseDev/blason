@@ -23,6 +23,7 @@
     "arena": "tsx scripts/arena.ts",
     "maquette": "tsx scripts/maquette.ts",
     "census": "tsx scripts/census.ts",
+    "maps": "tsx scripts/maps.ts",
     "relay": "tsx server/relay.ts"
   },
   "dependencies": {

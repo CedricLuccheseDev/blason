@@ -8,7 +8,7 @@
 // The units and the land.
 export { TICKS_PER_SECOND, UNIT } from './units'
 export { generateWorld } from './map/generate'
-export type { World } from './map/generate'
+export type { Generator, World } from './map/generate'
 export type { Point } from './map/points'
 export { apart, around, makeGrid } from './grid'
 

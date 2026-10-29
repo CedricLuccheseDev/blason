@@ -11,7 +11,7 @@ const DARTS = 14
  * operations only, the same on every machine, and far quicker than a draw
  * by name when the points are counted in tens of thousands.
  */
-function stream(seed: string, key: string): () => number {
+export function stream(seed: string, key: string): () => number {
   let a = drawInt(seed, 4294967296, 'stream', key)
   return () => {
     a = (a + 0x6d2b79f5) | 0
