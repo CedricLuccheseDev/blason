@@ -374,8 +374,10 @@ orders. It decides nothing about the rules.
   cracking in two (`layers/pacts.ts`, its bowed line `cord.ts`, drawn by
   `art/snap.ts`), the names, never under 16 pixels and at full strength over
   the works, a land too small on screen to carry its words leaving them out,
-  never the player's, and the marks beside them (`places.ts`,
-  `layers/labels.ts`), the aim
+  never the player's, moved off his works on his land as they are drawn at
+  the zoom (`layers/crowd.ts`, `clearance.ts`), and the marks beside them
+  (`places.ts`, `layers/labels.ts`), the armies' standards, grown while the
+  player points at one in his campaigns (`flags.ts`), the aim
   (`layers/aim.ts`; the road an army would march from its village, the
   mercenaries' from their market; with a coup in hand, the disc it would strike, its way and
   its reach along the border, `layers/aimCoup.ts`; in the opening, a ring
