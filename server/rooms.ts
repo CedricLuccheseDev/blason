@@ -71,6 +71,7 @@ export function upcoming(): Upcoming {
     seed: room.setup.seed,
     size: room.setup.land.size,
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
+    startsIn: Math.max(0, SETUP_LIMITS.opening.public - room.turn) * TURN_MS,
     taken: seated(room),
     seats: SEATS,
     waiting: room.players.filter((p) => p && room.waited.has(p)).length,

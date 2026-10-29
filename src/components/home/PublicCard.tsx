@@ -92,7 +92,7 @@ export function PublicCard({
         {game && (
           <Cartouche at="top-2 right-2">
             <span className="hud-note max-sm:hidden">{t.public.closesIn}</span>
-            <Countdown ms={game.closesIn} at={heard.at} />
+            <Countdown ms={game.startsIn} at={heard.at} />
           </Cartouche>
         )}
         <div aria-live="polite">

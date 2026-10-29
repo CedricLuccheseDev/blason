@@ -15,7 +15,7 @@ export const homeEn = {
     lost: 'Online play is out of reach for now.',
     play: 'Play',
     entering: 'Entering the game…',
-    closesIn: 'Closes in',
+    closesIn: 'Starts in',
   },
   solo: {
     open: 'Solo',
@@ -80,7 +80,7 @@ export const homeFr: HomeMessages = {
     lost: 'Le jeu en ligne est hors d’atteinte pour l’instant.',
     play: 'Jouer',
     entering: 'On entre dans la partie…',
-    closesIn: 'Se ferme dans',
+    closesIn: 'Commence dans',
   },
   solo: {
     open: 'Solo',

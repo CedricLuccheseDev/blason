@@ -30,6 +30,8 @@ describe('the public game', () => {
     expect(first).toMatchObject({
       size: 'standard',
       closesIn: rooms.JOIN_MS,
+      // The count its players see in the game: the whole opening.
+      startsIn: SETUP_LIMITS.opening.public * TURN_MS,
       taken: 0,
       seats: SEATS,
     })

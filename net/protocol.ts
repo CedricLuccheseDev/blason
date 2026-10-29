@@ -49,6 +49,8 @@ export type Upcoming = {
   size: MapSize
   /** Ms left to join it: then it goes on with whoever came, and the next opens. */
   closesIn: number
+  /** Ms left of its opening, the count its players see in the game (« y'a pas le même temps affiché en jeu que sur la home »). */
+  startsIn: number
   /** Seats taken by persons, of `seats`. */
   taken: number
   seats: number
@@ -90,10 +92,8 @@ export function parse<T extends { t: string }>(data: unknown): T | null {
 /** The public game in its opening as the relay answers it (GET /public), or null if it is not one. */
 export function readUpcoming(value: unknown): Upcoming | null {
   if (typeof value !== 'object' || value === null) return null
-  const { seed, size, closesIn, taken, seats, waiting } = value as Record<
-    string,
-    unknown
-  >
+  const { seed, size, closesIn, startsIn, taken, seats, waiting } =
+    value as Record<string, unknown>
   const known = (Object.keys(MAP_SIZES) as Array<MapSize>).find(
     (s) => s === size,
   )
@@ -106,6 +106,8 @@ export function readUpcoming(value: unknown): Upcoming | null {
         seed,
         size: known,
         closesIn,
+        // A relay older than the word: its doors' count, a few seconds short.
+        startsIn: typeof startsIn === 'number' ? startsIn : closesIn,
         taken,
         seats,
         // A relay older than the word says nothing of it: no one waits.
