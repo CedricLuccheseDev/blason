@@ -64,7 +64,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.
   - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.
-  - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), la diplomatie et les
+  - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), les parties dorées
+    (`golden.test.ts` : trois parties de bots, leurs empreintes relevées une fois et écrites en dur ; une refonte qui
+    garde le jeu les garde), la victoire (`victory.test.ts`), la diplomatie et les
     marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les coups (`coups.test.ts`), les flèches des châteaux
     (`volleys.test.ts`), le générateur (`map/generate.test.ts`).
 - `scripts/arena.ts` : l'arène (`npm run arena -- [parties] [joueurs]`), des parties de bots sans écran. Elle dit si

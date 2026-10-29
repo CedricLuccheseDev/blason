@@ -37,6 +37,15 @@ machine computes the same game, tick for tick.
   one machine to another (`Math.random`, `Math.sin`, `**`, the clock, React).
 - `engine/war.test.ts` plays the same game twice and compares a fingerprint of
   the state (`stateHash`) at every tick.
+- `engine/golden.test.ts` plays three games of bots on one land (twenty
+  lords; eight in two teams; an opening of 30 seconds) and compares, at fixed
+  ticks, a fingerprint of what moves in them with the one recorded once and
+  written in the test: a change meant to keep the game must keep them, and
+  one that changes it says so by recording them again. The fingerprint is
+  the test's own, over the moving parts alone, so that what a game is made
+  of may move without changing it. `engine/victory.test.ts` holds how a game
+  is won: the share of the land and how it falls, the last lord standing, a
+  lord out, the game stopped once won.
 
 ### The state, the orders, the step
 
