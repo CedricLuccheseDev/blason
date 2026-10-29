@@ -17,6 +17,7 @@ export { apart, around, makeGrid } from './grid'
 export {
   aloneSetup,
   botsSetup,
+  bookOf,
   hostSetup,
   landOf,
   publicSetup,

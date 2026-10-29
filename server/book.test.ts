@@ -52,4 +52,30 @@ describe('a private room and its host’s book', () => {
       ],
     )
   })
+
+  it('passes the host’s book on to his guests before the game, and no guest’s', () => {
+    const host = player('host')
+    const room = rooms.join(host, 'new')
+    const told = host.heard.at(-1)
+    if (!room || told?.t !== 'lobby') throw new Error('no room')
+    const friend = player('friend')
+    rooms.join(friend, told.lobby.room)
+    const book = hostSetup({
+      seed: 'shown',
+      size: 'large',
+      guests: 1,
+      bots: 2,
+      level: 'easy',
+      teams: 2,
+      opening: 200,
+    })
+    rooms.hear(room, host, { t: 'book', setup: book })
+    const seen = friend.heard.at(-1)
+    if (seen?.t !== 'lobby') throw new Error('no lobby')
+    expect(seen.lobby.setup).toEqual(book)
+    rooms.hear(room, friend, { t: 'book', setup: { seed: 'mine' } })
+    const after = friend.heard.at(-1)
+    if (after?.t !== 'lobby') throw new Error('no lobby')
+    expect(after.lobby.setup).toEqual(book)
+  })
 })

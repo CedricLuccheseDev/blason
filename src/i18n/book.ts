@@ -5,6 +5,8 @@ export const bookEn = {
   open: 'The book of the game',
   home: 'Back to the home',
   yours: 'Your game',
+  hostGame: 'The host’s game',
+  waitHost: 'Waiting for the host to launch it',
   going: (minutes: number) =>
     `the game going on, for ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,
   land: 'The land',
@@ -20,6 +22,19 @@ export const bookEn = {
       .filter(Boolean)
       .join(' and ')
     return company ? `you, ${company}` : 'you alone'
+  },
+  /** As a guest reads it: the host, him, the other guests, the bots. */
+  seatedGuest: (bots: number, guests: number) => {
+    const others = guests - 1
+    const friends = others === 1 ? '1 friend' : `${others} friends`
+    const machines = bots === 1 ? '1 bot' : `${bots} bots`
+    const company = [
+      'the host',
+      'you',
+      others > 0 ? friends : '',
+      bots > 0 ? machines : '',
+    ].filter(Boolean)
+    return `${company.slice(0, -1).join(', ')} and ${company.at(-1)}`
   },
   guest: 'a friend',
   invite: 'Invite',
@@ -50,6 +65,8 @@ export const bookFr: BookMessages = {
   open: 'Le livre de la partie',
   home: 'Revenir à l’accueil',
   yours: 'Ta partie',
+  hostGame: 'La partie de l’hôte',
+  waitHost: 'En attente de l’hôte',
   going: (minutes: number) =>
     `la partie en cours, depuis ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,
   land: 'La terre',
@@ -65,6 +82,18 @@ export const bookFr: BookMessages = {
       .filter(Boolean)
       .join(' et ')
     return company ? `toi, ${company}` : 'toi seul'
+  },
+  seatedGuest: (bots: number, guests: number) => {
+    const others = guests - 1
+    const friends = others === 1 ? '1 ami' : `${others} amis`
+    const machines = bots === 1 ? '1 bot' : `${bots} bots`
+    const company = [
+      'l’hôte',
+      'toi',
+      others > 0 ? friends : '',
+      bots > 0 ? machines : '',
+    ].filter(Boolean)
+    return `${company.slice(0, -1).join(', ')} et ${company.at(-1)}`
   },
   guest: 'un ami',
   invite: 'Inviter',

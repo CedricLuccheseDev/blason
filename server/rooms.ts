@@ -78,10 +78,13 @@ export function upcoming(): Upcoming {
   }
 }
 
+/** The longest book a host may send, as its JSON: twenty seats are some 1,500 characters. */
+const BOOK_MAX = 4000
+
 /** A private room as it stands, told to each of its players. */
 function tellLobby(room: Room) {
   const names = room.players.map((p) => p?.name ?? '')
-  const lobby: Lobby = { room: room.code, names, host: 0 }
+  const lobby: Lobby = { room: room.code, names, host: 0, setup: room.book }
   room.players.forEach((p, seat) => p?.send({ t: 'lobby', seat, lobby }))
 }
 
@@ -204,7 +207,13 @@ export function hear(room: Room, player: Player, message: ToRelay) {
       room.setup = setup
     begin(room)
   }
-  else if (message.t === 'order' && started(room) && isMove(message.move))
+  // The host's book, while his room waits, passed on to his guests; a
+  // book too large to be one is not.
+  else if (message.t === 'book' && seat === 0 && !started(room)) {
+    if (JSON.stringify(message.setup ?? null).length > BOOK_MAX) return
+    room.book = message.setup
+    tellLobby(room)
+  } else if (message.t === 'order' && started(room) && isMove(message.move))
     order(room, { ...message.move, player: seat })
   else if (
     message.t === 'hash' &&

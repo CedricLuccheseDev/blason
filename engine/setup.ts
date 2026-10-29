@@ -97,6 +97,21 @@ export function hostSetup(book: Book): GameSetup {
   return drawn(book.seed, book.size, opening, seats)
 }
 
+/** A host's book read back from the setup it made (hostSetup), as his guests see it before the game. */
+export function bookOf(setup: GameSetup): Book {
+  const { seats } = setup
+  const teams = new Set(seats.flatMap((s) => (s.team >= 0 ? [s.team] : [])))
+  return {
+    seed: setup.seed,
+    size: setup.land.size,
+    guests: Math.max(0, seats.filter((s) => s.person).length - 1),
+    bots: seats.filter((s) => s.bot !== null).length,
+    level: seats.find((s) => s.bot !== null)?.bot ?? 'normal',
+    teams: teams.size,
+    opening: setup.opening,
+  }
+}
+
 /** The public game the relay keeps in its opening: the standard land and no bot, every seat empty until a person takes it, an opening long enough for players to come. */
 export function publicSetup(seed: string): GameSetup {
   const seats = many(SETUP_LIMITS.seats.max, null)

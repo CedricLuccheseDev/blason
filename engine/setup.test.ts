@@ -3,6 +3,7 @@ import { createGame } from './land'
 import { RULES, SETUP_LIMITS } from './rules'
 import {
   aloneSetup,
+  bookOf,
   botsSetup,
   hostSetup,
   publicSetup,
@@ -123,5 +124,22 @@ describe('the host’s setup', () => {
     expect(seats.every((s) => s.team === -1)).toBe(true)
     expect(seats.filter((s) => s.bot)).toHaveLength(SETUP_LIMITS.seats.max - 1)
     expect(opening).toBe(SETUP_LIMITS.opening.min)
+  })
+})
+
+describe('a host’s book read back', () => {
+  it('gives back the book its setup was made from', () => {
+    const book = {
+      seed: 'back',
+      size: 'large' as const,
+      guests: 2,
+      bots: 5,
+      level: 'hard' as const,
+      teams: 3,
+      opening: 200,
+    }
+    expect(bookOf(hostSetup(book))).toEqual(book)
+    const alone = { ...book, guests: 0, bots: 0, teams: 0 }
+    expect(bookOf(hostSetup(alone))).toEqual({ ...alone, level: 'normal' })
   })
 })

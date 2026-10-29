@@ -86,7 +86,10 @@ export function Seats({ book }: Readonly<{ book: Book }>) {
     if (i === 0) return m.you
     return i <= guests ? m.guest : m.bot
   }
-  const lords = Array.from({ length: 1 + guests + book.bots }, (_, i) => i)
+  const lords = Array.from(
+    { length: Math.min(PLAYERS.length, 1 + guests + book.bots) },
+    (_, i) => i,
+  )
   const sides =
     book.teams >= 2
       ? Array.from({ length: book.teams }, (_, t) =>

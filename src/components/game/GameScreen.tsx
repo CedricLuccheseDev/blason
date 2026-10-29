@@ -49,6 +49,8 @@ export type Hosting = {
   launch: () => void
   restart: () => void
   quit: () => void
+  /** A guest's: his book to read, what his room says. */
+  guest?: { status: string }
 }
 
 export function GameScreen({
@@ -202,6 +204,7 @@ export function GameScreen({
             setOpen(true)
           }}
           onQuit={hosting.quit}
+          guest={hosting.guest}
         />
       )}
     </main>

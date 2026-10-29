@@ -30,6 +30,8 @@ export type Room = {
   timer: ReturnType<typeof setInterval> | null
   /** By seat, the last standard planted in the opening: the one a lone player keeps when it begins again. */
   planted: Map<number, Order>
+  /** A private room's host's book before its game, passed on to his guests unread. */
+  book?: unknown
   /** Who sat through an opening alone and waits in this one. */
   waited: Set<Player>
 }

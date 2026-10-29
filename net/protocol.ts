@@ -31,6 +31,8 @@ export type ToRelay =
   | { t: 'join'; room: string | null; name: string }
   /** The host starts the private game now, as his book set it (read by the relay with readSetup; none, the room's own). */
   | { t: 'start'; setup?: unknown }
+  /** The host's book as it stands, shown to his guests before the game (the relay keeps it and reads nothing of it). */
+  | { t: 'book'; setup: unknown }
   | { t: 'order'; move: Move }
   | { t: 'hash'; turn: number; hash: string }
 
@@ -41,6 +43,8 @@ export type Lobby = {
   names: Array<string>
   /** The seat that may start the game. */
   host: number
+  /** The host's book as he last sent it, for his guests to read: a setup, read by them with readSetup; none yet. */
+  setup?: unknown
 }
 
 /** The public game in its opening, as anyone may see it without joining it. */

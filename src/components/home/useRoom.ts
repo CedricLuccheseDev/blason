@@ -31,6 +31,8 @@ export type RoomActions = {
   leave: () => void
   /** The host starts the game now, as his book set it if he has one. */
   start: (setup?: GameSetup) => void
+  /** The host's book as it stands, for his guests to read before the game. */
+  book: (setup: GameSetup) => void
 }
 
 export function useRoom(
@@ -93,8 +95,8 @@ export function useRoom(
       })
   }
 
-  const start = (setup?: GameSetup) =>
-    line.current?.send({ t: 'start', setup })
+  const start = (setup?: GameSetup) => line.current?.send({ t: 'start', setup })
+  const book = (setup: GameSetup) => line.current?.send({ t: 'book', setup })
 
   // Leaving the home leaves the room, unless the game began.
   useEffect(
@@ -105,7 +107,7 @@ export function useRoom(
     [],
   )
 
-  return [room, { join, leave, start }]
+  return [room, { join, leave, start, book }]
 }
 
 /** Whether the public game is the one being joined, or that failed. */

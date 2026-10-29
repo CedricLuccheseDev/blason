@@ -163,7 +163,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   ouvert (acté le 29/10, « créer une partie doit envoyer directement dans le lobby », le solo n'étant qu'une partie
   créée sans inviter personne ; `GameBook.tsx`, `BookParts.tsx` : la terre, sa taille ou une autre, les bots, leur
   niveau, les équipes, la pose, « Lancer la partie » ; puis le menu de l'hôte, « Recommencer », « Quitter » ;
-  `hostSetup` dans le moteur ; le livre ouvre une salle au relais et en donne le code, « Inviter », les amis venus s'assoient après l'hôte et, lancée avec eux, la partie part en ligne pour tous avec les réglages du livre, seule elle se joue dans la page), et « Rejoindre avec un code » (les parties privées, le code à cinq signes). À leur droite le Journal, un
+  `hostSetup` dans le moteur ; le livre ouvre une salle au relais et en donne le code, « Inviter », les amis venus s'assoient après l'hôte et, lancée avec eux, la partie part en ligne pour tous avec les réglages du livre, seule elle se joue dans la page), et « Rejoindre avec un code » (les parties privées, le code à cinq signes : complet, il entre aussitôt dans le jeu,
+  `/play?room=CODE`, le livre de l'hôte ouvert à lire, sa terre et ses réglages que le relais passe sans les lire,
+  « En attente de l'hôte », « Quitter », « Voir la carte » ; lancée, la partie part en ligne, 29/10). À leur droite le Journal, un
   feuillet de ses derniers articles, la date, le titre et la première ligne, en Alegreya Sans à pleine encre pour
   qu'il se lise (29/10, « met le journal à droite des cases »). En bas, discrets, le joueur à gauche (son écu et
   « Seigneur » en attendant les profils), le pied du site au milieu, toujours au bas de l'écran ; sur téléphone et
@@ -186,9 +188,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - Les pages à côté du jeu (le Journal et ses articles, « Comment ça marche », les mentions légales, les erreurs) sont
   des feuillets du livre du jeu (`src/components/home/Leaf.tsx`, 29/10, « les articles on lit mal y'a pas de hiérarchie
   de sections ») : la page de l'accueil, son cadre et sa rose, le nom du jeu en tête, le contenu sur un feuillet dans
-  les niveaux du design system (`.hud-prose` pour le texte des articles), et leur pied. **Écart assumé à la norme** :
-  pas de pied de site commun monté dans `__root` (la direction artistique exclut les panneaux de site et le gris) ;
-  l'accueil et `Leaf` portent chacun leur pied, le même (`Foot.tsx`), la partie aucun.
+  les niveaux du design system (`.hud-prose` pour le texte des articles), et leur pied. comme le veut la norme (29/10, « Dans la norme pour les blogs et autre page met que ça doit ressembler a la DA du site ») :
+  pas de pied de site commun monté dans `__root` ; l'accueil et `Leaf` portent chacun le même pied (`Foot.tsx`), la
+  partie aucun.
 - `src/i18n/` : les mots, en français et en anglais, par section (`home`, `game`, `race`, `menu`, `errors`).
 - `design/mockups/` : les sources des planches, tirées d'une partie du jeu (`cells.ts`) ; leurs pièces suivent les
   jetons du HUD (`kit.py`).

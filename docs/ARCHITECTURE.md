@@ -628,8 +628,10 @@ simulation.
 
 - `net/protocol.ts`, shared by the browser and the server, says the
   messages: join the public game, a private room by its code, or a new
-  private room; start, an order, a fingerprint; and back a private room's
-  lobby (who sits, its code), the beginning (my seat and the game's setup,
+  private room; start, the host's book as it stands, an order, a
+  fingerprint; and back a private room's lobby (who sits, its code, the
+  host's book, which the relay keeps and passes on unread, for the guests to
+  read in the game with `readSetup` and `bookOf`), the beginning (my seat and the game's setup,
   whole, which the relay makes and never reads again, and the browser checks
   with `readSetup`), each numbered turn, a
   desync. A turn holds the orders received since the last, each signed with
@@ -669,7 +671,9 @@ simulation.
   the seats taken and the persons waiting in it, come alone to the last
   opening (`waiting`, which the home's card says in a short line), never cached and open to any page (CORS), for it
   tells nothing that joining would not. A private room gathers its players
-  first and begins on its host's word, its players seated from the first
+  first, its guests in the game already, the host's book open to read
+  (`/play?room=CODE`, `Guest` in `routes/play.tsx`), and begins on its host's
+  word, its players seated from the first
   turn, with the same opening. A player who leaves a game gives his seat
   back to its bot in the setup, on every browser at the same turn, and with
   none, as in the public game, leaves his lord idle. Every 50 turns each

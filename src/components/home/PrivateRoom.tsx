@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { RoomTrouble, Seats } from './Seats'
 import type { KeyboardEvent } from 'react'
 import type { Room, RoomActions } from './useRoom'
@@ -9,8 +10,9 @@ import { useMessages } from '~/i18n'
 
 // A private room, from either side: the host's, made as the sheet opens, its
 // code given to share; or a friend's, the code typed (five letters or
-// figures, the relay's), the room joined once it is whole. Inside, who sits,
-// and for the host the way to start.
+// figures, the relay's), the game entered once it is whole, where he reads
+// the host's book (play.tsx, Guest). Inside, who sits, and for the host the
+// way to start.
 
 const LENGTH = 5
 const sign = (s: string) =>
@@ -39,10 +41,13 @@ export function PrivateRoom({
     if (way === 'create') actions.join('new')
   }, [way])
 
-  // The code typed whole: the room is joined.
+  // The code typed whole: into the game at once, the host's book to read
+  // there until he launches it (« à lire pour l'invité »).
+  const navigate = useNavigate()
   const whole = typed.join('')
   useEffect(() => {
-    if (way === 'join' && whole.length === LENGTH) actions.join(whole)
+    if (way === 'join' && whole.length === LENGTH)
+      void navigate({ to: '/play', search: { room: whole } })
   }, [whole])
 
   const type = (i: number, value: string) => {
