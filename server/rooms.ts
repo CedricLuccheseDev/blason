@@ -196,6 +196,14 @@ function begin(room: Room) {
   run(room)
 }
 
+/** The host's book, while his room waits, passed on to his guests; a book too large to be one is not. */
+function keepBook(room: Room, setup: unknown) {
+  if (started(room)) return
+  if (JSON.stringify(setup ?? null).length > BOOK_MAX) return
+  room.book = setup
+  tellLobby(room)
+}
+
 /** A message from a player of a room. */
 export function hear(room: Room, player: Player, message: ToRelay) {
   const seat = room.players.indexOf(player)
@@ -206,14 +214,8 @@ export function hear(room: Room, player: Player, message: ToRelay) {
     if (setup && setup.seats.filter((s) => s.person).length >= seated(room))
       room.setup = setup
     begin(room)
-  }
-  // The host's book, while his room waits, passed on to his guests; a
-  // book too large to be one is not.
-  else if (message.t === 'book' && seat === 0 && !started(room)) {
-    if (JSON.stringify(message.setup ?? null).length > BOOK_MAX) return
-    room.book = message.setup
-    tellLobby(room)
-  } else if (message.t === 'order' && started(room) && isMove(message.move))
+  } else if (message.t === 'book' && seat === 0) keepBook(room, message.setup)
+  else if (message.t === 'order' && started(room) && isMove(message.move))
     order(room, { ...message.move, player: seat })
   else if (
     message.t === 'hash' &&
