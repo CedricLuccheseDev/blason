@@ -92,12 +92,11 @@ export function makeAim(state: GameState, me: number) {
     ghost.visible = true
   }
 
-  /** Where the standard would be planted: a dotted ring round the domain's village, no land drawn. */
+  /** Where the standard would be planted: a dotted ring round the tile, no land drawn. */
   function opening(tile: number, zoom: number) {
-    const realm = state.realm[tile]
-    if (state.players[me].standard === realm || !canStart(state, me, tile))
+    if (state.players[me].standard === tile || !canStart(state, me, tile))
       return
-    const p = siteOf(state, realm)
+    const p = siteOf(state, tile)
     const r = 14 / zoom
     for (let k = 0; k < 16; k++) {
       const a = (k / 16) * Math.PI * 2

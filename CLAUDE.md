@@ -58,7 +58,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   millièmes, `UNIT`, jamais l'horloge, 10 pas par seconde). Son seul contrat est `engine/index.ts` : hors du moteur,
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ;
-    `grid.ts` les tuiles ; `land.ts` les domaines libres et les paysans ; `opening.ts` l'ouverture, les étendards plantés et les terres données à la fin du compte ; `muster.ts` la levée aux villages
+    `grid.ts` les tuiles ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte ; `muster.ts` la levée aux villages
     et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.

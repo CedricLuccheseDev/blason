@@ -1,7 +1,7 @@
 import { drawInt } from '../numbers'
 import { apart, around } from '../grid'
 import { capOf, worksOf } from '../land'
-import { canStart, hasPicked, standards } from '../opening'
+import { canStart, hasPicked, spotFor } from '../opening'
 import { NEUTRAL } from '../types'
 import { hired } from '../armies'
 import { menFor } from '../muster'
@@ -15,35 +15,22 @@ import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
 
 // The bots, plain on purpose and calm: they read the land as a
-// player sees it and click as one would. They take the free domains first,
-// striking at their villages; they answer an army striking them by striking its
-// lord there, so the two meet; they wage one war at a time, on the
-// neighbour whose land is held thinnest and not already hunted by others
-// (war.ts), and rest between two attacks; they
+// player sees it and click as one would. They plant their standards where
+// there is room and take the free land first; they answer an army striking
+// them by striking its lord there, so the two meet; they wage one war at a
+// time, on the neighbour whose land is held thinnest and not already hunted
+// by others (war.ts), and rest between two attacks; they
 // build with the gold left over; now and then a coup (coups.ts). Each has its own boldness and patience,
 // drawn from the seed, and the level chosen for the game (levels.ts).
 
 export type Bot = (state: GameState, me: number) => Array<Order>
 
-/** During the opening: of the free domains, the one farthest from the standards already planted; a bot keeps his first. */
+/** During the opening: of a few tiles of the land drawn from the seed, the one with the most room round it, the farthest from the standards planted; a bot keeps his first. */
 function opening(state: GameState, me: number): Array<Order> {
   if (hasPicked(state, me) || state.tick < 20 + (me % 10) * 5) return []
-  const planted = standards(state, me)
-  let best = -1
-  let score = -1
-  for (const v of state.villages) {
-    if (!canStart(state, me, v)) continue
-    const near = planted.reduce(
-      (m, o) => Math.min(m, apart(state.grid, o, v)),
-      1e12,
-    )
-    const s = near + drawInt(state.seed, 2000, 'pick', me, v)
-    if (s > score) {
-      score = s
-      best = v
-    }
-  }
-  return best < 0 ? [] : [{ player: me, type: 'pickStart', tile: best }]
+  const tile = spotFor(state, me, 40, 'plant', me, state.tick)
+  if (tile < 0 || !canStart(state, me, tile)) return []
+  return [{ player: me, type: 'pickStart', tile }]
 }
 
 /** The tiles of each other lord, or of the free land, that border mine. */

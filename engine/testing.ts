@@ -23,7 +23,6 @@ export function playing(grid: Grid, players = 2): GameState {
     sickness: 0,
   })
   state.tick = state.rules.openingTicks
-  state.villages = []
   return state
 }
 

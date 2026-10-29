@@ -1,34 +1,55 @@
 import { drawInt } from './numbers'
 import { apart, around } from './grid'
+import { pop, push } from './heap'
 import { capOf, setOwner } from './land'
 import { NEUTRAL } from './types'
-import type { GameState } from './types'
+import type { GameState, Grid } from './types'
 
-// The opening. For its first seconds no land is anyone's: each lord plants
-// his standard on a free domain and may move it as often as he likes. When
-// the count ends each receives his standard's domain whole, its village with
-// it, and who planted none is given one. The first to plant holds a domain:
-// no other standard may stand on it, nor on a domain touching it.
+// The opening, as on OpenFront. For its first seconds no land is anyone's:
+// each lord plants his standard on any tile of the land and may move it as
+// often as he likes, never too near another lord's (`standardGap`), so that
+// the first to plant holds the ground round his. When the count ends each
+// receives the land round his standard, as far as his start reaches, walking
+// from it over the land and never across the sea; where two starts meet,
+// each tile goes to the nearer standard. His first village stands on his
+// standard's tile. Who planted none is given the spot with the most room.
 
-/** The domains bordering each domain, read once from the land shared out. */
-const borders = new WeakMap<Array<number>, Map<number, Set<number>>>()
+/** Farther than any two tiles: how far the nearest standard is while none is planted. */
+const FAR = 1e12
+/** How many tiles are looked at to give a start to a lord who planted none. */
+const GIVEN_DRAWS = 2000
 
-function bordersOf(state: GameState): Map<number, Set<number>> {
-  const known = borders.get(state.realm)
+/** How far the sea lies from each tile, in steps to a side or a corner: the land is whole round a tile one step short of it. Read once a game. */
+const shores = new WeakMap<Grid, Int32Array>()
+
+/** The steps from a tile to the sea, as far as swept; beyond the map's edge, the sea. */
+function swept(far: Int32Array, grid: Grid, x: number, y: number): number {
+  const off = x < 0 || y < 0 || x >= grid.width || y >= grid.height
+  return off ? 0 : far[y * grid.width + x]
+}
+
+function shoreOf(grid: Grid): Int32Array {
+  const known = shores.get(grid)
   if (known) return known
-  const found = new Map<number, Set<number>>()
-  state.realm.forEach((realm, tile) => {
-    if (realm < 0) return
-    for (const n of around(state.grid, tile)) {
-      const other = state.realm[n]
-      if (other < 0 || other === realm) continue
-      const set = found.get(realm) ?? new Set<number>()
-      set.add(other)
-      found.set(realm, set)
-    }
-  })
-  borders.set(state.realm, found)
-  return found
+  const { width, land } = grid
+  const far = new Int32Array(land.length)
+  const at = (x: number, y: number) => swept(far, grid, x, y)
+  // Two sweeps, down the map then back up: each tile of land one step
+  // farther than the nearest of its neighbours already swept.
+  for (let t = 0; t < land.length; t++) {
+    if (!land[t]) continue
+    const [x, y] = [t % width, Math.floor(t / width)]
+    const up = Math.min(at(x - 1, y - 1), at(x, y - 1), at(x + 1, y - 1))
+    far[t] = 1 + Math.min(at(x - 1, y), up)
+  }
+  for (let t = land.length - 1; t >= 0; t--) {
+    if (!land[t]) continue
+    const [x, y] = [t % width, Math.floor(t / width)]
+    const down = Math.min(at(x - 1, y + 1), at(x, y + 1), at(x + 1, y + 1))
+    far[t] = Math.min(far[t], 1 + Math.min(at(x + 1, y), down))
+  }
+  shores.set(grid, far)
+  return far
 }
 
 /** Whether a lord has planted his standard. */
@@ -36,68 +57,120 @@ export function hasPicked(state: GameState, player: number): boolean {
   return state.players[player].standard >= 0
 }
 
-/** The domains the standards stand on, of all lords or all but one. */
-export function standards(state: GameState, but = -1): Array<number> {
+/** The tiles the standards stand on, of all lords or all but one. */
+function standards(state: GameState, but = -1): Array<number> {
   return state.players.flatMap((p, id) =>
     id !== but && p.standard >= 0 ? [p.standard] : [],
   )
 }
 
-/** Whether a lord may plant his standard on the free domain of this tile: no other lord's standard on it, nor on a domain touching it. */
+/** The square of the distance from a tile to the nearest of these standards, in tiles. */
+function nearest(state: GameState, tile: number, planted: Array<number>) {
+  return planted.reduce((m, s) => Math.min(m, apart(state.grid, s, tile)), FAR)
+}
+
+/** Whether a standard may stand so far from the nearest other, a square of tiles: no nearer than the gap. */
+const clear = (state: GameState, near: number) =>
+  near >= state.rules.standardGap * state.rules.standardGap
+
+/** Whether a lord may plant his standard on this tile: any tile of the land in the game, with no other lord's standard within the gap. */
 export function canStart(
   state: GameState,
   player: number,
   tile: number,
 ): boolean {
-  const realm = state.realm[tile]
-  if (realm < 0 || !state.villages.includes(realm)) return false
-  const near = bordersOf(state).get(realm)
-  return standards(state, player).every((s) => s !== realm && !near?.has(s))
+  if (state.grid.land[tile] !== true) return false
+  return clear(state, nearest(state, tile, standards(state, player)))
 }
 
-/** During the opening a lord plants his standard, or moves it, on a free domain. */
+/** During the opening a lord plants his standard, or moves it, on a tile of the land. */
 export function pickStart(state: GameState, player: number, tile: number) {
-  if (canStart(state, player, tile))
-    state.players[player].standard = state.realm[tile]
+  if (canStart(state, player, tile)) state.players[player].standard = tile
 }
 
-/** The free domain farthest from the standards planted, for a lord who planted none. */
-function farthest(state: GameState, player: number): number {
-  const planted = standards(state)
+/**
+ * How a spot ranks for a start, the greatest first: whether a standard may
+ * stand there; the room round it, as far as the land is whole or halfway to
+ * the nearest standard, no more than a start reaches; then how far the
+ * nearest standard is. In squares of tiles.
+ */
+function rank(state: GameState, tile: number, planted: Array<number>) {
+  const near = nearest(state, tile, planted)
+  const whole = Math.max(0, shoreOf(state.grid)[tile] - 1)
+  const reach = state.rules.startRadius * state.rules.startRadius
+  const room = Math.min(whole * whole, Math.floor(near / 4), reach)
+  return [clear(state, near) ? 1 : 0, room, near]
+}
+
+/** Whether a rank comes before another: the first figure that differs is the greater. */
+function above(a: Array<number>, b: Array<number>): boolean {
+  const i = a.findIndex((v, k) => v !== b[k])
+  return i >= 0 && a[i] > b[i]
+}
+
+/**
+ * Of so many tiles drawn from the seed with these keys, the best spot for a
+ * lord's start (rank): the first drawn of two alike; -1 if none is land.
+ */
+export function spotFor(
+  state: GameState,
+  player: number,
+  draws: number,
+  ...keys: Array<string | number>
+): number {
+  const { grid, seed } = state
+  const planted = standards(state, player)
   let best = -1
-  let score = -1
-  for (const v of state.villages) {
-    if (!canStart(state, player, v)) continue
-    const near = planted.reduce(
-      (m, o) => Math.min(m, apart(state.grid, o, v)),
-      1e12,
-    )
-    const s = near * 16 + drawInt(state.seed, 16, 'start', player, v)
-    if (s > score) {
-      score = s
-      best = v
-    }
+  let top: Array<number> = []
+  for (let k = 0; k < draws; k++) {
+    const tile = drawInt(seed, grid.land.length, ...keys, k)
+    if (!grid.land[tile]) continue
+    const ranked = rank(state, tile, planted)
+    if (best >= 0 && !above(ranked, top)) continue
+    best = tile
+    top = ranked
   }
   return best
 }
 
-/** A lord settles on his standard's domain, all of it, its village his, his peasants at the full. */
-function settle(state: GameState, player: number, realm: number): void {
-  state.realm.forEach((r, t) => {
-    if (r === realm && state.owner[t] === NEUTRAL) setOwner(state, t, player)
+/**
+ * Each lord's start: the land within his start's reach of his standard that
+ * he walks to from it, over the land alone. A tile two may reach goes to
+ * the nearer standard, to the lower seat of two as near: the tiles are
+ * taken nearest first, each from the land its lord already took.
+ */
+function shareStarts(state: GameState): void {
+  const { grid, players } = state
+  const reach = state.rules.startRadius * state.rules.startRadius
+  const lords = players.length
+  // [the square of the distance to the standard, then the seat, as one figure; the tile].
+  const heap: Array<[number, number]> = []
+  players.forEach(({ standard }, id) => {
+    if (standard >= 0) push(heap, [id, standard])
   })
-  state.works.push({ work: 'village', tile: realm, owner: player })
-  state.players[player].peasants = capOf(state, player)
+  for (let next = pop(heap); next; next = pop(heap)) {
+    const [key, tile] = next
+    if (state.owner[tile] !== NEUTRAL) continue
+    const id = key % lords
+    setOwner(state, tile, id)
+    for (const n of around(grid, tile)) {
+      const d = apart(grid, players[id].standard, n)
+      if (grid.land[n] && state.owner[n] === NEUTRAL && d <= reach)
+        push(heap, [d * lords + id, n])
+    }
+  }
 }
 
-/** At the end of the opening: who planted nothing is given the free domain farthest from all; then each lord receives his standard's domain, and the free villages are gone. */
+/** At the end of the opening: who planted nothing is given the spot with the most room; then each lord receives the land round his standard, his first village on its tile, his peasants at the full. */
 export function grantStarts(state: GameState): void {
   state.players.forEach((lord, id) => {
-    if (lord.standard < 0) lord.standard = farthest(state, id)
+    if (lord.standard < 0)
+      lord.standard = spotFor(state, id, GIVEN_DRAWS, 'given', id)
   })
+  shareStarts(state)
   state.players.forEach((lord, id) => {
-    if (lord.standard >= 0) settle(state, id, lord.standard)
+    if (lord.standard < 0) return
+    state.works.push({ work: 'village', tile: lord.standard, owner: id })
+    lord.peasants = capOf(state, id)
   })
-  // What no lord holds is now one free land, held by its villagers.
-  state.villages = []
 }

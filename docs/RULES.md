@@ -16,29 +16,31 @@ applies each rule is named beside it.
   (`engine/grid.ts`), some 53,000 tiles of land.
 - A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
   huge (four times), chosen by `/play?size=large` or `huge` until the home
-  offers it. Its tiles, cells and free domains keep their size: a larger
-  land has more of them, and more lakes, rivers, ranges and woods.
-- At the start the whole land is shared into **free domains**, each around its
-  village, one village for some 600 tiles, for the lords to choose where they
-  start (`engine/land.ts`).
-- Once the opening is over, the free domains and their villages are gone:
-  what no lord holds is one **free land**. It only defends itself, by its
+  offers it. Its tiles and cells keep their size: a larger land has more of
+  them, and more lakes, rivers, ranges and woods.
+- The game is played on one piece of land: a tile the sea cuts off, which
+  no walk reaches, is no part of it (`engine/land.ts`).
+- What no lord holds is one **free land**. It only defends itself, by its
   villagers: each free tile is held by half the men that hold the mean lord's
   tile (`engine/war.ts`), and never fewer than 0.1 man, so that a small army
   does not nibble for ever. Each free tile taken brings 0.1 gold: some 60 for
-  what was a domain.
+  as much land as a lord starts with.
 
 ## The opening
 
 For the first 10 seconds no land is anyone's: each lord plants his
-**standard** on the free domain he wants by clicking it, and may move it as
-often as he likes until the count ends. The first to plant holds a domain:
-no other standard may stand on it, nor on a domain touching it. When the
-opening ends each lord receives his standard's domain whole, its village
-included; a lord who has planted none is given the free domain farthest from
-the others' standards. While the count runs, no land nor domain is drawn on
-the map: only the bare land, the free villages and the standards.
-Every lord starts with 50 gold.
+**standard** on any tile of the land by clicking it, as on OpenFront, and
+may move it as often as he likes until the count ends, but never within 20
+tiles of another lord's standard: the first to plant holds the ground round
+his (`engine/opening.ts`). When the opening ends each lord receives the land
+within 14 tiles of his standard, some 600 tiles, walking from it over the
+land, never across the sea or a lake; where two starts overlap, each tile
+goes to the nearer standard, to the lower seat of two as near. His first
+village stands on his standard's tile, its peasants all there. A lord who
+has planted none is given the spot with the most room: where his start is
+whole, out of the sea's way, and the farthest from the others' standards.
+While the count runs, no land is drawn on the map: only the bare land and
+the standards. Every lord starts with 50 gold.
 
 ## Peasants and gold
 

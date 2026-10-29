@@ -26,7 +26,7 @@ type Lord = {
   tiles: number
   /** How many of each coup he has launched: its price doubles with each. */
   coups: Partial<Record<Coup, number>>
-  /** The free domain his standard stands on, by its village's tile: moved at will during the opening, his start once it ends; -1 while he has planted none. */
+  /** The tile his standard stands on: moved at will during the opening, the heart of his start once it ends, his first village on it; -1 while he has planted none. */
   standard: number
 }
 
@@ -53,7 +53,7 @@ export type Scar = {
 type Building = { work: Work; tile: number; owner: number; ready?: number }
 
 /**
- * An army raised against a lord or a free domain: it enters by the border
+ * An army raised against a lord or the free land: it enters by the border
  * tile nearest where its lord clicked, and spreads from there as a bulge
  * towards it, a few tiles a tick.
  */
@@ -116,10 +116,6 @@ export type GameState = {
   tick: number
   /** Each tile's lord, or free, or the sea. */
   owner: Array<number>
-  /** The free domain each tile was drawn into at the start, named by its village's tile; -1 at sea. The whole land is shared out: no empty land, and free land fought for a domain at a time. */
-  realm: Array<number>
-  /** The free villages to start at, by their tile, during the opening; none after it. */
-  villages: Array<number>
   works: Array<Building>
   players: Array<Lord>
   hosts: Array<Host>

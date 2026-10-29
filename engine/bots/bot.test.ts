@@ -19,7 +19,6 @@ function playing(grid: Grid): GameState {
     fillSeconds: Number.MAX_SAFE_INTEGER,
   })
   state.tick = state.rules.openingTicks
-  state.villages = []
   return state
 }
 
@@ -53,7 +52,6 @@ describe('the bots on a lord already struck', () => {
       fillSeconds: Number.MAX_SAFE_INTEGER,
     })
     state.tick = state.rules.openingTicks
-    state.villages = []
     // A third of the row each: 2, then 0, then 1.
     const lords = [2, 0, 1]
     for (let t = 0; t < 60; t++) setOwner(state, t, lords[Math.floor(t / 20)])

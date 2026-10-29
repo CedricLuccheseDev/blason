@@ -19,7 +19,7 @@ export type MapSize = 'standard' | 'large' | 'huge'
 
 /**
  * Each size's land, so many times the standard one's area (some 53,000
- * tiles): its tiles, cells and free domains the same size, more of them.
+ * tiles): its tiles and cells the same size, more of them.
  */
 export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
   standard: 1,
@@ -48,6 +48,9 @@ type CoupRule = {
 export type Rules = {
   /** Ticks during which each lord picks where he starts. */
   openingTicks: number
+  /** In the opening, how near another lord's standard none may be planted, in tiles; when it ends, how far round his standard a lord's start reaches, in tiles. */
+  standardGap: number
+  startRadius: number
   /** A tile's side, in map units. */
   tileSize: number
   /** A lord's gold at the start, in gold. */
@@ -95,8 +98,6 @@ export type Rules = {
   neutralFloor: number
   /** An army's band: so many tiles each side of its line, plus the square root of its men. */
   bandTiles: number
-  /** One free domain for so many tiles, to start on. */
-  villageEvery: number
   /** A castle: the land within so many tiles of it fights as the combat table says. */
   castleRadius: number
   /**
@@ -147,6 +148,8 @@ const MINUTE = 60 * SECOND
 
 export const RULES: Rules = {
   openingTicks: 10 * SECOND,
+  standardGap: 20,
+  startRadius: 14,
   tileSize: 4,
   startGold: 50,
   peasants: { land: 60, tiles: 600, village: 40 },
@@ -171,7 +174,6 @@ export const RULES: Rules = {
   neutralGold: 100,
   neutralFloor: 100,
   bandTiles: 6,
-  villageEvery: 600,
   castleRadius: 12,
   workPrice: { village: 100, market: 100, castle: 200 },
   buildTicks: {

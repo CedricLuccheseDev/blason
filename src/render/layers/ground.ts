@@ -44,9 +44,7 @@ export function makeGround(world: World, state: GameState) {
       if (!traced && state.tick === read) return
       read = state.tick
       const links = tradeLinks(state)
-      const works =
-        state.works.map((w) => `${w.tile}:${w.owner}`).join() +
-        state.villages.join()
+      const works = state.works.map((w) => `${w.tile}:${w.owner}`).join()
       if (!traced && links === laid.links && works === laid.works) return
       if (links !== laid.links) {
         roads = new Uint8Array(grid.land.length)
@@ -55,7 +53,7 @@ export function makeGround(world: World, state: GameState) {
       laid = { links, works }
       decor.relayout({
         keys,
-        sites: [...state.works.map((w) => w.tile), ...state.villages],
+        sites: state.works.map((w) => w.tile),
         villages: state.works
           .filter((w) => w.work === 'village')
           .map(({ tile, owner }) => ({ tile, owner })),

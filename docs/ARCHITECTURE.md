@@ -41,9 +41,9 @@ machine computes the same game, tick for tick.
 ### The state, the orders, the step
 
 - `GameState` (`engine/types.ts`) holds the land (`owner`, the lord of each
-  tile; `realm`, the free domain of each tile, to start on), the villages and works, the
-  players (peasants, gold, traitor's mark), the armies on the march (`hosts`),
-  the alliances and offers, the caravans, the tick and the winner.
+  tile), the works, the players (peasants, gold, traitor's mark, the tile of
+  their standard), the armies on the march (`hosts`), the alliances and
+  offers, the caravans, the tick and the winner.
 - An `Order` is everything a player can do: choose where to start, attack a
   tile with one of the three armies, build a work, offer or accept an
   alliance, break it.
@@ -63,8 +63,8 @@ can tune them without touching the code. The rules themselves are described in
 | `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                     |
 | `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes |
 | `grid.ts`                | The land cut into tiles of four map units                                                           |
-| `land.ts`                | The free domains, the peasants, the men holding a tile                                              |
-| `opening.ts`             | The opening: each lord's standard, moved at will, then the domains granted when it ends             |
+| `land.ts`                | The land in the game, the peasants, the men holding a tile                                          |
+| `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given |
 | `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                           |
 | `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs                        |
 | `battle.ts`              | Battles between armies that meet, by the combat table                                               |
@@ -117,10 +117,10 @@ their area, so there are more of them, and the noise that raises the ranges
 and brings the rain is measured in map units, so a larger land has more
 ranges and woods rather than larger ones; its shape takes an octave of noise
 more at the largest size, and more coast features, smaller. The game reads
-the size from the grid alone: the free domains, one for some 600 tiles, grow
-in number with it. The rendering reads the world's own width and height;
-only the camera's closest zoom reads the size, so that it comes as close on
-a larger land as on the standard one.
+the size from the grid alone: the starts keep their reach, so a larger land
+leaves more free land between them. The rendering reads the world's own
+width and height; only the camera's closest zoom reads the size, so that it
+comes as close on a larger land as on the standard one.
 
 ### The bots
 

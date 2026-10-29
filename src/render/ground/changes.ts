@@ -7,14 +7,14 @@ import type { Weights } from './weights'
 import type { Grid } from '../../../engine'
 
 // What the ground's decoration is painted from, kept up to date with the
-// game: the lands as last traced, the works and free villages, the roads;
+// game: the lands as last traced, the works, the roads;
 // and, chunk by chunk, a version that moves when any of it changed there,
 // so that only those chunks are painted again.
 
 /** The lands, the works and the roads, as the map draws them now. */
 export type Layout = {
   keys: Int32Array
-  /** The tiles of the works and of the free villages: a clearing round each. */
+  /** The tiles of the works: a clearing round each. */
   sites: Array<number>
   /** The lords' villages, whose fields lie round them. */
   villages: Array<{ tile: number; owner: number }>

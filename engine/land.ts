@@ -1,6 +1,6 @@
 import { TICKS_PER_SECOND, UNIT } from './units'
-import { drawInt, isqrt } from './numbers'
-import { apart, around } from './grid'
+import { isqrt } from './numbers'
+import { around } from './grid'
 import { RULES } from './rules'
 import { isFelon } from './diplomacy'
 import { rebelled } from './scars'
@@ -8,56 +8,43 @@ import { NEUTRAL, NO_ONE, SEA } from './types'
 import type { Rules } from './rules'
 import type { GameState, Grid } from './types'
 
-// The land, its peasants and its gold. At the start the whole land is
-// shared out into free domains, each round its village, with its border:
-// there is no empty land and no hole, every tile is taken by a fight, a
-// domain at a time. Each lord starts on one of them. A lord's peasants live
+// The land, its peasants and its gold. At the start no land is anyone's:
+// each lord plants his standard where he wants and receives the land round
+// it when the opening ends (opening.ts). The rest is one free land, held by
+// its villagers, every tile of it taken by a fight. A lord's peasants live
 // on his land and hold it; his gold pays the men he raises from them.
 
-/** Free villages, one for so many tiles, none too near another: drawn from the seed. */
-function scatterVillages(grid: Grid, seed: string, rules: Rules) {
-  const count = Math.max(1, Math.floor(grid.area / rules.villageEvery))
-  // Two villages stand at least about the side of a village's share apart.
-  const spread = Math.floor((rules.villageEvery * 6) / 10)
-  const order = grid.land
-    .flatMap((land, tile) => (land ? [tile] : []))
-    .map((tile) => ({ tile, key: drawInt(seed, 1_000_000, 'village', tile) }))
-    .sort((a, b) => a.key - b.key || a.tile - b.tile)
-  const chosen: Array<number> = []
-  for (const { tile } of order) {
-    if (chosen.length >= count) break
-    if (chosen.every((c) => apart(grid, c, tile) >= spread)) chosen.push(tile)
-  }
-  return chosen
+/** The largest piece of the land, its tiles joined by their sides: the land a walk reaches. */
+function mainLand(grid: Grid): Array<boolean> {
+  const piece = new Int32Array(grid.land.length).fill(-1)
+  let main = -1
+  let most = 0
+  grid.land.forEach((on, start) => {
+    if (!on || piece[start] >= 0) return
+    piece[start] = start
+    const queue = [start]
+    for (const t of queue)
+      for (const n of around(grid, t)) {
+        if (!grid.land[n] || piece[n] >= 0) continue
+        piece[n] = start
+        queue.push(n)
+      }
+    if (queue.length > most) [main, most] = [start, queue.length]
+  })
+  return grid.land.map((on, tile) => on && piece[tile] === main)
 }
 
-/** The land shared out between the villages: each tile to the village whose land reaches it first, walking from all at once. */
-function domains(grid: Grid, villages: Array<number>): Array<number> {
-  const realm = grid.land.map(() => -1)
-  const queue = [...villages]
-  for (const v of villages) realm[v] = v
-  for (const t of queue)
-    for (const n of around(grid, t)) {
-      if (!grid.land[n] || realm[n] >= 0) continue
-      realm[n] = realm[t]
-      queue.push(n)
-    }
-  return realm
-}
-
-/** A new game: the land shared out into free domains, held by their militia round their villages; each lord a little gold. */
+/** A new game: no land anyone's yet, all of it free, held by its villagers; each lord a little gold. */
 export function createGame(
   grid: Grid,
   players: number,
   seed: string,
   rules: Rules = RULES,
 ): GameState {
-  const villages = scatterVillages(grid, seed, rules)
-  const realm = domains(grid, villages)
-  // Land no village reaches, an islet cut off by the sea, is no part of the
+  // Land no walk reaches, an islet cut off by the sea, is no part of the
   // game: no army could ever take it, so it does not count in the share
   // that wins either.
-  const land = grid.land.map((on, tile) => on && realm[tile] >= 0)
+  const land = mainLand(grid)
   const reached = { ...grid, land, area: land.filter(Boolean).length }
   return {
     seed,
@@ -65,8 +52,6 @@ export function createGame(
     grid: reached,
     tick: 0,
     owner: land.map((on) => (on ? NEUTRAL : SEA)),
-    realm,
-    villages,
     works: [],
     players: Array.from({ length: players }, () => ({
       peasants: 0,

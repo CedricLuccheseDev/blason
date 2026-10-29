@@ -1,38 +1,27 @@
-import { Container, Graphics, Sprite } from 'pixi.js'
+import { Container, Sprite } from 'pixi.js'
 import { standing } from '../../engine'
-import { drawVillage } from './art/settlements'
 import { BOX, WORK_SPAN, workLod, workScale, workTexture } from './art/works'
 import { playerColor } from './palette'
 import type { Box } from './camera'
 import type { GameState, Grid } from '../../engine'
 
-// What stands on the land, drawn at its scale as on the boards: the free
-// villages, houses on the parchment, and the lords' works, each at the
-// level of detail its size on screen allows (art/works.ts): from afar a
-// silhouette never under thirty pixels, cut out of the wash by a halo of
-// parchment; at mid distance the drawing; up close the illustration. The
-// land a castle holds is not ringed here: the territory tints it with
-// stone. Laid again when a work is built or changes hands; pale while it is
-// being built.
+// What stands on the land, drawn at its scale as on the boards: the lords'
+// works, each at the level of detail its size on screen allows
+// (art/works.ts): from afar a silhouette never under thirty pixels, cut out
+// of the wash by a halo of parchment; at mid distance the drawing; up close
+// the illustration. The land a castle holds is not ringed here: the
+// territory tints it with stone. Laid again when a work is built or changes
+// hands; pale while it is being built.
 
 export function makeMarks(state: GameState) {
   const container = new Container()
-  const villages = container.addChild(new Container())
   const works = container.addChild(new Container())
   const at = (tile: number) => siteOf(state, tile)
   let key = ''
   let seen = { tick: -1, zoom: 0 }
 
   function redraw() {
-    villages.removeChildren().forEach((c) => c.destroy())
     works.removeChildren().forEach((c) => c.destroy())
-    for (const tile of state.villages) {
-      const g = villages.addChild(new Graphics())
-      drawVillage(g, tile)
-      const { x, y } = at(tile)
-      g.position.set(x, y)
-      g.scale.set(0.8)
-    }
     for (const work of state.works) {
       const { x, y } = at(work.tile)
       const drawn = works.addChild(new Sprite())
@@ -48,8 +37,7 @@ export function makeMarks(state: GameState) {
       // Nothing changes between two ticks but the zoom.
       if (state.tick === seen.tick && zoom === seen.zoom) return
       seen = { tick: state.tick, zoom }
-      const built = state.works.map((w) => [w.tile, w.owner].join(':'))
-      const now = [state.villages.length, ...built].join(',')
+      const now = state.works.map((w) => [w.tile, w.owner].join(':')).join()
       if (now !== key) {
         key = now
         redraw()
