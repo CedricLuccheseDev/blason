@@ -12,9 +12,3 @@ export function getRouter() {
   })
 }
 
-declare module '@tanstack/react-router' {
-  interface StaticDataRouteOption {
-    /** false on routes that render without the shared header and footer. */
-    chrome?: boolean
-  }
-}

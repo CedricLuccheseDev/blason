@@ -1,17 +1,31 @@
 import { Link } from '@tanstack/react-router'
 import type { BlogCard as Card } from '~/content/blog'
+import { Inline, Stack } from '~/components/hud/Layout'
+import { Call, Fine, Word } from '~/components/hud/Text'
 import { useMessages } from '~/i18n'
 
-// Dates stay ISO and mono: they are data, and a locale-formatted date risks
-// drifting between the server render and the browser one.
-const cardClass = 'block border border-hairline bg-card p-6 transition-colors'
-const metaClass = 'flex items-baseline gap-4 font-mono text-xs text-dim'
+// An entry of the journal, in the HUD's levels: what it is and its date on
+// a line, its title, and a few lines of it; ruled under, as a list's line.
+// Dates stay ISO, in figures: they are data, and a locale-formatted date
+// risks drifting between the server render and the browser one.
 
 export function BlogCard({ card }: { card: Card }) {
   return card.kind === 'post' ? (
     <PostCard card={card} />
   ) : (
     <ReleaseCard card={card} />
+  )
+}
+
+/** What an entry is and when, on one line. */
+function Head({ kind, date }: Readonly<{ kind: string; date: string }>) {
+  return (
+    <Inline gap="part">
+      <Word className="font-caps text-gilt-deep">{kind}</Word>
+      <time dateTime={date} className="hud-figure text-hud-s opacity-70">
+        {date}
+      </time>
+    </Inline>
   )
 }
 
@@ -24,21 +38,16 @@ function PostCard({
     <Link
       to="/blog/$slug"
       params={{ slug: card.slug }}
-      className={`${cardClass} hover:border-ink`}
+      className="group block border-b border-quill/30"
     >
-      <div className={metaClass}>
-        <span className="type-label">{m.blog.post}</span>
-        <time dateTime={card.date}>{card.date}</time>
-      </div>
-      <h2 className="mt-3 font-display text-xl font-bold tracking-tight">
-        {card.title}
-      </h2>
-      {card.excerpt ? (
-        <p className="mt-2 text-sm leading-relaxed text-dim">{card.excerpt}</p>
-      ) : null}
-      <span className="mt-4 inline-block text-sm font-semibold text-accent">
-        {m.blog.read}
-      </span>
+      <Stack gap="hair" className="pb-4">
+        <Head kind={m.blog.post} date={card.date} />
+        <h2>
+          <Call className="group-hover:text-gilt-deep">{card.title}</Call>
+        </h2>
+        {card.excerpt ? <Fine>{card.excerpt}</Fine> : null}
+        <Word className="italic text-gilt-deep">{m.blog.read}</Word>
+      </Stack>
     </Link>
   )
 }
@@ -50,21 +59,20 @@ function ReleaseCard({
   const m = useMessages()
 
   return (
-    <article className={cardClass}>
-      <div className={metaClass}>
-        <span className="type-label">{m.blog.release}</span>
-        <time dateTime={card.date}>{card.date}</time>
-      </div>
-      <h2 className="mt-3 font-display text-xl font-bold tracking-tight">
-        v{card.version}
-      </h2>
-      <ul className="mt-3 space-y-2">
-        {card.lines.map((line) => (
-          <li key={line} className="text-sm leading-relaxed">
-            {line}
-          </li>
-        ))}
-      </ul>
+    <article className="border-b border-quill/30">
+      <Stack gap="hair" className="pb-4">
+        <Head kind={m.blog.release} date={card.date} />
+        <h2>
+          <Call>v{card.version}</Call>
+        </h2>
+        <div className="hud-prose">
+          <ul>
+            {card.lines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      </Stack>
     </article>
   )
 }

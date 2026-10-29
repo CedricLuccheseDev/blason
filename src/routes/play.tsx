@@ -11,7 +11,6 @@ import { randomSeed } from '~/render/ahead'
 import { fetchSave } from '~/render/save'
 
 export const Route = createFileRoute('/play')({
-  staticData: { chrome: false },
   // The bots' level, chosen at the home, and the land's size (?size=large
   // or huge): normal and standard if none or unknown; or a game begun
   // online at the home (online.ts); or a saved game, held still (?save=,

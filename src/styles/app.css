@@ -120,52 +120,61 @@
   /* The body of a Markdown post: the tags marked emits carry no class, so the
      type roles are applied from here. Kept to what a post actually uses, in
      the same voice as the rest of the site. */
-  .prose-ink > * + * {
-    @apply mt-5;
+  /* An article's prose, in the HUD's levels (« les articles on lit mal y'a
+     pas de hiérarchie de sections »): its words at 18 in Vollkorn, its
+     sections' titles in small capitals at 22, under them at 18; links in
+     deep gold; all on the HUD's steps. */
+  .hud-prose {
+    @apply font-words text-hud-m leading-relaxed text-quill;
   }
-  .prose-ink p,
-  .prose-ink li {
-    @apply leading-relaxed;
+  .hud-prose > * + * {
+    @apply mt-4;
   }
-  .prose-ink h2 {
-    @apply mt-10 font-display text-xl font-bold tracking-tight;
+  .hud-prose > :first-child {
+    @apply mt-0;
   }
-  .prose-ink h3 {
-    @apply mt-8 font-display text-base font-semibold;
+  .hud-prose section > * + * {
+    @apply mt-3;
   }
-  .prose-ink ul,
-  .prose-ink ol {
-    @apply space-y-2 pl-5;
+  .hud-prose h2 {
+    @apply mt-8 border-b border-gilt/60 pb-1 font-caps text-hud-l leading-tight;
   }
-  .prose-ink ul {
-    @apply list-disc;
+  .hud-prose h3 {
+    @apply mt-6 font-caps text-hud-m leading-tight;
   }
-  .prose-ink ol {
+  .hud-prose ul,
+  .hud-prose ol {
+    @apply space-y-2 pl-6;
+  }
+  .hud-prose ul {
+    @apply list-disc marker:text-gilt-deep;
+  }
+  .hud-prose ol {
     @apply list-decimal;
   }
-  .prose-ink a {
-    @apply text-accent underline underline-offset-4 hover:text-accent-hover;
+  .hud-prose a {
+    @apply text-gilt-deep underline underline-offset-4 hover:text-quill;
   }
-  .prose-ink strong {
+  .hud-prose strong {
     @apply font-semibold;
   }
-  .prose-ink code {
-    @apply bg-hairline/40 px-1 py-0.5 font-mono text-sm;
+  .hud-prose code {
+    @apply bg-shade/40 px-1 font-figures text-hud-s;
   }
-  .prose-ink pre {
-    @apply overflow-x-auto border border-hairline bg-card p-4 font-mono text-sm;
+  .hud-prose pre {
+    @apply overflow-x-auto border border-quill/30 bg-shade/20 p-4 font-figures text-hud-s;
   }
-  .prose-ink pre code {
+  .hud-prose pre code {
     @apply bg-transparent p-0;
   }
-  .prose-ink blockquote {
-    @apply border-l-2 border-hairline pl-4 text-dim;
+  .hud-prose blockquote {
+    @apply border-l-2 border-gilt pl-4 italic;
   }
-  .prose-ink img {
-    @apply max-w-full border border-hairline;
+  .hud-prose img {
+    @apply max-w-full border border-quill/40;
   }
-  .prose-ink hr {
-    @apply my-10 border-hairline;
+  .hud-prose hr {
+    @apply my-8 border-gilt/50;
   }
 
   /* Focus ring: square like everything else, and for the keyboard only.

@@ -3,6 +3,7 @@ import { useLocale } from '~/i18n'
 import { legalEn, legalFr } from '~/i18n/legal'
 import { getLocale } from '~/i18n/locale'
 import { SITE_URL } from '~/lib/site'
+import { Leaf } from '~/components/home/Leaf'
 
 // The legal notice (LCEN), a non-professional publisher's. The text lives
 // in src/i18n/legal.ts; this route only lays it out. noindex: the page
@@ -26,22 +27,17 @@ function LegalPage() {
   const m = useLocale() === 'fr' ? legalFr : legalEn
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-5 py-20">
-      <h1 className="rise-in font-display text-3xl font-bold tracking-tight">
-        {m.title}
-      </h1>
-      <div className="rise-in stagger-1 mt-12 flex flex-col gap-10">
+    <Leaf title={m.title}>
+      <div className="hud-prose">
         {m.sections.map((section) => (
           <section key={section.heading}>
-            <h2 className="text-lg font-semibold">{section.heading}</h2>
+            <h2>{section.heading}</h2>
             {section.body.map((paragraph) => (
-              <p key={paragraph} className="mt-2 text-sm text-dim">
-                {paragraph}
-              </p>
+              <p key={paragraph}>{paragraph}</p>
             ))}
           </section>
         ))}
       </div>
-    </main>
+    </Leaf>
   )
 }

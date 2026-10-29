@@ -406,6 +406,14 @@ orders. It decides nothing about the rules.
 
 ## The interface
 
+The pages beside the game (the journal and its articles, how it works, the
+legal notice, the errors) are leaves of the game's book
+(`src/components/home/Leaf.tsx`): the home's page, its frame and rose, the
+game's name at its head, the content on a sheet in the HUD's levels (an
+article's prose as `.hud-prose`), and their foot (`Foot.tsx`), as the home's.
+No shared footer is mounted in `__root`: the art direction keeps site panels
+out, so the home and the leaves carry the same foot each, the game none.
+
 The HUD is React, laid over the map. It is built on a small design system,
 `src/components/hud/`, so that every piece shares the same measures:
 

@@ -133,13 +133,8 @@ export function Purse({
           </button>
         </Hint>
       )}
-      <div
-        className={
-          compact
-            ? `flex items-center ${GAP.part}`
-            : `grid grid-cols-[auto_auto] items-center ${GAP.hair}`
-        }
-      >
+      {/* Two lines everywhere, narrow on a phone too (« le HUD sur téléphone »). */}
+      <div className={`grid grid-cols-[auto_auto] items-center ${GAP.hair}`}>
         <Hint title={t.peasants.title} lines={[fed, growing]}>
           <Figure icon="soldier" size={compact ? 'm' : 'l'}>
             {count(me.peasants)}

@@ -50,7 +50,8 @@ export function Places({
       className={`pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
     >
       <Inline className="self-start">
-        <Panel className="h-11 justify-center">
+        {/* Upright on a phone the race needs the top's width: the game's mark gives way, the book's button stays. */}
+        <Panel className="h-11 justify-center max-sm:hidden">
           <HomeMark onHome={onHome} />
         </Panel>
         {onBook && (
@@ -77,12 +78,13 @@ export function Places({
       </div>
       <div
         ref={floor}
-        className={`relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end ${GAP.piece}`}
+        className={`relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end ${GAP.piece} max-sm:grid-cols-2`}
       >
         <div className="min-w-0">
           {!waiting && <Purse summary={summary} onHome={game.home} />}
         </div>
-        <div className="min-w-0">
+        {/* Upright on a phone, the bar on a row of its own under the purse and the campaigns. */}
+        <div className="min-w-0 max-sm:col-span-2 max-sm:row-start-2">
           {!waiting && (
             <Bar
               summary={summary}

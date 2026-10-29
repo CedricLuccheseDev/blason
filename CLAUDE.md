@@ -183,6 +183,12 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   `SoloSettings.tsx`, `PrivateRoom.tsx`, `useRoom.ts` la ligne vers le relais, `useUpcoming.ts`). La terre de la
   prochaine partie solo s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à
   `/play?online` (`src/render/online.ts`, `remote.ts` qui la joue au rythme des tours du relais).
+- Les pages à côté du jeu (le Journal et ses articles, « Comment ça marche », les mentions légales, les erreurs) sont
+  des feuillets du livre du jeu (`src/components/home/Leaf.tsx`, 29/10, « les articles on lit mal y'a pas de hiérarchie
+  de sections ») : la page de l'accueil, son cadre et sa rose, le nom du jeu en tête, le contenu sur un feuillet dans
+  les niveaux du design system (`.hud-prose` pour le texte des articles), et leur pied. **Écart assumé à la norme** :
+  pas de pied de site commun monté dans `__root` (la direction artistique exclut les panneaux de site et le gris) ;
+  l'accueil et `Leaf` portent chacun leur pied, le même (`Foot.tsx`), la partie aucun.
 - `src/i18n/` : les mots, en français et en anglais, par section (`home`, `game`, `race`, `menu`, `errors`).
 - `design/mockups/` : les sources des planches, tirées d'une partie du jeu (`cells.ts`) ; leurs pièces suivent les
   jetons du HUD (`kit.py`).

@@ -1,10 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { BlogCard } from '~/components/blog/BlogCard'
+import { Leaf } from '~/components/home/Leaf'
+import { Stack } from '~/components/hud/Layout'
+import { Note } from '~/components/hud/Text'
 import { fetchBlogIndex } from '~/content/posts.runtime'
 import { dictionaries, useMessages } from '~/i18n'
 import { SITE_URL } from '~/lib/site'
 
-// One column of cards, newest first: what was written, and what shipped.
+// The journal: one column of entries, newest first, what was written and
+// what shipped, on a leaf of the game's book (Leaf.tsx).
 export const Route = createFileRoute('/blog/')({
   loader: async () => await fetchBlogIndex(),
   head: ({ loaderData }) => {
@@ -28,23 +32,20 @@ function BlogIndex() {
   const { cards } = Route.useLoaderData()
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-20">
-      <h1 className="rise-in font-display text-3xl font-bold tracking-tight">
-        {m.blog.title}
-      </h1>
-      <p className="rise-in stagger-1 mt-3 text-dim">{m.blog.intro}</p>
-
+    <Leaf title={m.home.journal} line={m.blog.intro}>
       {cards.length === 0 ? (
-        <p className="rise-in stagger-2 mt-14 text-dim">{m.blog.empty}</p>
+        <Note>{m.blog.empty}</Note>
       ) : (
-        <ol className="rise-in stagger-2 mt-14 flex flex-col gap-5">
-          {cards.map((card) => (
-            <li key={card.kind === 'post' ? card.slug : card.version}>
-              <BlogCard card={card} />
-            </li>
-          ))}
+        <ol>
+          <Stack gap="piece">
+            {cards.map((card) => (
+              <li key={card.kind === 'post' ? card.slug : card.version}>
+                <BlogCard card={card} />
+              </li>
+            ))}
+          </Stack>
         </ol>
       )}
-    </main>
+    </Leaf>
   )
 }
