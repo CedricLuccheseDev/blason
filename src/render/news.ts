@@ -1,5 +1,6 @@
 import { UNIT, apart } from '../../engine'
 import { makeCoupNews } from './coupNews'
+import { tilePlaces } from './places'
 import type { CoupNews } from './coupNews'
 import type { GameState } from '../../engine'
 
@@ -24,6 +25,9 @@ export type News =
 
 /** What befell one of my alliances: offered to me, made, or come to its end (not broken: a betrayal is cried to all). */
 export type PactNews = 'offered' | 'made' | 'ended'
+
+/** Tiles above a lord's name an alliance's pennant stands. */
+const ABOVE = 6
 
 /** Seconds a lord who struck may strike again before it is news once more. */
 const AGAIN = 30
@@ -76,8 +80,19 @@ export function makeNews(state: GameState, me: number) {
     asked = new Set(state.requests)
   }
 
+  /** An alliance's news, over its lord's name (« les drapeaux alliance conclue sont mal placés »): on his land where all read him, rather than on his border nearest mine, wherever that falls. */
   function pact(news: Array<News>, lord: number, how: PactNews) {
-    if (me >= 0) news.push({ kind: 'pact', lord, how, tile: sentFrom(lord) })
+    if (me >= 0) news.push({ kind: 'pact', lord, how, tile: overName(lord) })
+  }
+
+  /** The tile a few tiles above where a lord's name is written; his tile nearest mine while he has no name on the map. */
+  function overName(lord: number): number {
+    const at = tilePlaces(state).get(lord)
+    if (!at) return sentFrom(lord)
+    const { width, size } = state.grid
+    const x = Math.floor(at.x / size)
+    const y = Math.max(0, Math.floor(at.y / size) - ABOVE)
+    return y * width + x
   }
 
   /** A lord's tile nearest my standard, where what he sends me comes from; his own standard while I have none. */

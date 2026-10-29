@@ -20,7 +20,7 @@ describe('the news', () => {
     expect(news.read()).toEqual([])
   })
 
-  it('tells my alliances once each, offered, made and ended unbroken, on the other’s land nearest mine', () => {
+  it('tells my alliances once each, offered, made and ended unbroken, over the other’s name', () => {
     const land = Array.from({ length: 10 }, () => true)
     const grid = { width: 10, height: 1, size: 4, land, area: land.length }
     const state = createGame(grid, botsSetup({ seed: 'test', lords: 3 }))
@@ -30,19 +30,19 @@ describe('the news', () => {
     const news = makeNews(state, 0)
     state.requests.push({ from: 1, to: 0, expires: 100 })
     state.requests.push({ from: 1, to: 2, expires: 100 })
-    expect(news.read()).toEqual([
-      { kind: 'pact', lord: 1, how: 'offered', tile: 6 },
-    ])
+    const told = (how: string) => [
+      { kind: 'pact', lord: 1, how, tile: expect.any(Number) },
+    ]
+    const offered = news.read()
+    expect(offered).toEqual(told('offered'))
+    // Over his name, on his land.
+    expect(state.owner[(offered[0] as { tile: number }).tile]).toBe(1)
     const alliance = { a: 0, b: 1, expires: 100, renewA: false, renewB: false }
     state.requests = []
     state.alliances.push(alliance)
-    expect(news.read()).toEqual([
-      { kind: 'pact', lord: 1, how: 'made', tile: 6 },
-    ])
+    expect(news.read()).toEqual(told('made'))
     expect(news.read()).toEqual([])
     state.alliances = []
-    expect(news.read()).toEqual([
-      { kind: 'pact', lord: 1, how: 'ended', tile: 6 },
-    ])
+    expect(news.read()).toEqual(told('ended'))
   })
 })
