@@ -416,8 +416,10 @@ gules, in plain words (`HeraldLetter.tsx`); either waiting at the screen's edge
 with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom, tight, with the purse in it, then the four armies as seals
-in a row, the mercenaries' in gold, paid in gold, and only the one in hand
-named under the row with its figures, then the works and the coups as their
+in a row, the mercenaries' in gold, paid in gold, each with its figure under
+it as a work has its price (the share of the peasants a levy takes, the
+mercenaries' gold), and only the one in hand named under the row with its
+men, then the works and the coups as their
 emblems and their prices alone, their names under the pointer, what cannot be
 paid at half ink, keys 1 to 9 then 0 (`Bar.tsx`, its pieces `BarPiece.tsx`);
 the cartouche beside the pointer, what a left click sends, the army in hand

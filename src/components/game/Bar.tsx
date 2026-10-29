@@ -49,7 +49,12 @@ const FORMS: Record<(typeof FITS)[number], { band: string; gap: string }> = {
   },
 }
 
-/** The armies at the bar's head: their seals in a row, and under them the one in hand, named, with its figures. */
+/**
+ * The armies at the bar's head: their seals in a row, each with its figure
+ * under it as the works have their price, the share of the peasants a levy
+ * takes, the gold the mercenaries would cost (« affiche les % en dessous des
+ * chevauchées »); under the row the one in hand, named, with its men.
+ */
 function Armies({
   summary,
   keys,
@@ -80,6 +85,15 @@ function Armies({
               // An army that would take no man: the mercenaries without the gold for one.
               faint={a.men === 0 && !held}
               onClick={() => onArmy(a.army)}
+              figure={
+                a.share === null ? (
+                  <Figure icon="coins" size="s">
+                    {count(a.gold ?? 0)}
+                  </Figure>
+                ) : (
+                  <Figure size="s">{m.game.percent(a.share)}</Figure>
+                )
+              }
               emblem={
                 <SealEmblem
                   icon={ARMY_MARKS[a.army]}
@@ -97,19 +111,9 @@ function Armies({
           <span className="hud-word text-hud-s whitespace-nowrap">
             {m.game.armies[hand.army]}
           </span>
-          {hand.share !== null && (
-            <Figure size="s" tone="dim">
-              {m.game.percent(hand.share)}
-            </Figure>
-          )}
           <Figure icon="soldier" size="s">
             {count(hand.men)}
           </Figure>
-          {hand.gold !== null && (
-            <Figure icon="coins" size="s">
-              {count(hand.gold)}
-            </Figure>
-          )}
         </div>
       )}
     </div>

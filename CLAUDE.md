@@ -117,8 +117,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   les deux capitales, devant tous (`layers/pacts.ts`, `art/snap.ts`) ; les nouvelles en fanions plantés là où elles
   arrivent (`Pennant.tsx`, `notes.ts` ; une offrande reçue, sur la terre de celui qui la donne, avec son or), la
   barre en bas, resserrée (acté le 29/10, « ok go » sur la maquette) : la bourse dedans, puis les quatre armées en
-  sceaux sur une ligne, celui des mercenaires en or, payés en or, à part d'un coup d'œil (`ARMY_WAX`), seule l'armée
-  en main nommée sous la ligne avec ses chiffres ; les constructions en médaillons et les coups en losanges cerclés
+  sceaux sur une ligne, celui des mercenaires en or, payés en or, à part d'un coup d'œil (`ARMY_WAX`), sous chaque sceau son chiffre comme le prix sous une construction, la part des paysans qu'une levée prend, l'or des mercenaires (29/10, « affiche les % en dessous des chevauchées »), seule l'armée
+  en main nommée sous la ligne avec ses hommes ; les constructions en médaillons et les coups en losanges cerclés
   de gueules, leur emblème, leur touche et leur prix seuls, leur nom sous la souris ; touches 1 à 4 les armées, 5 à
   7 les constructions, 8, 9 et 0 les coups ; ce qui ne se paie pas à demi-encre ; sur téléphone la même sur des
   lignes ; le cartouche près de la souris, ce qu'un clic gauche envoie, l'armée en main et ses hommes, et sur la
