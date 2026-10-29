@@ -194,6 +194,12 @@ function walk(state: GameState, host: Host) {
   )
 }
 
+/** An army of the lord's called home, by the village or market it left from (« une croix pour les rappeler »): its survivors back to his peasants, the mercenaries their way. */
+export function recall(state: GameState, lord: number, from: number): void {
+  const host = state.hosts.find((h) => h.owner === lord && h.from === from)
+  if (host) disband(state, host)
+}
+
 /** The armies a tick further: those in battle stand, the others march to the front or strike there; an army with nothing left to take goes home. */
 export function advanceHosts(state: GameState): void {
   for (const host of state.hosts) {

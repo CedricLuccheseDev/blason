@@ -53,6 +53,7 @@ export const fr: Messages = {
     },
     launch: 'clic : lancer',
     campaign: 'En campagne',
+    recall: (army: string) => `Rappeler : ${army}`,
     beyond: {
       troublemaker: 'seulement sur la terre d’un autre',
       archers: 'trop loin de ta frontière',

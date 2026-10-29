@@ -169,5 +169,7 @@ export type Order = { player: number } & (
   | { type: 'ally'; target: number }
   | { type: 'breakAlliance'; target: number }
   | { type: 'offering'; target: number }
+  /** An army called home, by the village or market it left from: its survivors back to the peasants. */
+  | { type: 'recall'; tile: number }
   | { type: 'coup'; tile: number; coup: Coup }
 )

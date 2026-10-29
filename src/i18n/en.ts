@@ -52,6 +52,7 @@ export const en = {
     },
     launch: 'click: launch',
     campaign: 'On campaign',
+    recall: (army: string) => `Recall: ${army}`,
     beyond: {
       troublemaker: 'only on another lord’s land',
       archers: 'too far from your border',

@@ -83,7 +83,7 @@ export function Places({
           )}
         </div>
         <div className="justify-self-end">
-          {!waiting && <Campaign summary={summary} />}
+          {!waiting && <Campaign summary={summary} onRecall={game.recall} />}
         </div>
       </div>
     </div>

@@ -98,8 +98,8 @@ export type Summary = {
   asked: Array<number>
   /** The gold an offering of mine would give now: a share of my gold (the right click's menu). */
   offering: number
-  /** My armies out, the oldest first: which army, its men, and the lord it is sent at (-1, the free land). */
-  campaign: Array<{ army: Army; men: number; target: number }>
+  /** My armies out, the oldest first: which army, its men, the lord it is sent at (-1, the free land), and the village or market it left from, which recalls it. */
+  campaign: Array<{ army: Army; men: number; target: number; from: number }>
 }
 
 /**
@@ -199,6 +199,7 @@ export function summarize(
         army: h.army,
         men: Math.floor(h.men / UNIT),
         target: h.target,
+        from: h.from,
       })),
   }
 }

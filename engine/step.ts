@@ -14,7 +14,7 @@ import { COUPS, WORKS } from './rules'
 import { NO_ONE } from './types'
 import { clash } from './battle'
 import { enclose } from './enclosure'
-import { advanceHosts, attack } from './war'
+import { advanceHosts, attack, recall } from './war'
 import { shoot } from './volleys'
 import { build } from './works'
 import { launch, strikeCoups } from './coups'
@@ -100,6 +100,7 @@ const KINDS: ReadonlySet<string> = new Set<Order['type']>([
   'ally',
   'breakAlliance',
   'offering',
+  'recall',
 ])
 
 function isValid(state: GameState, order: Order): boolean {
@@ -135,6 +136,7 @@ function apply(state: GameState, order: Order): void {
     launch(state, order.player, order.tile, order.coup)
   else if (order.type === 'ally') ally(state, order.player, order.target)
   else if (order.type === 'offering') offer(state, order.player, order.target)
+  else if (order.type === 'recall') recall(state, order.player, order.tile)
   else breakAlliance(state, order.player, order.target)
 }
 

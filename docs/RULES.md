@@ -105,6 +105,9 @@ leaves it gives his seat back to its bot.
   enters (below): each village levies one army at a time from its people, so
   a lord has as many armies out as he has villages (`engine/muster.ts`). With
   every village's army out, a click raises none.
+- **Recall**: a lord may call any army of his home at any moment (a click
+  on its banner, bottom right): its survivors go back to his peasants (the
+  mercenaries their way), its village or market free again.
 - **Mercenaries** are hired at a **market** for gold: a company of a quarter
   of the lord's cap of peasants, 2 gold a man (as many as the gold pays,
   short of it), from his free market nearest by the march, one company a

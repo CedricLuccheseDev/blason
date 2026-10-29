@@ -225,6 +225,7 @@ export async function mountGame(
     home: () => camera.home(),
     heralds: heralds.listen,
     light: scene.light,
+    recall: (tile) => session.send({ player: me, type: 'recall', tile }),
     launch(book) {
       session.launch?.(hostSetup({ ...book, seed: land.seed, size: land.size }))
       refresh()
