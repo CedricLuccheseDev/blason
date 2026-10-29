@@ -33,8 +33,9 @@ export const Route = createFileRoute('/play')({
 })
 
 // The game, the land taken bit by bit: against nineteen bots of the level
-// chosen, or online, in the seat the relay gave, the empty seats bots. A
-// game online left by a reload is lost: back to the table.
+// chosen, or online, in the seat the relay gave, the other seats as its
+// setup says (none a bot's in the public game). A game online left by a
+// reload is lost: back to the table.
 function Play() {
   const { level, size, online, save } = Route.useSearch()
   if (save) return <Saved name={save} />

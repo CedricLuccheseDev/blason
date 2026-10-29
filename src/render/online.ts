@@ -9,7 +9,7 @@ import type { GameSetup } from '../../engine'
 
 export type Online = {
   link: Link
-  /** My seat: a bot's until the turn the relay says I took it. */
+  /** My seat: empty, or its bot's, until the turn the relay says I took it. */
   seat: number
   /** What the game is made of, as the relay sent it: the same on every browser. */
   setup: GameSetup
