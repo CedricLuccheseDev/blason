@@ -41,9 +41,16 @@ export { entryFor, paceOf } from './war'
 export { canBuild, priceOf } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'
-export { costOf, freeWorks, marching, menFor, roadTo } from './muster'
+export {
+  costOf,
+  freeWorks,
+  marching,
+  menFor,
+  positionOf,
+  roadTo,
+} from './muster'
 export { canRenew, isAllied, isFelon, offeringOf } from './diplomacy'
-export { meet } from './battle'
+export { groundOf, meet } from './battle'
 export { shootsAt, underFire } from './volleys'
 export { tradeLinks } from './network'
 export type { Link } from './network'
