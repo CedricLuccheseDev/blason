@@ -27,7 +27,7 @@ export const hintsEn = {
   },
   works: {
     village: '+60 peasants, levies armies',
-    market: 'Caravans: gold',
+    market: 'A caravan every 10 s, paid on arrival; hires mercenaries',
     castle: 'Holds its land, shoots',
   },
   coups: {
@@ -68,7 +68,8 @@ export const hintsFr: HintsMessages = {
   },
   works: {
     village: '+60 paysans, lève les armées',
-    market: 'Caravanes : de l’or',
+    market:
+      'Une caravane toutes les 10 s, payée à l’arrivée ; engage les mercenaires',
     castle: 'Tient sa terre, tire des flèches',
   },
   coups: {
