@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
 import { around, canRenew, isFelon, isTeammate } from '../../engine'
+import { drawGauge } from './art/gauge'
 import { drawIcon } from './art/icons'
 import { TONE } from './palette'
 import type { GameState } from '../../engine'
@@ -101,31 +102,6 @@ type Name = {
 /** The gauge's band round a badge's disc (art/icons.ts, 17.3 round), in the badge's units. */
 const [INNER, OUTER] = [18.6, 25]
 
-/**
- * The time left round a badge at `x`, as a gauge: the band round it filled
- * from the bottom up to the share still to run, sinking as it runs out
- * (« fais une jauge dans un rond mais vertical comme openfront »).
- */
-function gaugeRound(g: Graphics, x: number, share: number, color: number) {
-  g.circle(x, 0, OUTER)
-    .fill({ color: TONE.parchment })
-    .circle(x, 0, INNER)
-    .cut()
-  if (share > 0) {
-    // The part of the disc under the level, as a polygon along its edge.
-    const level = OUTER - 2 * OUTER * Math.min(1, share)
-    const from = Math.asin(Math.max(-1, Math.min(1, level / OUTER)))
-    const to = Math.PI - from
-    const points: Array<number> = []
-    for (let i = 0; i <= 24; i++) {
-      const a = from + ((to - from) * i) / 24
-      points.push(x + Math.cos(a) * OUTER, Math.sin(a) * OUTER)
-    }
-    g.poly(points).fill({ color }).circle(x, 0, INNER).cut()
-  }
-  g.circle(x, 0, OUTER).stroke({ width: 1.4, color: TONE.ink })
-}
-
 /** The marks beside the lords' names, gliding with them: my allies' links, a traitor's broken shield. */
 export function makeBadges(state: GameState, me: number) {
   const container = new Container()
@@ -222,7 +198,10 @@ export function makeBadges(state: GameState, me: number) {
         mark.ring.clear()
         icons.forEach((icon, k) => {
           const color = icon === 'links' ? TONE.pact : TONE.gules
-          if (shares[k] >= 0) gaugeRound(mark.ring, k * 50, shares[k], color)
+          if (shares[k] >= 0)
+            drawGauge(mark.ring, k * 50, 0, [INNER, OUTER], shares[k], color, {
+              width: 1.4,
+            })
         })
       })
     },

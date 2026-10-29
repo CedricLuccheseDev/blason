@@ -22,7 +22,6 @@ export function Piece({
   hint,
   figure,
   held,
-  faint = false,
   onClick,
 }: Readonly<{
   emblem: ReactNode
@@ -32,8 +31,6 @@ export function Piece({
   hint: ReadonlyArray<string>
   figure?: ReactNode
   held: boolean
-  /** At half ink: what cannot be had, the gold short. */
-  faint?: boolean
   onClick: () => void
 }>) {
   return (
@@ -45,7 +42,8 @@ export function Piece({
         onClick={onClick}
         className={PIECE}
       >
-        <span className={`relative ${faint ? 'opacity-45' : ''}`}>
+        {/* What cannot be had is at half ink inside its drawing (the emblems' dim): an opacity here made a layer that left its trace as the bar moved (« en bas les losanges y'a un carré derrière »). */}
+        <span className="relative">
           {emblem}
           {k !== null && (
             <span className="absolute -top-1 -right-3">

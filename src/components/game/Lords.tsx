@@ -71,8 +71,12 @@ export function Lords({
   return (
     <Panel
       gap="hair"
+      // Open on a phone, it stands where its shield was, top right, over
+      // the map, never past the screen: its lines scroll within it.
       className={`w-full ${
-        compact ? 'absolute top-0 left-0 z-10 w-[calc(100vw-1rem)]' : ''
+        compact
+          ? 'absolute top-0 right-0 z-30 max-h-[calc(100dvh-1.5rem)] w-72 overflow-y-auto'
+          : ''
       }`}
     >
       <button

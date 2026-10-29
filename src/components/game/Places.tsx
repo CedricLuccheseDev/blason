@@ -65,7 +65,7 @@ export function Places({
         {!waiting && <Moment summary={summary} online={online} />}
         {cry && <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />}
       </Stack>
-      <div className="w-64 justify-self-end max-sm:w-auto">
+      <div className="relative w-64 justify-self-end max-sm:w-auto short:w-auto">
         {!waiting && (
           <Lords
             summary={summary}

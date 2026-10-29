@@ -1,14 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Act, actClass } from '../hud/Act'
-import { Figure } from '../hud/Figure'
-import { Rule } from '../hud/Sheet'
-import { Inline, Panel, Stack } from '../hud/Layout'
-import { Call, Note, Title } from '../hud/Text'
+import { Inline, Panel } from '../hud/Layout'
+import { Title } from '../hud/Text'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
-/** The opening and the end, under the race. */
+/** The end, under the race: the winner, my fall. */
 export function Moment({
   summary,
   online = false,
@@ -16,24 +14,8 @@ export function Moment({
   const m = useMessages()
   const [dismissed, setDismissed] = useState(false)
   const { me, opening, winner } = summary
-  if (opening !== null) {
-    // The player before and after planting his standard; a spectator watches them planted.
-    let [title, hint] = [m.game.others, '']
-    if (me && !me.picked) [title, hint] = [m.game.choose, m.game.chooseHint]
-    else if (me) [title, hint] = [m.game.planted, m.game.plantedHint]
-    return (
-      <Panel page>
-        <Inline gap="piece">
-          <Figure size="xl">{opening}</Figure>
-          <Rule />
-          <Stack gap="hair">
-            <Call>{title}</Call>
-            {hint && <Note>{hint}</Note>}
-          </Stack>
-        </Inline>
-      </Panel>
-    )
-  }
+  // The opening is told in the race's place (Race.tsx).
+  if (opening !== null) return null
   const fallen = me && !me.alive
   // Watching the end hides the fall, never the winner.
   if (!winner && (dismissed || !fallen)) return null

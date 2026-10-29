@@ -76,8 +76,6 @@ function Armies({
               name={m.game.armies[a.army]}
               hint={[m.hints.armies.men(count(a.men)), m.hints.armies[a.army]]}
               held={held}
-              // An army that would take no man: the mercenaries without the gold for one.
-              faint={a.men === 0 && !held}
               onClick={() => onArmy(a.army)}
               figure={
                 a.share === null ? (
@@ -94,6 +92,8 @@ function Armies({
                   color={ARMY_WAX[a.army] ?? wax}
                   size="s"
                   held={held}
+                  // An army that would take no man, at half ink: the mercenaries without the gold for one.
+                  dim={a.men === 0 && !held}
                 />
               }
             />
@@ -156,9 +156,15 @@ export function Bar({
                   name={m.game.works[w.work]}
                   hint={[m.hints.works[w.work]]}
                   held={held}
-                  faint={!w.can && !held}
                   onClick={() => onWork(held ? null : w.work)}
-                  emblem={<WorkEmblem icon={w.work} size="s" held={held} />}
+                  emblem={
+                    <WorkEmblem
+                      icon={w.work}
+                      size="s"
+                      held={held}
+                      dim={!w.can && !held}
+                    />
+                  }
                   figure={
                     <Figure icon="coins" size="m">
                       {count(w.price)}
@@ -181,13 +187,13 @@ export function Bar({
                   name={m.game.coups[c.coup]}
                   hint={[m.hints.coups[c.coup]]}
                   held={held}
-                  faint={!c.can && !held}
                   onClick={() => onCoup(held ? null : c.coup)}
                   emblem={
                     <CoupEmblem
                       icon={COUP_MARKS[c.coup]}
                       size="s"
                       held={held}
+                      dim={!c.can && !held}
                     />
                   }
                   figure={

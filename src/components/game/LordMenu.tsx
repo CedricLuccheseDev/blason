@@ -155,7 +155,6 @@ export function LordMenu({
                   name={word}
                   hint={[]}
                   held={false}
-                  faint={!line.can}
                   onClick={() =>
                     line.act === 'alliance'
                       ? acts.alliance(line.say)
@@ -163,7 +162,7 @@ export function LordMenu({
                   }
                   emblem={
                     <span className={tone}>
-                      <ActMedallion {...LOOKS[line.act]} />
+                      <ActMedallion {...LOOKS[line.act]} dim={!line.can} />
                     </span>
                   }
                   figure={figure}

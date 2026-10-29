@@ -1,8 +1,10 @@
 import { Figure, Icon } from '../hud/Figure'
 import { Hint } from '../hud/Hint'
-import { Inline, Panel } from '../hud/Layout'
-import { Note } from '../hud/Text'
+import { Inline, Panel, Stack } from '../hud/Layout'
+import { Rule } from '../hud/Sheet'
+import { Call, Note } from '../hud/Text'
 import { ICON } from '../hud/tokens'
+import { useCompact } from '../hud/useCompact'
 import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
 import { Ecu } from './svg/kit'
@@ -61,7 +63,6 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
           w={12}
           h={15}
           color={hex(rival.color)}
-          lift={false}
         />
       )}
       {me && (
@@ -71,7 +72,6 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
           w={14}
           h={17}
           color={hex(me.color)}
-          lift={false}
         />
       )}
     </svg>
@@ -88,6 +88,12 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
 export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
   const { room, piece, step } = useFit(1)
+  const compact = useCompact()
+  // In the opening, the race not begun, its place says the count and what
+  // to do (« la popup qui explique qu'il faut poser son étendard, mets ça
+  // sur le header qui indique la victoire »).
+  if (summary.opening !== null)
+    return <Opening summary={summary} touch={compact} />
   const { needed, dropIn } = summary
   const words =
     dropIn === null ? m.race.toWin(needed) : m.race.dropsIn(minutes(dropIn))
@@ -120,6 +126,33 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           </Panel>
         </Hint>
       </div>
+    </div>
+  )
+}
+
+/** The opening in the race's place: its count, and what the player does, before and after planting; a spectator watches them planted. On a phone, how a lord's menu opens without a right button. */
+function Opening({
+  summary,
+  touch,
+}: Readonly<{ summary: Summary; touch: boolean }>) {
+  const m = useMessages()
+  const { me, opening } = summary
+  let [title, hint] = [m.game.others, '']
+  if (me && !me.picked) [title, hint] = [m.game.choose, m.game.chooseHint]
+  else if (me) [title, hint] = [m.game.planted, m.game.plantedHint]
+  return (
+    <div className="flex w-full min-w-0 justify-center">
+      <Panel className="max-w-xl">
+        <Inline gap="piece">
+          <Figure size="xl">{opening}</Figure>
+          <Rule />
+          <Stack gap="hair">
+            <Call>{title}</Call>
+            {hint && <Note>{hint}</Note>}
+            {touch && <Note>{m.menu.hintTouch}</Note>}
+          </Stack>
+        </Inline>
+      </Panel>
     </div>
   )
 }

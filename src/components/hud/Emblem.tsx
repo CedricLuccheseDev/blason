@@ -30,10 +30,15 @@ export function Shield({
       aria-hidden="true"
       className="shrink-0 overflow-visible"
     >
-      <Ecu x={1} y={1} w={w} h={h} color={color} level={level} lift={false} />
+      <Ecu x={1} y={1} w={w} h={h} color={color} level={level} />
     </svg>
   )
 }
+
+/** A drawn piece's shadow off the page, in ink: the game's drawn matter, wax and gilt lifted off the parchment, not a panel's elevation. */
+// norm-ok: a drawn seal's shadow on the page (the art direction), as the SVG filter it replaces.
+const SHADOW =
+  'drop-shadow(0 calc(2px * var(--hud)) calc(2px * var(--hud)) color-mix(in srgb, var(--color-quill) 38%, transparent))'
 
 /** The box a seal or a medallion sits in, room left for it to rise. */
 const boxOf = (size: keyof typeof SEAL) => 2 * (SEAL[size] + RAISE) + 6
@@ -60,7 +65,11 @@ function Round({
       viewBox={viewBox}
       aria-hidden="true"
       className="shrink-0 overflow-visible transition-transform duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none"
-      style={{ ...style, transform: lift }}
+      // Lifted off the page by a shadow of the whole drawing, not an SVG
+      // filter under the half ink of what cannot be paid: that one came out
+      // as a square behind the lozenges (« en bas les losanges y'a un carré
+      // derrière »); the one in hand glows instead (svg/kit.tsx).
+      style={{ ...style, transform: lift, filter: held ? undefined : SHADOW }}
     >
       {children({ cx: c, cy: c, r })}
     </svg>
@@ -73,16 +82,26 @@ export function SealEmblem({
   color,
   size = 'l',
   held = false,
+  dim = false,
 }: Readonly<{
   icon: Mark
   color: string
   size?: keyof typeof SEAL
   held?: boolean
+  /** At half ink, inside the drawing (no layer of its own to leave a trace as the bar moves). */
+  dim?: boolean
 }>) {
   return (
     <Round size={size} held={held}>
       {(at) => (
-        <Seal {...at} icon={icon} color={color} edge={INK} lifted={held} />
+        <Seal
+          {...at}
+          icon={icon}
+          color={color}
+          edge={INK}
+          lifted={held}
+          dim={dim}
+        />
       )}
     </Round>
   )
@@ -93,10 +112,16 @@ export function WorkEmblem({
   icon,
   size = 'l',
   held = false,
-}: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
+  dim = false,
+}: Readonly<{
+  icon: Mark
+  size?: keyof typeof SEAL
+  held?: boolean
+  dim?: boolean
+}>) {
   return (
     <Round size={size} held={held}>
-      {(at) => <Plaque {...at} icon={icon} lifted={held} />}
+      {(at) => <Plaque {...at} icon={icon} lifted={held} dim={dim} />}
     </Round>
   )
 }
@@ -109,18 +134,23 @@ export function WorkEmblem({
 export function ActMedallion({
   icon,
   ring,
-}: Readonly<{ icon: Mark; ring: string }>) {
+  dim = false,
+}: Readonly<{ icon: Mark; ring: string; dim?: boolean }>) {
   // The cartouche's box, laid out smaller.
   const side = boxOf('s')
   const c = side / 2
   return (
     <svg
       viewBox={`0 0 ${side} ${side}`}
-      style={{ width: scaled(LINE_MEDALLION), height: scaled(LINE_MEDALLION) }}
+      style={{
+        width: scaled(LINE_MEDALLION),
+        height: scaled(LINE_MEDALLION),
+        filter: SHADOW,
+      }}
       aria-hidden="true"
       className="shrink-0 overflow-visible"
     >
-      <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} />
+      <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} dim={dim} />
     </svg>
   )
 }
@@ -130,10 +160,16 @@ export function CoupEmblem({
   icon,
   size = 'l',
   held = false,
-}: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
+  dim = false,
+}: Readonly<{
+  icon: Mark
+  size?: keyof typeof SEAL
+  held?: boolean
+  dim?: boolean
+}>) {
   return (
     <Round size={size} held={held}>
-      {(at) => <Lozenge {...at} icon={icon} lifted={held} />}
+      {(at) => <Lozenge {...at} icon={icon} lifted={held} dim={dim} />}
     </Round>
   )
 }
