@@ -83,7 +83,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   s'effacent (leurs marchés d'abord, les routes en tiennent lieu), les sceaux des villages et les chantiers des
   autres ne reviennent qu'en zoomant ; les noms des seigneurs y restent lisibles, 16 px au moins et à pleine encre,
   et ne s'effacent qu'avec une terre trop petite à l'écran pour les porter (`layers/labels.ts`) ; `camera.ts` la
-  caméra du joueur, `director.ts` celle du spectateur ; `summary.ts` ce que lit le HUD, une fois par seconde.
+  caméra du joueur ; `summary.ts` ce que lit le HUD, une fois par seconde.
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (15, 18, 22, 28, rien sous 15, acté le 29/10 : « La police texte toute petite là elle est
   dure à lire ») par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note` en italique à pleine encre, `.hud-figure`),

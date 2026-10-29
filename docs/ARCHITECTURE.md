@@ -307,8 +307,7 @@ orders. It decides nothing about the rules.
   ruling and scale in pale ink (`layers/margin.ts`).
 - `camera.ts` is the player's camera, out to twice farther than the whole land,
   where the figures and the standards shrink with it, a name never under 16
-  pixels, and the standards' small writing fades; `director.ts` is the
-  spectator's, which goes to the fiercest fight on its own (`spectate`).
+  pixels, and the standards' small writing fades.
 - `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
   of the player's alliances in its last moments, beside his ally's name, past
   the figure under it and its marks, `besideOf` in `places.ts`, the ally's

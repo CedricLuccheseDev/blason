@@ -8,7 +8,6 @@ import { makeHand } from './hand'
 import { keyOf } from './keys'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
-import { makeDirector } from './director'
 import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
 import { openSession } from './sessions'
@@ -22,7 +21,6 @@ import { bestQuality, governFrames } from './quality'
 import type { GameHandle } from './handle'
 import type { Aim } from './aiming'
 import type { News } from './news'
-import type { Room } from './director'
 import type { Level, MapSize } from '../../engine'
 import type { Summary } from './summary'
 import type { Online } from './online'
@@ -65,8 +63,6 @@ export async function mountGame(
     level?: Level
     /** The land's size; standard if none. Online, the relay's. */
     size?: MapSize
-    /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
-    spectate?: () => Room
     /** A game online (online.ts): its land, its turns and my seat come from the relay. */
     online?: Online
     /** A saved game (save.ts), held still at its tick: its land, my seat and the camera come from it. */
@@ -99,11 +95,6 @@ export async function mountGame(
   const home = () => (me < 0 ? null : landBox(state, me))
   const camera = makeCamera(app, scene.world, land, home)
   if (save) standCamera(camera, state, save)
-  const director = hooks.spectate
-    ? makeDirector(app, scene.world, land, state, hooks.spectate)
-    : null
-  // Behind a menu, half the frames are enough.
-  if (director) app.ticker.maxFPS = 30
 
   const pick = (x: number, y: number) => tileAt(grid, x, y)
 
@@ -161,22 +152,20 @@ export async function mountGame(
   // Stepped down and up with the frames; nothing drawn while hidden
   // (quality.ts): a game alone waits, one online plays the relay's turns on.
   // A saved game, held still, is drawn at its best.
-  const fps = director ? 30 : 60
   const governed = save
     ? () => undefined
-    : governFrames(app, 1000 / fps, hooks.online && play)
+    : governFrames(app, 1000 / 60, hooks.online && play)
   let announced = false
   app.ticker.add((ticker) => {
     // How far the game is into its next tick, for what moves between two.
     const between = drawn ? play(Math.min(ticker.elapsedMS, 1000), CATCH_UP) : 0
     drawn = true
-    if (director) director.step(ticker.elapsedMS)
-    else camera.step()
-    // Farther than the whole land, the names shrink with it (the director never goes so far).
-    const far = director ? 1 : Math.min(1, camera.level())
+    camera.step()
+    // Farther than the whole land, the names shrink with it.
+    const far = Math.min(1, camera.level())
     scene.draw(pin.hovered(), hand.hand, camera.zoom(), between, far)
     const now = performance.now() / 1000
-    if (!director) heralds.show([...scene.anchors(), ...notes.anchors(now)])
+    heralds.show([...scene.anchors(), ...notes.anchors(now)])
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
