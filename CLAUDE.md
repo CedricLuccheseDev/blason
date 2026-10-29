@@ -66,7 +66,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), la diplomatie et les
     marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les coups (`coups.test.ts`), le générateur (`map/generate.test.ts`).
 - `scripts/arena.ts` : l'arène (`npm run arena -- [parties] [joueurs]`), des parties de bots sans écran. Elle dit si
-  le jeu tourne ; le plaisir et la lisibilité se jugent en jouant.
+  le jeu tourne ; le plaisir et la lisibilité se jugent en jouant. `scripts/census.ts`, le recensement
+  (`npm run census -- [graine]`) : une partie de bots, et toutes les trois minutes la terre, les constructions,
+  les paysans et l'or du premier et du seigneur médian ; on y règle les chiffres (`LAND=… VILLAGE=…` pour en essayer d'autres).
 - `src/render/` : le rendu (PixiJS) et les gestes, qui ne décident rien. `client.ts` monte une partie, `session.ts`
   la fait tourner dans la page, `scene.ts` empile les calques ; chaque terre tracée en lignes autour de ses tuiles et
   repassée à la plume (`regions.ts`, `trace.ts`, `pen.ts`, le ruban `layers/borders.ts`), comme les planches ; la
@@ -123,6 +125,10 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   sceaux, or), jamais de panneaux de site ni de copie d'OpenFront. Deux écritures : IM Fell English
   pour les noms et les mots, Alegreya Sans pour les chiffres. Chaque élément sert, se comprend d'un coup
   d'œil par un nouveau joueur et reste à l'échelle de la terre.
+- **La carte à deux échelles, actée le 29/10** (« map dézoomé = map stratégique. tout doit etre compréhensible
+  super rapidement et facilement et aéré. map zoomé = map micro gestion et spectacle, on peut s'amusé plus mais il
+  faut que ça reste lisible ») : de loin, seulement ce qui sert à décider (terres, noms et chiffres, fronts,
+  alliances, armées), avec de l'air ; de près, le détail et la vie, toujours lisibles.
 - **Accent** : l'or héraldique, `#8a5f0f`.
 
 ## Outillage partagé (cl-plugin)

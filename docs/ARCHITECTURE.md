@@ -137,7 +137,11 @@ may hunt the same one: a bot leaves alone a lord already struck by another
 or player, is set upon from every side at once. The arena takes
 it too: `npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]`,
 and times there the land's making and each tick, and weighs the memory a game
-holds.
+holds. The census (`npm run census -- [seed] [level] [minutes]`,
+`scripts/census.ts`) plays one game and every few minutes counts, for the
+first lord and the median one, the land, the works, the peasants and what
+feeds them, and the gold; other figures for the peasants are tried with
+`LAND=… VILLAGE=…` and for the works' prices with `DOUBLINGS=…`.
 
 ## The rendering
 
