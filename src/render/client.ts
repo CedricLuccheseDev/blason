@@ -4,6 +4,7 @@ import { makeAiming } from './aiming'
 import { makeCamera } from './camera'
 import { makeInput } from './input'
 import { makeHand } from './hand'
+import { keyOf } from './keys'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
 import { makeDirector } from './director'
@@ -146,7 +147,7 @@ export async function mountGame(
   const onKey = (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === 'Escape') unpin()
-    if (hand.key(e.key)) refresh()
+    if (hand.key(keyOf(e))) refresh()
   }
   /** What is in hand changed: the figures and the aim again. */
   const handed = (change: () => void) => {
