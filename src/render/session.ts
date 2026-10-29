@@ -17,8 +17,12 @@ export type Session = {
   state: GameState
   me: number
   send: (order: Order) => void
-  /** Advance the clock, calling `each` after every tick played; returns how far into the next tick we are, 0 to 1. */
-  advance: (ms: number, each?: () => void) => number
+  /**
+   * Advance the clock, calling `each` after every tick played, `most` ticks
+   * at most (the rest at the next call); returns how far into the next tick
+   * we are, 0 to 1.
+   */
+  advance: (ms: number, each?: () => void, most?: number) => number
 }
 
 export function startSession(

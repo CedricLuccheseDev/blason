@@ -141,12 +141,22 @@ export function watchFrames(onChange: (q: Quality) => void) {
   }
 }
 
+/** Ms between two steps of a game played on while its page is hidden: a tick's. */
+const HIDDEN_MS = 100
+
 /**
  * The game's frames watched, its renderer's resolution following the
- * quality; while the page is hidden the ticker stops, and its frames are
- * forgotten. `frameMs`: the frame aimed at. Returns what undoes it.
+ * quality; while the page is hidden the ticker stops, nothing is drawn, and
+ * its frames are forgotten. A game that must play on meanwhile (online, the
+ * relay's turns coming) is given `hidden`, called with the ms gone by, a
+ * tick's or so (a hidden page's timers may come later). `frameMs`: the frame
+ * aimed at. Returns what undoes it.
  */
-export function governFrames(app: Application, frameMs: number) {
+export function governFrames(
+  app: Application,
+  frameMs: number,
+  hidden?: (ms: number) => void,
+) {
   const frames = watchFrames((q) =>
     app.renderer.resize(app.screen.width, app.screen.height, q.resolution),
   )
@@ -155,9 +165,20 @@ export function governFrames(app: Application, frameMs: number) {
     if (!first) frames.frame(app.ticker.elapsedMS, frameMs)
     first = false
   }
+  let away: ReturnType<typeof setInterval> | undefined
+  let last = 0
+  const playOn = () => {
+    const now = performance.now()
+    hidden?.(now - last)
+    last = now
+  }
   const onVisibility = () => {
-    if (document.hidden) app.ticker.stop()
-    else {
+    clearInterval(away)
+    if (document.hidden) {
+      app.ticker.stop()
+      last = performance.now()
+      if (hidden) away = setInterval(playOn, HIDDEN_MS)
+    } else {
       frames.reset()
       first = true
       app.ticker.start()
@@ -167,6 +188,7 @@ export function governFrames(app: Application, frameMs: number) {
   document.addEventListener('visibilitychange', onVisibility)
   return () => {
     app.ticker.remove(watch)
+    clearInterval(away)
     document.removeEventListener('visibilitychange', onVisibility)
   }
 }

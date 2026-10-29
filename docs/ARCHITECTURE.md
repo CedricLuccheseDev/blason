@@ -175,7 +175,10 @@ orders. It decides nothing about the rules.
   without their shadows), and back up after several seconds with room, later
   each time a level had to be left; a step down that did not shorten the
   frames is undone (a screen or a battery that caps them). Each game begins at
-  the best. While the page is hidden the ticker stops. Off the screen, no man
+  the best. While the page is hidden nothing is drawn and the ticker stops: a
+  game alone waits, a game online plays the relay's turns on as they come;
+  back, a frame plays twenty ticks at most, the rest at the next ones,
+  so that catching up never freezes the page. Off the screen, no man
   is laid; the works and the seals are laid again only with a tick or the
   zoom; a road's stones show only once each covers a pixel; the sea's shore
   lines leave out the coast's smallest turns, the farther from it the more.

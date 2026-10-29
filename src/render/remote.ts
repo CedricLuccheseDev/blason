@@ -36,11 +36,14 @@ export function startRemoteSession(
     me,
     // The relay signs each order with my seat, whatever it says.
     send: (order) => link.send({ t: 'order', move: order }),
-    advance(ms, each) {
+    advance(ms, each, most = Infinity) {
       since += ms
-      // Every turn come is played, several at once to catch up after a pause.
+      // Every turn come is played, several at once to catch up after a
+      // pause, so many at most: the rest at the next call.
+      let played = 0
       for (let turn = turns.shift(); turn; turn = turns.shift()) {
         if (state.winner !== NO_ONE) break
+        played++
         for (const seat of turn.left) bots[seat] = createBot(seat, seed, level)
         const orders = [
           ...turn.orders,
@@ -54,6 +57,7 @@ export function startRemoteSession(
           link.send({ t: 'hash', turn: turn.n, hash: stateHash(state) })
         each?.()
         since = 0
+        if (played >= most) break
       }
       return Math.min(1, since / TURN_MS)
     },

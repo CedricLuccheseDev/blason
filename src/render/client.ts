@@ -42,6 +42,9 @@ export type { Herald, Heralds } from './heralds'
 export { prepareGame, randomSeed } from './ahead'
 export { faces } from './faces'
 
+/** Ticks a frame plays at most, catching up on turns that piled up: the rest at the next frames, never a freeze. */
+const CATCH_UP = 20
+
 export async function mountGame(
   element: HTMLElement,
   seed: string | null,
@@ -100,8 +103,6 @@ export async function mountGame(
     : null
   // Behind a menu, half the frames are enough.
   if (director) app.ticker.maxFPS = 30
-  // Stepped down and up with the frames; nothing drawn while hidden (quality.ts).
-  const governed = governFrames(app, 1000 / (director ? 30 : 60))
 
   const pick = (x: number, y: number) => tileAt(grid, x, y)
 
@@ -168,14 +169,16 @@ export async function mountGame(
   const news = makeNews(state, me)
   const notes = makeNotes(state)
   const earnings = makeEarnings(me)
+  const play = (ms: number, most?: number) =>
+    session.advance(ms, () => earnings.watch(state), most)
+  // Stepped down and up with the frames; nothing drawn while hidden
+  // (quality.ts): a game alone waits, one online plays the relay's turns on.
+  const fps = director ? 30 : 60
+  const governed = governFrames(app, 1000 / fps, hooks.online && play)
   let announced = false
   app.ticker.add((ticker) => {
     // How far the game is into its next tick, for what moves between two.
-    const between = drawn
-      ? session.advance(Math.min(ticker.elapsedMS, 1000), () =>
-          earnings.watch(state),
-        )
-      : 0
+    const between = drawn ? play(Math.min(ticker.elapsedMS, 1000), CATCH_UP) : 0
     drawn = true
     if (director) director.step(ticker.elapsedMS)
     else camera.step()

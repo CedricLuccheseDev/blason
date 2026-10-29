@@ -49,4 +49,18 @@ describe('a game online', () => {
     const hashes = a.sent.filter((m) => (m as { t: string }).t === 'hash')
     expect(hashes).toHaveLength(8)
   })
+
+  it('catches up on turns piled up a few at a time, never all in one frame', () => {
+    const seed = 'online-catch-up'
+    const world = generateWorld(seed)
+    const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
+    const { link, hand } = fakeLink()
+    const game = startRemoteSession(grid, seed, 0, 'normal', 1, link)
+    for (let n = 0; n < 50; n++) hand({ t: 'turn', n, orders: [], left: [] })
+    game.advance(16, undefined, 20)
+    expect(game.state.tick).toBe(20)
+    game.advance(16, undefined, 20)
+    game.advance(16, undefined, 20)
+    expect(game.state.tick).toBe(50)
+  })
 })
