@@ -18,14 +18,6 @@ export function openSession(
 ): Session {
   const { online, save } = game
   if (save) return startStillSession(grid, save)
-  if (online)
-    return startRemoteSession(
-      grid,
-      seed,
-      me,
-      online.level,
-      online.players,
-      online.link,
-    )
+  if (online) return startRemoteSession(grid, online)
   return startSession(grid, seed, me, game.level)
 }

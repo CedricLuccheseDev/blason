@@ -13,7 +13,14 @@ export type { Point } from './map/points'
 export { apart, around, makeGrid } from './grid'
 
 // A game: its rules, its state, the orders and the step that applies them.
-export { ARMIES, COUPS, MAP_SIZES, RULES, WORKS } from './rules'
+export {
+  ARMIES,
+  COUPS,
+  MAP_SIZES,
+  ONLINE_OPENING_TICKS,
+  RULES,
+  WORKS,
+} from './rules'
 export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
 export type {

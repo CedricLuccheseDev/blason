@@ -4,26 +4,27 @@ import type { Online } from '~/render/online'
 import type { FromRelay, Lobby } from '../../../net/protocol'
 import { connect, relayUrl } from '~/render/link'
 
-// A seat in a room of the relay (server/rooms.ts), from the home: the public
-// room, a private one by its code, or a new private one. The room is told
-// live (who sits, when it starts); when the relay says the game begins, the
-// line is handed over, open, to whoever plays it. One room at a time:
-// joining another, or leaving, closes the line.
+// A seat at the relay (server/rooms.ts), from the home: in the public game
+// in its opening, straight away; or in a private room, by its code or a new
+// one, told live (who sits) until its host starts it. When the relay says
+// the game begins, the line is handed over, open, to whoever plays it. One
+// at a time: joining another, or leaving, closes the line.
 
 export type Room =
   | { status: 'off' }
   | { status: 'unavailable' }
   | { status: 'joining'; code: string | null }
-  | { status: 'seated'; seat: number; lobby: Lobby; heardAt: number }
+  /** In a private room, waiting for its host. */
+  | { status: 'seated'; seat: number; lobby: Lobby }
   | {
       status: 'error'
-      /** The room that failed: the public one (null), or a code or 'new'. */
+      /** What failed: the public game (null), or a room's code or 'new'. */
       code: string | null
       reason: 'full' | 'unknown' | 'started' | 'lost'
     }
 
 export type RoomActions = {
-  /** Sits at the public room (null), a private one by its code, or a new one ('new'). */
+  /** Joins the public game (null), a private room by its code, or a new one ('new'). */
   join: (code: string | null) => void
   leave: () => void
   /** The host starts the game now. */
@@ -60,32 +61,22 @@ export function useRoom(
       .then((link) => {
         if (mine !== opened.current) return link.close()
         line.current = link
-        let seat = -1
         const stop = link.listen((message: FromRelay) => {
           if (mine !== opened.current) return
-          if (message.t === 'lobby') {
-            seat = message.seat
+          if (message.t === 'lobby')
             setRoom({
               status: 'seated',
-              seat,
+              seat: message.seat,
               lobby: message.lobby,
-              heardAt: Date.now(),
             })
-          } else if (message.t === 'error')
+          else if (message.t === 'error')
             setRoom({ status: 'error', code, reason: message.reason })
           else if (message.t === 'begin') {
             // From here the turns wait for the game: no one here listens any more.
             stop()
             line.current = null
-            const { seed, size, level, names } = message
-            begun.current({
-              link,
-              seat,
-              seed,
-              size,
-              level,
-              players: names.length,
-            })
+            const { seat, seed, size, level, opening } = message
+            begun.current({ link, seat, seed, size, level, opening })
           }
         })
         link.send({ t: 'join', room: code, name: '' })
@@ -110,12 +101,11 @@ export function useRoom(
   return [room, { join, leave, start }]
 }
 
-/** Whether the public room is the one sat at, being joined, or that failed. */
+/** Whether the public game is the one being joined, or that failed. */
 export const atPublic = (room: Room): boolean =>
-  (room.status === 'seated' && room.lobby.open) ||
-  ((room.status === 'joining' || room.status === 'error') && room.code === null)
+  (room.status === 'joining' || room.status === 'error') && room.code === null
 
 /** Whether a private room is the one sat at, being joined, or that failed. */
 export const atPrivate = (room: Room): boolean =>
-  (room.status === 'seated' && !room.lobby.open) ||
+  room.status === 'seated' ||
   ((room.status === 'joining' || room.status === 'error') && room.code !== null)

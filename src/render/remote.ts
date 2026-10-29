@@ -1,39 +1,44 @@
-import { NO_ONE, createBot, createGame, stateHash, step } from '../../engine'
+import {
+  NO_ONE,
+  RULES,
+  createBot,
+  createGame,
+  stateHash,
+  step,
+} from '../../engine'
 import { HASH_EVERY, TURN_MS } from '../../net/protocol'
 import { PLAYERS } from './palette'
-import type { Link } from './link'
+import type { Online } from './online'
 import type { Session } from './session'
-import type { Grid, Level, Order } from '../../engine'
+import type { Grid } from '../../engine'
+import type { Turn } from '../../net/protocol'
 
 // A game online, stepped by the relay's turns rather than by the clock: each
 // turn holds the orders of every player, mine with them, and is played as it
 // comes, with the bots' orders, on every browser alike. My orders go to the
-// relay, never straight into my game. The seats of the players are theirs;
-// every other seat is a bot, and so becomes a player's who leaves, at the
-// turn the relay says. Every so many turns, the fingerprint of my state goes
-// back to the relay, which names a turn where two browsers parted.
+// relay, never straight into my game. Every seat begins a bot's; a turn says
+// the seats a person took, whose bots stop from that turn on, and those left,
+// bots again. Who comes in during the opening is handed every turn played so
+// far and plays them as they come, a few a frame, to catch up. Every so many
+// turns, the fingerprint of my state goes back to the relay, which names a
+// turn where two browsers parted.
 
-export function startRemoteSession(
-  grid: Grid,
-  seed: string,
-  me: number,
-  level: Level,
-  players: number,
-  link: Link,
-): Session {
-  const state = createGame(grid, PLAYERS.length, seed)
-  const bots = PLAYERS.map((_, id) =>
-    id < players ? null : createBot(id, seed, level),
+export function startRemoteSession(grid: Grid, online: Online): Session {
+  const { seed, level, opening, seat, link } = online
+  // The opening's length travels with the game: the same on every browser.
+  const rules = { ...RULES, openingTicks: opening }
+  const state = createGame(grid, PLAYERS.length, seed, rules)
+  const bots: Array<ReturnType<typeof createBot> | null> = PLAYERS.map(
+    (_, id) => createBot(id, seed, level),
   )
-  const turns: Array<{ n: number; orders: Array<Order>; left: Array<number> }> =
-    []
+  const turns: Array<Turn> = []
   link.listen((message) => {
     if (message.t === 'turn') turns.push(message)
   })
   let since = 0
   return {
     state,
-    me,
+    me: seat,
     // The relay signs each order with my seat, whatever it says.
     send: (order) => link.send({ t: 'order', move: order }),
     advance(ms, each, most = Infinity) {
@@ -44,7 +49,8 @@ export function startRemoteSession(
       for (let turn = turns.shift(); turn; turn = turns.shift()) {
         if (state.winner !== NO_ONE) break
         played++
-        for (const seat of turn.left) bots[seat] = createBot(seat, seed, level)
+        for (const id of turn.joined) bots[id] = null
+        for (const id of turn.left) bots[id] = createBot(id, seed, level)
         const orders = [
           ...turn.orders,
           ...state.players.flatMap((p, id) => {

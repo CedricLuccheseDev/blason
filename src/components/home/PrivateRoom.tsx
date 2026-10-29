@@ -27,7 +27,7 @@ export function PrivateRoom({
   actions,
 }: Readonly<{ way: 'create' | 'join'; room: Room; actions: RoomActions }>) {
   const t = useMessages().home.privateRoom
-  const inside = room.status === 'seated' && !room.lobby.open
+  const inside = room.status === 'seated'
   const [typed, setTyped] = useState<Array<string>>(Array(LENGTH).fill(''))
   const boxes = useRef<Array<HTMLInputElement | null>>([])
   const shown = inside ? room.lobby.room.split('') : typed
@@ -93,7 +93,7 @@ function Inside({
   const t = useMessages().home
   const p = t.privateRoom
   if (room.status === 'off') return <p className="hud-note">{p.note}</p>
-  if (room.status !== 'seated' || room.lobby.open)
+  if (room.status !== 'seated')
     return (
       <div className="flex flex-col gap-3" aria-live="polite">
         <RoomTrouble room={room} />

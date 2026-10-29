@@ -28,7 +28,8 @@ applies each rule is named beside it.
 
 ## The opening
 
-For the first 10 seconds no land is anyone's: each lord plants his
+For the first 10 seconds (30 online, the time for players to come into the
+public game, `ONLINE_OPENING_TICKS`) no land is anyone's: each lord plants his
 **standard** on any tile of the land by clicking it, as on OpenFront, and
 may move it as often as he likes until the count ends, but never within 20
 tiles of another lord's standard: the first to plant holds the ground round

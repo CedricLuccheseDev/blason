@@ -27,14 +27,10 @@ type Shown = {
   taken: number
 }
 
-/** The public game the card shows: the room sat at, told live; else the next, as the relay tells it. */
-function shownGame(room: Room, heard: Heard): Shown | null {
-  if (room.status === 'seated' && room.lobby.open) {
-    const { seed, size, startsIn, names } = room.lobby
-    return { seed, size, startsIn, at: room.heardAt, taken: names.length }
-  }
+/** The public game the card shows, as the relay tells it. */
+function shownGame(heard: Heard): Shown | null {
   if (!heard.game || heard.lost) return null
-  return { ...heard.game, at: heard.at }
+  return { ...heard.game, startsIn: heard.game.closesIn, at: heard.at }
 }
 
 /** Under the land: its seats; or the seat being taken, or why it failed; or why there is no game to show. */
@@ -50,8 +46,7 @@ function Status({
   lost: boolean
 }>) {
   const t = useMessages().home
-  if (atPublic(room) && room.status !== 'seated')
-    return <RoomTrouble room={room} />
+  if (atPublic(room)) return <RoomTrouble room={room} />
   if (game) return <Seats taken={game.taken} />
   if (!online) return <p className="hud-note">{t.room.unavailable}</p>
   return lost ? <p className="hud-note">{t.public.lost}</p> : null
@@ -81,7 +76,7 @@ export function PublicCard({
 }>) {
   const t = useMessages().home
   const heard = useUpcoming()
-  const game = shownGame(room, heard)
+  const game = shownGame(heard)
   const here = atPublic(room)
   const sitting = here && room.status !== 'error'
   const title = (

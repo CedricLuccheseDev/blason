@@ -467,39 +467,52 @@ The engine is built for lockstep, as in OpenFront: the server runs no
 simulation.
 
 - `net/protocol.ts`, shared by the browser and the server, says the
-  messages: join a room (the public one, a private one by its code, or a new
-  private one), start, an order, a fingerprint; and back the lobby (who
-  sits, the game's land, the public room's clock), the beginning (the land's
-  seed and size, the bots' level, the players by seat), each numbered turn,
-  a desync.
+  messages: join the public game, a private room by its code, or a new
+  private room; start, an order, a fingerprint; and back a private room's
+  lobby (who sits, its code), the beginning (my seat, the land's seed and
+  size, the bots' level, the opening's length), each numbered turn, a
+  desync. A turn holds the orders received since the last, each signed with
+  its sender's seat, and the seats that became a person's (`joined`: their
+  bots stop at that turn) or a bot's again (`left`). Every seat begins a
+  bot's.
 - `server/` is the relay, a small Node WebSocket server of its own
-  (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Its rooms
-  (`server/rooms.ts`) gather up to eight players, the rest of the twenty
-  seats being bots, and each draws its game's land as it opens, a seed and a
-  size (standard). One public room is always open, as OpenFront's lobbies: a
-  minute after it opened it starts with whoever sits, or at once when full,
-  and the next opens; if no one sat by then, another takes its place, a new
-  land and a new minute (`server/rooms.test.ts` runs that minute on a clock
-  of its own). Anyone may see it without sitting at it: the relay answers
-  `GET /public` with its seed and size, the ms before it starts and the
-  seats taken, never cached and open to any page (CORS), for it tells
-  nothing that joining would not. A private room starts when its host says
-  so. Then every 100 milliseconds the relay sends everyone the turn: the
-  orders received since the last, each signed with its sender's seat. A
-  player who leaves during a game gives his seat to a bot, on every browser
-  at the same turn. Every 50 turns each browser tells the fingerprint of its
-  state, and the relay names the first turn where two differ.
+  (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
+  (`server/rooms.ts`) draws its land as it opens, a seed and a size
+  (standard), and seats up to eight persons, the rest of the twenty seats
+  being bots. As on OpenFront there is no room to wait in: one public game
+  is always in its opening, which lasts 30 seconds online
+  (`ONLINE_OPENING_TICKS`, sent with the game, so that every browser has the
+  same). It begins as it opens, bots in every seat, its turns flowing from
+  the first and kept while players may come in; whoever joins sits at once
+  on the first free seat, given the land, the opening and every turn played
+  so far, and his seat is a person's from the next turn, on every browser.
+  No one comes in during the opening's last 5 seconds, so that the last to
+  come may still plant his standard, nor once eight have come: then the
+  game goes on with whoever came, and the next opens; if no one came, it is
+  dropped and a new land takes its place (`server/rooms.test.ts` runs that
+  cycle on a clock of its own). Anyone may see it without joining it: the
+  relay answers `GET /public` with its seed and size, the ms left to join it
+  and the seats taken, never cached and open to any page (CORS), for it
+  tells nothing that joining would not. A private room gathers its players
+  first and begins on its host's word, its players seated from the first
+  turn, with the same opening. A player who leaves a game gives his seat
+  back to a bot, on every browser at the same turn. Every 50 turns each
+  browser tells the fingerprint of its state, and the relay names the first
+  turn where two differ (`server/checks.ts`).
 - In the browser, `link.ts` is the line to the relay, and its address for
-  the next public game, which the home asks every second and a half while
-  it is shown, as OpenFront asks for its lobbies (`useUpcoming.ts`); the
-  home sits the player at a room and shows it live (`useRoom.ts`); when the
-  relay says the game begins, the open line is left in `online.ts` and
-  `/play?online` mounts the game on the land the relay drew, with
-  `remote.ts`'s session, stepped by the relay's turns, instead of the local
-  one.
+  the public game, which the home asks every second and a half while it is
+  shown, as OpenFront asks for its lobbies (`useUpcoming.ts`); the home
+  takes the player into it, or into a private room shown live
+  (`useRoom.ts`); when the relay says the game begins, the open line is left
+  in `online.ts` and `/play?online` mounts the game on the land the relay
+  drew, with `remote.ts`'s session, stepped by the relay's turns, instead of
+  the local one. Who comes in during the opening plays the turns so far as
+  they come, twenty a frame, and is in the opening within a second.
 - Each browser applies the turns to its own copy of the game, bots included:
   a distant player is one more seat the session receives from outside, as a
-  bot is. Watching a game, or replaying one, is receiving or replaying the
+  bot is (`src/render/remote.test.ts` plays a game on two browsers, one from
+  its first turn and one come in during the opening, and finds the same
+  state). Watching a game, or replaying one, is receiving or replaying the
   list of turns.
 
 ## SOLID

@@ -51,7 +51,7 @@ type CoupRule = {
 }
 
 export type Rules = {
-  /** Ticks during which each lord picks where he starts. */
+  /** Ticks during which each lord picks where he starts: 10 seconds alone, `ONLINE_OPENING_TICKS` online. */
   openingTicks: number
   /** In the opening, how near another lord's standard none may be planted, in tiles; when it ends, how far round his standard a lord's start reaches, in tiles. */
   standardGap: number
@@ -156,6 +156,9 @@ export type Rules = {
 
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
+
+/** A game online opens longer than one alone: 30 seconds, the time for players to come into it while the lords plant their standards (Concept, 29/10). The relay sends it with the game, in place of `openingTicks`. */
+export const ONLINE_OPENING_TICKS = 30 * SECOND
 
 export const RULES: Rules = {
   openingTicks: 10 * SECOND,
