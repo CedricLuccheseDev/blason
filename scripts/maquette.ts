@@ -4,7 +4,9 @@ import {
   createBot,
   createGame,
   generateWorld,
+  isAllied,
   makeGrid,
+  NEUTRAL,
   NO_ONE,
   RULES,
   stateHash,
@@ -52,7 +54,11 @@ function middling(state: GameState): number {
   return standing[Math.floor(standing.length / 2)] ?? 0
 }
 
-/** The tile of another's land on a lord's border nearest his land's middle, another lord's before a free one. */
+/** How late a neighbour's land comes: a lord the player may strike first, an ally next, free land last. */
+const rankOf = (state: GameState, me: number, owner: number) =>
+  owner === NEUTRAL ? 2 : Number(isAllied(state, me, owner))
+
+/** The tile of another's land on a lord's border nearest his land's middle, a lord's he may strike before an ally's or a free one. */
 function borderTile(state: GameState, me: number): number {
   const { width } = state.grid
   const mine = state.owner.flatMap((o, t) => (o === me ? [t] : []))
@@ -64,8 +70,8 @@ function borderTile(state: GameState, me: number): number {
   for (const t of mine)
     for (const n of around(state.grid, t)) {
       const o = state.owner[n]
-      if (o === me || o < -1) continue
-      const score = far(n) + (o === -1 ? 1000 : 0)
+      if (o === me || o < NEUTRAL) continue
+      const score = far(n) + 1000 * rankOf(state, me, o)
       if (score < best.score) best = { tile: n, score }
     }
   return best.tile
@@ -86,8 +92,8 @@ const MOMENTS: Array<Moment> = [
     from: 6 * SECOND,
     find: () => ({ me: 0, camera: 'land' }),
   },
-  // Three minutes in, the pointer on a neighbour's land (the capture puts
-  // it at the middle of the screen).
+  // Three minutes in, the pointer on a neighbour's land, one he may strike
+  // (the capture puts it at the middle of the screen).
   {
     name: 'minute-3',
     from: 3 * MINUTE,

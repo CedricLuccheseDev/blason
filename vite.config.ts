@@ -14,6 +14,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // The design boards and the maquette are not the app: what they write
+    // (design/maquette captures the game's pages) must not reload them.
+    watch: { ignored: ['**/design/**'] },
   },
   plugins: [
     tailwindcss(),

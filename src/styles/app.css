@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* The game's CSS is made from the game's sources alone: the design boards
+   and the maquette (design/) only read it, and what they write must neither
+   feed it nor reload the game's pages while they capture them. */
+@source not '../../design';
+
 /* A phone on its side: too low for the HUD's full pieces (components/hud/useCompact.ts). */
 @custom-variant short (@media (max-height: 499px));
 

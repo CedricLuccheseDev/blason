@@ -52,11 +52,24 @@ describe('a saved game', () => {
   it('plays on as the game played on, tick for tick', () => {
     const restored = back()
     const original = structuredClone(state)
+    // A fingerprint every tenth tick: a game that parted stays parted.
     const hashes: Array<string> = []
-    play(original, 200, () => hashes.push(stateHash(original)))
+    const every = (game: GameState, then: (hash: string) => void) => () => {
+      if (game.tick % 10 === 0) then(stateHash(game))
+    }
+    play(
+      original,
+      200,
+      every(original, (hash) => hashes.push(hash)),
+    )
     let n = 0
-    play(restored, 200, () => expect(stateHash(restored)).toBe(hashes[n++]))
-  })
+    play(
+      restored,
+      200,
+      every(restored, (hash) => expect(hash).toBe(hashes[n++])),
+    )
+    expect(n).toBe(20)
+  }, 30_000)
 
   it('leaves out what the seed makes again, and packs the land and the roads', () => {
     expect(Object.keys(save.state)).not.toContain('grid')

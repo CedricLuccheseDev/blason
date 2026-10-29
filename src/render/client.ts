@@ -71,6 +71,7 @@ export async function mountGame(
 ): Promise<GameHandle> {
   const app = new Application()
   const { save } = hooks
+  // Online, the relay says the land; a save says its own.
   const asked = hooks.online ?? save ?? { seed, size: hooks.size }
   const { land, grid } = takeLand(asked.seed, asked.size)
   await app.init({
