@@ -454,7 +454,7 @@ The HUD is React, laid over the map. It is built on a small design system,
   whole page, its name and what it does with its figures (`Hint.tsx`; its
   words in `i18n/hints.ts`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
-  shields, wax seals, gilt medallions, the coups' lozenges ringed in gules, keys, and the badges of standing
+  shields, the armies' wax seals, the works' square plaques ringed in gold, the acts' medallions, the coups' lozenges ringed in gules, keys, and the badges of standing
   (`Emblem.tsx`): an ally the links of a chain in the alliance's green
   (`--color-pact`, the map's `TONE.pact`), a foe at war a sword in gules, a
   felon his shield broken in two on gules; the shape says it before the
