@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Act } from '../hud/Act'
 import { Shield } from '../hud/Emblem'
 import { hex } from './format'
@@ -69,7 +70,12 @@ export function Head({
 /** The lords in play: me and the bots, by team, a shield each. */
 export function Seats({ book }: Readonly<{ book: Book }>) {
   const m = useMessages().book
-  const lords = Array.from({ length: book.bots + 1 }, (_, i) => i)
+  const guests = book.guests ?? 0
+  const whoSits = (i: number) => {
+    if (i === 0) return m.you
+    return i <= guests ? m.guest : m.bot
+  }
+  const lords = Array.from({ length: 1 + guests + book.bots }, (_, i) => i)
   const sides =
     book.teams >= 2
       ? Array.from({ length: book.teams }, (_, t) =>
@@ -89,8 +95,8 @@ export function Seats({ book }: Readonly<{ book: Book }>) {
             {side.map((i) => (
               <span
                 key={i}
-                title={i === 0 ? m.you : m.bot}
-                className={i === 0 ? '' : 'opacity-55'}
+                title={whoSits(i)}
+                className={i <= guests ? '' : 'opacity-55'}
               >
                 <Shield color={hex(PLAYERS[i].color)} size="s" />
               </span>
@@ -143,5 +149,26 @@ export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
         Blason
       </span>
     </button>
+  )
+}
+
+/** The room's code, to give friends, and a click to copy it (« quand on host y'a pas de code »). */
+export function Invite({ code }: Readonly<{ code: string }>) {
+  const m = useMessages().book
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    void navigator.clipboard
+      .writeText(code)
+      .then(() => setCopied(true))
+      .catch(() => setCopied(false))
+  }
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-dotted border-quill/45 pb-1">
+      <span className="hud-note text-hud-m">{m.invite}</span>
+      <span className="hud-figure text-hud-l tracking-widest">{code}</span>
+      <Act tone="plain" onClick={copy}>
+        {copied ? m.copied : m.copy}
+      </Act>
+    </div>
   )
 }

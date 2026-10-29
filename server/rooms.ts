@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { SETUP_LIMITS, botsSetup, publicSetup } from '../engine'
+import { SETUP_LIMITS, botsSetup, publicSetup, readSetup } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import { fingerprints, isMove, tell } from './checks'
 import {
@@ -197,7 +197,13 @@ function begin(room: Room) {
 export function hear(room: Room, player: Player, message: ToRelay) {
   const seat = room.players.indexOf(player)
   if (seat < 0) return
-  if (message.t === 'start' && seat === 0) begin(room)
+  if (message.t === 'start' && seat === 0) {
+    // The host's book, if the relay can read it and it seats every person here.
+    const setup = message.setup === undefined ? null : readSetup(message.setup)
+    if (setup && setup.seats.filter((s) => s.person).length >= seated(room))
+      room.setup = setup
+    begin(room)
+  }
   else if (message.t === 'order' && started(room) && isMove(message.move))
     order(room, { ...message.move, player: seat })
   else if (

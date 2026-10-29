@@ -1,10 +1,12 @@
 import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { LEVELS, MAP_SIZES, SETUP_LIMITS } from '../../engine'
+import { LEVELS, MAP_SIZES, SETUP_LIMITS, hostSetup } from '../../engine'
 import type { Book, Level, MapSize } from '../../engine'
 import type { Save } from '~/render/save'
 import { GameScreen } from '~/components/game/GameScreen'
-import { heldOnline } from '~/render/online'
+import { heldOnline, holdOnline } from '~/render/online'
+import { relayUrl } from '~/render/link'
+import { useRoom } from '~/components/home/useRoom'
 import { randomSeed } from '~/render/ahead'
 import { fetchSave } from '~/render/save'
 
@@ -59,6 +61,18 @@ function Play() {
 /** The game the player creates (« créer une partie », solo being one with no guest): in the game at once, held, his book open on its settings. */
 function Hosted() {
   const navigate = useNavigate()
+  // The host's room at the relay, opened with his book: its code to give,
+  // its guests seated; launched with guests, the game begins online for all.
+  const [room, rooms] = useRoom((game) => {
+    holdOnline(game)
+    void navigate({ to: '/play', search: { online: true } })
+  })
+  useEffect(() => {
+    if (relayUrl()) rooms.join('new')
+    // Opened once, with the page; useRoom closes it when the page goes.
+  }, [])
+  const seated = room.status === 'seated' ? room.lobby : null
+  const guests = seated ? seated.names.length - 1 : 0
   const fresh = (): Book => ({
     seed: randomSeed(),
     size: 'standard',
@@ -73,11 +87,20 @@ function Hosted() {
     <GameScreen
       me={0}
       hosting={{
-        book,
+        book: { ...book, guests },
         launched,
+        code: seated?.room ?? null,
+        online: guests > 0,
         change: setBook,
         another: () => setBook({ ...book, seed: randomSeed() }),
-        launch: () => setLaunched(true),
+        launch: () => {
+          if (guests > 0) rooms.start(hostSetup({ ...book, guests }))
+          else {
+            // Alone, the game is played here: no one may join it now.
+            rooms.leave()
+            setLaunched(true)
+          }
+        },
         restart: () => {
           setLaunched(false)
           setBook({ ...book, seed: randomSeed() })

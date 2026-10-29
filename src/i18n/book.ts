@@ -13,10 +13,18 @@ export const bookEn = {
   another: 'Another land',
   or: 'or',
   lords: 'The lords',
-  seated: (bots: number) => {
-    if (bots === 0) return 'you alone'
-    return `you and ${bots} ${bots === 1 ? 'bot' : 'bots'}`
+  seated: (bots: number, guests = 0) => {
+    const friends = guests === 1 ? '1 friend' : `${guests} friends`
+    const machines = bots === 1 ? '1 bot' : `${bots} bots`
+    const company = [guests > 0 ? friends : '', bots > 0 ? machines : '']
+      .filter(Boolean)
+      .join(' and ')
+    return company ? `you, ${company}` : 'you alone'
   },
+  guest: 'a friend',
+  invite: 'Invite',
+  copy: 'Copy',
+  copied: 'Copied',
   you: 'You',
   bot: 'bot',
   bots: 'The bots',
@@ -50,10 +58,18 @@ export const bookFr: BookMessages = {
   another: 'Une autre terre',
   or: 'ou',
   lords: 'Les seigneurs',
-  seated: (bots: number) => {
-    if (bots === 0) return 'toi seul'
-    return `toi et ${bots} ${bots === 1 ? 'bot' : 'bots'}`
+  seated: (bots: number, guests = 0) => {
+    const friends = guests === 1 ? '1 ami' : `${guests} amis`
+    const machines = bots === 1 ? '1 bot' : `${bots} bots`
+    const company = [guests > 0 ? friends : '', bots > 0 ? machines : '']
+      .filter(Boolean)
+      .join(' et ')
+    return company ? `toi, ${company}` : 'toi seul'
   },
+  guest: 'un ami',
+  invite: 'Inviter',
+  copy: 'Copier',
+  copied: 'Copié',
   you: 'Toi',
   bot: 'bot',
   bots: 'Les bots',

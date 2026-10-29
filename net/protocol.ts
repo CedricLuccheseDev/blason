@@ -29,8 +29,8 @@ export type Move = Order extends infer O
 export type ToRelay =
   /** Play the public game in its opening (null), or join a private room by its code, or open a new one ('new'). */
   | { t: 'join'; room: string | null; name: string }
-  /** The host starts the private game now. */
-  | { t: 'start' }
+  /** The host starts the private game now, as his book set it (read by the relay with readSetup; none, the room's own). */
+  | { t: 'start'; setup?: unknown }
   | { t: 'order'; move: Move }
   | { t: 'hash'; turn: number; hash: string }
 

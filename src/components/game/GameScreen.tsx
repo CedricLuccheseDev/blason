@@ -41,6 +41,9 @@ type Cry = { id: number; felon: number; victim: number }
 export type Hosting = {
   book: Book
   launched: boolean
+  /** The room's code to give friends, while the relay holds it; whether guests sit, the game then begun online for all. */
+  code: string | null
+  online: boolean
   change: (book: Book) => void
   another: () => void
   launch: () => void
@@ -179,6 +182,7 @@ export function GameScreen({
       {hosting && open && (
         <GameBook
           book={hosting.book}
+          code={hosting.launched ? null : hosting.code}
           running={
             hosting.launched && summary
               ? Math.floor(summary.seconds / 60)
@@ -187,7 +191,8 @@ export function GameScreen({
           onChange={hosting.change}
           onAnother={hosting.another}
           onLaunch={() => {
-            game?.launch(hosting.book)
+            // With guests the relay begins it for all; alone, here.
+            if (!hosting.online) game?.launch(hosting.book)
             hosting.launch()
             setOpen(false)
           }}

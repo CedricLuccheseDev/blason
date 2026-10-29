@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { readSetup } from '../../../engine'
+import type { GameSetup } from '../../../engine'
 import type { Link } from '~/render/link'
 import type { Online } from '~/render/online'
 import type { FromRelay, Lobby } from '../../../net/protocol'
@@ -28,8 +29,8 @@ export type RoomActions = {
   /** Joins the public game (null), a private room by its code, or a new one ('new'). */
   join: (code: string | null) => void
   leave: () => void
-  /** The host starts the game now. */
-  start: () => void
+  /** The host starts the game now, as his book set it if he has one. */
+  start: (setup?: GameSetup) => void
 }
 
 export function useRoom(
@@ -92,7 +93,8 @@ export function useRoom(
       })
   }
 
-  const start = () => line.current?.send({ t: 'start' })
+  const start = (setup?: GameSetup) =>
+    line.current?.send({ t: 'start', setup })
 
   // Leaving the home leaves the room, unless the game began.
   useEffect(

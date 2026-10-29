@@ -6,7 +6,7 @@ import {
 } from '../../../engine'
 import { Act } from '../hud/Act'
 import { Sheet } from '../hud/Sheet'
-import { Head, Seats, Setting, stepped } from './BookParts'
+import { Head, Invite, Seats, Setting, stepped } from './BookParts'
 import type { ReactNode } from 'react'
 import type { Book, Level, MapSize } from '../../../engine'
 import { LandPlate } from '~/components/home/LandPlate'
@@ -28,6 +28,7 @@ const OPENINGS = [10, 20, 30, 45, 60] as const
 
 export function GameBook({
   book,
+  code,
   running,
   onChange,
   onAnother,
@@ -37,6 +38,8 @@ export function GameBook({
   onQuit,
 }: Readonly<{
   book: Book
+  /** The room's code to give friends; none without a relay. */
+  code: string | null
   /** The game's minutes, once launched; the lobby before. */
   running: number | null
   onChange: (book: Book) => void
@@ -100,8 +103,12 @@ export function GameBook({
           </section>
           <span aria-hidden="true" className="w-px bg-quill/35 max-sm:hidden" />
           <section className="flex min-w-0 flex-col gap-3">
-            <Head kicker={m.seated(book.bots)} title={m.lords} />
+            <Head
+              kicker={m.seated(book.bots, book.guests ?? 0)}
+              title={m.lords}
+            />
             <Seats book={book} />
+            {code && <Invite code={code} />}
             <Setting
               name={m.bots}
               value={String(book.bots)}

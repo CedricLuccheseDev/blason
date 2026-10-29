@@ -63,10 +63,12 @@ export function aloneSetup(o: {
   return drawn(o.seed, o.size, SETUP_LIMITS.opening.alone, [player, ...bots])
 }
 
-/** What the host's book sets: his land, his bots and their level, his teams (0: each for himself), the opening's length in ticks. */
+/** What the host's book sets: his land, his guests seated, his bots and their level, his teams (0: each for himself), the opening's length in ticks. */
 export type Book = {
   seed: string
   size: MapSize
+  /** Persons seated after the host, from the second seat. */
+  guests?: number
   bots: number
   level: Level
   teams: number
@@ -81,12 +83,14 @@ export type Book = {
  */
 export function hostSetup(book: Book): GameSetup {
   const { max } = SETUP_LIMITS.seats
-  const bots = Math.max(0, Math.min(max - 1, book.bots))
+  const guests = Math.max(0, Math.min(max - 1, book.guests ?? 0))
+  const bots = Math.max(0, Math.min(max - 1 - guests, book.bots))
+  const lords = 1 + guests + bots
   const teams = book.teams >= 2 ? Math.min(SETUP_LIMITS.teams, book.teams) : 0
   const seats = Array.from({ length: max }, (_, i): Seat => ({
-    team: teams && i <= bots ? i % teams : -1,
-    bot: i > 0 && i <= bots ? book.level : null,
-    person: i === 0,
+    team: teams && i < lords ? i % teams : -1,
+    bot: i > guests && i < lords ? book.level : null,
+    person: i <= guests,
   }))
   const { min, max: most } = SETUP_LIMITS.opening
   const opening = Math.max(min, Math.min(most, book.opening))

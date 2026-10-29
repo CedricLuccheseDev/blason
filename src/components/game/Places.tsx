@@ -48,8 +48,12 @@ export function Places({
   return (
     <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-7 max-sm:gap-2 max-sm:p-3 short:gap-2 short:p-3">
       <div className="flex items-start gap-2">
-        <Sheet className="flex items-center gap-3 px-3 py-1">
-          {onBook && <BookButton onOpen={onBook} />}
+        {onBook && (
+          <span className="pointer-events-auto">
+            <BookButton onOpen={onBook} />
+          </span>
+        )}
+        <Sheet className="flex items-center px-3 py-1">
           <HomeMark onHome={onHome} />
         </Sheet>
       </div>
@@ -58,7 +62,7 @@ export function Places({
         {!waiting && <Moment summary={summary} online={online} />}
         {cry && <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />}
       </div>
-      <div className="w-88 justify-self-end max-sm:w-auto">
+      <div className="w-80 justify-self-end max-sm:w-auto">
         {!waiting && (
           <Lords summary={summary} aimed={aimed} onLight={game.light} />
         )}

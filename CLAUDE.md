@@ -155,7 +155,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   ouvert (acté le 29/10, « créer une partie doit envoyer directement dans le lobby », le solo n'étant qu'une partie
   créée sans inviter personne ; `GameBook.tsx`, `BookParts.tsx` : la terre, sa taille ou une autre, les bots, leur
   niveau, les équipes, la pose, « Lancer la partie » ; puis le menu de l'hôte, « Recommencer », « Quitter » ;
-  `hostSetup` dans le moteur), et « Rejoindre avec un code » (les parties privées, le code à cinq signes). À leur droite le Journal, un
+  `hostSetup` dans le moteur ; le livre ouvre une salle au relais et en donne le code, « Inviter », les amis venus s'assoient après l'hôte et, lancée avec eux, la partie part en ligne pour tous avec les réglages du livre, seule elle se joue dans la page), et « Rejoindre avec un code » (les parties privées, le code à cinq signes). À leur droite le Journal, un
   feuillet de ses derniers articles, la date, le titre et la première ligne, en Alegreya Sans à pleine encre pour
   qu'il se lise (29/10, « met le journal à droite des cases »). En bas, discrets, le joueur à gauche (son écu et
   « Seigneur » en attendant les profils), le pied du site au milieu, toujours au bas de l'écran ; sur téléphone et

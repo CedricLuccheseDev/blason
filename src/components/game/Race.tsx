@@ -99,7 +99,7 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <Sheet className="flex w-88 flex-col items-center px-4 py-1 max-sm:w-auto">
+          <Sheet className="flex w-80 flex-col items-center px-4 py-1 max-sm:w-auto">
             <div className="w-full max-sm:w-56">
               <Track summary={summary} />
             </div>
