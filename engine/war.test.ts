@@ -20,7 +20,7 @@ import {
 const SECOND = TICKS_PER_SECOND
 
 describe('an army, tile by tile', () => {
-  it('enters by the border nearest the click and spreads from there towards it, a few tiles a tick', () => {
+  it('enters by the border towards the click and spreads from there towards it, a few tiles a tick', () => {
     // A 9 by 9 land; lord 0 holds its middle and his barracks there, lord 1 a corner far away.
     const state = playing(field(9, 9))
     // Free land that costs nothing, to watch the army's course alone.

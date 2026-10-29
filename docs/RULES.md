@@ -76,14 +76,14 @@ the standards. Every lord starts with 50 gold.
   the common pace, the **levy** 50 % and goes a quarter slower, on the march
   and at the front alike (keys 1 to 3; the mercenaries, below, key 4).
 - A left click on another's land, or on free land, raises the army in hand
-  at the lord's free **village** nearest the front: each village levies one
-  army at a time from its people, so a lord has as many armies out as he has
-  villages (`engine/muster.ts`). With every village's army out, a click
-  raises none.
+  at one of the lord's free **villages**, the nearest by the march to where it
+  enters (below): each village levies one army at a time from its people, so
+  a lord has as many armies out as he has villages (`engine/muster.ts`). With
+  every village's army out, a click raises none.
 - **Mercenaries** are hired at a **market** for gold: a company of a quarter
   of the lord's cap of peasants, 2 gold a man (as many as the gold pays,
-  short of it), from his free market nearest the front, one company a market
-  at a time. They take no peasants, so the land holds as well while they
+  short of it), from his free market nearest by the march, one company a
+  market at a time. They take no peasants, so the land holds as well while they
   fight; when they are done their survivors go their way instead of home.
   They march and fight as the host does. In the bar their seal is gold, apart
   from the three levied at a village; the bots hire them when they have the
@@ -91,11 +91,24 @@ the standards. Every lord starts with 50 gold.
 - The army first **marches** to the front over its lord's own land and his
   allies', 6 tiles a second, seen by all: a lord met only beyond an ally's
   land may be struck through it, and an alliance broken on the road sends the
-  army home. Then it enters by the border tile nearest the click and
-  pushes on towards it, in a **band** as wide as its men (6 tiles each side of
-  its line, plus the square root of its men: 16 for 100 men), past the click
-  while it has men, at most 3 tiles a tick, whatever its size: more men go
-  further, never faster; it never swells into a ball (`engine/war.ts`).
+  army home. Then it enters by a border tile and pushes on towards the click,
+  in a **band** as wide as its men (6 tiles each side of its line, plus the
+  square root of its men: 16 for 100 men), past the click while it has men,
+  at most 3 tiles a tick, whatever its size: more men go further, never
+  faster; it never swells into a ball (`engine/war.ts`).
+- **The entry that brings it soonest**: of all the border tiles, the army
+  enters by the one that brings it to the click soonest, counting its march
+  from the free village (or market) nearest by the march, then its way
+  across the enemy's land, straight to the click. That way is slow: the
+  bulge's tip goes only as fast as it fills the land behind it, about a
+  square of tiles as deep as the way, no wider than its band, at its 3 tiles
+  a tick, so 10 tiles deep take some 3 seconds and 20 some 13, where the
+  march covers 6 tiles a second. When the lord's land borders the enemy's on
+  two sides, a click near the far side sends the army in by the near side
+  and straight across if the way round is long, and round to the far side
+  only if that is truly sooner. The same course is drawn under the pointer
+  before the click. With no village free, the aim shows the border tile
+  nearest the click.
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
   while he bears the traitor's mark; the villagers on free land):

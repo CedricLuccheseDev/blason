@@ -66,8 +66,9 @@ can tune them without touching the code. The rules themselves are described in
 | `grid.ts`                | The land cut into tiles of four map units                                                           |
 | `land.ts`                | The land in the game, the peasants, the men holding a tile                                          |
 | `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given |
-| `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                           |
-| `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs                        |
+| `muster.ts`              | Raising an army: the free villages, the march out of them and its pace, where an army stands        |
+| `course.ts`              | An army's course: the border tile that brings it soonest to the click, its village and its road     |
+| `war.ts`                 | Armies: their march, how they spread, what each tile costs                                          |
 | `battle.ts`              | Battles between armies that meet, by the combat table                                               |
 | `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone           |
 | `enclosure.ts`           | Encircled land passing to the lord all round it                                                     |

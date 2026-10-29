@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { UNIT } from './units'
-import { entryFor } from './war'
+import { entryFor } from './course'
 import {
   attack,
   endow,

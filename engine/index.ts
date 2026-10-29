@@ -37,11 +37,11 @@ export { barredBy, canStart, hasPicked } from './opening'
 export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.
-export { entryFor, paceOf } from './war'
+export { courseFor, entryFor } from './course'
 export { canBuild, priceOf } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'
-export { costOf, freeWorks, marching, menFor, roadTo } from './muster'
+export { costOf, freeWorks, marching, menFor, paceOf } from './muster'
 export { canRenew, isAllied, isFelon, offeringOf } from './diplomacy'
 export { meet } from './battle'
 export { shootsAt, underFire } from './volleys'

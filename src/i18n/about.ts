@@ -62,7 +62,7 @@ export const aboutEn: About = {
       diagram: 'screen',
       body: [
         'The map is drawn sixty times a second from the state, as a map inked on a manuscript: each land traced around its tiles, washed in its lord’s colour and outlined with a trembling pen; the works drawn small in ink; the armies as two ranks of soldiers on the border they fight over. The figures you read (your peasants, your gold, the race to the share that wins) are read once a second, so that they step rather than run.',
-        'A click is turned into an order where the pointer stands: the army in hand enters by the border nearest the click and spreads from there. The screen decides nothing: it shows the state and passes your orders on.',
+        'A click is turned into an order where the pointer stands: the army in hand enters by the border that brings it soonest to the click, its march and its way across counted, and spreads from there. The screen decides nothing: it shows the state and passes your orders on.',
       ],
     },
     {
@@ -120,7 +120,7 @@ export const aboutFr: About = {
       diagram: 'screen',
       body: [
         'La carte est dessinée soixante fois par seconde depuis l’état, comme une carte à l’encre sur un manuscrit : chaque terre tracée autour de ses tuiles, lavée de la couleur de son seigneur et cernée d’une plume qui tremble ; les constructions dessinées petites, à l’encre ; les armées en deux rangs de soldats sur la frontière qu’elles se disputent. Les chiffres que vous lisez (vos paysans, votre or, la course à la part qui gagne) sont relus une fois par seconde, pour qu’ils avancent par pas au lieu de défiler.',
-        'Un clic devient un ordre là où se trouve le pointeur : l’armée en main entre par la frontière la plus proche du clic et s’étend de là. L’écran ne décide rien : il montre l’état et transmet vos ordres.',
+        'Un clic devient un ordre là où se trouve le pointeur : l’armée en main entre par la frontière qui la mène le plus vite au clic, sa marche et sa traversée comptées, et s’étend de là. L’écran ne décide rien : il montre l’état et transmet vos ordres.',
       ],
     },
     {

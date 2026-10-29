@@ -1,12 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import {
-  barredBy,
-  canBuild,
-  canStart,
-  entryFor,
-  freeWorks,
-  roadTo,
-} from '../../../engine'
+import { barredBy, canBuild, canStart, courseFor } from '../../../engine'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
@@ -18,7 +11,7 @@ import type { Hand } from '../hand'
 // What a click on the tile under the pointer would do. Against another's
 // land or free land: the road the army would march from its village (the
 // mercenaries from their market) to the border, where it would enter, ringed, and a dotted line from there to
-// the tile aimed at. With a work in hand: its drawing on the
+// the tile aimed at, the very course the click sends it by. With a work in hand: its drawing on the
 // tile, the circle it reaches (the castle's land held, the market's range of
 // trade), red where it may not stand,
 // with the works already standing ringed in red. With a coup in hand, the
@@ -45,27 +38,19 @@ export function makeAim(state: GameState, me: number) {
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** The road the army would march from where it is raised nearest the front, its free village or, for mercenaries, its free market, as it would be drawn; none if none is free. */
-  function roadOf(entry: number, army: Army): Array<At> {
-    if (entry < 0) return []
-    for (const site of freeWorks(
-      state,
-      me,
-      entry,
-      state.rules.raisedAt[army],
-    )) {
-      const road = roadTo(state, me, site, entry)
-      if (road) return drawRoad(state, road, (t) => state.owner[t] === me, 0)
-    }
-    return []
-  }
-
-  /** Where an army would enter, and its road there, read again only when the pointer, the land or the army in hand changes. */
+  /** Where an army would enter, and the road it would march there from its free village or, for mercenaries, its free market, as drawn: the engine's own course, the one the click sends it by (courseFor); no road if none is free. Read again only when the pointer, the land or the army in hand changes. */
   function entryAt(tile: number, army: Army) {
     const key = `${tile}:${state.tick}:${army}`
     if (key !== read.key) {
-      const entry = entryFor(state, me, tile)
-      read = { key, entry, road: roadOf(entry, army) }
+      const course = courseFor(state, me, tile, army)
+      const road = course?.road ?? []
+      read = {
+        key,
+        entry: course?.entry ?? -1,
+        road: road.length
+          ? drawRoad(state, road, (t) => state.owner[t] === me, 0)
+          : [],
+      }
     }
     return read
   }
