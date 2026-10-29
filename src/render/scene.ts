@@ -4,7 +4,6 @@ import { makeLabels } from './layers/labels'
 import { landShape, makeSea } from './layers/lands'
 import { REACH, makePage } from './layers/page'
 import { makePaper } from './layers/paper'
-import { legible } from './ease'
 import { makeStamps } from './textures'
 import { makeArmies } from './armies'
 import { makeAim } from './layers/aim'
@@ -44,9 +43,10 @@ import type { Anchor } from './heralds'
 // the aim, the standards planted in the
 // opening, and over all each lord's name and peasants at the heart of his
 // land. An alliance broken snaps between the names, under the wagons and
-// the armies. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
-// names and the standards shrink with it, as if the page were held farther
-// away, and the small writing fades out.
+// the armies. The grain of the parchment over the whole page, moving with
+// it. Farther out than the whole land, the figures and the standards
+// shrink with it, as if the page were held farther away, a name never
+// under 16 pixels, and the standards' small writing fades out.
 
 /** Containers drawn as one render group, their batches kept until their own structure changes. */
 function group(...children: Array<Container>) {
@@ -204,12 +204,9 @@ export function makeScene(
       aim.draw(hovered, hand, zoom)
       planted.draw(state, zoom, now)
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
-      const shown = legible(far)
-      labels.update(state, zoom / fit / far, shown)
+      labels.update(state, zoom, fit * far)
       badges.update(labels.nameOf, zoom / fit / far)
-      badges.container.alpha = shown
       pacts.draw(state, zoom, now / 1000)
-      pacts.container.alpha = shown
     },
   }
 }

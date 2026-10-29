@@ -278,7 +278,9 @@ orders. It decides nothing about the rules.
   broken snapping before all between the two capitals, the player's own a
   ribbon of green silk hemmed in gold, the others' a line of ink, its seal
   cracking in two (`layers/pacts.ts`, its bowed line `cord.ts`, drawn by
-  `art/snap.ts`), the names and the marks beside them (`places.ts`,
+  `art/snap.ts`), the names, never under 16 pixels and at full strength over
+  the works, a land too small on screen to carry its words leaving them out,
+  never the player's, and the marks beside them (`places.ts`,
   `layers/labels.ts`), the aim
   (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
   its reach along the border, `layers/aimCoup.ts`; in the opening, a ring
@@ -288,8 +290,10 @@ orders. It decides nothing about the rules.
   the leaf browning and foxed outwards (`layers/leaf.ts`), the margin's chain,
   ruling and scale in pale ink (`layers/margin.ts`).
 - `camera.ts` is the player's camera, out to twice farther than the whole land,
-  where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
-  goes to the fiercest fight on its own (the game on the home's board).
+  where the figures and the standards shrink with it, a name never under 16
+  pixels, and the standards' small writing fades; `director.ts` is the
+  spectator's, which goes to the fiercest fight on its own (the game on the
+  home's board).
 - `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
   of the player's alliances in its last moments, beside his ally's name, past
   the figure under it and its marks, `besideOf` in `places.ts`, the ally's

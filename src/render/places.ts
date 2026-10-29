@@ -49,6 +49,7 @@ export function tilePlaces(state: GameState): Placement {
       x: (at.x + 0.5) * tile,
       y: (at.y + 0.5) * tile,
       size: Math.min(46, 24 + 4 * Math.sqrt(state.players[lord].tiles / 25)),
+      reach: Math.sqrt(piece.tiles.length) * tile,
     })
   }
   return places
@@ -88,7 +89,14 @@ const BADGE = 34
 /** The radius of the ring round an ally's badge, the time left to the alliance, in the badge's units. */
 const RING = 21.5
 
-type Name = { x: number; y: number; half: number; tall: number; right: number }
+type Name = {
+  x: number
+  y: number
+  half: number
+  tall: number
+  right: number
+  alpha: number
+}
 
 /** A ring round a badge at `x`, the share of its time still to run. */
 function ringRound(g: Graphics, x: number, share: number, color: number) {
@@ -163,9 +171,11 @@ export function makeBadges(state: GameState, me: number) {
           mark = { icons: key, g, ring, rings: '' }
           drawn.set(lord, mark)
         }
+        // With the name, faded where his land is too small to carry it.
         const name = nameOf(lord)
-        mark.g.visible = name !== null && icons.length > 0
+        mark.g.visible = name !== null && name.alpha > 0 && icons.length > 0
         if (!name) return
+        mark.g.alpha = name.alpha
         const s = BADGE / (2 * RING) / zoom
         mark.g.scale.set(s)
         const [x, y] = [
