@@ -441,8 +441,9 @@ relay's seed when the browser has a moment and drawn small on a canvas
 (`sketch.ts`), as the map shows it from afar at the opening, the sea's wash
 and its shore lines, the land's parchment, its woods, hills and mountains a
 shade darker, the coast in ink. Its title, the time left to join it and the
-seats taken lie on it as a map's cartouches, and across it Play goes
-straight into its opening, to plant a standard: there is no room to wait in
+seats taken lie on it as a map's cartouches, and Play at its corner, or a
+click anywhere on the land, goes straight into its opening, to plant a
+standard: there is no room to wait in
 (Multiplayer, below). When no one may come in any more, the relay shows the
 next, and the land fades for the new one; the land made is kept, so that
 the game, when joined, is not made again.

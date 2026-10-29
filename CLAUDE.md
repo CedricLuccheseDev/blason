@@ -137,7 +137,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   et sa ligne ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
   la partie en cours de pose, celle même où elle se joue, tirée de sa graine quand le navigateur a un moment et
   dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par `ahead.ts`), son titre, le temps qui reste
-  pour la rejoindre et ses places posés dessus en cartouches, et « Jouer » sur toute sa largeur ; puis trois boutons
+  pour la rejoindre et ses places posés dessus en cartouches, « Jouer » dans son coin, et un clic n'importe où sur la terre y entre aussi (acté le 29/10, « on peut cliquer sur la carte directement ») ; puis trois boutons
   courts égaux, « Solo » (la taille de la terre et le niveau des bots, sur un feuillet), « Créer une partie » et
   « Rejoindre avec un code » (les parties privées, le code à cinq signes, l'hôte lance). En bas, discrets, le joueur
   à gauche (son écu et « Seigneur » en attendant les profils), la dernière ligne du Journal à droite, le pied du
