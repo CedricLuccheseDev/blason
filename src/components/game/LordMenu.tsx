@@ -5,6 +5,7 @@ import { Sheet } from '../hud/Sheet'
 import { useBeside } from '../hud/useBeside'
 import { count, hex } from './format'
 import { menuOf } from './lordMenu'
+import { Piece } from './BarPiece'
 import { standingsOf } from './standing'
 import type { AllianceSay, MenuLine } from './lordMenu'
 import type { Mark } from './svg/marks'
@@ -32,10 +33,6 @@ const SAY_TONE: Record<AllianceSay, string> = {
   break: 'text-gules',
   asked: '',
 }
-
-// norm-ok: a thin line of the list, square, its ground shaded under the pointer; lifted and pressed as all the HUD touches.
-const LINE =
-  'hud-press pointer-events-auto flex min-h-8 w-full items-center gap-2 px-0.5 text-left hover:bg-shade/60 max-sm:min-h-11 short:min-h-11'
 
 /** A line's word, its tone, and its figure. */
 function told(
@@ -90,10 +87,10 @@ function useFar(
 }
 
 /**
- * The right click on another lord's land, as a short list beside the
- * pointer, as chosen on the maquette (« en liste courte »): a small sheet, his
- * shield and his name and how he stands with me, then a thin line for each
- * act, its medallion, its word and its figure. Attack, the men of the army
+ * The right click on another lord's land, beside the pointer: a small sheet,
+ * his shield and his name and how he stands with me, then the acts as the
+ * bar's pieces, each its medallion and its figure, its word in its hint
+ * (« trop de texte, c'est un jeu », « mets des icônes pareil »). Attack, the men of the army
  * in hand, sent there as a left click would, but on an ally's land; the
  * alliance, its word what it does now, offer, accept, renew, or break in
  * gules, asleep while my offer waits; an offering, the gold it would give,
@@ -137,43 +134,42 @@ export function LordMenu({
       className="pointer-events-none absolute w-max"
       style={place(aim.x, aim.y, true, true)}
     >
-      <Sheet className="pointer-events-auto flex min-w-40 flex-col px-2 py-1">
-        <div className="mb-0.5 flex items-center gap-2 border-b border-gilt/60 px-0.5 pb-1">
-          <Shield color={hex(lord.color)} size="xs" />
-          <span className="hud-word text-hud-s whitespace-nowrap">{name}</span>
+      <Sheet className="pointer-events-auto flex flex-col gap-2 px-3 py-2">
+        <div className="flex items-center gap-2 border-b border-gilt/60 pb-1">
+          <Shield color={hex(lord.color)} size="s" />
+          <span className="hud-word whitespace-nowrap">{name}</span>
           {standingsOf(summary.lords[seat], m).map(({ standing, label }) => (
             <StandingBadge key={standing} standing={standing} label={label} />
           ))}
         </div>
+        {/* The acts as the bar's pieces (« mets des icônes pareil pour le menu clic droit »): each its medallion and its figure, its word under the pointer. */}
         <div
           role="group"
           aria-label={m.menu.label(name)}
-          className="flex flex-col"
+          className="flex items-start justify-center gap-3"
         >
           {menuOf(summary, aim).map((line) => {
             const { word, tone, figure } = told(line, m)
-            const asleep = !line.can
             return (
-              <button
+              <Piece
                 key={line.act}
-                type="button"
+                k={null}
+                name={word}
+                hint={[]}
+                held={false}
+                faint={!line.can}
                 onClick={() =>
                   line.act === 'alliance'
                     ? acts.alliance(line.say)
                     : acts[line.act]()
                 }
-                tabIndex={asleep ? -1 : undefined}
-                aria-disabled={asleep || undefined}
-                className={`${LINE} ${asleep ? 'pointer-events-none opacity-50' : ''}`}
-              >
-                <ActMedallion {...LOOKS[line.act]} />
-                <span
-                  className={`hud-word text-hud-s whitespace-nowrap ${tone}`}
-                >
-                  {word}
-                </span>
-                <span className="ml-auto pl-2 empty:hidden">{figure}</span>
-              </button>
+                emblem={
+                  <span className={tone}>
+                    <ActMedallion {...LOOKS[line.act]} />
+                  </span>
+                }
+                figure={figure}
+              />
             )
           })}
         </div>

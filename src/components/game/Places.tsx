@@ -47,15 +47,15 @@ export function Places({
 }>) {
   return (
     <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-7 max-sm:gap-2 max-sm:p-3 short:gap-2 short:p-3">
-      <div className="flex items-start gap-2">
+      <div className="flex items-center gap-2">
+        <Sheet className="flex h-11 items-center px-3">
+          <HomeMark onHome={onHome} />
+        </Sheet>
         {onBook && (
           <span className="pointer-events-auto">
             <BookButton onOpen={onBook} />
           </span>
         )}
-        <Sheet className="flex items-center px-3 py-1">
-          <HomeMark onHome={onHome} />
-        </Sheet>
       </div>
       <div className="flex min-w-0 flex-col items-center gap-2">
         {!waiting && <Race summary={summary} />}

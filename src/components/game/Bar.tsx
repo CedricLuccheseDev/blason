@@ -8,12 +8,12 @@ import type { Army, Coup, Work } from '../../../engine'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
-/** The drawing pressed in each army's seal. */
+/** The drawing pressed in each army's seal: its men, one, two or three, as its share grows; the mercenaries a man and his gold. */
 export const ARMY_MARKS = {
-  raid: 'sword',
-  host: 'soldier',
-  ban: 'pitchfork',
-  mercenaries: 'market',
+  raid: 'troop1',
+  host: 'troop2',
+  ban: 'troop3',
+  mercenaries: 'hireling',
 } as const satisfies Record<Army, string>
 
 /**
@@ -38,10 +38,10 @@ const FITS = ['drawn', 'tight', 'rows'] as const
 
 /** Each form's band, the rows laid wrapped and centred, and the room between its pieces, their keys clear of the next. */
 const FORMS: Record<(typeof FITS)[number], { band: string; gap: string }> = {
-  drawn: { band: 'px-4 py-1', gap: 'gap-3' },
-  tight: { band: 'px-3 py-1', gap: 'gap-1' },
+  drawn: { band: 'px-4', gap: 'gap-3' },
+  tight: { band: 'px-3', gap: 'gap-1' },
   rows: {
-    band: 'flex-wrap justify-center gap-x-2 gap-y-1 px-3 py-1',
+    band: 'flex-wrap justify-center gap-x-2 gap-y-1 px-3',
     gap: 'gap-1',
   },
 }
@@ -75,29 +75,25 @@ function Armies({
               key={a.army}
               k={null}
               name={m.game.armies[a.army]}
-              hint={[
-                m.hints.armies[a.army],
-                m.hints.armies.men(count(a.men)),
-                m.hints.armies.oneEach,
-              ]}
+              hint={[m.hints.armies.men(count(a.men)), m.hints.armies[a.army]]}
               held={held}
               // An army that would take no man: the mercenaries without the gold for one.
               faint={a.men === 0 && !held}
               onClick={() => onArmy(a.army)}
               figure={
                 a.share === null ? (
-                  <Figure icon="coins" size="s">
+                  <Figure icon="coins" size="m">
                     {count(a.gold ?? 0)}
                   </Figure>
                 ) : (
-                  <Figure size="s">{m.game.percent(a.share)}</Figure>
+                  <Figure size="m">{m.game.percent(a.share)}</Figure>
                 )
               }
               emblem={
                 <SealEmblem
                   icon={ARMY_MARKS[a.army]}
                   color={ARMY_WAX[a.army] ?? wax}
-                  size="xs"
+                  size="s"
                   held={held}
                 />
               }
@@ -159,19 +155,15 @@ export function Bar({
                   key={w.work}
                   k={null}
                   name={m.game.works[w.work]}
-                  hint={[m.hints.works[w.work], m.hints.works.price]}
+                  hint={[m.hints.works[w.work]]}
                   held={held}
                   faint={!w.can && !held}
                   onClick={() => onWork(held ? null : w.work)}
                   emblem={
-                    <MedallionEmblem icon={w.work} size="xs" held={held} />
+                    <MedallionEmblem icon={w.work} size="s" held={held} />
                   }
                   figure={
-                    <Figure
-                      icon="coins"
-                      size="s"
-                      tone={w.can ? 'ink' : 'gules'}
-                    >
+                    <Figure icon="coins" size="m">
                       {count(w.price)}
                     </Figure>
                   }
@@ -188,23 +180,19 @@ export function Bar({
                   key={c.coup}
                   k={null}
                   name={m.game.coups[c.coup]}
-                  hint={[m.hints.coups[c.coup], m.hints.coups.price]}
+                  hint={[m.hints.coups[c.coup]]}
                   held={held}
                   faint={!c.can && !held}
                   onClick={() => onCoup(held ? null : c.coup)}
                   emblem={
                     <CoupEmblem
                       icon={COUP_MARKS[c.coup]}
-                      size="xs"
+                      size="s"
                       held={held}
                     />
                   }
                   figure={
-                    <Figure
-                      icon="coins"
-                      size="s"
-                      tone={c.can ? 'ink' : 'gules'}
-                    >
+                    <Figure icon="coins" size="m">
                       {count(c.price)}
                     </Figure>
                   }

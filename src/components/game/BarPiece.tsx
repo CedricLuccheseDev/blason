@@ -43,9 +43,9 @@ export function Piece({
         aria-pressed={held}
         aria-label={name}
         onClick={onClick}
-        className={`${PIECE} ${faint ? 'opacity-45' : ''}`}
+        className={PIECE}
       >
-        <span className="relative">
+        <span className={`relative ${faint ? 'opacity-45' : ''}`}>
           {emblem}
           {k !== null && (
             <span className="absolute -top-1 -right-3">

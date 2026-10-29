@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Act } from '../hud/Act'
 import { Shield } from '../hud/Emblem'
 import { hex } from './format'
+import type { ReactNode } from 'react'
 import type { Book } from '../../../engine'
 import { Flourish } from '~/components/home/Ornaments'
 import { PLAYERS } from '~/render/palette'
@@ -15,6 +16,19 @@ import { useMessages } from '~/i18n'
 export function stepped<T>(list: ReadonlyArray<T>, value: T, by: 1 | -1): T {
   const at = Math.max(0, list.indexOf(value))
   return list[Math.max(0, Math.min(list.length - 1, at + by))]
+}
+
+/** A line of the book: its name on the left, its value in a column of one width on the right, every line as tall, ruled under. */
+export function Row({
+  name,
+  children,
+}: Readonly<{ name: string; children: ReactNode }>) {
+  return (
+    <div className="flex h-11 items-center justify-between gap-3 border-b border-dotted border-quill/45">
+      <span className="hud-note text-hud-m">{name}</span>
+      <span className="flex w-56 items-center">{children}</span>
+    </div>
+  )
 }
 
 /** One setting: its name, and its value between two arrows; read only for whoever may not change it. */
@@ -40,14 +54,11 @@ export function Setting({
       </button>
     )
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-dotted border-quill/45">
-      <span className="hud-note text-hud-m">{name}</span>
-      <span className="flex items-center">
-        {arrow(-1)}
-        <span className="hud-word min-w-28 text-center">{value}</span>
-        {arrow(1)}
-      </span>
-    </div>
+    <Row name={name}>
+      {arrow(-1)}
+      <span className="hud-word flex-1 text-center">{value}</span>
+      {arrow(1)}
+    </Row>
   )
 }
 
@@ -57,10 +68,12 @@ export function Head({
   title,
 }: Readonly<{ kicker: string; title: string }>) {
   return (
-    <header className="flex flex-col items-center gap-0.5 text-center">
+    <header className="flex flex-col items-center text-center">
       <span className="hud-note">{kicker}</span>
-      <h2 className="font-caps text-hud-xl text-quill">{title}</h2>
-      <span className="w-3/5">
+      <h2 className="font-caps text-hud-xl leading-tight text-quill">
+        {title}
+      </h2>
+      <span className="mt-1 w-3/5">
         <Flourish />
       </span>
     </header>
@@ -85,13 +98,13 @@ export function Seats({ book }: Readonly<{ book: Book }>) {
   return (
     <div className="flex flex-col gap-2">
       {sides.map((side, t) => (
-        <div key={t} className="flex items-start gap-2">
+        <div key={t} className="flex items-start justify-center gap-2">
           {book.teams >= 2 && (
             <span className="hud-figure w-6 pt-1 text-gilt-deep">
               {['I', 'II', 'III', 'IV'][t]}
             </span>
           )}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap justify-center gap-1">
             {side.map((i) => (
               <span
                 key={i}
@@ -163,12 +176,17 @@ export function Invite({ code }: Readonly<{ code: string }>) {
       .catch(() => setCopied(false))
   }
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-dotted border-quill/45 pb-1">
-      <span className="hud-note text-hud-m">{m.invite}</span>
-      <span className="hud-figure text-hud-l tracking-widest">{code}</span>
-      <Act tone="plain" onClick={copy}>
+    <Row name={m.invite}>
+      <span className="hud-figure flex-1 text-center text-hud-l tracking-widest">
+        {code}
+      </span>
+      <button
+        type="button"
+        onClick={copy}
+        className="hud-note hud-press min-h-11 min-w-11 cursor-pointer text-gilt-deep hover:text-quill"
+      >
         {copied ? m.copied : m.copy}
-      </Act>
-    </div>
+      </button>
+    </Row>
   )
 }

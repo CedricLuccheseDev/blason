@@ -58,7 +58,7 @@ export function Campaign({
           >
             <Banner color={hex(me.color)} mark={ARMY_MARKS[host.army]} />
             <span className="hud-figure text-hud-s">{count(host.men)}</span>
-            {/* Under the pointer, the cross that calls it home (« une croix pour les rappeler »). */}
+            {/* Under the pointer, the cross that calls it home (« une croix pour les rappeler »). norm-ok: a round red seal, the game's own mark, not a box. */}
             <span
               aria-hidden="true"
               className="absolute -top-1 -right-1 hidden size-5 items-center justify-center rounded-full border border-quill bg-gules font-figures text-hud-s leading-none text-wax group-hover:flex"

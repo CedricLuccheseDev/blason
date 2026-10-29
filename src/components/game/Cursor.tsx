@@ -1,6 +1,6 @@
-import { CoupEmblem, SealEmblem } from '../hud/Emblem'
+import { ActMedallion, CoupEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Rule, Sheet } from '../hud/Sheet'
+import { Sheet } from '../hud/Sheet'
 import { useBeside } from '../hud/useBeside'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
@@ -57,15 +57,11 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <Mouse button="left" />
         <SealEmblem
           icon={ARMY_MARKS[army.army]}
           color={ARMY_WAX[army.army] ?? hex(me.color)}
           size="xs"
         />
-        <span className="hud-word whitespace-nowrap">
-          {m.game.armies[army.army]}
-        </span>
         <Figure icon="soldier" size="m">
           {count(army.men)}
         </Figure>
@@ -97,11 +93,7 @@ function CoupHalf({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <Mouse button="left" />
         <CoupEmblem icon={COUP_MARKS[coup.coup]} size="xs" />
-        <span className="hud-word whitespace-nowrap">
-          {m.game.coups[coup.coup]}
-        </span>
         <Figure icon="coins" size="m" tone={coup.can ? 'ink' : 'gules'}>
           {count(price)}
         </Figure>
@@ -117,9 +109,9 @@ function MenuHint() {
   const compact = useCompact()
   if (compact) return <span className="hud-note">{m.menu.hintTouch}</span>
   return (
-    <div className="flex items-center gap-2 opacity-50">
-      <Mouse button="right" />
-      <span className="hud-word whitespace-nowrap">{m.menu.options}</span>
+    <div className="flex items-center gap-1 opacity-50" title={m.menu.options}>
+      <ActMedallion icon="links" ring="var(--color-pact)" />
+      <ActMedallion icon="market" ring="var(--color-gilt)" />
     </div>
   )
 }
@@ -163,12 +155,18 @@ export function Cursor({
         )}
         {aim.coup && <CoupHalf coup={aim.coup} summary={summary} />}
         {strikes && <ArmyHalf summary={summary} />}
-        {aim.lord !== null && !aim.coup && (
-          <>
-            {strikes && <Rule />}
-            <MenuHint />
-          </>
+        {/* The two mice in the middle (« mets les icônes souris gauche et droite au centre »): the left's action on the left, the right's, greyed, on the right. */}
+        {(strikes || aim.coup) && (
+          <span className="flex items-center gap-0.5">
+            <Mouse button="left" />
+            {aim.lord !== null && !aim.coup && (
+              <span className="opacity-50">
+                <Mouse button="right" />
+              </span>
+            )}
+          </span>
         )}
+        {aim.lord !== null && !aim.coup && <MenuHint />}
       </Sheet>
     </div>
   )

@@ -1,54 +1,43 @@
 // The hints: what each piece of the HUD does, said under the pointer
-// (« ajoute des helpers », hover bubbles chosen), a title and a line or two,
-// with its figures. The rules they tell are those of docs/RULES.md.
+// (« ajoute des helpers »), a title and a short line or two, its figures
+// first (« trop de texte, c'est un jeu, ça doit être rapide à lire »). The
+// rules they tell are those of docs/RULES.md.
 
 export const hintsEn = {
   peasants: {
     title: 'Peasants',
     fed: (land: string, villages: number, fed: string) =>
-      `Your land feeds ${land}, your ${villages} ${villages === 1 ? 'village' : 'villages'} ${fed} more.`,
-    born: (born: string, cap: string) =>
-      `${born} are born a second, up to ${cap}. They hold your land and are levied into armies.`,
-    full: 'Your land and villages feed no more: take land or build a village.',
-    sick: (dying: string) =>
-      `Too many for your land and villages: ${dying} die of sickness a second.`,
+      `Land ${land}, ${villages} ${villages === 1 ? 'village' : 'villages'} ${fed}`,
+    born: (born: string, cap: string) => `+${born}/s up to ${cap}`,
+    full: 'Full: take land or build a village',
+    sick: (dying: string) => `−${dying}/s: too many`,
   },
   gold: {
     title: 'Gold',
-    line: 'Your markets’ caravans bring it, and free land taken. It pays the works, the coups and the mercenaries.',
-    earned: (gold: string) => `Earned since the start: ${gold}.`,
+    line: 'From caravans and land taken',
+    earned: (gold: string) => `Earned: ${gold}`,
   },
   armies: {
-    raid: 'Levies 10 % of your peasants at your free village nearest the front; a quarter faster.',
-    host: 'Levies 25 % of your peasants at your free village nearest the front.',
-    ban: 'Levies 50 % of your peasants at your free village nearest the front; a quarter slower.',
-    mercenaries:
-      'Hired for gold at your free market nearest the front, 2 gold a man: your peasants stay home.',
-    men: (men: string) => `${men} men would go now.`,
-    oneEach: 'Each village sends one army at a time, each market one company.',
+    raid: '10 % of your peasants, fast',
+    host: '25 % of your peasants',
+    ban: '50 % of your peasants, slow',
+    mercenaries: 'Paid in gold, 2 a man',
+    men: (men: string) => `${men} men`,
   },
   works: {
-    village: 'Feeds 60 more peasants and levies your armies, one at a time.',
-    market:
-      'Sends caravans to the markets within 40 tiles; each arriving pays gold to both.',
-    castle:
-      'Its land within 12 tiles is held twice as well, and its archers shoot the armies biting it.',
-    price: 'Each one costs double the one before.',
+    village: '+60 peasants, levies armies',
+    market: 'Caravans: gold',
+    castle: 'Holds its land, shoots',
   },
   coups: {
-    troublemaker:
-      'Walks to another lord’s land and raises it: 6 tiles round turn free, held by rebels.',
-    archers:
-      'A volley near your border, 2 seconds later: every enemy army under it loses 30 % of its men.',
-    fire: 'Falls anywhere 8 seconds later: the enemies’ works within 12 tiles burn, and no one builds there for a minute.',
-    price: 'Each one launched costs double the one before.',
+    troublemaker: 'Raises an enemy land',
+    archers: 'A volley: −30 % of an army',
+    fire: 'Burns the works where it falls',
   },
   race: {
     title: 'The race',
-    line: (needed: number) =>
-      `Hold ${needed} % of the land to win. Your shield and the leader’s on the line; the flag at the share that wins.`,
-    drops:
-      'From the tenth minute the share needed drops by 5 points a minute, down to 50 %.',
+    line: (needed: number) => `Hold ${needed} % of the land`,
+    drops: '−5 points a minute from the 10th',
   },
 }
 
@@ -58,49 +47,36 @@ export const hintsFr: HintsMessages = {
   peasants: {
     title: 'Paysans',
     fed: (land: string, villages: number, fed: string) =>
-      `Ta terre en nourrit ${land}, ${villages === 1 ? 'ton village' : 'tes ' + villages + ' villages'} ${fed} de plus.`,
-    born: (born: string, cap: string) =>
-      `Il en naît ${born} par seconde, jusqu’à ${cap}. Ils tiennent ta terre et se lèvent en armées.`,
-    full: 'Ta terre et tes villages n’en nourrissent pas plus : prends de la terre ou bâtis un village.',
-    sick: (dying: string) =>
-      `Trop pour ta terre et tes villages : ${dying} meurent de maladie par seconde.`,
+      `Terre ${land}, ${villages} ${villages === 1 ? 'village' : 'villages'} ${fed}`,
+    born: (born: string, cap: string) => `+${born}/s jusqu’à ${cap}`,
+    full: 'Plein : prends de la terre ou bâtis un village',
+    sick: (dying: string) => `−${dying}/s : trop de monde`,
   },
   gold: {
     title: 'Or',
-    line: 'Les caravanes de tes marchés le rapportent, et la terre libre prise. Il paie les constructions, les coups et les mercenaires.',
-    earned: (gold: string) => `Gagné depuis le début : ${gold}.`,
+    line: 'Les caravanes et la terre prise',
+    earned: (gold: string) => `Gagné : ${gold}`,
   },
   armies: {
-    raid: 'Lève 10 % de tes paysans à ton village libre le plus proche du front ; un quart plus rapide.',
-    host: 'Lève 25 % de tes paysans à ton village libre le plus proche du front.',
-    ban: 'Lève 50 % de tes paysans à ton village libre le plus proche du front ; un quart plus lent.',
-    mercenaries:
-      'Engagés pour de l’or à ton marché libre le plus proche du front, 2 pièces l’homme : tes paysans restent chez eux.',
-    men: (men: string) => `${men} hommes partiraient maintenant.`,
-    oneEach:
-      'Chaque village envoie une armée à la fois, chaque marché une compagnie.',
+    raid: '10 % de tes paysans, rapide',
+    host: '25 % de tes paysans',
+    ban: '50 % de tes paysans, lent',
+    mercenaries: 'Payés en or, 2 l’homme',
+    men: (men: string) => `${men} hommes`,
   },
   works: {
-    village: 'Nourrit 60 paysans de plus et lève tes armées, une à la fois.',
-    market:
-      'Envoie des caravanes vers les marchés à 40 tuiles ; chacune qui arrive paie de l’or aux deux.',
-    castle:
-      'Sa terre à 12 tuiles se tient deux fois mieux, et ses archers tirent sur les armées qui la mordent.',
-    price: 'Chacun coûte le double du précédent.',
+    village: '+60 paysans, lève les armées',
+    market: 'Caravanes : de l’or',
+    castle: 'Tient sa terre, tire des flèches',
   },
   coups: {
-    troublemaker:
-      'Marche jusqu’à la terre d’un autre seigneur et la soulève : 6 tuiles autour redeviennent libres, tenues par des rebelles.',
-    archers:
-      'Une volée près de ta frontière, 2 secondes après : chaque armée ennemie dessous perd 30 % de ses hommes.',
-    fire: 'Tombe n’importe où 8 secondes après : les constructions ennemies à 12 tuiles brûlent, et personne n’y bâtit pendant une minute.',
-    price: 'Chacun lancé coûte le double du précédent.',
+    troublemaker: 'Soulève une terre ennemie',
+    archers: 'Une volée : −30 % d’une armée',
+    fire: 'Brûle les constructions',
   },
   race: {
     title: 'La course',
-    line: (needed: number) =>
-      `Tiens ${needed} % de la terre pour gagner. Ton écu et celui du premier sur la ligne ; le fanion à la part qui gagne.`,
-    drops:
-      'Dès la dixième minute, la part exigée baisse de 5 points par minute, jusqu’à 50 %.',
+    line: (needed: number) => `Tenir ${needed} % de la terre`,
+    drops: '−5 points par minute dès la 10ᵉ',
   },
 }

@@ -6,14 +6,21 @@ import { useEffect, useState } from 'react'
 // stand on their sheets (« dans le header tu peux mettre des fonds, mais en
 // bas laisse sans fond »).
 
-/** How near the screen's bottom the pointer darkens it, as a share of its height. */
-const NEAR = 0.2
+/** How near the screen's bottom the pointer begins to darken it, as a share of its height: the nearer, the darker. */
+const NEAR = 0.35
 
 export function Shades() {
-  const [near, setNear] = useState(false)
+  const [near, setNear] = useState(0)
   useEffect(() => {
     const move = (e: PointerEvent) => {
-      setNear(e.clientY > window.innerHeight * (1 - NEAR))
+      const h = window.innerHeight
+      // From nothing where the band begins to whole at the screen's foot.
+      setNear(
+        Math.max(
+          0,
+          Math.min(1, (e.clientY - h * (1 - NEAR)) / (h * NEAR * 0.8)),
+        ),
+      )
     }
     window.addEventListener('pointermove', move)
     return () => window.removeEventListener('pointermove', move)
@@ -23,7 +30,7 @@ export function Shades() {
     <div
       aria-hidden="true"
       className={`hud-shade bottom-0 h-56 bg-linear-to-t from-quill/60 to-transparent`}
-      style={{ opacity: near ? 1 : 0 }}
+      style={{ opacity: near }}
     />
   )
 }
