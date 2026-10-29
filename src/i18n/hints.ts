@@ -4,6 +4,7 @@
 // rules they tell are those of docs/RULES.md.
 
 export const hintsEn = {
+  home: { title: 'My land', line: 'Click: the camera back on it' },
   peasants: {
     title: 'Peasants',
     fed: (land: string, villages: number, fed: string) =>
@@ -44,6 +45,7 @@ export const hintsEn = {
 export type HintsMessages = typeof hintsEn
 
 export const hintsFr: HintsMessages = {
+  home: { title: 'Ma terre', line: 'Clic : la caméra y revient' },
   peasants: {
     title: 'Paysans',
     fed: (land: string, villages: number, fed: string) =>

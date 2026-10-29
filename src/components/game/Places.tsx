@@ -78,7 +78,9 @@ export function Places({
         ref={floor}
         className={`relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end ${GAP.piece}`}
       >
-        <div className="min-w-0">{!waiting && <Purse summary={summary} />}</div>
+        <div className="min-w-0">
+          {!waiting && <Purse summary={summary} onHome={game.home} />}
+        </div>
         <div className="min-w-0">
           {!waiting && (
             <Bar

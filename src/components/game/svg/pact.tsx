@@ -16,7 +16,6 @@ function Half({
   r,
   color,
   empty,
-  side,
 }: Readonly<{
   clip: string
   cx: number
@@ -24,39 +23,36 @@ function Half({
   r: number
   color: string
   empty: boolean
-  side: 'l' | 'r'
 }>) {
   return (
-    <g className={`hud-half-${side}`}>
-      <g clipPath={`url(#${clip})`}>
-        <polygon
-          points={waxEdge(cx, cy, r)}
-          fill={empty ? PAPER : color}
-          fillOpacity={empty ? 0.75 : 1}
-          stroke={INK}
-          strokeWidth={empty ? 1.4 : 1.6}
-          strokeDasharray={empty ? '3 3' : undefined}
-          strokeLinejoin="round"
-        />
-        <circle
-          cx={cx}
-          cy={cy}
-          r={r * 0.74}
-          fill="none"
-          stroke={INK}
-          strokeWidth="2"
-          strokeOpacity={empty ? 0.35 : 1}
-        />
-        <Glyph
-          name="links"
-          cx={cx}
-          cy={cy + 0.5}
-          size={r}
-          fill="var(--color-wax)"
-          stroke={INK}
-          sw={1.7}
-        />
-      </g>
+    <g clipPath={`url(#${clip})`}>
+      <polygon
+        points={waxEdge(cx, cy, r)}
+        fill={empty ? PAPER : color}
+        fillOpacity={empty ? 0.75 : 1}
+        stroke={INK}
+        strokeWidth={empty ? 1.4 : 1.6}
+        strokeDasharray={empty ? '3 3' : undefined}
+        strokeLinejoin="round"
+      />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r * 0.74}
+        fill="none"
+        stroke={INK}
+        strokeWidth="2"
+        strokeOpacity={empty ? 0.35 : 1}
+      />
+      <Glyph
+        name="links"
+        cx={cx}
+        cy={cy + 0.5}
+        size={r}
+        fill="var(--color-wax)"
+        stroke={INK}
+        sw={1.7}
+      />
     </g>
   )
 }
@@ -97,62 +93,60 @@ export function PairSeal({
           />
         </clipPath>
       </defs>
-      <Half
-        clip={l}
-        {...{ cx, cy, r }}
-        color={left}
-        empty={leftEmpty}
-        side="l"
-      />
-      <Half
-        clip={rr}
-        {...{ cx, cy, r }}
-        color={right}
-        empty={rightEmpty}
-        side="r"
-      />
+      <Half clip={l} {...{ cx, cy, r }} color={left} empty={leftEmpty} />
+      <Half clip={rr} {...{ cx, cy, r }} color={right} empty={rightEmpty} />
     </g>
   )
 }
 
-/** The share `frac` of a ring, from its top, clockwise: the time left. */
-export function TimeRing({
+/** A circle's outline as a path, to cut a band out of two. */
+const loop = (cx: number, cy: number, r: number) =>
+  `M${cx - r} ${cy} a${r} ${r} 0 1 0 ${2 * r} 0 a${r} ${r} 0 1 0 ${-2 * r} 0 Z`
+
+/**
+ * The time left as a gauge in a round band between `inner` and `outer`: its
+ * colour fills it from the bottom up to the share `frac` still to run, and
+ * sinks as it runs out (« les timer en rond on voit mal, fais une jauge dans
+ * un rond mais vertical comme openfront »).
+ */
+export function TimeGauge({
   cx,
   cy,
-  r,
+  inner,
+  outer,
   frac,
   color,
-  width = 4.4,
 }: Readonly<{
   cx: number
   cy: number
-  r: number
+  inner: number
+  outer: number
   frac: number
   color: string
-  width?: number
 }>) {
-  const a = -Math.PI / 2 + Math.min(frac, 0.9999) * Math.PI * 2
-  const arc = `M${cx} ${cy - r} A${r} ${r} 0 ${frac > 0.5 ? 1 : 0} 1 ${cx + Math.cos(a) * r} ${cy + Math.sin(a) * r}`
+  const clip = useId()
+  const band = `${loop(cx, cy, outer)} ${loop(cx, cy, inner)}`
+  const level = cy + outer - 2 * outer * Math.max(0, Math.min(1, frac))
   return (
     <g>
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        fill="none"
-        stroke={INK}
-        strokeOpacity="0.22"
-        strokeWidth={width}
+      <defs>
+        <clipPath id={clip}>
+          <rect
+            x={cx - outer}
+            y={level}
+            width={2 * outer}
+            height={cy + outer - level}
+          />
+        </clipPath>
+      </defs>
+      <path d={band} fill={PAPER} fillRule="evenodd" />
+      <path
+        d={band}
+        fill={color}
+        fillRule="evenodd"
+        clipPath={`url(#${clip})`}
       />
-      {frac > 0 && (
-        <path
-          d={arc}
-          fill="none"
-          stroke={color}
-          strokeWidth={width}
-          strokeLinecap="round"
-        />
-      )}
+      <path d={band} fill="none" stroke={INK} strokeWidth="1.3" />
     </g>
   )
 }

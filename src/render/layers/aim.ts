@@ -1,5 +1,12 @@
 import { Container, Graphics } from 'pixi.js'
-import { barredBy, canBuild, canStart, courseFor } from '../../../engine'
+import {
+  barredBy,
+  canBuild,
+  canStart,
+  courseFor,
+  freeWorks,
+  menFor,
+} from '../../../engine'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
@@ -38,11 +45,16 @@ export function makeAim(state: GameState, me: number) {
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** Where an army would enter, and the road it would march there from its free village or, for mercenaries, its free market, as drawn: the engine's own course, the one the click sends it by (courseFor); no road if none is free. Read again only when the pointer, the land or the army in hand changes. */
+  /** Whether a click would send the army: a village (or a market) with none out, and men to raise (« si tu peux pas envoyer d'armée ne met pas le chemin du village »). */
+  const sendable = (army: Army) =>
+    freeWorks(state, me, 0, state.rules.raisedAt[army]).length > 0 &&
+    menFor(state, me, army) > 0
+
+  /** Where an army would enter, and the road it would march there from its free village or, for mercenaries, its free market, as drawn: the engine's own course, the one the click sends it by (courseFor); nothing if no army can leave. Read again only when the pointer, the land or the army in hand changes. */
   function entryAt(tile: number, army: Army) {
     const key = `${tile}:${state.tick}:${army}`
     if (key !== read.key) {
-      const course = courseFor(state, me, tile, army)
+      const course = sendable(army) ? courseFor(state, me, tile, army) : null
       const road = course?.road ?? []
       read = {
         key,

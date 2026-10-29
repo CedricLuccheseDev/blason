@@ -90,11 +90,19 @@ function Earned({ earned }: Readonly<{ earned: number }>) {
 
 /**
  * At the left of the bar, what the player has beside what he spends: the
- * shield filling with the peasants; the peasants over what the villages
+ * shield filling with the peasants, a click on it the camera back on his
+ * land; the peasants over what the villages
  * feed, red a moment when that falls, a village lost, and how many are born
  * a second; the gold, and what just came in.
  */
-export function Purse({ summary }: Readonly<{ summary: Summary }>) {
+export function Purse({
+  summary,
+  onHome,
+}: Readonly<{
+  summary: Summary
+  /** The camera brought back to my land. */
+  onHome: () => void
+}>) {
   const { me } = summary
   const t = useMessages().hints
   const compact = useCompact()
@@ -108,12 +116,22 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   else if (me.peasants >= me.cap) growing = t.peasants.full
   return (
     <div className={`hud-afloat flex items-end ${GAP.line}`}>
+      {/* As tall as the two lines beside it (« le blason est pas aussi haut que la partie droite »); a click brings the camera back to my land (« cliquer sur le blason centre la cam sur le territoire »). */}
       {!compact && (
-        <Shield
-          color={hex(me.color)}
-          size="m"
-          level={Math.min(1, me.peasants / Math.max(1, me.cap))}
-        />
+        <Hint title={t.home.title} lines={[t.home.line]}>
+          <button
+            type="button"
+            onClick={onHome}
+            aria-label={t.home.title}
+            className="hud-press flex cursor-pointer"
+          >
+            <Shield
+              color={hex(me.color)}
+              size="purse"
+              level={Math.min(1, me.peasants / Math.max(1, me.cap))}
+            />
+          </button>
+        </Hint>
       )}
       <div
         className={

@@ -1,5 +1,5 @@
 import { Ecu } from '../game/svg/kit'
-import { Lozenge, Medallion, Seal } from '../game/svg/seals'
+import { Lozenge, Medallion, Plaque, Seal } from '../game/svg/seals'
 import { Glyph, INK, PAPER } from '../game/svg/marks'
 import { BADGE, LINE_MEDALLION, RAISE, SEAL, SHIELD, scaled } from './tokens'
 import type { Mark } from '../game/svg/marks'
@@ -88,15 +88,15 @@ export function SealEmblem({
   )
 }
 
-/** A work's gilt medallion; raised and glowing when in hand. */
-export function MedallionEmblem({
+/** A work's square plaque, ringed in gold; raised and glowing when in hand. */
+export function WorkEmblem({
   icon,
   size = 'l',
   held = false,
 }: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
   return (
     <Round size={size} held={held}>
-      {(at) => <Medallion {...at} icon={icon} lifted={held} />}
+      {(at) => <Plaque {...at} icon={icon} lifted={held} />}
     </Round>
   )
 }

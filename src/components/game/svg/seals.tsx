@@ -75,7 +75,7 @@ export function Seal({
   )
 }
 
-/** A work's medallion: a parchment disc ringed with gold, or another colour for an act (the right click's menu), its drawing in ink. */
+/** A medallion: a parchment disc ringed with gold, or another colour for an act (the right click's menu), its drawing in ink. */
 export function Medallion({
   cx,
   cy,
@@ -112,6 +112,41 @@ export function Medallion({
         stroke={INK}
         strokeWidth="0.8"
       />
+      <Glyph name={icon} cx={cx} cy={cy + 0.5} size={r * 1.12} sw={1.8} />
+    </g>
+  )
+}
+
+/** A work's plaque: a parchment square ringed with gold, its drawing in ink; lifted and glowing when in hand. Units are round, works square, coups lozenges (« unité = rond, construction = carré, coups = losange »). */
+export function Plaque({
+  cx,
+  cy,
+  r,
+  icon,
+  lifted = false,
+}: Readonly<{
+  cx: number
+  cy: number
+  r: number
+  icon: Mark
+  lifted?: boolean
+}>) {
+  // A square looks larger than a disc of its radius: it reaches a little less.
+  const square = (k: number, round: number) => (
+    <rect x={cx - k} y={cy - k} width={2 * k} height={2 * k} rx={round} />
+  )
+  const reach = r * 0.9
+  return (
+    <g filter={lifted ? GLOW : LIFT}>
+      <g fill={PAPER} stroke={INK} strokeWidth="2">
+        {square(reach, 4)}
+      </g>
+      <g fill="none" stroke="var(--color-gilt)" strokeWidth="2.6">
+        {square(reach - 4, 2.4)}
+      </g>
+      <g fill="none" stroke={INK} strokeWidth="0.8">
+        {square(reach - 5.6, 1.6)}
+      </g>
       <Glyph name={icon} cx={cx} cy={cy + 0.5} size={r * 1.12} sw={1.8} />
     </g>
   )

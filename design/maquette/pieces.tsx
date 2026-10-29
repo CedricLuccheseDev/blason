@@ -4,7 +4,7 @@ import { Act, Tap } from '../../src/components/hud/Act'
 import {
   CoupEmblem,
   KeyCap,
-  MedallionEmblem,
+  WorkEmblem,
   SealEmblem,
   Shield,
   StandingBadge,
@@ -258,7 +258,7 @@ function Emblems() {
         ))}
         {WORKS.map((work) => (
           <Named key={work} name={t.game.works[work]}>
-            <MedallionEmblem icon={work} />
+            <WorkEmblem icon={work} />
           </Named>
         ))}
         {COUPS.map(([coup, icon]) => (

@@ -1,13 +1,10 @@
-import { useEffect, useState } from 'react'
 import { Act } from '../hud/Act'
-import { Shield } from '../hud/Emblem'
 import { Icon } from '../hud/Figure'
-import { Inline, Panel, Stack, Tag } from '../hud/Layout'
-import { Name, Note, Word } from '../hud/Text'
+import { Inline, Panel } from '../hud/Layout'
+import { Word } from '../hud/Text'
 import { ICON, scaled } from '../hud/tokens'
 import { useSize } from '../hud/useSize'
-import { LETTER, SealedLetter } from './svg/letter'
-import { EdgeArrow } from './svg/pact'
+import { EdgeArrow, PairSeal, TimeGauge } from './svg/pact'
 import { hex } from './format'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
@@ -26,125 +23,79 @@ function within(half: string, room: Room): string {
   return `translateX(calc(max(0px, ${reach} - ${room.left}px) - max(0px, ${reach} - ${room.right}px)))`
 }
 
-/** How long the seal takes to break before the letter opens: the HUD's time for what appears. */
-const BREAK_MS = 200
-/** Smaller on a phone, as the board's phone view has it. */
-const COMPACT = 0.84
+/** The offer's seal and its gauge, as drawn at the HUD's scale 1: its box, its wax's radius, the gauge's band round it. */
+export const OFFER = { box: 44, r: 12, band: 8, h: 112 }
 
 /**
  * An offer of alliance as the herald brings it, standing on my land nearest
- * the lord who sends it: his sealed letter, the gold ring of the time it
- * stands round the seal, and under it who sends it and what to do. A click
- * opens it, its seal breaking in two: accept the alliance, in green, or
- * refuse it, in gules, and let the offer lapse. At the edge of the screen,
- * an arrow out of its ring towards where it stands; its words, as the open
- * letter, kept within the screen's sides.
+ * the lord who sends it: one sheet, no letter over it (« tu peux enlever
+ * l'envelope au dessus la demande »): the seal of the alliance, his half
+ * pressed in his colour and mine still paper, in the gold gauge of the time
+ * the offer stands, sinking as it runs out; who sends it; and the two
+ * answers at once, no click to open it first (« le clic to open c'est un
+ * clic de trop, met directement le accepter ou refuser »): accept, in the
+ * alliance's green, or refuse, in gules, and let it lapse. At the edge of the
+ * screen, an arrow out of the gauge towards where it stands; kept within the
+ * screen's sides.
  */
 export function HeraldLetter({
   offer,
+  mine,
   toward,
-  compact,
   room,
   onSeal,
   onRefuse,
 }: Readonly<{
   offer: Offer
+  /** My colour, for my half of the seal, still paper. */
+  mine: number
   toward: number | null
-  compact: boolean
-  /** Pixels between the letter and the screen's sides, so that its words and the letter open stay within them. */
+  /** Pixels between the offer's middle and the screen's sides, so that it stays within them. */
   room: Room
   onSeal: () => void
   onRefuse: () => void
 }>) {
   const m = useMessages()
-  const words = useSize()
-  const [stage, setStage] = useState<'sealed' | 'breaking' | 'open'>('sealed')
-  useEffect(() => {
-    if (stage !== 'breaking') return
-    const opening = setTimeout(() => setStage('open'), BREAK_MS)
-    return () => clearTimeout(opening)
-  }, [stage])
+  const sheet = useSize()
   const name = m.game.colors[offer.key]
-  if (stage === 'open')
-    return (
-      <Opened offer={offer} room={room} onSeal={onSeal} onRefuse={onRefuse} />
-    )
-  const k = compact ? COMPACT : 1
-  const [w, h] = [LETTER.w * k, LETTER.h * k]
+  const { box, r, band } = OFFER
+  const c = box / 2
   return (
-    <div className="flex flex-col items-center">
-      <div className={stage === 'sealed' ? 'hud-bob' : undefined}>
-        <button
-          type="button"
-          onClick={() => setStage('breaking')}
-          disabled={stage !== 'sealed'}
-          aria-label={m.heralds.openLetter(name)}
-          title={m.heralds.openLetter(name)}
-          className="hud-press pointer-events-auto block cursor-pointer"
-        >
+    <div
+      ref={sheet.box}
+      data-open
+      className="pointer-events-auto"
+      style={{ transform: within(`${sheet.size.w / 2}px`, room) }}
+    >
+      <Panel gap="line" className="items-center">
+        <Inline gap="line">
           <svg
-            viewBox={`0 0 ${w} ${h}`}
+            viewBox={`0 0 ${box} ${box}`}
             aria-hidden="true"
-            className="overflow-visible"
-            style={{ width: scaled(w), height: scaled(h) }}
+            className="shrink-0 overflow-visible"
+            style={{ width: scaled(box), height: scaled(box) }}
           >
-            <SealedLetter
-              color={hex(offer.color)}
+            <TimeGauge
+              cx={c}
+              cy={c}
+              inner={r}
+              outer={r + band}
               frac={offer.ring}
-              broken={stage === 'breaking'}
-              k={k}
+              color="var(--color-gilt)"
+            />
+            <PairSeal
+              cx={c}
+              cy={c}
+              r={r}
+              left={hex(offer.color)}
+              right={hex(mine)}
+              rightEmpty
             />
             {toward !== null && (
-              <EdgeArrow
-                cx={w / 2}
-                cy={LETTER.cy * k}
-                r={(LETTER.r + 7) * k}
-                angle={toward}
-              />
+              <EdgeArrow cx={c} cy={c} r={r + band} angle={toward} />
             )}
           </svg>
-        </button>
-      </div>
-      {stage === 'sealed' && (
-        <div
-          ref={words.box}
-          style={{ transform: within(`${words.size.w / 2}px`, room) }}
-        >
-          <Tag className="flex-col text-center">
-            <Word>{m.heralds.offer(name)}</Word>
-            <Note>{compact ? m.heralds.tapToOpen : m.heralds.clickToOpen}</Note>
-          </Tag>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/** The letter open: who offers, and the two answers, yes in the alliance's green and no in gules; kept within the screen's sides. */
-function Opened({
-  offer,
-  room,
-  onSeal,
-  onRefuse,
-}: Readonly<{
-  offer: Offer
-  room: Room
-  onSeal: () => void
-  onRefuse: () => void
-}>) {
-  const m = useMessages()
-  // Half its width, w-80 as drawn.
-  const shift = within(scaled(160), room)
-  return (
-    // Over the HUD's corners, as what is being read (Heralds.tsx raises its piece).
-    <div data-open className="pointer-events-auto" style={{ transform: shift }}>
-      <Panel gap="part" className="w-80">
-        <Inline gap="part">
-          <Shield color={hex(offer.color)} />
-          <Stack gap="hair" className="min-w-0">
-            <Name>{m.game.colors[offer.key]}</Name>
-            <Note>{m.heralds.offers}</Note>
-          </Stack>
+          <Word>{m.heralds.offer(name)}</Word>
         </Inline>
         <Inline>
           <Act tone="pact" onClick={onSeal}>

@@ -8,7 +8,7 @@ import type { Spot } from './cord'
 
 // Where each lord is written, and the marks beside his name: an ally's
 // links, a traitor's broken shield, as OpenFront shows its alliances by an
-// icon beside a player's troops, each ringed by the time it has left.
+// icon beside a player's troops, each in a gauge of the time it has left.
 // Sized on screen. In an alliance's last moments its links give way to its
 // seal, which asks to renew it (components/game/PactSeal.tsx), laid past
 // the name, the figure under it and its marks (`besideOf`).
@@ -98,14 +98,32 @@ type Name = {
   alpha: number
 }
 
-/** A ring round a badge at `x`, the share of its time still to run. */
-function ringRound(g: Graphics, x: number, share: number, color: number) {
-  const end = -Math.PI / 2 + Math.PI * 2 * share
-  g.circle(x, 0, RING)
-    .stroke({ width: 3, color: TONE.ink, alpha: 0.2 })
-    .moveTo(x, -RING)
-    .arc(x, 0, RING, -Math.PI / 2, end)
-    .stroke({ width: 3.6, color, cap: 'round' })
+/** The gauge's band round a badge's disc (art/icons.ts, 17.3 round), in the badge's units. */
+const [INNER, OUTER] = [18.6, 25]
+
+/**
+ * The time left round a badge at `x`, as a gauge: the band round it filled
+ * from the bottom up to the share still to run, sinking as it runs out
+ * (« fais une jauge dans un rond mais vertical comme openfront »).
+ */
+function gaugeRound(g: Graphics, x: number, share: number, color: number) {
+  g.circle(x, 0, OUTER)
+    .fill({ color: TONE.parchment })
+    .circle(x, 0, INNER)
+    .cut()
+  if (share > 0) {
+    // The part of the disc under the level, as a polygon along its edge.
+    const level = OUTER - 2 * OUTER * Math.min(1, share)
+    const from = Math.asin(Math.max(-1, Math.min(1, level / OUTER)))
+    const to = Math.PI - from
+    const points: Array<number> = []
+    for (let i = 0; i <= 24; i++) {
+      const a = from + ((to - from) * i) / 24
+      points.push(x + Math.cos(a) * OUTER, Math.sin(a) * OUTER)
+    }
+    g.poly(points).fill({ color }).circle(x, 0, INNER).cut()
+  }
+  g.circle(x, 0, OUTER).stroke({ width: 1.4, color: TONE.ink })
 }
 
 /** The marks beside the lords' names, gliding with them: my allies' links, a traitor's broken shield. */
@@ -188,7 +206,7 @@ export function makeBadges(state: GameState, me: number) {
           x: icons.length > 0 ? Math.max(name.right, marks) : name.right,
           y,
         })
-        // Round the links, the time left to the alliance, emptying as it
+        // Round the links, the time left to the alliance, sinking as it
         // runs out; round the broken shield, the time he stays a traitor:
         // drawn again only when they moved.
         const shares = icons.map((icon) =>
@@ -200,7 +218,7 @@ export function makeBadges(state: GameState, me: number) {
         mark.ring.clear()
         icons.forEach((icon, k) => {
           const color = icon === 'links' ? TONE.pact : TONE.gules
-          ringRound(mark.ring, k * 50, shares[k], color)
+          gaugeRound(mark.ring, k * 50, shares[k], color)
         })
       })
     },

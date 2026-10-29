@@ -390,7 +390,7 @@ orders. It decides nothing about the rules.
 - `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
   of the player's alliances in its last moments, beside his ally's name, past
   the figure under it and its marks, `besideOf` in `places.ts`, the ally's
-  links giving way to it there; the herald's letter of each offer made to him,
+  links giving way to it there; the sheet of each offer made to him,
   on his land nearest the lord who sends it, `envoys.ts`; the news where it
   happened, a few seconds, `notes.ts`), in pixels of the screen, each time they
   move, to the HUD that listens (`GameHandle.heralds`, `handle.ts`).
@@ -450,9 +450,12 @@ The HUD is React, laid over the map. It is built on a small design system,
   colour, the same badges as beside the names on the map;
 - **one motion**: a single curve and two durations, through two roles,
   `.hud-press` on whatever is touched and `.hud-enter` on every sheet that
-  appears, `.hud-life` on what is told a few seconds, and `.hud-glow` on what waits on the map for a click (a seal to
-  renew), `.hud-bob` on a herald's letter waiting there, and the halves of a
-  seal that breaks (`.hud-broken`); nothing moves under reduced motion;
+  appears, `.hud-life` on what is told a few seconds, and `.hud-glow` on what
+  waits on the map for a click (a seal to renew); nothing moves under reduced
+  motion;
+- **one timer**: the time left as a gauge in a round band, filled from the
+  bottom and sinking as it runs out, as OpenFront's (`TimeGauge` in
+  `svg/pact.tsx`; on the map, round the badges, `places.ts`);
 - **a compact shape** on phones, upright or sideways (`useCompact.ts`);
 - **nothing off the screen** and nothing on another piece, at any size from
   1024 by 600: a piece measures the room it has and grows more compact when
@@ -461,7 +464,7 @@ The HUD is React, laid over the map. It is built on a small design system,
   what is placed by the pointer or on the map keeps within the screen
   (`useSize.ts`; `useBeside.ts`: the cartouche and the right click's menu,
   above the bar's row, go to the pointer's other side, and on a phone stand
-  above the bar; a letter's words; a pennant flies left near the right side).
+  above the bar; an offer's sheet; a pennant flies left near the right side).
 
 The game's pieces (`src/components/game/`: the lords' list top left, every
 lord standing on a thin line washed in his colour as far as his land goes
@@ -469,10 +472,13 @@ against the first's, the lord under the pointer lit there (`Lords.tsx`); the
 race on one thin line and under it a betrayal cried to all on a banderole of
 gules (`Banner.tsx`), the top right left to the map; the seal of an alliance of
 the player's only in its last moments, beside his ally's name, a click to renew
-it, its time and whose turn it is beside it (`PactSeal.tsx`); an offer as the
-herald's sealed letter on the player's land, its gold ring the time it stands,
-which a click opens, to accept it in the alliance's green or refuse it in
-gules, in plain words (`HeraldLetter.tsx`); either waiting at the screen's edge
+it, its time and whose turn it is beside it (`PactSeal.tsx`); an offer as one
+sheet on the player's land, no letter over it: the alliance's seal, the
+offerer's half pressed and the player's still paper, in the gold gauge of the
+time it stands, who offers, and the answers at once, to accept it in the
+alliance's green or refuse it in gules, in plain words, and a dotted green cord from the lord who offers
+to the player's capital while it stands (`HeraldLetter.tsx`,
+`layers/pacts.ts`); either waiting at the screen's edge
 with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom, tight, with the purse in it, then the four armies as seals

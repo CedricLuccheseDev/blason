@@ -28,8 +28,7 @@
 //   whatever is touched (it lifts under the pointer and sinks when pressed),
 //   .hud-enter on every sheet as it appears; a seal in hand rises and grows,
 //   gliding; what waits on the map for a click glows (.hud-glow, a seal to
-//   renew) or bobs (.hud-bob, a herald's letter), and a seal broken parts
-//   in two (.hud-broken). Under reduced motion, none of it: the final state
+//   renew). Under reduced motion, none of it: the final state
 //   at once.
 //
 // In the drawings, below: the icons, shields and seals, each in fixed sizes.
@@ -50,11 +49,12 @@ export const scaled = (px: number): string => `calc(${px}px * var(--hud))`
 /** An icon beside a figure, sized on its type. */
 export const ICON: Record<Size, number> = { s: 16, m: 18, l: 22, xl: 24 }
 
-/** A lord's shield: inline beside his name, on a letter, in the purse. */
+/** A lord's shield: inline beside his name, on a letter; in the purse as tall as its two lines of figures (22 × 1.15 twice, 4 between). */
 export const SHIELD = {
   xs: { w: 12, h: 15 },
   s: { w: 16, h: 20 },
   m: { w: 28, h: 34 },
+  purse: { w: 44, h: 54 },
   l: { w: 52, h: 64 },
 } as const
 

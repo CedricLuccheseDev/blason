@@ -1,8 +1,7 @@
 import { Figure } from '../hud/Figure'
 import { Stack, Tag } from '../hud/Layout'
 import { scaled } from '../hud/tokens'
-import { INK, PAPER } from './svg/marks'
-import { EdgeArrow, PairSeal, TimeRing } from './svg/pact'
+import { EdgeArrow, PairSeal, TimeGauge } from './svg/pact'
 import { hex, minutes } from './format'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
@@ -20,8 +19,8 @@ const RING = 7
  * The seal of an alliance of mine in its last moments, when it asks to be
  * renewed, laid beside my ally's name: parted in my colour and my ally's,
  * a half still paper for a lord who has not pressed it, a click pressing
- * mine; it glows while it waits for mine, and its ring of gold is the time
- * left, written under it. What to do, in words, under the pointer: written
+ * mine; it glows while it waits for mine, and the gold gauge round it is
+ * the time left, sinking as it runs out, written under it. What to do, in words, under the pointer: written
  * on the map they would lie over the names round it. At the edge of the
  * screen, an arrow out of its ring towards where it belongs.
  */
@@ -49,21 +48,13 @@ export function PactSeal({
       className="overflow-visible"
       style={{ width: scaled(box), height: scaled(box) }}
     >
-      <circle
+      <TimeGauge
         cx={c}
         cy={c}
-        r={r + RING}
-        fill={PAPER}
-        stroke={INK}
-        strokeWidth="1.4"
-      />
-      <TimeRing
-        cx={c}
-        cy={c}
-        r={r + RING}
+        inner={r}
+        outer={r + RING}
         frac={ally.ring}
         color="var(--color-gilt)"
-        width={3.6}
       />
       <PairSeal
         cx={c}

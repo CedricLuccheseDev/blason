@@ -156,13 +156,14 @@ export function Cursor({
           {aim.coup && <CoupHalf coup={aim.coup} summary={summary} />}
           {strikes && <ArmyHalf summary={summary} />}
           {/* The two mice in the middle (« mets les icônes souris gauche et droite au centre »): the left's action on the left, the right's, greyed, on the right. */}
-          {(strikes || aim.coup) && (
+          {/* The right mouse wherever a lord's menu opens, an ally's land too, where no left click sends an army (« il manque l'icon clique droit »). */}
+          {(strikes || aim.coup || aim.lord !== null) && (
             <Inline>
-              <Mouse button="left" />
+              {(strikes || aim.coup) && <Mouse button="left" />}
               {aim.lord !== null && !aim.coup && (
                 <>
                   {/* The rule between the two halves (« remets la barre au milieu »). */}
-                  <Rule />
+                  {strikes && <Rule />}
                   <span className="opacity-50">
                     <Mouse button="right" />
                   </span>

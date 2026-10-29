@@ -3,8 +3,7 @@ import { useCompact } from '../hud/useCompact'
 import { scaled } from '../hud/tokens'
 import { COMPACT_INSET, INSET, placeOn, spread } from './edge'
 import { PACT_SEAL, PactSeal } from './PactSeal'
-import { HeraldLetter } from './HeraldLetter'
-import { LETTER } from './svg/letter'
+import { HeraldLetter, OFFER } from './HeraldLetter'
 import { POLE, Pennant } from './Pennant'
 import type { ReactNode } from 'react'
 import type { Placed } from './edge'
@@ -54,7 +53,6 @@ export function Heralds({
     left: drawn.left * k,
   }
   const { box } = PACT_SEAL[compact ? 'compact' : 'wide']
-  const letter = compact ? 0.84 : 1
   // A seal lies past the end of my ally's name and marks, which the render
   // gives, and stays past it when kept from the top or the bottom of the
   // screen: his words all lie on the left of it. The rest where the render
@@ -71,7 +69,7 @@ export function Heralds({
   // clear of the HUD.
   const places = spread(laid.list.map(placeOf), {
     x: 200 * k,
-    y: (LETTER.h * letter + 20) * k,
+    y: (OFFER.h + 20) * k,
   }).map((p) => ({
     ...p,
     x: Math.min(Math.max(p.x, inset.left), laid.width - inset.right),
@@ -95,14 +93,14 @@ export function Heralds({
 
   function letterOf(herald: Herald, placed: Placed): ReactNode {
     const offer = summary.offers.find((o) => o.seat === herald.lord)
-    if (!offer || refused.has(offer.seat)) return null
+    if (!offer || !me || refused.has(offer.seat)) return null
     const refuse = () => setRefused((now) => new Set(now).add(offer.seat))
     return (
-      <At key={herald.key} placed={placed} lift={LETTER.cy * letter}>
+      <At key={herald.key} placed={placed} lift={OFFER.h / 2}>
         <HeraldLetter
           offer={offer}
+          mine={me.color}
           toward={placed.toward}
-          compact={compact}
           room={{ left: placed.x, right: laid ? laid.width - placed.x : 0 }}
           onSeal={() => {
             game.treat('ally', offer.seat)

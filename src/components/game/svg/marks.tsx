@@ -80,10 +80,7 @@ const MORE = {
   ],
 } satisfies Record<string, Array<Part>>
 
-export type Mark =
-  | keyof typeof GLYPHS
-  | keyof typeof MORE
-  | keyof typeof TROOPS
+export type Mark = keyof typeof GLYPHS | keyof typeof MORE | keyof typeof TROOPS
 
 const PARTS: Record<Mark, ReadonlyArray<Part>> = {
   ...GLYPHS,

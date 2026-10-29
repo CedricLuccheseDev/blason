@@ -1,4 +1,4 @@
-import { CoupEmblem, MedallionEmblem, SealEmblem } from '../hud/Emblem'
+import { CoupEmblem, SealEmblem, WorkEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { useCompact } from '../hud/useCompact'
 import { useFit } from '../hud/useFit'
@@ -158,9 +158,7 @@ export function Bar({
                   held={held}
                   faint={!w.can && !held}
                   onClick={() => onWork(held ? null : w.work)}
-                  emblem={
-                    <MedallionEmblem icon={w.work} size="s" held={held} />
-                  }
+                  emblem={<WorkEmblem icon={w.work} size="s" held={held} />}
                   figure={
                     <Figure icon="coins" size="m">
                       {count(w.price)}
