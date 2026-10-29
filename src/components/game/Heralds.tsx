@@ -15,13 +15,16 @@ import type {
   Summary,
 } from '~/render/client'
 
+/** Pixels between my ally's name and marks and the seal laid beside them; the room its words take beside it, as drawn at the HUD's scale 1. */
+const [GAP, WORDS] = [6, 220]
+
 /**
  * The diplomacy on the map, as the board's direction A has it: the seal of
- * each of my alliances at the middle of its ribbon, which the render draws
- * between our capitals; the herald's letter of each offer made to me, on my
- * land nearest the lord who sends it, until it is answered or refused; the
- * news where it happened, a pennant planted there a few seconds. The
- * render says where each lies on the screen; one
+ * each of my alliances in its last moments, when it asks to be renewed,
+ * beside my ally's name, past his figure and his marks; the herald's letter
+ * of each offer made to me, on my land nearest the lord who sends it, until
+ * it is answered or refused; the news where it happened, a pennant planted
+ * there a few seconds. The render says where each lies on the screen; one
  * out of view waits at its edge, an arrow towards it. Under the HUD's
  * corners, over the map; only what can be clicked takes the pointer.
  */
@@ -51,10 +54,16 @@ export function Heralds({
     left: drawn.left * k,
   }
   const { box } = PACT_SEAL[compact ? 'compact' : 'wide']
-  // Pushed apart, then kept within the room clear of the HUD.
+  const letter = compact ? 0.84 : 1
+  // A seal lies past the end of my ally's name and marks, which the render
+  // gives; the rest where the render says.
+  const pointOf = (h: Herald) =>
+    h.kind === 'pact' ? { x: h.x + (GAP + box / 2) * k, y: h.y } : h
+  // Pushed apart, the tallest of them a letter, then kept within the room
+  // clear of the HUD.
   const places = spread(
-    laid.list.map((h) => placeOn(h, laid.width, laid.height, inset)),
-    { x: 200 * k, y: (box + 40) * k },
+    laid.list.map((h) => placeOn(pointOf(h), laid.width, laid.height, inset)),
+    { x: 200 * k, y: (LETTER.h * letter + 20) * k },
   ).map((p) => ({
     ...p,
     x: Math.min(Math.max(p.x, inset.left), laid.width - inset.right),
@@ -62,13 +71,25 @@ export function Heralds({
 
   function sealOf(herald: Herald, placed: Placed): ReactNode {
     const ally = summary.allies.find((a) => a.seat === herald.lord)
-    if (!ally || !me) return null
+    if (!ally?.closing || !me) return null
+    // Its words beside it while it is in view with room for them; else
+    // its time under it, the seal centred on its place.
+    const beside =
+      placed.toward === null &&
+      laid !== null &&
+      laid.width - placed.x > (box / 2 + WORDS) * k
     return (
-      <At key={herald.key} placed={placed} lift={box / 2}>
+      <At
+        key={herald.key}
+        placed={placed}
+        lift={box / 2}
+        by={beside ? box / 2 : undefined}
+      >
         <PactSeal
           ally={ally}
           mine={me.color}
           toward={placed.toward}
+          beside={beside}
           compact={compact}
           onRenew={(seat) => game.treat('ally', seat)}
         />
@@ -81,11 +102,7 @@ export function Heralds({
     if (!offer || refused.has(offer.seat)) return null
     const refuse = () => setRefused((now) => new Set(now).add(offer.seat))
     return (
-      <At
-        key={herald.key}
-        placed={placed}
-        lift={LETTER.cy * (compact ? 0.84 : 1)}
-      >
+      <At key={herald.key} placed={placed} lift={LETTER.cy * letter}>
         <HeraldLetter
           offer={offer}
           toward={placed.toward}

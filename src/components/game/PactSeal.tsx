@@ -9,31 +9,35 @@ import { useMessages } from '~/i18n'
 
 type Ally = Summary['allies'][number]
 
-/** The seal's box and its radius, on a computer and on a phone, as drawn at the HUD's scale 1. */
+/** The seal's box and its wax's radius, on a computer and on a phone, as drawn at the HUD's scale 1; its ring round the wax. */
 export const PACT_SEAL = {
-  wide: { box: 84, r: 22 },
-  compact: { box: 70, r: 18 },
+  wide: { box: 48, r: 13 },
+  compact: { box: 44, r: 12 },
 }
+const RING = 7
 
 /**
- * The seal of an alliance of mine, at the middle of its ribbon: parted in
- * my colour and my ally's, the ring of its time round it in green. In its
- * last moments it glows, its ring turned gold on those moments; a half
- * pressed is a lord who asked to renew, and a click presses mine. At the
- * edge of the screen, an arrow out of its ring towards where it belongs.
- * Under it, the time left and, in its last moments and in view, whose turn
- * it is.
+ * The seal of an alliance of mine in its last moments, when it asks to be
+ * renewed, laid beside my ally's name: parted in my colour and my ally's,
+ * a half still paper for a lord who has not pressed it, a click pressing
+ * mine; it glows while it waits for mine, and its ring of gold is the time
+ * left. Beside it, when there is room, that time and whose turn it is;
+ * under it, the time alone. At the edge of the screen, an arrow out of its
+ * ring towards where it belongs.
  */
 export function PactSeal({
   ally,
   mine,
   toward,
+  beside,
   compact,
   onRenew,
 }: Readonly<{
   ally: Ally
   mine: number
   toward: number | null
+  /** Room for the words beside the seal; else the time alone, under it. */
+  beside: boolean
   compact: boolean
   onRenew: (seat: number) => void
 }>) {
@@ -41,7 +45,6 @@ export function PactSeal({
   const { box, r } = PACT_SEAL[compact ? 'compact' : 'wide']
   const c = box / 2
   const name = m.game.colors[ally.key]
-  const live = ally.closing && !ally.pressed
   const seal = (
     <svg
       viewBox={`0 0 ${box} ${box}`}
@@ -52,7 +55,7 @@ export function PactSeal({
       <circle
         cx={c}
         cy={c}
-        r={r + 9}
+        r={r + RING}
         fill={PAPER}
         stroke={INK}
         strokeWidth="1.4"
@@ -60,9 +63,10 @@ export function PactSeal({
       <TimeRing
         cx={c}
         cy={c}
-        r={r + 9}
+        r={r + RING}
         frac={ally.ring}
-        color={ally.closing ? 'var(--color-gilt)' : 'var(--color-pact)'}
+        color="var(--color-gilt)"
+        width={3.6}
       />
       <PairSeal
         cx={c}
@@ -70,19 +74,24 @@ export function PactSeal({
         r={r}
         left={hex(mine)}
         right={hex(ally.color)}
-        leftEmpty={ally.closing && !ally.pressed}
-        rightEmpty={ally.closing && !ally.theirs}
+        leftEmpty={!ally.pressed}
+        rightEmpty={!ally.theirs}
       />
-      {toward !== null && <EdgeArrow cx={c} cy={c} r={r + 9} angle={toward} />}
+      {toward !== null && (
+        <EdgeArrow cx={c} cy={c} r={r + RING} angle={toward} />
+      )}
     </svg>
   )
-  let note = ''
-  if (ally.closing && ally.pressed) note = m.heralds.waiting(name)
-  else if (ally.closing && ally.theirs) note = m.heralds.yourTurn(name)
-  else if (ally.closing) note = m.heralds.press
+  let note = m.heralds.press
+  if (ally.pressed) note = m.heralds.waiting(name)
+  else if (ally.theirs) note = m.heralds.yourTurn(name)
   return (
-    <div className="flex flex-col items-center gap-1">
-      {live ? (
+    <div className={`flex items-center gap-1 ${beside ? '' : 'flex-col'}`}>
+      {ally.pressed ? (
+        <div role="img" aria-label={m.heralds.pact(name, minutes(ally.left))}>
+          {seal}
+        </div>
+      ) : (
         // norm-ok: a seal is round, and so is what takes its click.
         <button
           type="button"
@@ -93,16 +102,12 @@ export function PactSeal({
         >
           {seal}
         </button>
-      ) : (
-        <div role="img" aria-label={m.heralds.pact(name, minutes(ally.left))}>
-          {seal}
-        </div>
       )}
       <Sheet className="flex items-center gap-2 px-2 py-1 whitespace-nowrap">
-        <Figure size="s" tone={ally.closing ? 'ink' : 'pact'}>
+        <Figure size="s" tone="ink">
           {minutes(ally.left)}
         </Figure>
-        {note && toward === null && <span className="hud-note">{note}</span>}
+        {beside && <span className="hud-note">{note}</span>}
       </Sheet>
     </div>
   )

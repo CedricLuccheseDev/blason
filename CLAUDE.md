@@ -99,12 +99,14 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   objets dessinés.
 - `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
   une trahison criée à tous sous la course sur une banderole de gueules (`Banner.tsx`), le coin haut droit laissé à
-  la carte ; les sceaux de mes alliances posés sur la carte au milieu de leurs rubans, un clic pour
-  renouveler dans leurs dernières secondes, les offres en plis scellés du héraut sur ma terre, un clic les ouvre
+  la carte ; aucun lien tiré entre alliés sur la carte (la frontière verte, l'insigne à côté du nom et la liste le
+  disent), le sceau d'une de mes alliances n'y paraît que dans ses dernières secondes, à côté du nom de mon allié,
+  un clic pour la renouveler (`PactSeal.tsx`), les offres en plis scellés du héraut sur ma terre, un clic les ouvre
   pour valider, en vert, ou refuser, en gueules (acté le 29/10, « utilise des mots plus simples : "valider" en vert
   et "refuser" en rouge ») (`HeraldLetter.tsx`), au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le
-  rendu dit où par `heralds.ts` et `envoys.ts`, les rubans et les cordons dans `layers/pacts.ts`, qui claquent à la
-  trahison), les nouvelles en fanions plantés là où elles arrivent (`Pennant.tsx`, `notes.ts`), la barre en bas avec
+  rendu dit où par `heralds.ts`, `envoys.ts` et `besideOf` dans `places.ts`) ; une alliance trahie claque entre
+  les deux capitales, devant tous (`layers/pacts.ts`, `art/snap.ts`) ; les nouvelles en fanions plantés là où elles
+  arrivent (`Pennant.tsx`, `notes.ts`), la barre en bas avec
   la bourse dedans, puis les armées
   en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
   se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).

@@ -264,11 +264,13 @@ orders. It decides nothing about the rules.
   down on the enemy army's men as the volley takes them (`layers/volleys.ts`);
   the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
-  (`layers/tidings.ts`), the alliances between the lords' capitals, the
-  player's own a ribbon of green silk hemmed in gold, the others' a thin dotted
-  cord of ink with a tiny seal parted in both lords' colours (`layers/pacts.ts`,
-  their bowed line `cord.ts`, drawn by `art/cords.ts`), and one broken
-  snapping before all, its seal cracking in two (`art/snap.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
+  (`layers/tidings.ts`), no line between allies in ordinary times (their
+  green border and the badge beside each ally's name say it), but an alliance
+  broken snapping before all between the two capitals, the player's own a
+  ribbon of green silk hemmed in gold, the others' a line of ink, its seal
+  cracking in two (`layers/pacts.ts`, its bowed line `cord.ts`, drawn by
+  `art/snap.ts`), the names and the marks beside them (`places.ts`,
+  `layers/labels.ts`), the aim
   (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
   its reach along the border, `layers/aimCoup.ts`; in the opening, a ring
   where the standard would stand, red where another lord's is too near, his
@@ -280,12 +282,12 @@ orders. It decides nothing about the rules.
   where the names and standards shrink with it and the small writing fades; `director.ts` is the spectator's, which
   goes to the fiercest fight on its own (the game on the home's board).
 - `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
-  of the player's alliances at the middle of its ribbon, the herald's letter of
-  each offer made to him, on his land nearest the lord who sends it,
-  `envoys.ts`; the news where it happened, a few seconds, `notes.ts`), in
-  pixels of the
-  screen, each time they move, to the HUD that listens (`GameHandle.heralds`,
-  `handle.ts`).
+  of the player's alliances in its last moments, beside his ally's name, past
+  the figure under it and its marks, `besideOf` in `places.ts`, the ally's
+  links giving way to it there; the herald's letter of each offer made to him,
+  on his land nearest the lord who sends it, `envoys.ts`; the news where it
+  happened, a few seconds, `notes.ts`), in pixels of the screen, each time they
+  move, to the HUD that listens (`GameHandle.heralds`, `handle.ts`).
 - `summary.ts` reads from the state, once a second, the figures the HUD shows;
   `news.ts` what the player hears and where: a lord biting his border, the
   coups at his land (`coupNews.ts`), and any lord who broke an alliance.
@@ -330,14 +332,14 @@ The HUD is React, laid over the map. It is built on a small design system,
 
 The game's pieces (`src/components/game/`: the lords' list top left, the
 race on one thin line and under it a betrayal cried to all on a banderole of
-gules (`Banner.tsx`), the top right left to the map; the seals of the player's
-alliances on the map at the middle of their ribbons, a click to renew in their
-last moments; an offer as the herald's sealed letter on the player's land, its
-gold ring the time it stands, which a click opens, to accept it in the
-alliance's green or refuse it in gules, in plain words (`HeraldLetter.tsx`);
-either waiting at the screen's edge with an arrow when out of view
-(`Heralds.tsx`, `PactSeal.tsx`, `edge.ts`); the news as a pennant planted
-where it happened, a few seconds (`Pennant.tsx`); the
+gules (`Banner.tsx`), the top right left to the map; the seal of an alliance of
+the player's only in its last moments, beside his ally's name, a click to renew
+it, its time and whose turn it is beside it (`PactSeal.tsx`); an offer as the
+herald's sealed letter on the player's land, its gold ring the time it stands,
+which a click opens, to accept it in the alliance's green or refuse it in
+gules, in plain words (`HeraldLetter.tsx`); either waiting at the screen's edge
+with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
+pennant planted where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom with the purse in it, then the armies, the works and the
 coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
 the lord aimed at, the cartouche beside the pointer) are built from these and

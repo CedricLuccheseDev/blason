@@ -166,17 +166,18 @@ export function makeLabels<TState extends { tick: number }>(
 
   return {
     container,
-    /** Where a lord's name is drawn now, and its half width and height, in map units; none while he is not written. */
+    /** Where a lord's name is drawn now, its half width and height, and the right end of it or of the figure under it, in map units; none while he is not written. */
     nameOf(lord: number) {
       const label = labels.get(lord)
       if (!label?.box.visible || !label.name.visible || !label.shown)
         return null
-      const { name, shown } = label
+      const { name, army, shown } = label
       return {
         x: shown.x + name.x,
         y: shown.y + name.y,
         half: name.width / 2,
         tall: name.height,
+        right: shown.x + Math.max(name.x + name.width / 2, army.x + army.width),
       }
     },
     /** `shown`: how much the names show, faded out when the land grows too small for them. */

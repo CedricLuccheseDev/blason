@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import { UNIT } from '../../engine'
+import { UNIT, canRenew } from '../../engine'
 import { makeLabels } from './layers/labels'
 import { landShape, makeSea } from './layers/lands'
 import { REACH, makePage } from './layers/page'
@@ -43,8 +43,8 @@ import type { Anchor } from './heralds'
 // armies and the castles' arrows falling on them, the coups on their way,
 // the aim, the standards planted in the
 // opening, and over all each lord's name and peasants at the heart of his
-// land. The alliances' ribbons and cords run between the names, under the
-// wagons and the armies. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
+// land. An alliance broken snaps between the names, under the wagons and
+// the armies. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
 // names and the standards shrink with it, as if the page were held farther
 // away, and the small writing fades out.
 
@@ -157,14 +157,20 @@ export function makeScene(
 
   return {
     world,
-    /** Where the HUD lays its pieces on the map this frame: the seal of each of my alliances, the heralds of the offers made to me. */
+    /**
+     * Where the HUD lays its pieces on the map this frame: the seal of each
+     * of my alliances in its last moments, when it asks to be renewed,
+     * beside my ally's name (at the heart of his land while it is not
+     * written); the heralds of the offers made to me.
+     */
     anchors(): Array<Anchor> {
-      const bonds = state.alliances.flatMap(({ a, b }): Array<Anchor> => {
-        const ally = a === me ? b : a
-        const at = me === a || me === b ? pacts.middleOf(ally) : null
+      const asking = state.alliances.flatMap((x): Array<Anchor> => {
+        if ((x.a !== me && x.b !== me) || !canRenew(state, x)) return []
+        const ally = x.a === me ? x.b : x.a
+        const at = badges.besideOf(ally) ?? placesOf(state).get(ally)
         return at ? [{ key: `pact:${ally}`, kind: 'pact', lord: ally, at }] : []
       })
-      return [...bonds, ...envoys.anchors()]
+      return [...asking, ...envoys.anchors()]
     },
     /** The page's textures, which the game's end does not take with it. */
     destroy() {

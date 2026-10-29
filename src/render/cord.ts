@@ -1,7 +1,8 @@
 // The line of an alliance between two lords' capitals: a cord bowed a
 // little to one side, its ends kept clear of their names, as on the
 // diplomacy board (direction A, "the heralds"). Only its shape, in map
-// units: the ribbons and the cords are drawn from it (art/cords.ts).
+// units: the cord that snaps when an alliance is broken is drawn from it
+// (art/snap.ts).
 
 /** A place of the map, in map units. */
 export type Spot = { x: number; y: number }

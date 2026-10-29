@@ -5,6 +5,7 @@ import {
   TICKS_PER_SECOND,
   UNIT,
   WORKS,
+  canRenew,
   capOf,
   costOf,
   coupPrice,
@@ -123,7 +124,7 @@ function pacts(state: GameState, me: number) {
   const allies = state.alliances.flatMap((x) => {
     if (x.a !== me && x.b !== me) return []
     const left = x.expires - state.tick
-    const closing = left <= renewTicks
+    const closing = canRenew(state, x)
     return [
       {
         ...lordOf(x.a === me ? x.b : x.a),

@@ -25,8 +25,8 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * (components/hud) set in a grid kept 16 pixels from them: top left the
  * lords; top centre the race, thin, and under it the opening and the end,
  * and a betrayal cried to all; the top right left to the map. On the map,
- * the seals of the alliances at the middle of their ribbons, the heralds'
- * letters of the offers and the news where it happened (Heralds.tsx);
+ * the seal of an alliance asking to be renewed beside the ally's name, the
+ * heralds' letters of the offers and the news where it happened (Heralds.tsx);
  * bottom left the lord aimed at, while one is; at the bottom the bar, the
  * purse in it; bottom right the camera; the cartouche beside the pointer.
  */

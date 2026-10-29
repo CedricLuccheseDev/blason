@@ -3,9 +3,9 @@ import type { Spot } from './cord'
 import type { News } from './news'
 
 // What the HUD lays on the map at a place of it (components/game/Heralds.tsx):
-// the seal of each of the player's alliances at the middle of its ribbon,
-// the herald's letter of each offer made to him on his land, the news
-// where it happened. The render says only where, in pixels of the map's
+// the seal of each of the player's alliances in its last moments, when it
+// asks to be renewed, beside his ally's name; the herald's letter of each
+// offer made to him on his land; the news where it happened. The render says only where, in pixels of the map's
 // element, each frame the camera or the places moved, and to those who
 // listen; the HUD draws them, and sets at the edge of the screen those that
 // fall off it.

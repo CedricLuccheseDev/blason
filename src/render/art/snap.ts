@@ -1,14 +1,15 @@
 import { TONE } from '../palette'
-import { pointOn } from '../cord'
-import { drawRibbon } from './cords'
+import { lengthOf, pointOn } from '../cord'
 import type { Cord } from '../cord'
 import type { Graphics } from 'pixi.js'
 
-// An alliance broken, as all see it (layers/pacts.ts): its ribbon or its
-// cord snaps at the middle, the two ends falling slack, a ring of gules
-// bursting from its seal, which cracks in two and stays so a moment, then
-// all of it fades. `age` in seconds since the break, `k` map units to a
-// pixel on screen.
+// An alliance broken, as all see it (layers/pacts.ts): a cord between the
+// two capitals, the player's own a ribbon of green silk hemmed in gold, an
+// ink edge under it and a paper thread stitched down its middle, the
+// others' a line of ink, snaps at the middle, the two ends falling slack, a
+// ring of gules bursting from its seal, which cracks in two and stays so a
+// moment, then all of it fades. `age` in seconds since the break, `k` map
+// units to a pixel on screen, every width given in pixels.
 
 /** Seconds the ends take to fall slack and the ring to burst; seconds before it all fades, and the fading. */
 const [FALL, BURST, STAY, FADE] = [0.6, 0.9, 2.4, 0.8]
@@ -22,6 +23,15 @@ export type Snap = {
   born: number
 }
 
+/** The ribbon's layers, outermost first: their width in pixels, colour and strength. */
+const SILK = [
+  { width: 8, color: TONE.ink, alpha: 0.55 },
+  { width: 6.6, color: TONE.gold, alpha: 1 },
+  { width: 4, color: TONE.pact, alpha: 1 },
+]
+/** The thread down its middle: a stitch so long every so many pixels. */
+const [STITCH, EVERY] = [2, 7]
+
 /** Whether a snap is over: faded out. */
 export const snapped = (age: number) => age > STAY + FADE
 
@@ -32,6 +42,33 @@ function end(cord: Cord, from: number, cut: number, sag: number): Cord {
   const to = { x: b.x, y: b.y + sag }
   const control = { x: (a.x + to.x) / 2, y: (a.y + to.y) / 2 + sag * 0.6 }
   return { from: a, control, to, middle: control }
+}
+
+/** The player's alliance: green silk hemmed in gold, stitched down its middle. */
+function drawRibbon(g: Graphics, cord: Cord, k: number, alpha: number) {
+  const { from, control, to } = cord
+  for (const silk of SILK)
+    g.moveTo(from.x, from.y)
+      .quadraticCurveTo(control.x, control.y, to.x, to.y)
+      .stroke({
+        width: silk.width * k,
+        color: silk.color,
+        alpha: silk.alpha * alpha,
+        cap: 'round',
+      })
+  const steps = Math.floor(lengthOf(cord) / (EVERY * k))
+  for (let i = 1; i < steps; i++) {
+    const a = pointOn(cord, i / steps)
+    const b = pointOn(cord, (i + STITCH / EVERY) / steps)
+    g.moveTo(a.x, a.y).lineTo(b.x, b.y)
+  }
+  if (steps > 1)
+    g.stroke({
+      width: k,
+      color: TONE.parchment,
+      alpha: 0.45 * alpha,
+      cap: 'round',
+    })
 }
 
 export function drawSnap(g: Graphics, snap: Snap, age: number, k: number) {

@@ -32,8 +32,13 @@ function allianceOf(state: GameState, a: number, b: number) {
   )
 }
 
+/** Whether an alliance is in its last moments, when both may renew it. */
+export function canRenew(state: GameState, alliance: Alliance): boolean {
+  return alliance.expires - state.tick <= state.rules.renewTicks
+}
+
 function renew(state: GameState, alliance: Alliance, player: number) {
-  if (alliance.expires - state.tick > state.rules.renewTicks) return
+  if (!canRenew(state, alliance)) return
   if (alliance.a === player) alliance.renewA = true
   else alliance.renewB = true
   if (!alliance.renewA || !alliance.renewB) return
