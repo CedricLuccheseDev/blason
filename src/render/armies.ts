@@ -1,5 +1,5 @@
 import { Container } from 'pixi.js'
-import { UNIT } from '../../engine'
+import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
 import { makeFallen } from './layers/fallen'
@@ -241,8 +241,11 @@ export function makeArmies(me: number) {
       last = seconds
       follow(state, between, dt)
       const standing = [...armies.values()].filter((a) => !a.gone)
+      // The roads my armies and my allies' march, no other's (« il ne faut
+      // pas voir les traceurs des armées des autres joueurs à part les
+      // alliés »).
       const marches = standing.flatMap((a) =>
-        a.front?.phase === 'march'
+        a.front?.phase === 'march' && isFriendly(state, me, a.front.host.owner)
           ? [{ host: a.front.host, head: a.front.head, alpha: a.troops.alpha }]
           : [],
       )

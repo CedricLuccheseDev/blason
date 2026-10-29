@@ -4,7 +4,8 @@ import type { Aim, Summary } from '~/render/client'
 // draws it): a short list of what may be done to him now, each line an act,
 // what it would send or give, and whether it may be done now. To attack him
 // with the army in hand, as a left click would, but an ally; the alliance,
-// as it stands between us; an offering, a share of my gold. On free land or
+// as it stands between us, none with a teammate; an offering, a share of my
+// gold. On free land or
 // on my own, no menu.
 
 /** What the alliance's line does now: offer one, accept his, renew ours in its last moments, break it; nothing while my offer waits. */
@@ -43,8 +44,11 @@ export function menuOf(
     const men = summary.armies.find((a) => a.army === summary.army)?.men ?? 0
     lines.push({ act: 'attack', men, can: aim.entry !== null && men > 0 })
   }
-  const say = allianceWith(summary, seat)
-  lines.push({ act: 'alliance', say, can: say !== 'asked' })
+  // A teammate's alliance is for good: nothing to offer, renew or break.
+  if (!summary.allies.some((a) => a.seat === seat && a.team)) {
+    const say = allianceWith(summary, seat)
+    lines.push({ act: 'alliance', say, can: say !== 'asked' })
+  }
   const gold = summary.offering
   lines.push({ act: 'offering', gold, can: gold > 0 })
   return lines

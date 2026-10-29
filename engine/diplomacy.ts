@@ -12,7 +12,7 @@ import type { Alliance, GameState } from './types'
 // what binds them, and they win together.
 
 /** Whether two lords play in one team. */
-function teammates(state: GameState, a: number, b: number): boolean {
+export function isTeammate(state: GameState, a: number, b: number): boolean {
   const team = state.teams[a] ?? -1
   return a !== b && team >= 0 && team === state.teams[b]
 }
@@ -32,7 +32,7 @@ export function atWar(state: GameState, a: number, b: number): boolean {
 export function isAllied(state: GameState, a: number, b: number): boolean {
   return (
     a !== b &&
-    (teammates(state, a, b) ||
+    (isTeammate(state, a, b) ||
       state.alliances.some(
         (x) => (x.a === a && x.b === b) || (x.a === b && x.b === a),
       ))
@@ -90,7 +90,7 @@ function seal(state: GameState, a: number, b: number) {
 /** One order for everything: offer, accept an offer received, or renew. */
 export function ally(state: GameState, player: number, target: number) {
   if (target === player || !state.players[target].alive) return
-  if (teammates(state, player, target)) return
+  if (isTeammate(state, player, target)) return
   const existing = allianceOf(state, player, target)
   if (existing) {
     renew(state, existing, player)

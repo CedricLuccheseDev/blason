@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import { around, canRenew, isFelon } from '../../engine'
+import { around, canRenew, isFelon, isTeammate } from '../../engine'
 import { drawIcon } from './art/icons'
 import { TONE } from './palette'
 import type { GameState } from '../../engine'
@@ -155,11 +155,12 @@ export function makeBadges(state: GameState, me: number) {
     return Math.max(0, Math.min(1, share))
   }
 
-  /** My ally's links, but in our alliance's last moments, when its seal stands for them; a traitor's broken shield. */
+  /** My ally's links, but in our alliance's last moments, when its seal stands for them; my teammate's, for good; a traitor's broken shield. */
   function marksOf(lord: number): Array<'links' | 'felon'> {
     const icons: Array<'links' | 'felon'> = []
     const pact = me >= 0 && lord !== me ? pactWith(lord) : undefined
-    if (pact && !canRenew(state, pact)) icons.push('links')
+    if ((pact && !canRenew(state, pact)) || isTeammate(state, me, lord))
+      icons.push('links')
     if (isFelon(state, lord)) icons.push('felon')
     return icons
   }
@@ -209,8 +210,10 @@ export function makeBadges(state: GameState, me: number) {
         // Round the links, the time left to the alliance, sinking as it
         // runs out; round the broken shield, the time he stays a traitor:
         // drawn again only when they moved.
+        // A teammate's links, for good, have no time running round them.
+        const team = isTeammate(state, me, lord)
         const shares = icons.map((icon) =>
-          icon === 'links' ? left(lord) : shame(lord),
+          icon === 'links' ? (team ? -1 : left(lord)) : shame(lord),
         )
         const rings = shares.join()
         if (rings === mark.rings) return
@@ -218,7 +221,7 @@ export function makeBadges(state: GameState, me: number) {
         mark.ring.clear()
         icons.forEach((icon, k) => {
           const color = icon === 'links' ? TONE.pact : TONE.gules
-          gaugeRound(mark.ring, k * 50, shares[k], color)
+          if (shares[k] >= 0) gaugeRound(mark.ring, k * 50, shares[k], color)
         })
       })
     },

@@ -1,4 +1,4 @@
-import { UNIT, canRenew, isAllied, isFelon } from '../../engine'
+import { UNIT, canRenew, isAllied, isFelon, isTeammate } from '../../engine'
 import { PLAYERS } from './palette'
 import type { GameState } from '../../engine'
 import type { Heraldry } from './palette'
@@ -50,9 +50,27 @@ export function pacts(state: GameState, me: number) {
         closing,
         pressed: x.a === me ? x.renewA : x.renewB,
         theirs: x.a === me ? x.renewB : x.renewA,
+        team: false,
       },
     ]
   })
+  // My teammates, allies for good: no time running, nothing to renew (« on
+  // est en équipe pourtant il est pas affiché comme dans mon alliance »).
+  const team = state.players.flatMap((p, seat) =>
+    p.alive && isTeammate(state, me, seat)
+      ? [
+          {
+            ...lordOf(seat),
+            left: 0,
+            ring: 1,
+            closing: false,
+            pressed: false,
+            theirs: false,
+            team: true,
+          },
+        ]
+      : [],
+  )
   const offers = state.requests
     .filter((r) => r.to === me && state.players[r.from].alive)
     .map((r) => ({
@@ -61,5 +79,5 @@ export function pacts(state: GameState, me: number) {
       ring: Math.max(0, (r.expires - state.tick) / state.rules.requestTicks),
     }))
   const asked = state.requests.filter((r) => r.from === me).map((r) => r.to)
-  return { allies, offers, asked }
+  return { allies: [...team, ...allies], offers, asked }
 }

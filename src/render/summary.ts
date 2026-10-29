@@ -79,6 +79,8 @@ export type Summary = {
       closing: boolean
       pressed: boolean
       theirs: boolean
+      /** A teammate, an ally for good: no time running. */
+      team: boolean
     }
   >
   /** Every lord, as the card of the one aimed at shows him. */

@@ -18,13 +18,19 @@ function alone(): MenuSummary {
 }
 
 const lord = (seat: number) => ({ seat, key: 'vert' as const, color: 0 })
-const ally = (seat: number, closing = false, pressed = false) => ({
+const ally = (
+  seat: number,
+  closing = false,
+  pressed = false,
+  team = false,
+) => ({
   ...lord(seat),
   left: closing ? 20 : 200,
   ring: 1,
   closing,
   pressed,
   theirs: false,
+  team,
 })
 
 /** The pointer on a lord's land (none: free land), where the army in hand would enter, or beyond its reach. */
@@ -62,6 +68,13 @@ describe("the right click's menu", () => {
     expect(allianceWith({ ...alone(), allies: [ally(5, true, true)] }, 5)).toBe(
       'break',
     )
+  })
+
+  it('on a teammate: no attack and no alliance, ours is for good', () => {
+    const summary = { ...alone(), allies: [ally(5, false, false, true)] }
+    expect(menuOf(summary, on(5, false))).toEqual([
+      { act: 'offering', gold: 21, can: true },
+    ])
   })
 
   it('says to accept his offer, and sleeps while mine waits', () => {

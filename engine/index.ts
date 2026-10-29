@@ -60,7 +60,14 @@ export {
   paceOf,
   positionOf,
 } from './muster'
-export { canRenew, isAllied, isFelon, offeringOf } from './diplomacy'
+export {
+  canRenew,
+  isAllied,
+  isFelon,
+  isFriendly,
+  isTeammate,
+  offeringOf,
+} from './diplomacy'
 export { groundOf, meet } from './battle'
 export { shootsAt, underFire } from './volleys'
 export { tradeLinks } from './network'

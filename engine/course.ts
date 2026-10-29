@@ -134,7 +134,10 @@ export function courseFor(
     eachAround(state.grid, at, consider)
     return true
   })
-  if (best.entry < 0) return { entry: nearest, from: -1, road: [] }
+  // No land it may walk from its villages touches the border: beyond its
+  // reach, not the nearest border tile, an ally's across the sea maybe (« y'a
+  // un souci avec le traceur bleu »).
+  if (best.entry < 0) return null
   const road = roadTo(best.end)
   return { entry: best.entry, from: free.length > 0 ? road[0] : -1, road }
 }
