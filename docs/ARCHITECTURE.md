@@ -424,14 +424,16 @@ in three steps:
 
 The home is built as OpenFront's, in the game's own materials, on the
 game's page without its map: the parchment, the frame the map lies in, and
-a faint compass rose in its corner (`Ornaments.tsx`). One calm column: the
-name of the game and its line; the public game in its opening, the biggest
-thing there; then three short buttons, the solo game, a private room made
-and a private room joined by its code, each opening a sheet of its own (the
-browser's modal `<dialog>`). At the foot of the page, never in its middle,
-quiet: the player on the left (his shield and "Lord" until profiles come),
-the journal's last post on the right, the rest of the site between; on a
-phone, everything stacked. Every piece is the HUD's (`Sheet`, `Act`,
+a faint compass rose in its corner (`Ornaments.tsx`). The name of the game;
+under it the public game in its opening, the biggest thing there; then three
+short buttons, the solo game, a private room made and a private room joined
+by its code, each opening a sheet of its own (the browser's modal
+`<dialog>`). On their right the journal, a sheet of its last posts, each its
+date, its title and its first line, in Alegreya Sans at full ink to be read.
+At the foot of the page, never in its middle, quiet: the player on the left
+(his shield and "Lord" until profiles come), the rest of the site in the
+middle; on a phone or a narrow screen, everything stacked, the journal under
+the buttons. Every piece is the HUD's (`Sheet`, `Act`,
 `Figure`, `Shield`), so the home costs no CSS of its own.
 
 The public game is a large card, as OpenFront's, whose body is the land of

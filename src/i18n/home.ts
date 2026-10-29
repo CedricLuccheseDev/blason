@@ -3,7 +3,6 @@
 
 export const homeEn = {
   name: 'Blason',
-  tagline: 'Twenty lords, one land drawn anew each game.',
   menu: 'Menu',
   lord: 'Lord',
   close: 'Close',
@@ -39,6 +38,7 @@ export const homeEn = {
   create: 'Create a game',
   joinPrivate: 'Join with a code',
   journal: 'Journal',
+  journalAll: 'The whole journal',
   room: {
     unavailable: 'Online play is not available here.',
     joining: 'Taking a seat…',
@@ -67,7 +67,6 @@ export type HomeMessages = typeof homeEn
 
 export const homeFr: HomeMessages = {
   name: 'Blason',
-  tagline: 'Vingt seigneurs, une terre redessinée à chaque partie.',
   menu: 'Menu',
   lord: 'Seigneur',
   close: 'Fermer',
@@ -103,6 +102,7 @@ export const homeFr: HomeMessages = {
   create: 'Créer une partie',
   joinPrivate: 'Rejoindre avec un code',
   journal: 'Le Journal',
+  journalAll: 'Tout le journal',
   room: {
     unavailable: 'Le jeu en ligne n’est pas disponible ici.',
     joining: 'On prend place…',

@@ -11,7 +11,14 @@ export const Route = createFileRoute('/')({
     return cards
       .flatMap((c) =>
         c.kind === 'post'
-          ? [{ slug: c.slug, title: c.title, date: c.date }]
+          ? [
+              {
+                slug: c.slug,
+                title: c.title,
+                date: c.date,
+                excerpt: c.excerpt,
+              },
+            ]
           : [],
       )
       .sort(

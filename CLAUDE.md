@@ -133,15 +133,17 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
   système comme openfront en adapté pour nous pour la home »), allégé le 29/10 (« la partie en arrière-plan est de
   trop je pense, et le layout peut être mieux fait ») : plus de partie de bots derrière, la page du jeu seule, son
-  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`). Une colonne calme : le nom du jeu
-  et sa ligne ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
+  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`). Le nom du jeu seul (sa ligne
+  viendra avec les titres et les mots, « retire la catchline », 29/10) ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
   la partie en cours de pose, celle même où elle se joue, tirée de sa graine quand le navigateur a un moment et
   dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par `ahead.ts`), son titre, le temps qui reste
   pour la rejoindre et ses places posés dessus en cartouches, « Jouer » dans son coin, et un clic n'importe où sur la terre y entre aussi (acté le 29/10, « on peut cliquer sur la carte directement ») ; puis trois boutons
   courts égaux, « Solo » (la taille de la terre et le niveau des bots, sur un feuillet), « Créer une partie » et
-  « Rejoindre avec un code » (les parties privées, le code à cinq signes, l'hôte lance). En bas, discrets, le joueur
-  à gauche (son écu et « Seigneur » en attendant les profils), la dernière ligne du Journal à droite, le pied du
-  site entre les deux, toujours au bas de l'écran ; sur téléphone, tout empilé. Tout est fait des pièces du HUD.
+  « Rejoindre avec un code » (les parties privées, le code à cinq signes, l'hôte lance). À leur droite le Journal, un
+  feuillet de ses derniers articles, la date, le titre et la première ligne, en Alegreya Sans à pleine encre pour
+  qu'il se lise (29/10, « met le journal à droite des cases »). En bas, discrets, le joueur à gauche (son écu et
+  « Seigneur » en attendant les profils), le pied du site au milieu, toujours au bas de l'écran ; sur téléphone et
+  sur un écran étroit, tout empilé, le Journal sous les boutons. Tout est fait des pièces du HUD.
   **Pas de salon d'attente** (acté le 29/10, « comme dans openfront ne fait pas de lobby en attente ») : le relais
   tient toujours une partie publique dans son ouverture, de 30 secondes en ligne, lancée dès qu'elle s'ouvre avec
   des bots à tous les sièges ; « Jouer » y entre aussitôt sur un siège de bot, avec les tours déjà joués à
