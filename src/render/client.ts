@@ -1,5 +1,5 @@
 import { Application } from 'pixi.js'
-import { NO_ONE, canStart } from '../../engine'
+import { NO_ONE, canStart, hostSetup } from '../../engine'
 import { makeAiming } from './aiming'
 import { makePin } from './pin'
 import { makeCamera } from './camera'
@@ -21,7 +21,7 @@ import { bestQuality, governFrames } from './quality'
 import type { GameHandle } from './handle'
 import type { Aim } from './aiming'
 import type { News } from './news'
-import type { Level, MapSize } from '../../engine'
+import type { Book, Level, MapSize } from '../../engine'
 import type { Summary } from './summary'
 import type { Online } from './online'
 import type { Save } from './save'
@@ -65,6 +65,8 @@ export async function mountGame(
     size?: MapSize
     /** A game online (online.ts): its land, its turns and my seat come from the relay. */
     online?: Online
+    /** The host's game, held while he sets it in his book (« créer une partie »), its land the one asked. */
+    book?: Book
     /** A saved game (save.ts), held still at its tick: its land, my seat and the camera come from it. */
     save?: Save
   },
@@ -220,6 +222,10 @@ export async function mountGame(
     home: () => camera.home(),
     heralds: heralds.listen,
     light: scene.light,
+    launch(book) {
+      session.launch?.(hostSetup({ ...book, seed: land.seed, size: land.size }))
+      refresh()
+    },
     attack() {
       const tile = pin.menuAt()
       const { army } = hand.hand

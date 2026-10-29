@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from './land'
 import { RULES, SETUP_LIMITS } from './rules'
-import { aloneSetup, botsSetup, publicSetup, readSetup } from './setup'
+import {
+  aloneSetup,
+  botsSetup,
+  hostSetup,
+  publicSetup,
+  readSetup,
+} from './setup'
 import { stateHash } from './step'
 import { field, setupOf } from './testing'
 import type { GameSetup } from './types'
@@ -84,5 +90,38 @@ describe('a setup read from the wire', () => {
     ])
       expect(sent(setup, change)).toBeNull()
     expect(readSetup('setup')).toBeNull()
+  })
+})
+
+describe('the host’s setup', () => {
+  const book = {
+    seed: 'host',
+    size: 'standard' as const,
+    bots: 5,
+    level: 'hard' as const,
+    teams: 2,
+    opening: 300,
+  }
+
+  it('seats the host first, so many bots after him, the rest empty, dealt into teams in turn', () => {
+    const { seats, opening } = hostSetup(book)
+    expect(seats).toHaveLength(SETUP_LIMITS.seats.max)
+    expect(seats[0]).toEqual({ team: 0, bot: null, person: true })
+    expect(seats.slice(1, 6).map((s) => [s.team, s.bot])).toEqual([
+      [1, 'hard'],
+      [0, 'hard'],
+      [1, 'hard'],
+      [0, 'hard'],
+      [1, 'hard'],
+    ])
+    expect(seats.slice(6).every((s) => !s.bot && !s.person && s.team === -1)).toBe(true)
+    expect(opening).toBe(300)
+  })
+
+  it('keeps each for himself without teams, and its figures within their bounds', () => {
+    const { seats, opening } = hostSetup({ ...book, bots: 99, teams: 0, opening: 1 })
+    expect(seats.every((s) => s.team === -1)).toBe(true)
+    expect(seats.filter((s) => s.bot)).toHaveLength(SETUP_LIMITS.seats.max - 1)
+    expect(opening).toBe(SETUP_LIMITS.opening.min)
   })
 })

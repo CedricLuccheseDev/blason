@@ -2,11 +2,13 @@ import { blogEn } from './blog'
 import { homeEn } from './home'
 import { heraldsEn } from './heralds'
 import { hintsEn } from './hints'
+import { bookEn } from './book'
 
 export const en = {
   blog: blogEn,
   heralds: heraldsEn,
   hints: hintsEn,
+  book: bookEn,
   common: {
     author: 'Cédric Lucchese',
     about: 'How it works',

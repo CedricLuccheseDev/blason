@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Act } from '../hud/Act'
-import { Sheet } from '../hud/Sheet'
 import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
@@ -11,8 +9,11 @@ import { Heralds } from './Heralds'
 import { Bar } from './Bar'
 import { Moment } from './Moment'
 import { Banner } from './Banner'
+import { GameBook } from './GameBook'
+import { BookButton } from './BookParts'
+import { Failed } from './Failed'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
-import type { Level, MapSize } from '../../../engine'
+import type { Book, Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
 import type { Save } from '~/render/save'
 import { PLAYERS } from '~/render/palette'
@@ -37,12 +38,24 @@ const CRY_MS = 3000
 
 type Cry = { id: number; felon: number; victim: number }
 
+/** The host's game and its book: the settings, whether launched, and what the book does. */
+export type Hosting = {
+  book: Book
+  launched: boolean
+  change: (book: Book) => void
+  another: () => void
+  launch: () => void
+  restart: () => void
+  quit: () => void
+}
+
 export function GameScreen({
   me,
   level,
   online,
   save,
-  size = 'standard',
+  size: sized = 'standard',
+  hosting,
 }: Readonly<{
   me: number
   /** The bots' level of a game alone; a game online's setup gives its own. */
@@ -51,7 +64,14 @@ export function GameScreen({
   /** A saved game, held still at its tick (render/save.ts). */
   save?: Save
   size?: MapSize
+  /** The host's game, held until he launches it from his book (« créer une partie »). */
+  hosting?: Hosting
 }>) {
+  // A hosted game's land is its book's: another land or size, another game.
+  const size = hosting?.book.size ?? sized
+  const seed = hosting?.book.seed
+  const [open, setOpen] = useState(hosting !== undefined)
+  const waiting = hosting !== undefined && !hosting.launched
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
   // The bottom row, the bar and the camera: the cartouche keeps above it.
@@ -89,7 +109,7 @@ export function GameScreen({
         // A game called off while its faces load is never made.
         await faces()
         if (off()) return
-        const mounted = await mountGame(element, seedOf(), me, {
+        const mounted = await mountGame(element, seed ?? seedOf(), me, {
           onSummary: setSummary,
           onAim: setAim,
           onNews: tell,
@@ -98,6 +118,7 @@ export function GameScreen({
           online,
           save,
           size,
+          book: hosting?.book,
         })
         if (off()) mounted.destroy()
         else {
@@ -110,7 +131,8 @@ export function GameScreen({
       cancelled = true
       handle?.destroy()
     }
-  }, [me, level, online, save, size])
+    // The book's other settings change the game only at its launch.
+  }, [me, level, online, save, size, seed])
 
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it.
@@ -129,15 +151,19 @@ export function GameScreen({
           <Heralds game={game} summary={summary} />
           <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
             <div className="relative flex w-80 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
-              <Lords
-                summary={summary}
-                aimed={aim?.lord ?? null}
-                onLight={game.light}
-              />
+              {!waiting && (
+                <Lords
+                  summary={summary}
+                  aimed={aim?.lord ?? null}
+                  onLight={game.light}
+                />
+              )}
             </div>
             <div className="flex min-w-0 flex-col items-center gap-2">
-              <Race summary={summary} />
-              <Moment summary={summary} online={online !== undefined} />
+              {!waiting && <Race summary={summary} />}
+              {!waiting && (
+                <Moment summary={summary} online={online !== undefined} />
+              )}
               {cry && (
                 <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />
               )}
@@ -148,14 +174,17 @@ export function GameScreen({
               className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-3 max-sm:grid-cols-1 max-sm:gap-2"
             >
               <div className="col-start-2 min-w-0 max-sm:col-start-1">
-                <Bar
-                  summary={summary}
-                  onArmy={game.choose}
-                  onWork={game.hold}
-                  onCoup={game.aim}
-                />
+                {!waiting && (
+                  <Bar
+                    summary={summary}
+                    onArmy={game.choose}
+                    onWork={game.hold}
+                    onCoup={game.aim}
+                  />
+                )}
               </div>
-              <div className="pointer-events-auto justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
+              <div className="pointer-events-auto flex flex-col gap-2 justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
+                {hosting && <BookButton onOpen={() => setOpen(true)} />}
                 <CameraButtons game={game} summary={summary} />
               </div>
             </div>
@@ -175,20 +204,29 @@ export function GameScreen({
           )}
         </>
       )}
+      {hosting && open && (
+        <GameBook
+          book={hosting.book}
+          running={
+            hosting.launched && summary
+              ? Math.floor(summary.seconds / 60)
+              : null
+          }
+          onChange={hosting.change}
+          onAnother={hosting.another}
+          onLaunch={() => {
+            game?.launch(hosting.book)
+            hosting.launch()
+            setOpen(false)
+          }}
+          onClose={() => setOpen(false)}
+          onRestart={() => {
+            hosting.restart()
+            setOpen(true)
+          }}
+          onQuit={hosting.quit}
+        />
+      )}
     </main>
-  )
-}
-
-/** When the game cannot start: what happened, and the way to try again. */
-function Failed() {
-  const m = useMessages()
-  return (
-    <div className="absolute inset-0 grid place-items-center p-4">
-      <Sheet className="flex flex-col items-center gap-3 px-6 py-4">
-        <span className="hud-word text-hud-l">{m.errors.title}</span>
-        <span className="hud-note">{m.errors.tryReload}</span>
-        <Act onClick={() => window.location.reload()}>{m.errors.reload}</Act>
-      </Sheet>
-    </div>
   )
 }

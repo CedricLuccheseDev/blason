@@ -568,10 +568,17 @@ Nothing on the home runs a loop: the public game's clock ticks once a
 second (`Countdown.tsx`), and the relay is asked about that game every
 second and a half, only while the page is shown (`useUpcoming.ts`).
 
+Create a game goes straight into the game (`/play?host`), held, the book
+of the game open over it (`components/game/GameBook.tsx`): the land, its
+size or another; the bots, their level, the teams, the planting; then
+Launch, which makes the game again from the host's setup (`hostSetup`) on
+the same land and starts it. Once launched the same book is the host's
+menu: start again on another land, or leave. A solo game is a created game
+with no guest.
+
 `src/components/home/`: `Home.tsx` lays it out; `PublicCard.tsx` the public
 game, its land on `LandPlate.tsx` and its clock `Countdown.tsx`,
-`SoloSettings.tsx` (the land's size and the bots' level, then
-`/play?level=…&size=…`), `PrivateRoom.tsx` (a room made and its code to
+`PrivateRoom.tsx` (a room made and its code to
 share, or a code typed to join, and the host's start), `Seats.tsx`,
 `Journal.tsx`, `Masthead.tsx`, `Ornaments.tsx`, `Foot.tsx`; the line to the
 relay for a game or a room (`useRoom.ts`) and its public game

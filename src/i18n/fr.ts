@@ -2,12 +2,14 @@ import { blogFr } from './blog'
 import { homeFr } from './home'
 import { heraldsFr } from './heralds'
 import { hintsFr } from './hints'
+import { bookFr } from './book'
 import type { Messages } from './en'
 
 export const fr: Messages = {
   blog: blogFr,
   heralds: heraldsFr,
   hints: hintsFr,
+  book: bookFr,
   common: {
     author: 'Cédric Lucchese',
     about: 'Comment ça marche',

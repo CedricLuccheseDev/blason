@@ -1,5 +1,5 @@
 import type { Heralds } from './heralds'
-import type { Army, Coup, Work } from '../../engine'
+import type { Army, Book, Coup, Work } from '../../engine'
 
 // What the page holds of a game on screen (client.ts): its orders, its
 // camera, and where the HUD lays its pieces on the map.
@@ -23,4 +23,6 @@ export type GameHandle = {
   heralds: (listener: (heralds: Heralds) => void) => () => void
   /** The land of a lord pointed at in the list of lords, lit on the map; none. */
   light: (lord: number | null) => void
+  /** The host's game launched, as his book set it, on the land it shows. */
+  launch: (book: Book) => void
 }

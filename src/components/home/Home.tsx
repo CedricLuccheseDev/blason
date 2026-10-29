@@ -8,7 +8,6 @@ import { Lord, Title } from './Masthead'
 import { Frame, Rose } from './Ornaments'
 import { PrivateRoom } from './PrivateRoom'
 import { PublicCard } from './PublicCard'
-import { SoloSettings } from './SoloSettings'
 import { atPrivate, atPublic, useRoom } from './useRoom'
 import type { Entry } from './Journal'
 import { Act } from '~/components/hud/Act'
@@ -18,13 +17,14 @@ import { holdOnline } from '~/render/online'
 
 // The home, as OpenFront's, on the game's page without its map: its frame
 // and a faint compass rose. The name of the game; under it the public game
-// being planted, its land the biggest thing there and Play on it, then three
-// short buttons, the solo game and the private rooms, each set on a sheet of
-// its own; on their right the journal, its last posts to read. At the foot,
+// being planted, its land the biggest thing there and Play on it, then two
+// short buttons: create a game, straight into it, its book open (solo is a
+// game created with no guest: « créer une partie doit envoyer directement
+// dans le lobby »), and join one by its code, on a sheet; on their right the journal, its last posts to read. At the foot,
 // quiet, the player on the left, the rest of the site in the middle; on a
 // phone or a narrow screen, all of it stacked, the journal under the buttons.
 
-type Open = 'solo' | 'create' | 'join' | null
+type Open = 'join' | null
 
 /** While the home is read, the next solo game's land is made: a game started lands straight in its opening. */
 function useGameAhead() {
@@ -52,12 +52,16 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
 
   const show = (what: Open) => {
     // A private room is a room of its own: the public game is not entered.
-    if ((what === 'create' || what === 'join') && atPublic(room)) rooms.leave()
+    if (atPublic(room)) rooms.leave()
     setOpen(what)
   }
   const close = () => {
-    if (open !== 'solo' && atPrivate(room)) rooms.leave()
+    if (atPrivate(room)) rooms.leave()
     setOpen(null)
+  }
+  const create = () => {
+    if (atPublic(room)) rooms.leave()
+    void navigate({ to: '/play', search: { host: true } })
   }
 
   return (
@@ -70,11 +74,8 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
         </div>
         <nav aria-label={t.menu} className="flex min-w-0 flex-col gap-3">
           <PublicCard room={room} rooms={rooms} online={online} />
-          <div className="grid gap-2 sm:grid-cols-3">
-            <Act tone="plain" onClick={() => show('solo')}>
-              {t.solo.open}
-            </Act>
-            <Act tone="plain" asleep={!online} onClick={() => show('create')}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Act tone="plain" onClick={create}>
               {t.create}
             </Act>
             <Act tone="plain" asleep={!online} onClick={() => show('join')}>
@@ -90,15 +91,12 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
           <Foot />
         </div>
       </div>
-      <Dialog open={open === 'solo'} title={t.solo.title} onClose={close}>
-        <SoloSettings />
-      </Dialog>
       <Dialog
-        open={open === 'create' || open === 'join'}
+        open={open === 'join'}
         title={t.privateRoom.title}
         onClose={close}
       >
-        {(open === 'create' || open === 'join') && (
+        {open === 'join' && (
           <PrivateRoom way={open} room={room} actions={rooms} />
         )}
       </Dialog>

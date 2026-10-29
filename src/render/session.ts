@@ -8,7 +8,9 @@ import {
 import type { GameSetup, GameState, Grid, Order } from '../../engine'
 
 // The game, stepped in the page ten times a second: the player in his
-// seat, a bot in every other its setup gives one.
+// seat, a bot in every other its setup gives one. A hosted game waits, its
+// land drawn, while the host sets it in his book, and starts when he
+// launches it, with the setup the book filled (launch).
 
 const TICK_MS = 1000 / TICKS_PER_SECOND
 
@@ -22,24 +24,38 @@ export type Session = {
    * we are, 0 to 1.
    */
   advance: (ms: number, each?: () => void, most?: number) => number
+  /** A game waiting for its host: made again from the setup his book filled, on the same land, then started. */
+  launch?: (setup: GameSetup) => void
 }
 
 export function startSession(
   grid: Grid,
   setup: GameSetup,
   me: number,
+  /** Held until launched: the host's game, waiting while he sets it. */
+  held = false,
 ): Session {
   const state = createGame(grid, setup)
-  const bots = setup.seats.map(
-    (seat, id) => seat.bot && createBot(id, setup.seed, seat.bot),
-  )
+  const botsOf = (s: GameSetup) =>
+    s.seats.map((seat, id) => seat.bot && createBot(id, s.seed, seat.bot))
+  let bots = botsOf(setup)
   let pending: Array<Order> = []
   let clock = 0
+  let running = !held
   return {
     state,
     me,
-    send: (order) => pending.push(order),
+    send: (order) => {
+      if (running) pending.push(order)
+    },
+    launch(next) {
+      // Made again in place: the screen keeps the state it was given.
+      Object.assign(state, createGame(grid, next))
+      bots = botsOf(next)
+      running = true
+    },
     advance(ms, each) {
+      if (!running) return 0
       clock += ms
       while (clock >= TICK_MS && state.winner === NO_ONE) {
         clock -= TICK_MS

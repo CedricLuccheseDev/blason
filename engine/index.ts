@@ -17,10 +17,12 @@ export { apart, around, makeGrid } from './grid'
 export {
   aloneSetup,
   botsSetup,
+  hostSetup,
   landOf,
   publicSetup,
   readSetup,
 } from './setup'
+export type { Book } from './setup'
 export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'
 export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'

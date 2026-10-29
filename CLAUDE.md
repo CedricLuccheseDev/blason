@@ -144,9 +144,12 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   viendra avec les titres et les mots, « retire la catchline », 29/10) ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
   la partie en cours de pose, celle même où elle se joue, tirée de sa graine quand le navigateur a un moment et
   dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par `ahead.ts`), son titre, le temps qui reste
-  pour la rejoindre et ses places posés dessus en cartouches, « Jouer » dans son coin, et un clic n'importe où sur la terre y entre aussi (acté le 29/10, « on peut cliquer sur la carte directement ») ; puis trois boutons
-  courts égaux, « Solo » (la taille de la terre et le niveau des bots, sur un feuillet), « Créer une partie » et
-  « Rejoindre avec un code » (les parties privées, le code à cinq signes, l'hôte lance). À leur droite le Journal, un
+  pour la rejoindre et ses places posés dessus en cartouches, « Jouer » dans son coin, et un clic n'importe où sur la terre y entre aussi (acté le 29/10, « on peut cliquer sur la carte directement ») ; puis deux boutons
+  courts égaux : « Créer une partie », qui entre aussitôt dans le jeu, la partie à l'arrêt et le livre de la partie
+  ouvert (acté le 29/10, « créer une partie doit envoyer directement dans le lobby », le solo n'étant qu'une partie
+  créée sans inviter personne ; `GameBook.tsx`, `BookParts.tsx` : la terre, sa taille ou une autre, les bots, leur
+  niveau, les équipes, la pose, « Lancer la partie » ; puis le menu de l'hôte, « Recommencer », « Quitter » ;
+  `hostSetup` dans le moteur), et « Rejoindre avec un code » (les parties privées, le code à cinq signes). À leur droite le Journal, un
   feuillet de ses derniers articles, la date, le titre et la première ligne, en Alegreya Sans à pleine encre pour
   qu'il se lise (29/10, « met le journal à droite des cases »). En bas, discrets, le joueur à gauche (son écu et
   « Seigneur » en attendant les profils), le pied du site au milieu, toujours au bas de l'écran ; sur téléphone et

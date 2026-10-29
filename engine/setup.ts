@@ -63,6 +63,36 @@ export function aloneSetup(o: {
   return drawn(o.seed, o.size, SETUP_LIMITS.opening.alone, [player, ...bots])
 }
 
+/** What the host's book sets: his land, his bots and their level, his teams (0: each for himself), the opening's length in ticks. */
+export type Book = {
+  seed: string
+  size: MapSize
+  bots: number
+  level: Level
+  teams: number
+  opening: number
+}
+
+/**
+ * The host's game as his book sets it (« créer une partie », solo being one
+ * with no guest): him at the first seat, so many bots of the level after
+ * him, the other seats empty; the lords in play dealt into the teams in
+ * turn, or each for himself.
+ */
+export function hostSetup(book: Book): GameSetup {
+  const { max } = SETUP_LIMITS.seats
+  const bots = Math.max(0, Math.min(max - 1, book.bots))
+  const teams = book.teams >= 2 ? Math.min(SETUP_LIMITS.teams, book.teams) : 0
+  const seats = Array.from({ length: max }, (_, i): Seat => ({
+    team: teams && i <= bots ? i % teams : -1,
+    bot: i > 0 && i <= bots ? book.level : null,
+    person: i === 0,
+  }))
+  const { min, max: most } = SETUP_LIMITS.opening
+  const opening = Math.max(min, Math.min(most, book.opening))
+  return drawn(book.seed, book.size, opening, seats)
+}
+
 /** The public game the relay keeps in its opening: the standard land and no bot, every seat empty until a person takes it, an opening long enough for players to come. */
 export function publicSetup(seed: string): GameSetup {
   const seats = many(SETUP_LIMITS.seats.max, null)
