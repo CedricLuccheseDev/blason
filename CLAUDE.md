@@ -103,7 +103,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   la souris ou sur la carte (le cartouche, au-dessus de la barre, passe de l'autre côté de la souris ; les mots
   d'un pli ; un fanion vole vers la gauche près du bord droit). La mise en page en HTML, le SVG pour les seuls
   objets dessinés.
-- `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
+- `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, en bandes : tous ceux encore
+  debout, une ligne fine chacun lavée de sa couleur aussi loin que sa terre va contre celle du premier, le seigneur
+  visé éclairé dans la liste (acté le 29/10, « ok les bandes ») ; la course sur une ligne,
   une trahison criée à tous sous la course sur une banderole de gueules (`Banner.tsx`), le coin haut droit laissé à
   la carte ; aucun lien tiré entre alliés sur la carte (la frontière verte, l'insigne à côté du nom et la liste le
   disent), le sceau d'une de mes alliances n'y paraît que dans ses dernières secondes, à côté du nom de mon allié,
@@ -115,7 +117,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   arrivent (`Pennant.tsx`, `notes.ts`), la barre en bas avec
   la bourse dedans, puis les armées
   en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
-  se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
+  se paie pas à demi-encre, le cartouche près de la souris), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
   système comme openfront en adapté pour nous pour la home » ; la table en 3D est retirée, « c'était de trop ») : une
   colonne sur un fond calme, la prochaine partie publique en premier et en grand, puis Solo (la taille de la terre et

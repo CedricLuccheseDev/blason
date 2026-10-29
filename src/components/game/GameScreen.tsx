@@ -4,7 +4,6 @@ import { Sheet } from '../hud/Sheet'
 import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
-import { Aimed } from './Aimed'
 import { Lords } from './Lords'
 import { CameraButtons } from './CameraButtons'
 import { Heralds } from './Heralds'
@@ -141,12 +140,6 @@ export function GameScreen({
               ref={floor}
               className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-3 max-sm:grid-cols-1 max-sm:gap-2"
             >
-              {/* Above the bar's row, at its left, taking none of its room: the
-                  bar has the width of the screen less the camera on either side,
-                  or on one side only when it needs more. */}
-              <div className="absolute bottom-full left-0 mb-4 flex w-72 flex-col gap-2 max-sm:mb-2 max-sm:w-[calc(100%-3.5rem)] short:mb-2 short:w-60">
-                <Aimed aim={aim} summary={summary} />
-              </div>
               <div className="col-start-2 min-w-0 max-sm:col-start-1">
                 <Bar
                   summary={summary}

@@ -80,6 +80,8 @@ export type Summary = {
   lords: Array<
     Lord & {
       share: number
+      /** His tiles, for what is drawn to the scale of his land. */
+      land: number
       men: number
       alive: boolean
       felon: boolean
@@ -104,6 +106,7 @@ function lordsOf(state: GameState, me: number) {
   return state.players.map((p, seat) => ({
     ...lordOf(seat),
     share: Math.round((100 * p.tiles) / state.grid.area),
+    land: p.tiles,
     men: Math.floor(p.peasants / UNIT),
     alive: p.alive,
     felon: isFelon(state, seat),

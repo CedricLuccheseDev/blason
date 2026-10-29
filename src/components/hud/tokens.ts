@@ -52,6 +52,7 @@ export const ICON: Record<Size, number> = { s: 16, m: 18, l: 22, xl: 24 }
 
 /** A lord's shield: inline beside his name, on a letter, in the purse. */
 export const SHIELD = {
+  xs: { w: 12, h: 15 },
   s: { w: 16, h: 20 },
   m: { w: 28, h: 34 },
   l: { w: 52, h: 64 },

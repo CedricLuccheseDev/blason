@@ -353,7 +353,9 @@ The HUD is React, laid over the map. It is built on a small design system,
   (`useSize.ts`: the cartouche, above the bar's row, goes to the pointer's
   other side; a letter's words; a pennant flies left near the right side).
 
-The game's pieces (`src/components/game/`: the lords' list top left, the
+The game's pieces (`src/components/game/`: the lords' list top left, every
+lord standing on a thin line washed in his colour as far as his land goes
+against the first's, the lord under the pointer lit there (`Lords.tsx`); the
 race on one thin line and under it a betrayal cried to all on a banderole of
 gules (`Banner.tsx`), the top right left to the map; the seal of an alliance of
 the player's only in its last moments, beside his ally's name, a click to renew
@@ -365,7 +367,7 @@ with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom with the purse in it, then the armies, the works and the
 coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
-the lord aimed at, the cartouche beside the pointer) are built from these and
+the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 
