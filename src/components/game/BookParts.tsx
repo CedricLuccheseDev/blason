@@ -19,7 +19,7 @@ export function stepped<T>(list: ReadonlyArray<T>, value: T, by: 1 | -1): T {
 }
 
 /** A line of the book: its name on the left, its value in a column of one width on the right, every line as tall, ruled under. */
-export function Row({
+function Row({
   name,
   children,
 }: Readonly<{ name: string; children: ReactNode }>) {
