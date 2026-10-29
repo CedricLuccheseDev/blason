@@ -125,6 +125,11 @@ leaves it gives his seat back to its bot.
   square root of its men: 16 for 100 men), past the click while it has men,
   at most 3 tiles a tick, whatever its size: more men go further, never
   faster; it never swells into a ball (`engine/war.ts`).
+- **The land's roughness**: each tile bears a little roughness, fixed and
+  drawn from the map's seed, an unseen relief smooth over a mesh of 5 tiles,
+  at most 3 tiles' worth, added to the order an army takes tiles in; each
+  lord reads it shifted by his own offset. Two fronts meet in a ragged line,
+  as a coast, rather than a straight one (`engine/rough.ts`).
 - **The entry that brings it soonest**: of all the border tiles, the army
   enters by the one that brings it to the click soonest, counting its march
   from the free village (or market) nearest by the march, then its way

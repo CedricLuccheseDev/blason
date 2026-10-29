@@ -8,6 +8,7 @@ import { walled } from './battle'
 import { disband, hired } from './armies'
 import { costOf, marching, menFor, paceOf, passable } from './muster'
 import { courseFor, wideOf } from './course'
+import { roughAt } from './rough'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
 
@@ -28,11 +29,12 @@ import type { GameState, Host } from './types'
 /**
  * The order an army takes tiles in: from where it entered, twice as fast
  * towards the click as to the sides, within its band (inBand), so its front
- * is a wall moving on, not a thread. Distances in tenths of a tile.
+ * is a wall moving on, not a thread; the land's roughness bends it
+ * (rough.ts). Distances in tenths of a tile.
  */
 function priority(
   state: GameState,
-  host: Pick<Host, 'entry' | 'aim'>,
+  host: Pick<Host, 'entry' | 'aim' | 'owner'>,
   tile: number,
 ) {
   const w = state.grid.width
@@ -44,7 +46,7 @@ function priority(
   const length = isqrt(ax * ax + ay * ay)
   const ahead =
     length === 0 ? 0 : Math.floor((10 * (dx * ax + dy * ay)) / length)
-  return 2 * reach - ahead
+  return 2 * reach - ahead + roughAt(state, host.owner, tile)
 }
 
 /**
