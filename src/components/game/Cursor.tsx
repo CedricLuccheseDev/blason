@@ -1,6 +1,6 @@
 import { ActMedallion, CoupEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
+import { Rule, Sheet } from '../hud/Sheet'
 import { useBeside } from '../hud/useBeside'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
@@ -157,12 +157,16 @@ export function Cursor({
         {strikes && <ArmyHalf summary={summary} />}
         {/* The two mice in the middle (« mets les icônes souris gauche et droite au centre »): the left's action on the left, the right's, greyed, on the right. */}
         {(strikes || aim.coup) && (
-          <span className="flex items-center gap-0.5">
+          <span className="flex items-center gap-2">
             <Mouse button="left" />
             {aim.lord !== null && !aim.coup && (
-              <span className="opacity-50">
-                <Mouse button="right" />
-              </span>
+              <>
+                {/* The rule between the two halves (« remets la barre au milieu »). */}
+                <Rule />
+                <span className="opacity-50">
+                  <Mouse button="right" />
+                </span>
+              </>
             )}
           </span>
         )}
