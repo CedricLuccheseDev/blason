@@ -58,6 +58,9 @@ function group(...children: Array<Container>) {
   return c
 }
 
+/** The HUD's bottom row's height on screen, in pixels: the map's words fade under it. */
+const BOTTOM = 130
+
 export function makeScene(
   app: Application,
   land: World,
@@ -220,7 +223,10 @@ export function makeScene(
       m('aim', () => aim.draw(hovered, hand, zoom))
       m('planted', () => planted.draw(state, zoom, now))
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
-      m('labels', () => labels.update(state, zoom, fit * far))
+      m('labels', () =>
+        // The bottom row's band, where the words fade under its pieces.
+        labels.update(state, zoom, fit * far, app.screen.height - BOTTOM),
+      )
       m('badges', () => badges.update(labels.nameOf, zoom / fit / far))
       m('pacts', () => pacts.draw(state, zoom, now / 1000))
     },

@@ -3,6 +3,7 @@ import { drawSoldier } from '../art/soldier'
 import { smoothstep } from '../ease'
 import { BEAT } from '../men'
 import { TONE } from '../palette'
+import { apart, fadeUnder } from './crowd'
 
 // Who holds each land and how strong he is, as in OpenFront: the lord's name
 // and, under it, his army in big figures beside a soldier, written at the
@@ -24,7 +25,7 @@ const NAME_MIN = 16
 /** A land's side on screen, in pixels, under which its words begin to fade, and under which none show. */
 const ROOM = [14, 26] as const
 
-type Label = {
+export type Label = {
   box: Container
   name: BitmapText
   army: BitmapText
@@ -178,6 +179,7 @@ export function makeLabels<TState extends { tick: number }>(
       label.mark.position.set(-(width + mark * 1.05) / 2 + mark * 0.35, row)
       label.army.position.set(-(width + mark * 1.05) / 2 + mark * 1.05, row)
     }
+    apart(labels, me)
   }
 
   return {
@@ -197,7 +199,7 @@ export function makeLabels<TState extends { tick: number }>(
       }
     },
     /** At `zoom` pixels a map unit; `scale`, the words' size on screen against their size as drawn: smaller on a small screen and farther out than the whole land, a name never under 16 pixels. */
-    update(state: TState, zoom: number, scale = 1) {
+    update(state: TState, zoom: number, scale = 1, bottom = Infinity) {
       const now = Math.floor(state.tick / BEAT)
       let moved = zoom !== placed.zoom || scale !== placed.scale
       if (now !== beat) {
@@ -206,6 +208,7 @@ export function makeLabels<TState extends { tick: number }>(
         moved = true
       }
       if (glide()) moved = true
+      fadeUnder(labels, bottom)
       if (!moved) return
       placed = { zoom, scale }
       layout(zoom, scale)
