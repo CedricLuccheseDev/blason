@@ -73,6 +73,7 @@ function Type() {
         style={{
           display: 'grid',
           gridTemplateColumns: '40px repeat(4, auto)',
+          justifyContent: 'start',
           alignItems: 'baseline',
           columnGap: 20,
           rowGap: 8,
@@ -88,8 +89,7 @@ function Type() {
         ))}
       </div>
       <p className="hud-note" style={{ margin: 0 }}>
-        Telles que dessinées ; sur un grand écran, le texte, l’espace et les
-        dessins grandissent ensemble d’un cinquième.
+        Telles que dessinées ; sur un grand écran, tout grandit d’un cinquième.
       </p>
     </Part>
   )

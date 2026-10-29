@@ -140,12 +140,9 @@ body {
 }
 .size {
   position: absolute;
-  font-family: var(--figures);
-  font-weight: 700;
-  font-size: 17px;
+  font-style: italic;
+  font-size: 19px;
   color: var(--lead);
-  font-variant-numeric: lining-nums tabular-nums;
-  word-spacing: 0.12em;
 }
 
 /* A note: its words in ink, set against the screens, and its gilt number
@@ -186,6 +183,14 @@ body {
   font-size: 15px;
   transform: translate(-50%, -50%);
 }
+/* A figure among the words, in the figures' hand. */
+.figure {
+  font-family: var(--figures);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.92em;
+  font-variant-numeric: lining-nums;
+}
 .leaders {
   position: absolute;
   inset: 0;
@@ -224,9 +229,9 @@ body {
   background: linear-gradient(
     90deg,
     var(--vellum) 0%,
-    var(--vellum) 30%,
-    rgb(246 238 219 / 0.75) 42%,
-    rgb(246 238 219 / 0) 62%
+    var(--vellum) 27%,
+    rgb(246 238 219 / 0.72) 40%,
+    rgb(246 238 219 / 0) 54%
   );
 }
 .cover .name {
@@ -276,7 +281,7 @@ body {
   font-size: 24px;
   line-height: 1.35;
   color: var(--lead);
-  width: 560px;
+  width: 500px;
 }
 .cover .what strong {
   display: block;

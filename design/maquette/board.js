@@ -44,62 +44,88 @@ const element = (tag, className, text) => {
   return made
 }
 
+/** Words set as French is: no line begins with its colon or its semicolon; and the figures in Alegreya Sans, IM Fell's own reading as letters. */
+function words(tag, className, text) {
+  const made = element(tag, className)
+  const french = text.replace(/ ([:;?!])/g, '\u00a0$1')
+  for (const [i, part] of french.split(/(\d+(?:[ \u00a0]\d+)*)/).entries())
+    made.append(i % 2 ? element('span', 'figure', part) : part)
+  return made
+}
+
 function head() {
   const top = element('header', 'head')
   const titles = element('div', 'titles')
-  titles.append(element('h1', null, board.title), element('p', null, board.line))
+  titles.append(words('h1', null, board.title), words('p', null, board.line))
   top.append(element('div', 'number', board.number), titles)
   const foot = element('footer', 'foot')
   foot.append(
     element('span', 'mark', 'Blason'),
     element('span', 'when', data.when),
   )
-  document.body.append(element('div', 'edge'), top, element('div', 'rule'), foot)
+  document.body.append(
+    element('div', 'edge'),
+    top,
+    element('div', 'rule'),
+    foot,
+  )
 }
 
-/** The screens' boxes on the board: those given as [x, y, height], the others in a row, as tall as each other and as large as the area allows. */
+/** What a screen shows of its frame: all of it, or the part it is cropped to ([x, y, width, height] in the frame's pixels), a detail shown larger. */
+function viewOf(spec) {
+  const [x, y, width, height] = spec.crop ?? [
+    0,
+    0,
+    spec.frame.width,
+    spec.frame.height,
+  ]
+  return { x, y, width, height }
+}
+
+/** The screens' places on the board ({ x, y, k }, k the scale): those given as [x, y, height], the others in a row, as tall as each other and as large as the area allows. */
 function place(screens) {
-  const row = screens.filter((s) => !s.box)
+  const row = screens.filter((s) => !s.box).map(viewOf)
   const room = AREA.right - AREA.left - GRID.gap * (row.length - 1)
-  const ratio = row.reduce((sum, s) => sum + s.frame.width / s.frame.height, 0)
+  const ratio = row.reduce((sum, v) => sum + v.width / v.height, 0)
   const height = Math.min(GRID.bottom - GRID.top - CAPTION, room / ratio)
   const width = row.reduce(
-    (sum, s) => sum + (height * s.frame.width) / s.frame.height,
+    (sum, v) => sum + (height * v.width) / v.height,
     GRID.gap * (row.length - 1),
   )
   let x = AREA.left + (AREA.right - AREA.left - width) / 2
   const y = GRID.top + (GRID.bottom - GRID.top - CAPTION - height) / 2
   return screens.map((s) => {
-    const k = (s.box ? s.box[2] : height) / s.frame.height
-    if (s.box) return { x: s.box[0], y: s.box[1], k }
-    const at = { x, y, k }
-    x += s.frame.width * k + GRID.gap
+    const view = viewOf(s)
+    if (s.box) return { x: s.box[0], y: s.box[1], k: s.box[2] / view.height }
+    const at = { x, y, k: height / view.height }
+    x += view.width * at.k + GRID.gap
     return at
   })
 }
 
-/** A screen laid on the board: its frame's document in an iframe, loaded. */
+/** A screen laid on the board: its frame's document in an iframe, loaded, scaled to its place and moved to the part it shows. */
 function screen(spec, at) {
   const { width, height } = spec.frame
+  const view = viewOf(spec)
   const box = element('div', spec.bare ? 'screen bare' : 'screen')
   Object.assign(box.style, {
     left: `${at.x}px`,
     top: `${at.y}px`,
-    width: `${width * at.k}px`,
-    height: `${height * at.k}px`,
+    width: `${view.width * at.k}px`,
+    height: `${view.height * at.k}px`,
   })
   const iframe = element('iframe')
   iframe.width = String(width)
   iframe.height = String(height)
-  iframe.style.transform = `scale(${at.k})`
+  iframe.style.transform = `translate(${-view.x * at.k}px, ${-view.y * at.k}px) scale(${at.k})`
   iframe.setAttribute('tabindex', '-1')
   box.append(iframe)
   document.body.append(box)
   if (spec.caption) {
-    const caption = element('div', 'size', spec.caption)
+    const caption = words('div', 'size', spec.caption)
     Object.assign(caption.style, {
       left: `${at.x}px`,
-      top: `${at.y + height * at.k + 12}px`,
+      top: `${at.y + view.height * at.k + 12}px`,
     })
     document.body.append(caption)
   }
@@ -113,13 +139,13 @@ function screen(spec, at) {
   })
   return loaded.then(async () => {
     await iframe.contentDocument.fonts.ready
-    return { iframe, at, frame: spec.frame }
+    return { iframe, at, view }
   })
 }
 
 /** A point of a frame on the board: a piece found by its selector (the first of several that matches), at `anchor` of its box (its left middle by default), or a point in the frame's pixels. */
 function pointOf(shown, [index, target, anchor = [0, 0.5]]) {
-  const { iframe, at } = shown[index]
+  const { iframe, at, view } = shown[index]
   let x
   let y
   if (Array.isArray(target) && typeof target[0] === 'number') [x, y] = target
@@ -134,7 +160,7 @@ function pointOf(shown, [index, target, anchor = [0, 0.5]]) {
     x = r.left + r.width * anchor[0]
     y = r.top + r.height * anchor[1]
   }
-  return { x: at.x + x * at.k, y: at.y + y * at.k }
+  return { x: at.x + (x - view.x) * at.k, y: at.y + (y - view.y) * at.k }
 }
 
 /** The notes' tops: each at the height of what it names, pushed down below the one above, then all lifted should the last run past the body. */
@@ -179,27 +205,88 @@ function* orders(n, head = []) {
     if (!head.includes(i)) yield* orders(n, [...head, i])
 }
 
-/** The notes' order down the column and their tops: of every order, the one whose lines cross least, then lean least. */
-function arrange(found, heights) {
+/** Whether a segment runs over a box ({ left, top, right, bottom }). */
+function over([a, b], box) {
+  const inside = (p) =>
+    p.x > box.left && p.x < box.right && p.y > box.top && p.y < box.bottom
+  if (inside(a) || inside(b)) return true
+  const corners = [
+    { x: box.left, y: box.top },
+    { x: box.right, y: box.top },
+    { x: box.right, y: box.bottom },
+    { x: box.left, y: box.bottom },
+  ]
+  return corners.some((c, i) => cross([a, b], [c, corners[(i + 1) % 4]]))
+}
+
+/** Whether a point lies beyond a piece, right of it and within its height: a line from the column to it would cross the piece. */
+const beyond = (point, box) =>
+  point.x > box.right && point.y < box.bottom + 8 && point.y > box.top - 8
+
+/** Where a note would rather stand: at the height of what it names; or under a piece its line would cross on the way there, to go round it. */
+function wish(note, pieces) {
+  const piece = pieces.find((box) => beyond(note.point, box))
+  return piece ? piece.bottom + 24 : note.point.y
+}
+
+/** A note's line, from its number: along its height to the screens, or past a piece it goes round, then straight to what it names. */
+function route(y, point, pieces) {
+  const round = pieces.find((box) => beyond(point, box) && y > box.bottom)
+  const turn = round ? round.right + 14 : KNEE
+  return [{ x: LEAVES, y }, { x: turn, y }, point]
+}
+
+/** A line's segments. */
+const segments = (line) => line.slice(1).map((b, i) => [line[i], b])
+
+/** The notes' order down the column and their tops: of every order, the one whose lines cross each other least, then the pieces to keep clear, then lean least. */
+function arrange(found, heights, pieces) {
+  const wishes = found.map((note) => wish(note, pieces))
   let best = null
   for (const order of orders(found.length)) {
     const tops = stack(
-      order.map((i) => found[i].point.y - MARKER_Y),
+      order.map((i) => wishes[i] - MARKER_Y),
       order.map((i) => heights[i]),
     )
-    const legs = order.map((i, p) => [
-      { x: KNEE, y: tops[p] + MARKER_Y },
-      found[i].point,
-    ])
+    const lines = order.map((i, p) =>
+      route(tops[p] + MARKER_Y, found[i].point, pieces),
+    )
+    const parts = lines.map(segments)
     let crossings = 0
-    for (let p = 0; p < legs.length; p++)
-      for (let q = p + 1; q < legs.length; q++)
-        if (cross(legs[p], legs[q])) crossings++
-    const lean = legs.reduce((sum, [a, b]) => sum + Math.abs(a.y - b.y), 0)
-    const score = crossings * 1e6 + lean
-    if (!best || score < best.score) best = { order, tops, score }
+    for (let p = 0; p < parts.length; p++)
+      for (let q = p + 1; q < parts.length; q++)
+        for (const one of parts[p])
+          for (const other of parts[q]) if (cross(one, other)) crossings++
+    let covered = 0
+    for (const [p, line] of lines.entries())
+      for (const box of pieces)
+        if (
+          !inBox(line.at(-1), box) &&
+          parts[p].some((part) => over(part, box))
+        )
+          covered++
+    const lean = lines.reduce(
+      (sum, line) => sum + Math.abs(line[1].y - line[2].y),
+      0,
+    )
+    const score = crossings * 1e6 + covered * 1e4 + lean
+    if (!best || score < best.score) best = { order, tops, lines, score }
   }
   return best
+}
+
+const inBox = (p, box) =>
+  p.x >= box.left && p.x <= box.right && p.y >= box.top && p.y <= box.bottom
+
+/** The pieces the lines should keep clear of, on the board: those the screens name (`avoid:`, selectors). */
+function keepClear(shown) {
+  return board.screens.flatMap((spec, index) =>
+    (spec.avoid ?? []).flatMap((selector) => {
+      const a = pointOf(shown, [index, selector, [0, 0]])
+      const b = pointOf(shown, [index, selector, [1, 1]])
+      return a && b ? [{ left: a.x, top: a.y, right: b.x, bottom: b.y }] : []
+    }),
+  )
 }
 
 /** The notes, their lines and their pins, once the screens are laid out. */
@@ -214,21 +301,25 @@ function notes(shown) {
   })
   const lines = svg('svg', { class: 'leaders', width: 1920, height: 1080 })
   const boxes = found.map((note) => {
-    const box = element('div', 'note', note.text)
+    const box = words('div', 'note', note.text)
     document.body.append(box)
     return box
   })
-  const { order, tops } = arrange(
+  const {
+    order,
+    tops,
+    lines: routes,
+  } = arrange(
     found,
     boxes.map((box) => box.offsetHeight),
+    keepClear(shown),
   )
   for (const [p, i] of order.entries()) {
     const note = found[i]
     const n = p + 1
     boxes[i].style.top = `${tops[p]}px`
     boxes[i].append(marker(n))
-    const y = tops[p] + MARKER_Y
-    const d = `M${LEAVES} ${y} H${KNEE} L${note.point.x} ${note.point.y}`
+    const d = `M${routes[p].map(({ x, y }) => `${x} ${y}`).join(' L')}`
     lines.append(
       svg('path', { d, class: 'halo' }),
       svg('path', { d, class: 'line' }),
@@ -251,8 +342,9 @@ function pinOn(shown, [index, target, anchor = [0, 0]], n) {
     window.missing.push(`${board.name}: pin of note ${n}, ${target}`)
     return
   }
-  const { x, y, k } = shown[index].at
-  const { width, height } = shown[index].frame
+  const { at: place, view } = shown[index]
+  const { x, y, k } = place
+  const { width, height } = view
   const dot = marker(n, 'marker pin')
   dot.style.left = `${Math.min(Math.max(at.x, x + 15), x + width * k - 15)}px`
   dot.style.top = `${Math.min(Math.max(at.y, y + 15), y + height * k - 15)}px`
@@ -272,15 +364,15 @@ function cover() {
   const ornament = element('div', 'ornament')
   ornament.append(element('span'))
   name.append(
-    element('h1', null, board.title),
+    words('h1', null, board.title),
     ornament,
-    element('p', null, board.line),
+    words('p', null, board.line),
   )
   const what = element('div', 'what')
   what.append(element('strong', null, board.what.title))
   what.append(document.createTextNode(board.what.line))
+  // The land's own page and frame round it: no edge of the board's.
   document.body.append(art, element('div', 'veil'), name, what)
-  document.body.append(element('div', 'edge'))
   return Promise.all([
     document.fonts.ready,
     new Promise((resolve) => {

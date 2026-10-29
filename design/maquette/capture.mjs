@@ -242,10 +242,12 @@ async function capturePieces(browser) {
   try {
     await page.goto(`${BASE}/legal`, { timeout: 120_000 })
     await page.waitForLoadState('networkidle')
+    // The dev server does not watch design/: the module is asked for anew,
+    // under a query of its own, lest it be served as first transformed.
     const markup = await page.evaluate(async (module) => {
       const pieces = await import(module)
       return pieces.piecesMarkup()
-    }, '/design/maquette/pieces.tsx')
+    }, `/design/maquette/pieces.tsx?at=${Date.now()}`)
     writeFileSync(new URL('pieces.html', OUT), `${markup}\n`)
   } finally {
     await page.close()
