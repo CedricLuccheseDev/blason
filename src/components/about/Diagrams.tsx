@@ -82,9 +82,9 @@ function Frame({
   )
 }
 
-/** A seed, then cells, a coast, tiles and the free domains: the land of a game. */
+/** A seed, then cells, a coast, tiles and the standards planted: the land of a game. */
 export function SeedDiagram({ t }: Readonly<{ t: Words }>) {
-  const steps = [t.seed, t.cells, t.coast, t.tiles, t.domains]
+  const steps = [t.seed, t.cells, t.coast, t.tiles, t.standards]
   // Each box as wide as its word, the room left shared out between them.
   const widths = steps.map((label) => Math.max(80, label.length * 7.6 + 16))
   const gap =

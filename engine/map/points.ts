@@ -3,9 +3,28 @@ import { drawInt } from '../numbers'
 
 export type Point = readonly [number, number]
 
+/** So many darts thrown for each point the frame could hold at that spacing. */
+const DARTS = 14
+
+/**
+ * A stream of numbers in [0, 1) from a seed (mulberry32): whole-number
+ * operations only, the same on every machine, and far quicker than a draw
+ * by name when the points are counted in tens of thousands.
+ */
+export function stream(seed: string, key: string): () => number {
+  let a = drawInt(seed, 4294967296, 'stream', key)
+  return () => {
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 /**
  * Points thrown at random, each kept only if no other lies too close: an even
- * scatter with no grid in it (Poisson disc sampling).
+ * scatter with no grid in it (Poisson disc sampling). The darts grow with
+ * the frame, so a map twice as large is as evenly filled.
  */
 export function scatter(
   seed: string,
@@ -14,38 +33,45 @@ export function scatter(
   spacing: number,
 ): Array<Point> {
   const cell = spacing / 2
-  const grid = new Map<string, Point>()
+  const cols = Math.ceil(width / cell)
+  const rows = Math.ceil(height / cell)
+  // At most one point a square of the grid: its side is under the spacing.
+  const grid = new Int32Array(cols * rows).fill(-1)
   const points: Array<Point> = []
   const far = spacing * spacing
-  for (let dart = 0; dart < 60000; dart++) {
-    const x = (drawInt(seed, 1e9, 'x', dart) / 1e9) * width
-    const y = (drawInt(seed, 1e9, 'y', dart) / 1e9) * height
+  const next = stream(seed, 'scatter')
+  const darts = Math.floor((DARTS * width * height) / far)
+  for (let dart = 0; dart < darts; dart++) {
+    const x = next() * width
+    const y = next() * height
     const gx = Math.floor(x / cell)
     const gy = Math.floor(y / cell)
-    if (crowded(grid, gx, gy, x, y, far)) continue
-    grid.set(`${gx},${gy}`, [x, y])
+    if (crowded(grid, points, cols, rows, gx, gy, x, y, far)) continue
+    grid[gy * cols + gx] = points.length
     points.push([x, y])
   }
   return points
 }
 
 function crowded(
-  grid: Map<string, Point>,
+  grid: Int32Array,
+  points: Array<Point>,
+  cols: number,
+  rows: number,
   gx: number,
   gy: number,
   x: number,
   y: number,
   far: number,
 ): boolean {
-  for (let ix = gx - 2; ix <= gx + 2; ix++) {
-    for (let iy = gy - 2; iy <= gy + 2; iy++) {
-      const q = grid.get(`${ix},${iy}`)
-      if (!q) continue
-      const dx = x - q[0]
-      const dy = y - q[1]
+  for (let iy = Math.max(0, gy - 2); iy <= Math.min(rows - 1, gy + 2); iy++)
+    for (let ix = Math.max(0, gx - 2); ix <= Math.min(cols - 1, gx + 2); ix++) {
+      const q = grid[iy * cols + ix]
+      if (q < 0) continue
+      const dx = x - points[q][0]
+      const dy = y - points[q][1]
       if (dx * dx + dy * dy < far) return true
     }
-  }
   return false
 }
 

@@ -12,9 +12,11 @@
 //   lines of a piece and between pieces stacked in a corner; 12 (p-3, gap-3)
 //   inside a sheet and between the parts of a piece; 16 (p-4) from the edge
 //   of the screen; 24 (gap-6) between groups;
-// - type: four sizes, hud-s 13, hud-m 16, hud-l 20, hud-xl 28, through four
-//   roles: .hud-word, .hud-name (a lord) and .hud-note (a hint) in IM Fell,
-//   .hud-figure in Alegreya Sans;
+// - type: four sizes, hud-s 15, hud-m 18, hud-l 22, hud-xl 28, each a fifth
+//   or more above the one before and none under 15, so that every word
+//   reads at a glance, through four roles: .hud-word, .hud-name (a lord)
+//   and .hud-note (a hint, in italics at full ink) in Vollkorn, .hud-figure
+//   in Alegreya Sans;
 // - one material, the sheet (Sheet.tsx), one button (Act.tsx), one shadow
 //   (shadow-lift), one rounding (rounded-md, its rule rounded-sm);
 // - what cannot be had is at half ink (opacity-50).
@@ -25,7 +27,9 @@
 //   touched and 200 ms for what appears, through two roles: .hud-press on
 //   whatever is touched (it lifts under the pointer and sinks when pressed),
 //   .hud-enter on every sheet as it appears; a seal in hand rises and grows,
-//   gliding. Under reduced motion, none of it: the final state at once.
+//   gliding; what waits on the map for a click glows (.hud-glow, a seal to
+//   renew). Under reduced motion, none of it: the final state
+//   at once.
 //
 // In the drawings, below: the icons, shields and seals, each in fixed sizes.
 
@@ -43,17 +47,22 @@ export const TEXT: Record<Size, string> = {
 export const scaled = (px: number): string => `calc(${px}px * var(--hud))`
 
 /** An icon beside a figure, sized on its type. */
-export const ICON: Record<Size, number> = { s: 14, m: 16, l: 20, xl: 24 }
+export const ICON: Record<Size, number> = { s: 16, m: 18, l: 22, xl: 24 }
 
-/** A lord's shield: inline beside his name, on a letter, in the purse. */
+/** A lord's shield: inline beside his name, on a letter; in the purse as tall as its two lines of figures (22 × 1.15 twice, 4 between). */
 export const SHIELD = {
+  xs: { w: 12, h: 15 },
   s: { w: 16, h: 20 },
   m: { w: 28, h: 34 },
+  purse: { w: 44, h: 54 },
   l: { w: 52, h: 64 },
 } as const
 
-/** A seal's or a medallion's radius: in the cartouche, on the bar. */
-export const SEAL = { s: 18, l: 26 } as const
+/** A seal's, a medallion's or a lozenge's radius: on the bar, in the cartouche, at its largest. */
+export const SEAL = { xs: 13, s: 18, l: 26 } as const
+
+/** An act's medallion on a thin line of a list (the right click's menu): its side, the cartouche's medallion drawn smaller. */
+export const LINE_MEDALLION = 28
 
 /** A badge of standing (an ally, a foe, a felon): its diameter, beside a name in a list or on a sheet. */
 export const BADGE = { s: 20, m: 24 } as const

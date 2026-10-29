@@ -1,8 +1,8 @@
-import { Container, Graphics } from 'pixi.js'
+import { Container, Graphics, GraphicsContext } from 'pixi.js'
 import { mixColor } from '../ease'
-import { chain, flatten } from '../geometry'
+import { chain, flatten, simplify } from '../geometry'
 import { TONE } from '../palette'
-import type { World } from '../../../engine'
+import type { Point, World } from '../../../engine'
 
 // The land as a map drawn on a manuscript: the sea in a pale wash with six
 // lines along its shores, close at first and spreading out, fading as they
@@ -21,6 +21,8 @@ const SHORES = [
 /** The lines' width from afar, and up close; the zooms between which the one gives way to the other. */
 const [WIDE, FINE] = [0.9, 0.4]
 const [FROM, TO] = [2.6, 3.8]
+/** How far from the coast's own line a shore line may stray, against its distance from the shore. */
+const WITHIN = 0.04
 
 /** The sea's wash with its shore lines so wide, in map units. */
 function sea(world: World, width: number): Graphics {
@@ -34,13 +36,16 @@ function sea(world: World, width: number): Graphics {
   const line = { join: 'round', cap: 'round' } as const
   const coast = chain(world.coast)
   for (const [d, strength] of [...SHORES].reverse()) {
-    for (const run of coast) g.poly(flatten(run), false)
+    // So far from the shore, the coast's smallest turns do not show: a
+    // line a twenty-fifth of its distance from the coast's is enough.
+    const plain = coast.map((run) => flatten(simplify(run, d * WITHIN)))
+    for (const run of plain) g.poly(run, false)
     g.stroke({
       ...line,
       width: 2 * d + width,
       color: mixColor(TONE.seaWash, TONE.seaLine, strength),
     })
-    for (const run of coast) g.poly(flatten(run), false)
+    for (const run of plain) g.poly(run, false)
     g.stroke({ ...line, width: 2 * d - width, color: TONE.seaWash })
   }
   return g
@@ -63,11 +68,45 @@ export function makeSea(world: World) {
   }
 }
 
-/** The land, bare parchment. */
-export function drawLand(world: World): Graphics {
-  const base = new Graphics()
-  for (const cell of world.land) base.poly(flatten(cell.outline))
-  return base
-    .fill(TONE.page)
-    .stroke({ width: 0.6, color: TONE.page, join: 'round' })
+/**
+ * Each land cell's outline for a fill: its sides between two land cells
+ * straight, the same line seen from both, so that no crack opens between
+ * them (only the coast is seen); its coast and the frame as drawn.
+ */
+export function plainCells(land: World['land']): Array<Array<Point>> {
+  const at = ([x, y]: Point) => `${x},${y}`
+  const cells = new Map<string, number>()
+  const sides = new Set<string>()
+  for (const { outline } of land)
+    outline.forEach((p, i) => {
+      cells.set(at(p), (cells.get(at(p)) ?? 0) + 1)
+      sides.add(`${at(p)}|${at(outline[(i + 1) % outline.length])}`)
+    })
+  /** Whether a side is shared with another land cell, which traces it the other way. */
+  const inland = (a: Point, b: Point) => sides.has(`${at(b)}|${at(a)}`)
+  return land.map(({ outline }) => {
+    const n = outline.length
+    return outline.filter((p, i) => {
+      const [a, b] = [outline[(i + n - 1) % n], outline[(i + 1) % n]]
+      return cells.get(at(p)) !== 2 || !inland(a, p) || !inland(p, b)
+    })
+  })
+}
+
+/**
+ * The land, bare parchment, as one shape the map lays and clips to several
+ * times: its cells filled (plainCells), and a fine line along the coast so
+ * that what it clips reaches under the coast's ink.
+ */
+export function landShape(world: World): GraphicsContext {
+  const shape = new GraphicsContext()
+  for (const cell of plainCells(world.land)) shape.poly(flatten(cell))
+  shape.fill(TONE.page)
+  for (const run of chain(world.coast)) shape.poly(flatten(run), false)
+  return shape.stroke({
+    width: 0.6,
+    color: TONE.page,
+    join: 'round',
+    cap: 'round',
+  })
 }

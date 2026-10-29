@@ -1,6 +1,7 @@
 import { mixColor } from '../ease'
 import { TONE } from '../palette'
-import { church, house } from './house'
+import { church } from './church'
+import { house } from './house'
 import {
   EARTH,
   THATCH,
@@ -15,39 +16,32 @@ import {
   poly,
   wob,
 } from './ink'
+import { MILL, RIDGE, VILLAGE, back } from './plans'
+import { workShadows } from './shadows'
+import { trodden } from './solid'
 import { tree } from './trees'
 import type { Detail } from './house'
 import type { Pen, Pt } from './ink'
 
 // A lord's village: houses gathered round the church, back to front, their
 // roofs taking a little of their lord's colour (38 %), a windmill and a
-// well. From afar, three gabled houses round a church tower and its spire,
-// the spire the tell, cut out of the wash by a halo of parchment. Its
-// mill's sails and its chimneys' smoke are the village's life, drawn apart
-// (ground/life.ts). Local units, some 24 across.
+// well, all standing in the map's one light on a patch of trodden earth,
+// casting their shadows on it (art/shadows.ts). From afar, three gabled
+// houses round a church tower and its spire, the spire the tell, cut out
+// of the wash by a halo of parchment. Its mill's sails and its chimneys'
+// smoke are the village's life, drawn apart (ground/life.ts). Local units,
+// some 24 across.
 
-/** Each house: x, y, width, height, depth. */
-const HOUSES: ReadonlyArray<readonly [number, number, number, number, number]> =
-  [
-    [-5.6, -2.4, 3.0, 2.0, 3.0],
-    [4.6, -3.0, 2.8, 1.9, 2.6],
-    [-1.0, -3.6, 2.6, 1.8, 2.6],
-    [-7.4, 1.4, 3.2, 2.1, 3.0],
-    [-3.2, 2.0, 3.4, 2.3, 3.2],
-    [3.0, 1.2, 3.1, 2.1, 2.9],
-    [6.8, 2.8, 2.8, 1.9, 2.6],
-  ]
-const CHURCH: Pt = [0.6, -0.6]
-const MILL: Pt = [11.2, 1.2]
+const HOUSES = VILLAGE.houses
 /** The mill's hub, where its sails turn. */
-export const HUB: Pt = [MILL[0] - 0.1, MILL[1] - 5.9]
+export const HUB: Pt = [VILLAGE.mill[0] - 0.1, VILLAGE.mill[1] - 5.9]
 
 /** The tops of the chimneys that smoke, every other house's. */
 export const CHIMNEYS: ReadonlyArray<Pt> = HOUSES.filter(
   (_, n) => n % 2 === 0,
 ).map(([x, y, w, h, d]) => {
-  const o: Pt = [d * 0.62, -d * 0.42]
-  const apex: Pt = [x, y - h - w * 0.62]
+  const o = back(d)
+  const apex: Pt = [x, y - h - w * RIDGE]
   const Bt: Pt = [x + w / 2, y - h]
   const r0 = add(apex, [0, -0.1])
   const r1 = add(add(apex, o), [0.1, -0.1])
@@ -60,21 +54,31 @@ export const CHIMNEYS: ReadonlyArray<Pt> = HOUSES.filter(
 const roofOf = (n: number, color: number) =>
   mixColor(TONE.roofs[n % TONE.roofs.length], color, 0.38)
 
+/** A round body lit from the left: light on its left, shade deepening to its right. */
+function litRound(p: Pen, x0: number, x1: number) {
+  const wash = p.g.createLinearGradient(x0, 0, x1, 0)
+  wash.addColorStop(0, css(TONE.white, 0.18))
+  wash.addColorStop(0.45, css(TONE.ink, 0))
+  wash.addColorStop(1, css(TONE.ink, 0.3))
+  p.g.fillStyle = wash
+  p.g.fill()
+}
+
 /** The windmill's tower and its cap; its sails turn apart. */
 function mill(p: Pen, lod: Detail) {
-  const [x, y] = MILL
+  const [x, y] = VILLAGE.mill
+  const { half, top, h, cap } = MILL
   const g = p.g
-  ellipse(p, x + 0.8, y + 0.2, 2.6, 0.6)
-  g.fillStyle = css(TONE.ink, 0.12)
-  g.fill()
   const body: ReadonlyArray<Pt> = [
-    [x - 1.5, y],
-    [x + 1.5, y],
-    [x + 1, y - 5.2],
-    [x - 1, y - 5.2],
+    [x - half, y],
+    [x + half, y],
+    [x + top, y - h],
+    [x - top, y - h],
   ]
   wob(p, body, 0.05, 41)
   fillInk(p, TONE.wall, 1)
+  poly(p, body)
+  litRound(p, x - half, x + half)
   if (lod === 2) {
     g.save()
     poly(p, body)
@@ -82,7 +86,7 @@ function mill(p: Pen, lod: Detail) {
     g.beginPath()
     for (let k = 0; k < 7; k++) {
       g.moveTo(x + 0.5 + k * 0.18, y)
-      g.lineTo(x + 0.3 + k * 0.12, y - 5.2)
+      g.lineTo(x + 0.3 + k * 0.12, y - h)
     }
     g.lineWidth = 0.5 / p.px
     g.strokeStyle = css(TONE.ink, 0.3)
@@ -92,25 +96,21 @@ function mill(p: Pen, lod: Detail) {
     g.rect(x - 0.35, y - 1.4, 0.7, 1.4)
     fillInk(p, TONE.door, 0.5)
   }
-  wob(
-    p,
-    [
-      [x - 1.4, y - 5.1],
-      [x + 1.4, y - 5.1],
-      [x + 0.2, y - 7],
-    ],
-    0.04,
-    43,
-  )
+  const roof: ReadonlyArray<Pt> = [
+    [x - 1.4, y - h + 0.1],
+    [x + 1.4, y - h + 0.1],
+    [x + 0.2, y - cap],
+  ]
+  wob(p, roof, 0.04, 43)
   fillInk(p, THATCH, 1)
+  poly(p, roof)
+  litRound(p, x - 1.4, x + 1.4)
 }
 
 /** The village drawn, at mid distance (1) or up close (2). */
 export function villageNear(p: Pen, color: number, lod: Detail) {
   const g = p.g
-  ellipse(p, 0.5, 2.5, 11.5, 3.6)
-  g.fillStyle = css(EARTH, 0.35)
-  g.fill()
+  trodden(p, [0.5, 1.6, 12.5, 5], 0.5)
   if (lod === 2) {
     // A lane of beaten earth through the houses.
     g.beginPath()
@@ -122,13 +122,14 @@ export function villageNear(p: Pen, color: number, lod: Detail) {
     g.lineCap = 'round'
     g.stroke()
   }
+  workShadows(p, 'village', lod)
   mill(p, lod)
   const items = [
     ...HOUSES.map((h, n) => ({ y: h[1], n })),
-    { y: CHURCH[1], n: -1 },
+    { y: VILLAGE.church[1], n: -1 },
   ].sort((a, b) => a.y - b.y)
   for (const { n } of items) {
-    if (n < 0) church(p, CHURCH[0], CHURCH[1], lod, 17)
+    if (n < 0) church(p, VILLAGE.church[0], VILLAGE.church[1], lod, 17)
     else
       house(p, HOUSES[n], roofOf(n, color), lod, n * 7 + 3, {
         doorLeft: n % 2 === 0,
@@ -136,14 +137,7 @@ export function villageNear(p: Pen, color: number, lod: Detail) {
   }
   if (lod < 2) return
   // A tree in the churchyard, a well by the lane.
-  tree(
-    p,
-    [-9.8, -1.6, 1.5],
-    mixColor(TONE.page, 0x6b7a3a, 0.35),
-    TONE.ink,
-    2,
-    0.4,
-  )
+  tree(p, VILLAGE.yew, mixColor(TONE.page, 0x6b7a3a, 0.35), TONE.ink, 2, 0.4)
   ellipse(p, 1.4, 5.2, 0.8, 0.35)
   fillInk(p, TONE.stone, 0.7)
   line(

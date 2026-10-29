@@ -10,10 +10,12 @@ export type Painted = {
   level: number
   version: number
   pixels: number
+  /** When it was painted, in ms. */
+  at: number
 }
 
-/** Some 24 million pixels: about four screens of a large display at two pixels a point. */
-const BUDGET = 24e6
+/** Some 10 million pixels, 40 MB: about three screens of a large display at a pixel and a half a point. */
+const BUDGET = 10e6
 
 export function makeCache() {
   /** By chunk, then by level; a Map keeps the order they were last used in. */

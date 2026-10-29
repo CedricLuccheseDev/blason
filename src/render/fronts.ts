@@ -1,4 +1,4 @@
-import { marching, meet } from '../../engine'
+import { apart, groundOf, marching, meet, positionOf } from '../../engine'
 import { siteOf } from './marks'
 import { headOf, pathOf } from './layers/column'
 import { pointOn } from './roads'
@@ -9,8 +9,10 @@ import type { GameState, Host } from '../../engine'
 // attack has taken furthest towards the click, the click a direction and no
 // halt: the front moves on with the land taken, past the click if the army
 // goes on, and never stands on land the army does not hold. In a battle,
-// its side of the ground halfway between it and the enemy army, facing it:
-// the two armies charge into each other there.
+// its side of the ground the game has the two armies fight on (groundOf),
+// halfway between where the game has them, facing the other along the line
+// between them, which crosses no sea: the two armies charge into each
+// other there, on land.
 
 export type Spot = { x: number; y: number }
 
@@ -87,8 +89,8 @@ export function makeFronts() {
     return siteOf(state, at)
   }
 
-  /** Battles kept while their armies stand and fight, or pause a moment; new ones joined by armies free of any, each with an army the game makes it fight. */
-  function judge(state: GameState, anchor: (h: Host) => Spot) {
+  /** Battles kept while their armies stand and fight, or pause a moment; new ones joined by armies free of any, each with the nearest army the game makes it fight, on their ground. */
+  function judge(state: GameState) {
     const standing = new Set(state.hosts)
     for (const battle of new Set(battles.values())) {
       const { a, b } = battle
@@ -101,20 +103,15 @@ export function makeFronts() {
     const free = state.hosts.filter((h) => h.fighting && !battles.has(h))
     for (const a of free) {
       if (battles.has(a)) continue
-      const here = anchor(a)
+      const near = (h: Host) => apart(state.grid, positionOf(a), positionOf(h))
       const b = free
         .filter((h) => !battles.has(h) && meet(state, a, h))
-        .sort((p, q) => {
-          const [u, v] = [anchor(p), anchor(q)]
-          return (
-            Math.hypot(u.x - here.x, u.y - here.y) -
-            Math.hypot(v.x - here.x, v.y - here.y)
-          )
-        })
+        .sort((p, q) => near(p) - near(q))
         .at(0)
       if (!b) continue
-      const there = anchor(b)
-      const site = { x: (here.x + there.x) / 2, y: (here.y + there.y) / 2 }
+      const here = siteOf(state, positionOf(a))
+      const there = siteOf(state, positionOf(b))
+      const site = siteOf(state, groundOf(state, a, b))
       const back = unit(here.x - there.x, here.y - there.y)
       const battle = { a, b, site, back, quiet: 0 }
       battles.set(a, battle)
@@ -188,7 +185,7 @@ export function makeFronts() {
         if (!anchors.has(host)) reached.delete(host)
       if (state.tick !== tick) {
         tick = state.tick
-        judge(state, (h) => anchors.get(h) as Spot)
+        judge(state)
       }
       const fronts = new Map<Host, Front>()
       for (const host of state.hosts) {

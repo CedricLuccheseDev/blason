@@ -1,26 +1,45 @@
 import { createServer } from 'node:http'
 import { WebSocketServer } from 'ws'
 import { parse } from '../net/protocol'
-import { hear, join, leave } from './rooms'
+import { hear, join, leave, upcoming } from './rooms'
 import type { ToRelay } from '../net/protocol'
 import type { Player } from './rooms'
 
-// The relay: a small Node server of its own, beside the site, that gathers
+// The relay: a small Node server of its own, beside the site, that seats
 // the players and passes their orders round in turns (rooms.ts). It speaks
-// WebSocket on /ws and answers /health for the deployment's check.
+// WebSocket on /ws; it answers /public with the public game in its opening,
+// which the home shows without joining it, and /health for the deployment's
+// check.
 // npm run relay (PORT, 8787 by default)
 
 const PORT = Number(process.env.PORT ?? 8787)
 
 const http = createServer((req, res) => {
-  if (req.url === '/health') {
+  const path = (req.url ?? '/').split('?')[0]
+  if (path === '/health') {
     res.writeHead(200, { 'content-type': 'text/plain' }).end('ok')
+    return
+  }
+  if (path === '/public' && req.method === 'GET') {
+    // No secret and no cookie: any page may read it, as anyone may join it.
+    res
+      .writeHead(200, {
+        'content-type': 'application/json',
+        'cache-control': 'no-store',
+        'access-control-allow-origin': '*',
+      })
+      .end(JSON.stringify(upcoming()))
     return
   }
   res.writeHead(404).end()
 })
 
-const wss = new WebSocketServer({ server: http, path: '/ws' })
+// No message is larger than a host's book (rooms.ts, BOOK_MAX).
+const wss = new WebSocketServer({
+  server: http,
+  path: '/ws',
+  maxPayload: 16 * 1024,
+})
 
 wss.on('connection', (socket) => {
   const player: Player = {

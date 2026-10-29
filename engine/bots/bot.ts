@@ -1,11 +1,13 @@
 import { drawInt } from '../numbers'
 import { apart, around } from '../grid'
-import { canStart, capOf, hasPicked, worksOf } from '../land'
+import { capOf, worksOf } from '../land'
+import { canStart, hasPicked, spotFor } from '../opening'
 import { NEUTRAL } from '../types'
-import { menFor } from '../war'
+import { hired } from '../armies'
+import { menFor } from '../muster'
 import { canBuild, priceOf } from '../works'
 import { TALK_EVERY, talk } from './talk'
-import { attack, war } from './war'
+import { attack, canHire, war } from './war'
 import { SKILLS } from './levels'
 import { plot } from './coups'
 import type { Level, Skill } from './levels'
@@ -13,34 +15,22 @@ import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
 
 // The bots, plain on purpose and calm: they read the land as a
-// player sees it and click as one would. They take the free domains first,
-// striking at their villages; they answer an army striking them by striking its
-// lord there, so the two meet; they wage one war at a time, on the
-// neighbour whose land is held thinnest, and rest between two attacks; they
+// player sees it and click as one would. They plant their standards where
+// there is room and take the free land first; they answer an army striking
+// them by striking its lord there, so the two meet; they wage one war at a
+// time, on the neighbour whose land is held thinnest and not already hunted
+// by others (war.ts), and rest between two attacks; they
 // build with the gold left over; now and then a coup (coups.ts). Each has its own boldness and patience,
 // drawn from the seed, and the level chosen for the game (levels.ts).
 
 export type Bot = (state: GameState, me: number) => Array<Order>
 
-/** During the opening: of the free domains, the one farthest from the lords already settled. */
+/** During the opening: of a few tiles of the land drawn from the seed, the one with the most room round it, the farthest from the standards planted; a bot keeps his first. */
 function opening(state: GameState, me: number): Array<Order> {
   if (hasPicked(state, me) || state.tick < 20 + (me % 10) * 5) return []
-  const taken = state.owner.flatMap((o, t) => (o >= 0 ? [t] : []))
-  let best = -1
-  let score = -1
-  for (const v of state.villages) {
-    if (!canStart(state, v)) continue
-    const near = taken.reduce(
-      (m, o) => Math.min(m, apart(state.grid, o, v)),
-      1e12,
-    )
-    const s = near + drawInt(state.seed, 2000, 'pick', me, v)
-    if (s > score) {
-      score = s
-      best = v
-    }
-  }
-  return best < 0 ? [] : [{ player: me, type: 'pickStart', tile: best }]
+  const tile = spotFor(state, me, 40, 'plant', me, state.tick)
+  if (tile < 0 || !canStart(state, me, tile)) return []
+  return [{ player: me, type: 'pickStart', tile }]
 }
 
 /** The tiles of each other lord, or of the free land, that border mine. */
@@ -111,7 +101,15 @@ function placeFor(
   return best
 }
 
-/** With the gold left over, now and then a work: a castle when an enemy borders, else a village or a market. */
+/** A bot builds as a player would, at the measure of its land: beyond its first two works, one for so many tiles it holds, those it took with the land counted. */
+const ROOM = 300
+
+/** Whether its works already fill its land, at a bot's measure. */
+const crowded = (state: GameState, me: number) =>
+  state.works.filter((w) => w.owner === me).length >=
+  2 + Math.floor(state.players[me].tiles / ROOM)
+
+/** With the gold left over, now and then a work, while its land has room for one: a castle when an enemy borders, else a village or a market. */
 function construct(
   state: GameState,
   me: number,
@@ -125,6 +123,7 @@ function construct(
   )
   let work: Work = missing ?? 'village'
   if (!missing) {
+    if (crowded(state, me)) return []
     if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
     const roll = drawInt(state.seed, 100, 'work', me, state.tick)
     if (roll >= 45) work = 'market'
@@ -134,6 +133,14 @@ function construct(
   const borders = enemies.flatMap((o) => fronts.get(o) ?? []).slice(0, 40)
   const tile = placeFor(state, me, work, borders)
   return tile < 0 ? [] : [{ player: me, type: 'build', tile, work }]
+}
+
+/** Whether it has an army to send: a village with none out, or, every village's out, the gold to hire mercenaries at a market. */
+function armed(state: GameState, me: number): boolean {
+  const levied = state.hosts.filter(
+    (h) => h.owner === me && !hired(state, h.army),
+  ).length
+  return levied < worksOf(state, me, 'village') || canHire(state, me)
 }
 
 /** The free land, at a point of its edge drawn, struck well inside. */
@@ -171,12 +178,11 @@ export function createBot(
     if (built.length) return built
     const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
     if (state.tick < rest || !full) return []
-    const out = state.hosts.filter((h) => h.owner === me).length
-    if (out >= worksOf(state, me, 'village')) return []
+    if (!armed(state, me)) return []
     const free = fronts.get(NEUTRAL)
     const orders = free
       ? expand(state, me, free)
-      : war(state, me, fronts, boldness, skill.slips)
+      : war(state, me, fronts, boldness, skill.slips, skill.hunters)
     if (orders.length)
       rest =
         state.tick +

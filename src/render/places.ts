@@ -1,13 +1,17 @@
 import { Container, Graphics } from 'pixi.js'
-import { around, isAllied, isFelon } from '../../engine'
+import { around, canRenew, isFelon, isTeammate } from '../../engine'
 import { drawIcon } from './art/icons'
 import { TONE } from './palette'
 import type { GameState } from '../../engine'
 import type { Placement } from './layers/labels'
+import type { Spot } from './cord'
 
 // Where each lord is written, and the marks beside his name: an ally's
 // links, a traitor's broken shield, as OpenFront shows its alliances by an
-// icon beside a player's troops. Sized on screen.
+// icon beside a player's troops, each in a gauge of the time it has left.
+// Sized on screen. In an alliance's last moments its links give way to its
+// seal, which asks to renew it (components/game/PactSeal.tsx), laid past
+// the name, the figure under it and its marks (`besideOf`).
 
 /**
  * Each lord written at the centre of his land as it stands now: the middle
@@ -45,6 +49,7 @@ export function tilePlaces(state: GameState): Placement {
       x: (at.x + 0.5) * tile,
       y: (at.y + 0.5) * tile,
       size: Math.min(46, 24 + 4 * Math.sqrt(state.players[lord].tiles / 25)),
+      reach: Math.sqrt(piece.tiles.length) * tile,
     })
   }
   return places
@@ -84,37 +89,91 @@ const BADGE = 34
 /** The radius of the ring round an ally's badge, the time left to the alliance, in the badge's units. */
 const RING = 21.5
 
-type Name = { x: number; y: number; half: number; tall: number }
+type Name = {
+  x: number
+  y: number
+  half: number
+  tall: number
+  right: number
+  alpha: number
+}
+
+/** The gauge's band round a badge's disc (art/icons.ts, 17.3 round), in the badge's units. */
+const [INNER, OUTER] = [18.6, 25]
+
+/**
+ * The time left round a badge at `x`, as a gauge: the band round it filled
+ * from the bottom up to the share still to run, sinking as it runs out
+ * (« fais une jauge dans un rond mais vertical comme openfront »).
+ */
+function gaugeRound(g: Graphics, x: number, share: number, color: number) {
+  g.circle(x, 0, OUTER)
+    .fill({ color: TONE.parchment })
+    .circle(x, 0, INNER)
+    .cut()
+  if (share > 0) {
+    // The part of the disc under the level, as a polygon along its edge.
+    const level = OUTER - 2 * OUTER * Math.min(1, share)
+    const from = Math.asin(Math.max(-1, Math.min(1, level / OUTER)))
+    const to = Math.PI - from
+    const points: Array<number> = []
+    for (let i = 0; i <= 24; i++) {
+      const a = from + ((to - from) * i) / 24
+      points.push(x + Math.cos(a) * OUTER, Math.sin(a) * OUTER)
+    }
+    g.poly(points).fill({ color }).circle(x, 0, INNER).cut()
+  }
+  g.circle(x, 0, OUTER).stroke({ width: 1.4, color: TONE.ink })
+}
 
 /** The marks beside the lords' names, gliding with them: my allies' links, a traitor's broken shield. */
 export function makeBadges(state: GameState, me: number) {
   const container = new Container()
-  /** Each lord's marks, by the icons they show, drawn again only when these change; the alliance's ring, every time. */
+  /** Each lord's marks, by the icons they show, drawn again only when these change; their rings, when they moved. */
   const drawn = new Map<
     number,
-    { icons: string; g: Container; ring: Graphics }
+    { icons: string; g: Container; ring: Graphics; rings: string }
   >()
+
+  /** The share of a traitor's mark still to run, 0 to 1. */
+  function shame(lord: number): number {
+    const rest = state.players[lord].felonUntil - state.tick
+    return Math.max(0, Math.min(1, rest / state.rules.felonTicks))
+  }
+
+  /** My alliance with a lord, if we are allied. */
+  const pactWith = (lord: number) =>
+    state.alliances.find(
+      (x) => (x.a === me && x.b === lord) || (x.b === me && x.a === lord),
+    )
 
   /** The share of my alliance with a lord still to run, 0 to 1. */
   function left(lord: number): number {
-    const pact = state.alliances.find(
-      (x) => (x.a === me && x.b === lord) || (x.b === me && x.a === lord),
-    )
+    const pact = pactWith(lord)
     if (!pact) return 0
     const share = (pact.expires - state.tick) / state.rules.allianceTicks
     return Math.max(0, Math.min(1, share))
   }
 
+  /** My ally's links, but in our alliance's last moments, when its seal stands for them; my teammate's, for good; a traitor's broken shield. */
   function marksOf(lord: number): Array<'links' | 'felon'> {
     const icons: Array<'links' | 'felon'> = []
-    if (me >= 0 && lord !== me && isAllied(state, me, lord)) icons.push('links')
+    const pact = me >= 0 && lord !== me ? pactWith(lord) : undefined
+    if ((pact && !canRenew(state, pact)) || isTeammate(state, me, lord))
+      icons.push('links')
     if (isFelon(state, lord)) icons.push('felon')
     return icons
   }
 
+  /** Past each lord's name, its figure and its marks, at the marks' height, in map units. */
+  const beside = new Map<number, Spot>()
+
   return {
     container,
+    /** Where a seal laid beside a lord's name begins, clear of his name, figure and marks; none while he is not written. */
+    besideOf: (lord: number): Spot | null => beside.get(lord) ?? null,
     update(nameOf: (lord: number) => Name | null, zoom: number) {
+      beside.clear()
       state.players.forEach((_, lord) => {
         const icons = marksOf(lord)
         const key = icons.join()
@@ -128,28 +187,43 @@ export function makeBadges(state: GameState, me: number) {
             one.position.set(k * 50, 0)
           })
           const ring = g.addChild(new Graphics())
-          mark = { icons: key, g, ring }
+          mark = { icons: key, g, ring, rings: '' }
           drawn.set(lord, mark)
         }
+        // With the name, faded where his land is too small to carry it.
         const name = nameOf(lord)
-        mark.g.visible = name !== null && icons.length > 0
+        mark.g.visible = name !== null && name.alpha > 0 && icons.length > 0
         if (!name) return
+        mark.g.alpha = name.alpha
         const s = BADGE / (2 * RING) / zoom
         mark.g.scale.set(s)
-        mark.g.position.set(
+        const [x, y] = [
           name.x + name.half + (BADGE / 2 - 6) / zoom,
           name.y - 12 / zoom,
+        ]
+        mark.g.position.set(x, y)
+        const marks = x + ((icons.length - 1) * 50 + RING) * s
+        beside.set(lord, {
+          x: icons.length > 0 ? Math.max(name.right, marks) : name.right,
+          y,
+        })
+        // Round the links, the time left to the alliance, sinking as it
+        // runs out; round the broken shield, the time he stays a traitor:
+        // drawn again only when they moved.
+        // A teammate's links, for good, have no time running round them.
+        const team = isTeammate(state, me, lord)
+        const linked = team ? -1 : left(lord)
+        const shares = icons.map((icon) =>
+          icon === 'links' ? linked : shame(lord),
         )
-        // Round the links, the time left to the alliance, emptying as it runs out.
+        const rings = shares.join()
+        if (rings === mark.rings) return
+        mark.rings = rings
         mark.ring.clear()
-        if (!icons.includes('links')) return
-        const end = -Math.PI / 2 + Math.PI * 2 * left(lord)
-        mark.ring
-          .circle(0, 0, RING)
-          .stroke({ width: 3, color: TONE.ink, alpha: 0.2 })
-          .moveTo(0, -RING)
-          .arc(0, 0, RING, -Math.PI / 2, end)
-          .stroke({ width: 3.6, color: TONE.pact, cap: 'round' })
+        icons.forEach((icon, k) => {
+          const color = icon === 'links' ? TONE.pact : TONE.gules
+          if (shares[k] >= 0) gaugeRound(mark.ring, k * 50, shares[k], color)
+        })
       })
     },
   }

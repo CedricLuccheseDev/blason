@@ -114,17 +114,19 @@ export function makeLeaf(world: World) {
     [age(world, next), AGE, AGE_PIXEL],
     [foxing(world, next), FOX, FOX_PIXEL],
   ]
-  const sprites = layers.map(([canvas, reach, pixel]) => {
-    const sprite = container.addChild(new Sprite(Texture.from(canvas)))
+  // The textures are kept apart: a sprite destroyed with the stage lets go of its own.
+  const textures = layers.map(([canvas, reach, pixel]) => {
+    const texture = Texture.from(canvas)
+    const sprite = container.addChild(new Sprite(texture))
     sprite.position.set(-reach, -reach)
     sprite.scale.set(pixel)
-    return sprite
+    return texture
   })
   return {
     container,
     /** The leaf's textures, which the game's end does not take with it. */
     destroy() {
-      for (const sprite of sprites) sprite.texture.destroy(true)
+      for (const texture of textures) texture.destroy(true)
     },
   }
 }

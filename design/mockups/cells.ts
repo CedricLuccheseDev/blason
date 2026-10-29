@@ -3,11 +3,9 @@
 // twenty bots on a fixed seed (seat 0, Azur, stands for the player), drawn
 // as a map on a manuscript: each lord's land a soft wash of his colour on
 // the parchment, darker along its edge as a wash dries, its border inked
-// along the wash; the free land plain parchment dotted with its free
-// villages; the whole land shared out at the start into free domains, each
-// with its pale border (src/render/regions.ts); the lords' works drawn at the
-// land's scale, the land a castle holds tinted with stone; the border between
-// two allies in green. The page, the sea and its shore lines, the frame and
+// along the wash; the free land plain parchment (src/render/regions.ts); the
+// lords' works drawn at the land's scale, the land a castle holds tinted
+// with stone; the border between two allies in green. The page, the sea and its shore lines, the frame and
 // the compass rose are the game's (src/render/layers/page.ts, lands.ts). What
 // moves or answers the pointer (the fights, the pills, the lords' names and
 // peasants with their badges, the caravans on their roads, the HUD) is
@@ -19,6 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import {
   apart,
   around,
+  botsSetup,
   canBuild,
   capOf,
   costOf,
@@ -59,7 +58,7 @@ const ME = 0
 /** Whose eyes the frames are drawn for: the player (his wash deeper, his name in gold, his allies' green border and links, his caravans' road), or none, as the home's spectator camera (-1). */
 let viewer = ME
 const SECOND = 10
-/** The moments, in ticks: my host raised on the lord beside me (T0, while free domains still cover much of the land), the middle of the game (MID, as it bites), and later on (LATE, the free land all taken). */
+/** The moments, in ticks: my host raised on the lord beside me (T0, while the free land still covers much of it), the middle of the game (MID, as it bites), and later on (LATE, the free land all taken). */
 const T0 = Number(process.env.T0 ?? 1080)
 const MID = T0 + 30
 const LATE = Number(process.env.LATE ?? 2700)
@@ -103,7 +102,7 @@ const GW = grid.width
 const GH = grid.height
 const CASTLE_R = RULES.castleRadius * TILE
 const GAP = RULES.workGap * TILE
-const live = createGame(grid, PLAYERS.length, SEED)
+const live = createGame(grid, botsSetup({ seed: SEED }))
 const bots = live.players.map((_, id) => createBot(id, SEED))
 /** Lords kept from giving orders for a while: the staging. */
 const quiet = new Set<number>()
@@ -146,15 +145,11 @@ const shoreOf = new Int32Array(GW * GH).fill(-1)
   }
 }
 
-/** The region of each tile, as src/render/regions.ts keys it, spread a little under the sea: a lord, or a free domain (-3 and down), -2 the open sea. */
+/** The region of each tile, as src/render/regions.ts keys it, spread a little under the sea: a lord, or the free land (-3), -2 the open sea. */
 type Grid = Int32Array
 const SEA_KEY = -2
 const keyOf = (s: GameState, t: number) =>
-  s.owner[t] !== NEUTRAL
-    ? s.owner[t]
-    : s.tick < s.rules.openingTicks
-      ? -3 - s.realm[t]
-      : -3
+  s.owner[t] !== NEUTRAL ? s.owner[t] : -3
 function gridOf(s: GameState): Grid {
   const g = new Int32Array(GW * GH)
   for (let t = 0; t < GW * GH; t++)
@@ -420,7 +415,7 @@ const marksOf = (s: GameState): Array<Mark> =>
     ...siteOf(w.tile),
   }))
 
-// The free villages, as src/render/art/settlements.ts draws them.
+// The villages, a few houses and a church.
 type Item = readonly [
   kind: 'h' | 'c',
   x: number,
@@ -482,15 +477,6 @@ function houses(variant: number, x: number, y: number, scale = 0.7) {
     )
     .join('')}</g>`
 }
-function freeVillages(f: Frame) {
-  return f.s.villages
-    .map((t) => {
-      const { x, y } = siteOf(t)
-      return inView(f, x, y) ? houses(t, x, y, 0.8) : ''
-    })
-    .join('')
-}
-
 /**
  * The three buildings, at the land's scale, in ink and gold on the lord's
  * wash: a village (its houses in their ploughed strips), a castle (a round
@@ -640,7 +626,7 @@ function svg(f: Frame) {
   const defs = `<defs><clipPath id="land"><path d="${LAND}"/></clipPath><path id="coast" d="${COAST}" fill="none" stroke-linejoin="round" stroke-linecap="round"/>${land.defs}</defs>`
   writeFileSync(
     `${OUT}/${f.name}.svg`,
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f1(f.x)} ${f1(f.y)} ${f1(f.w)} ${f1(f.h)}" width="1440" height="900">${defs}${sea()}${land.body}${ROSE}${freeVillages(f)}${built}${neatline()}</svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f1(f.x)} ${f1(f.y)} ${f1(f.w)} ${f1(f.h)}" width="1440" height="900">${defs}${sea()}${land.body}${ROSE}${built}${neatline()}</svg>`,
   )
   return land.grid
 }

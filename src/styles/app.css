@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* The game's CSS is made from the game's sources alone: the design boards
+   and the maquette (design/) only read it, and what they write must neither
+   feed it nor reload the game's pages while they capture them. */
+@source not '../../design';
+
 /* A phone on its side: too low for the HUD's full pieces (components/hud/useCompact.ts). */
 @custom-variant short (@media (max-height: 499px));
 
@@ -21,8 +26,9 @@
   --font-display: 'Anton', 'Inter', system-ui, sans-serif;
   --font-mono: 'Inter', system-ui, sans-serif;
   /* The game's own hand, its art direction: a manuscript's
-     parchment and brown ink, gold and gules; IM Fell for the words,
-     Alegreya Sans for the figures. */
+     parchment and brown ink, gold and gules; Vollkorn for the words
+     (IM Fell was too hard to read: « Go la C », 29/10), Alegreya Sans for
+     the figures, and IM Fell kept for the game's name alone, its mark. */
   --color-vellum: #f6eedb;
   --color-quill: #2b1e12;
   --color-gilt: #d9a41e;
@@ -37,23 +43,29 @@
   --color-lead-deep: #5e5749;
   --color-wax: #f0d9c4;
   --color-leather: #7a5a3c;
-  --font-fell: 'IM Fell English', Georgia, serif;
-  --font-caps: 'IM Fell English SC', Georgia, serif;
+  --font-words: 'Vollkorn', Georgia, serif;
+  --font-caps: 'Vollkorn SC', Georgia, serif;
+  --font-mark: 'IM Fell English SC', Georgia, serif;
   --font-figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
   /* The HUD's measures (src/components/hud/tokens.ts): four sizes of type
-     and nothing between them, 13, 16, 20 and 28 as drawn, grown by the
-     HUD's scale (--hud, below); one shadow for whatever lies on the map. */
-  --text-hud-s: calc(13px * var(--hud));
+     and nothing between them, 15, 18, 22 and 28 as drawn, none smaller so
+     that every word reads at a glance, grown by the HUD's scale (--hud,
+     below); one shadow for whatever lies on the map. */
+  --text-hud-s: calc(15px * var(--hud));
   --text-hud-s--line-height: 1.2;
-  --text-hud-m: calc(16px * var(--hud));
+  --text-hud-m: calc(18px * var(--hud));
   --text-hud-m--line-height: 1.2;
-  --text-hud-l: calc(20px * var(--hud));
+  --text-hud-l: calc(22px * var(--hud));
   --text-hud-l--line-height: 1.15;
   --text-hud-xl: calc(28px * var(--hud));
   --text-hud-xl--line-height: 1;
   /* The alliance's green, as the heralds' vert: an ally in the HUD as on
-     the map, his shared border and his badge (render/palette.ts, TONE.pact). */
+     the map, his shared border and his badge (render/palette.ts, TONE.pact);
+     deeper, the button that accepts one, the vellum on it at 6.5 to 1, and
+     deeper still under the pointer. */
   --color-pact: #3f7f4a;
+  --color-pact-deep: #2f5f37;
+  --color-pact-deeper: #24492a;
   /* norm-ok: the shadow of what lies on the map, the game's art direction. */
   --shadow-lift: 0 2px 4px rgb(43 30 18 / 0.35);
   /* The HUD's motion: one curve, quick to leave and soft to land, and two
@@ -84,6 +96,15 @@
   html {
     font-synthesis: none;
   }
+  /* The hand over all that a click works, everywhere in the app (« tous les boutons de l'app il faut la souris en clickable »). */
+  button:not(:disabled),
+  [role='button'],
+  a[href],
+  label[for],
+  select,
+  summary {
+    cursor: pointer;
+  }
   .font-mono {
     font-variant-numeric: tabular-nums;
   }
@@ -99,52 +120,61 @@
   /* The body of a Markdown post: the tags marked emits carry no class, so the
      type roles are applied from here. Kept to what a post actually uses, in
      the same voice as the rest of the site. */
-  .prose-ink > * + * {
-    @apply mt-5;
+  /* An article's prose, in the HUD's levels (« les articles on lit mal y'a
+     pas de hiérarchie de sections »): its words at 18 in Vollkorn, its
+     sections' titles in small capitals at 22, under them at 18; links in
+     deep gold; all on the HUD's steps. */
+  .hud-prose {
+    @apply font-words text-hud-m leading-relaxed text-quill;
   }
-  .prose-ink p,
-  .prose-ink li {
-    @apply leading-relaxed;
+  .hud-prose > * + * {
+    @apply mt-4;
   }
-  .prose-ink h2 {
-    @apply mt-10 font-display text-xl font-bold tracking-tight;
+  .hud-prose > :first-child {
+    @apply mt-0;
   }
-  .prose-ink h3 {
-    @apply mt-8 font-display text-base font-semibold;
+  .hud-prose section > * + * {
+    @apply mt-3;
   }
-  .prose-ink ul,
-  .prose-ink ol {
-    @apply space-y-2 pl-5;
+  .hud-prose h2 {
+    @apply mt-8 border-b border-gilt/60 pb-1 font-caps text-hud-l leading-tight;
   }
-  .prose-ink ul {
-    @apply list-disc;
+  .hud-prose h3 {
+    @apply mt-6 font-caps text-hud-m leading-tight;
   }
-  .prose-ink ol {
+  .hud-prose ul,
+  .hud-prose ol {
+    @apply space-y-2 pl-6;
+  }
+  .hud-prose ul {
+    @apply list-disc marker:text-gilt-deep;
+  }
+  .hud-prose ol {
     @apply list-decimal;
   }
-  .prose-ink a {
-    @apply text-accent underline underline-offset-4 hover:text-accent-hover;
+  .hud-prose a {
+    @apply text-gilt-deep underline underline-offset-4 hover:text-quill;
   }
-  .prose-ink strong {
+  .hud-prose strong {
     @apply font-semibold;
   }
-  .prose-ink code {
-    @apply bg-hairline/40 px-1 py-0.5 font-mono text-sm;
+  .hud-prose code {
+    @apply bg-shade/40 px-1 font-figures text-hud-s;
   }
-  .prose-ink pre {
-    @apply overflow-x-auto border border-hairline bg-card p-4 font-mono text-sm;
+  .hud-prose pre {
+    @apply overflow-x-auto border border-quill/30 bg-shade/20 p-4 font-figures text-hud-s;
   }
-  .prose-ink pre code {
+  .hud-prose pre code {
     @apply bg-transparent p-0;
   }
-  .prose-ink blockquote {
-    @apply border-l-2 border-hairline pl-4 text-dim;
+  .hud-prose blockquote {
+    @apply border-l-2 border-gilt pl-4 italic;
   }
-  .prose-ink img {
-    @apply max-w-full border border-hairline;
+  .hud-prose img {
+    @apply max-w-full border border-quill/40;
   }
-  .prose-ink hr {
-    @apply my-10 border-hairline;
+  .hud-prose hr {
+    @apply my-8 border-gilt/50;
   }
 
   /* Focus ring: square like everything else, and for the keyboard only.
@@ -178,6 +208,29 @@
   }
 }
 
+/* norm-ok: a seal to press, in its last moments, glows and dims slowly (the game's art direction). */
+@keyframes hud-glow {
+  50% {
+    filter: drop-shadow(0 0 8px var(--color-gilt-light))
+      drop-shadow(0 0 2px var(--color-gilt));
+  }
+}
+
+@keyframes hud-life {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  6%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes fade {
   from {
     opacity: 0;
@@ -187,7 +240,7 @@
   }
 }
 
-/* The HUD's type roles: words in IM Fell, figures in Alegreya Sans, at the
+/* The HUD's type roles: words in Vollkorn, figures in Alegreya Sans, at the
    sizes above. A piece picks a role, never a font or a size of its own. */
 @layer components {
   /* What the HUD is laid out in: Tailwind's spacing steps (4, 8, 12, 16,
@@ -196,14 +249,22 @@
   .hud {
     --spacing: calc(0.25rem * var(--hud));
   }
+  /* A line of a ruled list (the journal's posts): its room above and below, on the HUD's step of 8. */
+  .hud-row {
+    @apply py-2;
+  }
   .hud-word {
-    @apply font-fell text-hud-m text-quill;
+    @apply font-words text-hud-m;
+    color: var(--hud-ink, var(--color-quill));
   }
   .hud-name {
-    @apply font-fell text-hud-l text-quill italic;
+    @apply font-words text-hud-l italic;
+    color: var(--hud-ink, var(--color-quill));
   }
+  /* A hint is told in italics, at full ink like the rest: never fainter. */
   .hud-note {
-    @apply font-fell text-hud-s text-quill/70 italic;
+    @apply font-words text-hud-s italic;
+    color: var(--hud-ink, var(--color-quill));
   }
   /* The HUD's motion roles: what is touched lifts under the pointer and
      sinks when pressed; a sheet that appears rises a little as it comes. */
@@ -221,8 +282,46 @@
   .hud-enter {
     animation: hud-enter var(--duration-hud-enter) var(--ease-hud) both;
   }
+  /* What waits on the map for a click: its glow comes and goes. */
+  .hud-glow {
+    animation: hud-glow 1.4s ease-in-out infinite;
+  }
+  /* What is told for a few seconds, a pennant or a banner: it comes, stays,
+     and fades. */
+  .hud-life {
+    animation: hud-life 4s var(--ease-hud) both;
+  }
+  /* norm-ok: a betrayal's banderole, gules cut in a swallowtail and hemmed in gold (the game's art direction); on two lines rather than past its room. */
+  .hud-banner {
+    @apply flex max-w-full items-center gap-3 font-words text-wax;
+    padding: 0.4em 1.9em;
+    background: var(--color-gules);
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      calc(100% - 0.9em) 50%,
+      100% 100%,
+      0 100%,
+      0.9em 50%
+    );
+    box-shadow:
+      inset 0 3px 0 -1px var(--color-gilt),
+      inset 0 -3px 0 -1px var(--color-gilt);
+    animation-duration: 3s;
+  }
+  /* norm-ok: a drawing floating on the map, cut round in ink as the letters are. */
+  .hud-cut {
+    filter: drop-shadow(0 0 1.2px var(--color-quill))
+      drop-shadow(0 1px 0 var(--color-quill));
+  }
+  /* norm-ok: the screen's top or bottom darkened, no edge, while the pointer is near it (« assombri en fonction de la souris »). */
+  .hud-shade {
+    @apply pointer-events-none absolute inset-x-0;
+    transition: opacity var(--duration-hud-enter) var(--ease-hud);
+  }
   .hud-figure {
-    @apply font-figures font-extrabold text-quill;
+    @apply font-figures font-extrabold;
+    color: var(--hud-ink, var(--color-quill));
     font-variant-numeric: lining-nums tabular-nums;
     /* Alegreya's space is narrow: "285 / 300" would read as one figure. */
     word-spacing: 0.12em;
@@ -230,6 +329,21 @@
 }
 
 @layer utilities {
+  /* norm-ok: a piece of the HUD floating on the map, no sheet under it: its words and figures in the map's lettering, parchment cut round in ink, its tones kept; its drawings cut round too. */
+  .hud-afloat {
+    --hud-ink: var(--color-vellum);
+  }
+  .hud-afloat .text-quill {
+    color: var(--color-vellum);
+  }
+  .hud-afloat :is(.hud-figure, .hud-word, .hud-note, .hud-name, .font-caps) {
+    -webkit-text-stroke: 0.2em var(--color-quill);
+    paint-order: stroke fill;
+  }
+  /* norm-ok: not a shadow but the ink cut round a floating drawing, as the letters' stroke. */
+  .hud-afloat svg {
+    filter: drop-shadow(0 0 1.2px var(--color-quill));
+  }
   .rise-in {
     animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
@@ -255,7 +369,9 @@
 @media (prefers-reduced-motion: reduce) {
   .rise-in,
   .fade-in,
-  .hud-enter {
+  .hud-enter,
+  .hud-glow,
+  .hud-life {
     animation: none;
   }
   .hud-press,

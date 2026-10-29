@@ -1,4 +1,5 @@
-import type { Army, Coup, Rules, Work } from './rules'
+import type { Army, Coup, MapSize, Rules, Work } from './rules'
+import type { Level } from './bots/levels'
 
 export const NEUTRAL = -1
 export const SEA = -2
@@ -19,6 +20,7 @@ type Lord = {
   /** His peasants, who hold his land, and his gold, in thousandths. */
   peasants: number
   gold: number
+  /** In the game: from the first tick for a seat a bot or a person plays, from the turn a person takes it for an empty one; no more once his land is lost. */
   alive: boolean
   /** Tick until which he bears the traitor's mark. */
   felonUntil: number
@@ -26,6 +28,8 @@ type Lord = {
   tiles: number
   /** How many of each coup he has launched: its price doubles with each. */
   coups: Partial<Record<Coup, number>>
+  /** The tile his standard stands on: moved at will during the opening, the heart of his start once it ends, his first village on it; -1 while he has planted none. */
+  standard: number
 }
 
 /** A coup on its way: whose, which, the lord it strikes, where it left from and where it falls, and when it falls (a troublemaker walks, and falls when he gets there). */
@@ -46,12 +50,37 @@ export type Scar = {
   until: number
 }
 
+/** A seat, a lord of the game: his team, the bot that plays him, whether a person holds him from the first turn. */
+export type Seat = {
+  /** His team from 0, or -1: he plays for himself. */
+  team: number
+  /** The bot of that level that plays him; none for a person's seat, empty until a person takes it and idle once he left. */
+  bot: Level | null
+  /** Held by a person from the first turn, as a private game's players are; a public game's persons take empty seats during the opening. */
+  person: boolean
+}
+
+/** What a game is made of (setup.ts): the host's book fills it, the relay passes it on, every machine makes the same game from it. */
+export type GameSetup = {
+  /** The format's version: a setup of another is refused, never half read. */
+  v: 1
+  seed: string
+  /** The land, drawn from the seed at its size (its shape drawn too, until a host may choose it). */
+  land: { kind: 'drawn'; size: MapSize }
+  /** How it is won: the conquest of the land, for now (step.ts). */
+  mode: 'conquest'
+  /** The opening, in ticks. */
+  opening: number
+  /** A seat a lord. */
+  seats: ReadonlyArray<Seat>
+}
+
 /** Something a lord built on a tile of his: it passes to whoever takes the tile. */
 /** A work on its tile; while it is being built, the tick it is done (none once it stands). */
 type Building = { work: Work; tile: number; owner: number; ready?: number }
 
 /**
- * An army raised against a lord or a free domain: it enters by the border
+ * An army raised against a lord or the free land: it enters by the border
  * tile nearest where its lord clicked, and spreads from there as a bulge
  * towards it, a few tiles a tick.
  */
@@ -69,7 +98,7 @@ export type Host = {
   queue: Array<[number, number]>
   /** The tiles it took last, where it fights. */
   edge: Array<number>
-  /** The village it was raised at, its road from there to the front over its lord's land, and how far along it is, in thousandths of a tile. */
+  /** The village or market it was raised at, its road from there to the front over its lord's land, and how far along it is, in thousandths of a tile. */
   from: number
   road: Array<number>
   along: number
@@ -92,6 +121,9 @@ export type Alliance = {
 
 type Request = { from: number; to: number; expires: number }
 
+/** An offering given, remembered a while (rules' offeringMemory): by whom, to whom, how much gold (in thousandths), at which tick. */
+type Offering = { from: number; to: number; gold: number; tick: number }
+
 /** A caravan from one lord's market to another's, by a road through its lord's land, his allies' and free land. */
 export type Caravan = {
   owner: number
@@ -108,24 +140,25 @@ export type Caravan = {
 }
 
 export type GameState = {
+  /** What the game was made of, never changed: its seed, its opening (in the rules) and its teams are laid below, where the rules read them. */
+  setup: GameSetup
   seed: string
   rules: Rules
   grid: Grid
   tick: number
   /** Each tile's lord, or free, or the sea. */
   owner: Array<number>
-  /** The free domain each tile was drawn into at the start, named by its village's tile; -1 at sea. The whole land is shared out: no empty land, and free land fought for a domain at a time. */
-  realm: Array<number>
-  /** The free villages to start at, by their tile, during the opening; none after it. */
-  villages: Array<number>
   works: Array<Building>
   players: Array<Lord>
   hosts: Array<Host>
   alliances: Array<Alliance>
   requests: Array<Request>
+  offerings: Array<Offering>
   caravans: Array<Caravan>
   strikes: Array<Strike>
   scars: Array<Scar>
+  /** Each seat's team, as the setup gives it, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */
+  teams: Array<number>
   winner: number
 }
 
@@ -135,5 +168,8 @@ export type Order = { player: number } & (
   | { type: 'build'; tile: number; work: Work }
   | { type: 'ally'; target: number }
   | { type: 'breakAlliance'; target: number }
+  | { type: 'offering'; target: number }
+  /** An army called home, by the village or market it left from: its survivors back to the peasants. */
+  | { type: 'recall'; tile: number }
   | { type: 'coup'; tile: number; coup: Coup }
 )

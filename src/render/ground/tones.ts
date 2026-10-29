@@ -2,18 +2,19 @@ import { Graphics } from 'pixi.js'
 import { flatten } from '../geometry'
 import { TONE } from '../palette'
 import { corners, smooth } from '../trace'
-import { FOREST, HILLS } from './terrain'
+import { FOREST, HILLS, MOUNTAINS } from './terrain'
 import type { Terrain } from './terrain'
 import type { Grid, Point } from '../../../engine'
 
-// The ground's broad tones, at every distance: the woods and the hills a
-// shade darker than the land around them, multiplied into the wash, so that
+// The ground's broad tones, at every distance: the woods, the hills and the
+// mountains a shade darker than the land around them, multiplied into the wash, so that
 // a lord's forest stays his colour, never another hue. Traced once round
 // the tiles of each biome, their steps rounded off as the lands' are.
 
 const DARKER = [
   [FOREST, 0.06],
   [HILLS, 0.035],
+  [MOUNTAINS, 0.07],
 ] as const
 
 /** Twice the area a loop encloses, signed by the way it turns. */

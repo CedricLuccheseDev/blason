@@ -8,16 +8,29 @@
 // The units and the land.
 export { TICKS_PER_SECOND, UNIT } from './units'
 export { generateWorld } from './map/generate'
-export type { World } from './map/generate'
+export type { Generator, World } from './map/generate'
 export type { Point } from './map/points'
 export { apart, around, makeGrid } from './grid'
 
-// A game: its rules, its state, the orders and the step that applies them.
-export { ARMIES, COUPS, RULES, WORKS } from './rules'
-export type { Army, Coup, Work } from './rules'
+// A game: what it is made of, its rules, its state, the orders and the step
+// that applies them.
+export {
+  aloneSetup,
+  botsSetup,
+  bookOf,
+  hostSetup,
+  landOf,
+  publicSetup,
+  readSetup,
+  seatPersons,
+} from './setup'
+export type { Book } from './setup'
+export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'
+export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
 export type {
   Caravan,
+  GameSetup,
   GameState,
   Grid,
   Host,
@@ -26,24 +39,39 @@ export type {
   Strike,
 } from './types'
 export {
-  canStart,
   capOf,
   createGame,
-  hasPicked,
+  fedByLand,
   sicknessOf,
   standing,
   worksOf,
 } from './land'
-export { nextDrop, stateHash, step, victoryShare } from './step'
+export { barredBy, canStart, hasPicked, takeSeat } from './opening'
+export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.
-export { costOf, entryFor, menFor, paceOf } from './war'
+export { courseFor, entryFor } from './course'
 export { canBuild, priceOf } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'
-export { freeVillages, marching, roadTo } from './muster'
-export { isAllied, isFelon } from './diplomacy'
-export { meet } from './battle'
+export {
+  costOf,
+  freeWorks,
+  marching,
+  menFor,
+  paceOf,
+  positionOf,
+} from './muster'
+export {
+  canRenew,
+  isAllied,
+  isFelon,
+  isFriendly,
+  isTeammate,
+  offeringOf,
+} from './diplomacy'
+export { groundOf, meet } from './battle'
+export { shootsAt, underFire } from './volleys'
 export { tradeLinks } from './network'
 export type { Link } from './network'
 

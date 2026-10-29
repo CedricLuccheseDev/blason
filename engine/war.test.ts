@@ -3,7 +3,7 @@ import { TICKS_PER_SECOND, UNIT } from './units'
 import { generateWorld } from './map/generate'
 import { createBot } from './bots/bot'
 import { makeGrid } from './grid'
-import { createGame, holdOf } from './land'
+import { capOf, createGame, holdOf } from './land'
 import { RULES } from './rules'
 import { stateHash, step } from './step'
 import {
@@ -15,12 +15,13 @@ import {
   owned,
   playing,
   run,
+  setupOf,
 } from './testing'
 
 const SECOND = TICKS_PER_SECOND
 
 describe('an army, tile by tile', () => {
-  it('enters by the border nearest the click and spreads from there towards it, a few tiles a tick', () => {
+  it('enters by the border towards the click and spreads from there towards it, a few tiles a tick', () => {
     // A 9 by 9 land; lord 0 holds its middle and his barracks there, lord 1 a corner far away.
     const state = playing(field(9, 9))
     // Free land that costs nothing, to watch the army's course alone.
@@ -75,7 +76,8 @@ describe('an army, tile by tile', () => {
   })
 
   it('pays a soldier for two peasants, one for one under their lord’s castle', () => {
-    const state = playing(field(30))
+    // A row held whole: no free land for lord 1 to take by the sea's wall.
+    const state = playing(field(5))
     state.rules = { ...state.rules, paceTiles: 1 }
     hold(state, 0, [0])
     muster(state, 0, 0)
@@ -144,13 +146,13 @@ describe('an army, tile by tile', () => {
 })
 
 describe('the sickness', () => {
-  it('takes a tenth a second of the peasants over what the villages feed, and none under it', () => {
+  it('takes a tenth a second of the peasants over what the land and villages feed, and none under it', () => {
     const state = playing(field(6))
     state.rules = { ...state.rules, sickness: RULES.sickness }
     hold(state, 0, [0, 1])
     muster(state, 0, 0)
     hold(state, 1, [5])
-    const cap = state.rules.peasants.village * UNIT
+    const cap = capOf(state, 0)
     state.players[0].peasants = cap + 100 * UNIT
     run(state, SECOND)
     const left = state.players[0].peasants - cap
@@ -166,7 +168,7 @@ describe('the game is deterministic', () => {
     const play = () => {
       const world = generateWorld('same')
       const grid = makeGrid(world.map, world.width, world.height, 4)
-      const state = createGame(grid, 8, 'same')
+      const state = createGame(grid, setupOf(8, { seed: 'same' }))
       const bots = state.players.map((_, id) => createBot(id, 'same'))
       for (let t = 0; t < 25 * SECOND; t++)
         step(
@@ -179,35 +181,4 @@ describe('the game is deterministic', () => {
     }
     expect(play()).toBe(play())
   }, 30_000)
-})
-
-describe('the land shared out', () => {
-  it('has no empty land: every tile in a free domain, each lord starting on a whole one with its village, never two on the same', () => {
-    const world = generateWorld('domains')
-    const grid = makeGrid(world.map, world.width, world.height, 4)
-    const state = createGame(grid, 2, 'domains')
-    expect(state.realm.every((r, t) => (grid.land[t] ? r >= 0 : r < 0))).toBe(
-      true,
-    )
-    const home = state.villages[0]
-    step(state, [
-      { player: 0, type: 'pickStart', tile: home },
-      { player: 1, type: 'pickStart', tile: home },
-    ])
-    const domain = state.realm.filter((r) => r === home).length
-    expect(state.players[0].tiles).toBe(domain)
-    expect(state.players[1].tiles).toBe(0)
-    // The domain's village becomes his, to feed his peasants and levy his armies.
-    expect(state.works).toEqual([{ work: 'village', tile: home, owner: 0 }])
-  })
-
-  it('has no free village left once the opening is over: the free land is one', () => {
-    const world = generateWorld('domains')
-    const grid = makeGrid(world.map, world.width, world.height, 4)
-    const state = createGame(grid, 2, 'domains')
-    expect(state.villages.length).toBeGreaterThan(2)
-    for (let t = 0; t <= state.rules.openingTicks; t++) step(state, [])
-    expect(state.villages).toEqual([])
-    expect(state.players.every((p) => p.tiles > 0)).toBe(true)
-  })
 })

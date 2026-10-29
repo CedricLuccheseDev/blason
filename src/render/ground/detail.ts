@@ -6,10 +6,7 @@
 // tufts, close furrows, the sea's ripples, roof tiles, smoke, peasants at
 // work, gold glinting. Each level fades in over a range: nothing pops.
 
-const smoothstep = (a: number, b: number, v: number) => {
-  const t = Math.max(0, Math.min(1, (v - a) / (b - a)))
-  return t * t * (3 - 2 * t)
-}
+import { smoothstep } from '../ease'
 
 /** The ranges, in pixels per tile, over which each level fades in. */
 const RANGES = {

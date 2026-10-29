@@ -12,6 +12,12 @@ export function legible(far: number): number {
   return Math.max(0, Math.min(1, (far - 0.7) / 0.15))
 }
 
+/** From 0 under `a` to 1 over `b`, eased at both ends: what fades in over a range. */
+export function smoothstep(a: number, b: number, v: number): number {
+  const t = Math.max(0, Math.min(1, (v - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+
 /** A colour on its way from one to another, `t` from 0 to 1. */
 export function mixColor(from: number, to: number, t: number): number {
   const k = Math.max(0, Math.min(1, t))

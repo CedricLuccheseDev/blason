@@ -46,6 +46,15 @@ export function meet(state: GameState, a: Host, b: Host): boolean {
   return apart(state.grid, p, q) <= reach * reach && overLand(state.grid, p, q)
 }
 
+/** The ground two armies that meet fight on: the tile halfway between them, on the straight line between them, land since that line crosses no sea. */
+export function groundOf(state: GameState, a: Host, b: Host): number {
+  const { width } = state.grid
+  const [p, q] = [positionOf(a), positionOf(b)]
+  const x = Math.floor(((p % width) + (q % width) + 1) / 2)
+  const y = Math.floor((Math.floor(p / width) + Math.floor(q / width) + 1) / 2)
+  return y * width + x
+}
+
 /** Ticks two armies so far apart take to walk to each other, each going half the way. */
 function closingOf(state: GameState, a: Host, b: Host): number {
   const thousandths = isqrt(

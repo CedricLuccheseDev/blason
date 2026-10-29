@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import { defineConfig } from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
@@ -14,6 +15,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // The design boards and the maquette are not the app: what they write
+    // (design/maquette captures the game's pages) must not reload them.
+    watch: { ignored: ['**/design/**'] },
   },
   plugins: [
     tailwindcss(),
@@ -23,4 +27,9 @@ export default defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  // The agents' worktrees (.claude/worktrees) are copies of the repository:
+  // their tests are not this checkout's.
+  test: {
+    exclude: ['**/node_modules/**', '**/.claude/**'],
+  },
 })

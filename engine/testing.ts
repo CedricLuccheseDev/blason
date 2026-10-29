@@ -1,9 +1,11 @@
 import { UNIT } from './units'
 import { createGame, setOwner } from './land'
 import { RULES } from './rules'
+import { botsSetup } from './setup'
 import { step } from './step'
+import type { Level } from './bots/levels'
 import type { Army } from './rules'
-import type { GameState, Grid, Order } from './types'
+import type { GameSetup, GameState, Grid, Order } from './types'
 
 // What the engine's tests share: a land of plain tiles, a game past its
 // opening with nothing born nor earned, lords set on their tiles with their
@@ -15,15 +17,38 @@ export function field(width: number, height = 1): Grid {
   return { width, height, size: 4, land, area: land.length }
 }
 
+/** A game of so many lords on the seed, each in his team if any is given, his bot of the level. */
+export function setupOf(
+  lords: number,
+  {
+    teams = [],
+    ...more
+  }: {
+    seed?: string
+    teams?: Array<number>
+    level?: Level
+    opening?: number
+  } = {},
+): GameSetup {
+  const setup = botsSetup({ seed: 'test', ...more, lords })
+  const seats = setup.seats.map((seat, id) => ({
+    ...seat,
+    team: teams[id] ?? -1,
+  }))
+  return { ...setup, seats }
+}
+
 /** A game past its opening, no village, no income, nothing born and no one sick: men and gold counted exactly. */
 export function playing(grid: Grid, players = 2): GameState {
-  const state = createGame(grid, players, 'test', {
+  // The tests' lands are narrow, every piece by the edge: none is taken
+  // for being small (seaWalled), only for being ringed.
+  const state = createGame(grid, setupOf(players), {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
     sickness: 0,
+    seaWalled: 0,
   })
   state.tick = state.rules.openingTicks
-  state.villages = []
   return state
 }
 

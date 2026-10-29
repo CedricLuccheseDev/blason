@@ -4,6 +4,7 @@ import { moveCaravans, sendCaravans } from './caravans'
 import { isAllied } from './diplomacy'
 import { createGame, holdOf, setOwner } from './land'
 import { RULES } from './rules'
+import { setupOf } from './testing'
 import { step } from './step'
 import type { GameState, Grid, Order } from './types'
 
@@ -14,13 +15,14 @@ function field(width: number, height = 1): Grid {
 
 /** A game past its opening, no income, nothing born and no one sick; lord 0 on the left, lord 1 on the right of a row. */
 function playing(width = 20): GameState {
-  const state = createGame(field(width), 3, 'test', {
+  // A row: every piece touches the edge, none is taken for being small.
+  const state = createGame(field(width), setupOf(3), {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
     sickness: 0,
+    seaWalled: 0,
   })
   state.tick = state.rules.openingTicks
-  state.villages = []
   for (let t = 0; t < 4; t++) setOwner(state, t, 0)
   state.works.push({ work: 'village', tile: 3, owner: 0 })
   for (let t = width - 4; t < width; t++) setOwner(state, t, 1)
@@ -187,5 +189,27 @@ describe('the merchants', () => {
     moveCaravans(state)
     expect(state.caravans).toEqual([])
     expect(state.players[0].gold).toBe(0)
+  })
+
+  it('go between a lord’s own markets too, paying him once, half as much', () => {
+    // Lord 0 holds the row's left half, a market at each end of it.
+    const state = trade()
+    state.works[2] = { work: 'market', tile: 8, owner: 0 }
+    travel(state)
+    // Each of the two sends one to the other.
+    expect(state.players[0].gold).toBe(
+      (2 * 9 * state.rules.caravanGold * state.rules.homeTrade) / 100,
+    )
+  })
+
+  it('never go to the market of a lord at war with theirs', () => {
+    // Lord 0's land reaching lord 1's, an army of his sent at him.
+    const state = trade()
+    for (let t = 4; t < 16; t++) setOwner(state, t, 0)
+    step(state, order({ player: 0, type: 'attack', tile: 17, army: 'host' }))
+    expect(state.hosts.length).toBeGreaterThan(0)
+    state.tick = 0
+    sendCaravans(state)
+    expect(state.caravans).toEqual([])
   })
 })

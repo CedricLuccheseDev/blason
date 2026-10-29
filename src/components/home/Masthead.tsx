@@ -1,0 +1,32 @@
+import { Flourish } from './Ornaments'
+import { Shield } from '~/components/hud/Emblem'
+import { Inline, Stack } from '~/components/hud/Layout'
+import { useMessages } from '~/i18n'
+
+// The head of the home, the name of the game (its line will come with the
+// titles and the wording); and at its foot, quiet, the player: his shield
+// and "Lord" for now, until profiles come.
+
+export function Title() {
+  return (
+    <header>
+      <Stack gap="hair" align="center">
+        {/* norm-ok: wordmark, not copy */}
+        <h1 className="font-mark text-6xl leading-none text-quill max-sm:text-5xl short:text-5xl">
+          Blason
+        </h1>
+        <Flourish />
+      </Stack>
+    </header>
+  )
+}
+
+export function Lord() {
+  const t = useMessages().home
+  return (
+    <Inline className="min-h-11">
+      <Shield color="var(--color-gilt)" size="m" />
+      <span className="hud-name">{t.lord}</span>
+    </Inline>
+  )
+}

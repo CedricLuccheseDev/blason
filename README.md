@@ -50,23 +50,25 @@ npm install
 npm run dev
 ```
 
-Then open the address `npm run dev` prints: the home is a title screen with a
-game of bots behind it; **Play** starts a game against nineteen bots.
+Then open the address `npm run dev` prints: the home offers the public game
+in its opening, a solo game against nineteen bots, and private rooms. Online
+play needs the relay beside it (`npm run relay`).
 
 ## Commands
 
-| Command                              | What it does                                                 |
-| ------------------------------------ | ------------------------------------------------------------ |
-| `npm run dev`                        | The game with live reloading                                 |
-| `npm run build`                      | The production build, then a type check                      |
-| `npm start`                          | Serves the production build                                  |
-| `npm test`                           | The tests (Vitest), among them the rules and determinism     |
-| `npm run lint`                       | TypeScript and ESLint                                        |
-| `npm run knip`                       | Dead files, exports and dependencies                         |
-| `npm run depcruise`                  | The architecture's dependency rules                          |
-| `npm run norm`                       | The house style checks (`scripts/norm-check.mjs`)            |
-| `npm run format`                     | Prettier                                                     |
-| `npm run arena -- [games] [players]` | Whole games of bots, without a screen, and what they measure |
+| Command                                                         | What it does                                                 |
+| --------------------------------------------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                                                   | The game with live reloading                                 |
+| `npm run build`                                                 | The production build, then a type check                      |
+| `npm start`                                                     | Serves the production build                                  |
+| `npm test`                                                      | The tests (Vitest), among them the rules and determinism     |
+| `npm run lint`                                                  | TypeScript and ESLint                                        |
+| `npm run knip`                                                  | Dead files, exports and dependencies                         |
+| `npm run depcruise`                                             | The architecture's dependency rules                          |
+| `npm run norm`                                                  | The house style checks (`scripts/norm-check.mjs`)            |
+| `npm run format`                                                | Prettier                                                     |
+| `npm run arena -- [games] [players] [level] [size] [generator]` | Whole games of bots, without a screen, and what they measure |
+| `npm run maps -- <board.html>`                                  | A board of the lands of both generators, side by side        |
 
 ## Project structure
 
@@ -79,7 +81,8 @@ game of bots behind it; **Play** starts a game against nineteen bots.
 - `src/render/`: the map on screen (PixiJS) and the player's gestures
 - `src/components/hud/`: the HUD's design system
 - `src/components/game/`: the game's HUD, built on it
-- `src/components/home/`: the home's game in the background
+- `src/components/home/`: the home: the public game in its opening, the solo
+  game, the private rooms, the journal
 - `src/i18n/`: French and English
 - `src/content/`: the journal's posts
 - `scripts/`: the arena and the style checks

@@ -38,11 +38,11 @@ export function makeRibbon(
       const [x, y] = pts[i]
       const d = Math.hypot(bx - ax, by - ay) || 1
       const swell = 0.72 + 0.56 * (0.5 + 0.5 * tremble(x * 0.45, y * 0.45, 3.1))
-      centre.set([x, y], (v + i) * 2)
-      across.set(
-        [(-(by - ay) / d) * swell * 0.5, ((bx - ax) / d) * swell * 0.5],
-        (v + i) * 2,
-      )
+      const k = (v + i) * 2
+      centre[k] = x
+      centre[k + 1] = y
+      across[k] = (-(by - ay) / d) * swell * 0.5
+      across[k + 1] = ((bx - ax) / d) * swell * 0.5
       if (i > 0) {
         const [a, b] = [(v + i - 1) * 2, (v + i) * 2]
         indices.push(a, a + 1, b, a + 1, b + 1, b)
@@ -65,7 +65,10 @@ export function makeRibbon(
     for (let i = 0; i < count; i++) {
       const [x, y] = [centre[i * 2], centre[i * 2 + 1]]
       const [nx, ny] = [across[i * 2] * width, across[i * 2 + 1] * width]
-      vertices.set([x + nx, y + ny, x - nx, y - ny], i * 4)
+      vertices[i * 4] = x + nx
+      vertices[i * 4 + 1] = y + ny
+      vertices[i * 4 + 2] = x - nx
+      vertices[i * 4 + 3] = y - ny
     }
     mesh.vertices = vertices
     mesh.geometry.getBuffer('aPosition').update()

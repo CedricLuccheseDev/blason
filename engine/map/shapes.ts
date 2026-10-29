@@ -1,4 +1,5 @@
-import { drawInt } from '../numbers'
+import { drawInt, isqrt } from '../numbers'
+import { coastMarks } from './marks'
 import { DIRECTIONS, makeNoise } from './noise'
 
 // The shape of the land, drawn by the seed among a few families and warped
@@ -46,6 +47,16 @@ const ROUGH: Readonly<Record<ShapeKind, number>> = {
   isthmus: 1.2,
   strip: 1.6,
   fjords: 1.2,
+}
+
+/** How wide a band of sea each family keeps along the frame, in heights of the map: a continent's sea rings it round. */
+const RIM: Readonly<Record<ShapeKind, number>> = {
+  continent: 0.09,
+  coast: 0,
+  inland: 0,
+  isthmus: 0.06,
+  strip: 0,
+  fjords: 0,
 }
 
 export function pickShape(seed: string): Shape {
@@ -103,55 +114,47 @@ function isthmus(dx: number, dy: number, aspect: number): Relief {
 }
 
 /**
- * A few gulfs and capes thrown on the map, the same for every family: a bay
- * bitten out of a coast, a headland pushed into the sea, a lake grown into
- * an inner sea.
- */
-function landmarks(seed: string, aspect: number): Relief {
-  const count = 2 + drawInt(seed, 3, 'landmarks')
-  const marks = Array.from({ length: count }, (_, i) => ({
-    x: spread(seed, `mark x ${i}`) * 0.8 * aspect,
-    y: spread(seed, `mark y ${i}`) * 0.45,
-    r: 0.08 + drawInt(seed, 120, 'mark r', i) / 1000,
-    lift: (drawInt(seed, 2, 'mark sign', i) * 2 - 1) * 1.1,
-  }))
-  return (x, y) =>
-    marks.reduce(
-      (sum, m) => sum + m.lift * Math.max(0, dome(x - m.x, y - m.y, m.r, m.r)),
-      0,
-    )
-}
-
-/**
  * The relief of a map of this size: the family's lines, bent by a warp of
- * the ground and roughened by noise. The fjords add narrow valleys, which
- * the sea fills from the edges.
+ * the ground and roughened by noise, then its coast marked with peninsulas,
+ * bays and capes (marks.ts). The fjords add narrow valleys, which the sea
+ * fills from the edges. A larger map (`scale` times the standard area) takes
+ * an octave of noise more and more features, smaller, so that its coast
+ * stays as detailed.
  */
 export function makeRelief(
   seed: string,
   shape: Shape,
   width: number,
   height: number,
+  scale: number,
 ): Relief {
   const aspect = width / height
   const lines = base(seed, shape.kind, aspect)
-  const marks = landmarks(seed, aspect)
-  const noise = makeNoise(`${seed}|relief`)
+  // How many times longer a side is than the standard map's: 1, 1.4 or 2.
+  const side = isqrt(scale * 10000) / 100
+  const octaves = scale >= 4 ? 5 : 4
+  const noise = makeNoise(`${seed}|relief`, octaves)
   const warpX = makeNoise(`${seed}|warp x`)
   const warpY = makeNoise(`${seed}|warp y`)
-  const valleys = makeNoise(`${seed}|valleys`)
+  const valleys = makeNoise(`${seed}|valleys`, octaves)
   const ox = drawInt(seed, 100000, 'ox') / 1000
   const oy = drawInt(seed, 100000, 'oy') / 1000
   const rough = ROUGH[shape.kind]
+  const rim = RIM[shape.kind]
+  const ground: Relief = (x, y) =>
+    lines(x, y) + rough * noise(ox + x * 2, oy + y * 2)
+  const count = (3 + drawInt(seed, 4, 'marks')) * scale
+  const fine = (1 + 1 / side) / 2
+  const marks = coastMarks(seed, ground, shape.seaShare, aspect, count, fine)
   return (px, py) => {
     const x0 = (px - width / 2) / height
     const y0 = (py - height / 2) / height
     const x = x0 + 0.26 * warpX(ox + x0 * 1.6, oy + y0 * 1.6)
     const y = y0 + 0.26 * warpY(oy + x0 * 1.6, ox + y0 * 1.6)
-    const ground =
-      lines(x, y) + rough * noise(ox + x * 2, oy + y * 2) + marks(x, y)
-    if (shape.kind !== 'fjords') return ground
+    const edge = Math.min(0.5 - Math.abs(y0), aspect / 2 - Math.abs(x0))
+    const land = ground(x, y) + marks(x, y) - Math.max(0, rim - edge) * 30
+    if (shape.kind !== 'fjords') return land
     const valley = Math.abs(valleys(ox + x * 3.2, oy + y * 3.2))
-    return ground + Math.min(1, valley * 6) - 0.5
+    return land + Math.min(1, valley * 6) - 0.5
   }
 }

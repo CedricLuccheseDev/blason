@@ -11,6 +11,24 @@ export type Release = {
 
 export const releases: Array<Release> = [
   {
+    version: '0.5.0',
+    date: '2026-10-29',
+    en: [
+      'Play online: the public game for up to 20 players and no bot, and the games you create, set in their book (land, bots, teams, opening), alone or with friends invited by a code.',
+      'Truer lands: ranges of high mountains cut by passes, and fronts that wind like coasts.',
+      'A richer game: the standard planted where you like, peasants fed by the land and the villages, mercenaries, castles that shoot, archers, the troublemaker and the trebuchet, offerings and teams.',
+      'An interface redrawn in the game’s matter: no backgrounds, the lords’ list, the action bar, gauges, the right click’s menu, hints, and playable on a phone.',
+      'The home, the Journal and the site’s pages in the same matter as the game.',
+    ],
+    fr: [
+      'Jouer en ligne : la partie publique jusqu’à 20 joueurs, sans bot, et les parties qu’on crée, réglées dans leur livre (terre, bots, équipes, pose), seul ou avec des amis invités par un code.',
+      'Des terres plus vraies : des chaînes de hautes montagnes coupées de cols, et des fronts qui ondulent comme des côtes.',
+      'Une partie plus riche : l’étendard posé où l’on veut, les paysans nourris par la terre et les villages, les mercenaires, les châteaux qui tirent, les archers, le causeur de troubles et le trébuchet, les offrandes et les équipes.',
+      'Une interface refaite dans la matière du jeu : sans fond, la liste des seigneurs, la barre des actions, des jauges, le menu du clic droit, des bulles d’aide, et jouable sur téléphone.',
+      'L’accueil, le Journal et les pages du site dans la même matière que le jeu.',
+    ],
+  },
+  {
     version: '0.4.0',
     date: '2026-10-28',
     en: [

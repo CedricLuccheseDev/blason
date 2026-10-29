@@ -10,6 +10,7 @@ import {
   line,
   lw,
   poly,
+  shade,
   wob,
 } from './ink'
 import type { Detail } from './house'
@@ -20,6 +21,15 @@ import type { Pen, Pt } from './ink'
 // Up close the stones are coursed. Local units.
 
 const ink = (lod: Detail) => (lod === 2 ? 0.9 : 1)
+
+/** The light on a round body: on its left, the shade deepening round to its right, so dark at most. */
+function round(p: Pen, x: number, r: number, deep: number) {
+  const wash = p.g.createLinearGradient(x - r, 0, x + r, 0)
+  wash.addColorStop(0, css(TONE.white, 0.2))
+  wash.addColorStop(0.4, css(TONE.ink, 0))
+  wash.addColorStop(1, css(TONE.ink, deep))
+  return wash
+}
 
 /** A drum's outline, its foot an ellipse. */
 function drum(p: Pen, x: number, y: number, r: number, top: number) {
@@ -44,15 +54,10 @@ export function tower(
   const top = y - h
   drum(p, x, y, r, top)
   fillInk(p, TONE.rampart, ink(lod))
-  // Shade on the right half of the drum.
-  g.save()
-  g.beginPath()
-  g.rect(x + r * 0.15, top - 1, r, h + 2)
-  g.clip()
+  // Lit on its left, the shade deepening round to its right.
   drum(p, x, y, r, top)
-  g.fillStyle = css(TONE.ink, 0.13)
+  g.fillStyle = round(p, x, r, 0.34)
   g.fill()
-  g.restore()
   if (lod === 2) {
     g.beginPath()
     for (let k = 1; k < h / 1.1; k++) {
@@ -77,13 +82,9 @@ export function tower(
   ]
   wob(p, cone, 0.03, seed)
   fillInk(p, TONE.slate, ink(lod))
-  g.save()
   wob(p, cone, 0.03, seed)
-  g.clip()
-  poly(p, [[x + 0.1, top + 0.4], [x + r + 0.5, top + 0.4], tip])
-  g.fillStyle = css(TONE.ink, 0.18)
+  g.fillStyle = round(p, x, r + 0.35, 0.4)
   g.fill()
-  g.restore()
   line(p, [tip, [tip[0], tip[1] - 1.4]], 0.8, TONE.ink)
   poly(p, [
     [tip[0], tip[1] - 1.4],
@@ -109,14 +110,14 @@ function coursed(p: Pen, a: Pt, b: Pt, h: number, n: number) {
   g.stroke()
 }
 
-/** A run of curtain wall from a to b, so tall, its merlons along the top. */
+/** A run of curtain wall from a to b, so tall, its merlons along the top, its face so much in shade. */
 export function wallRun(
   p: Pen,
   a: Pt,
   b: Pt,
   h: number,
   lod: Detail,
-  seed: number,
+  [seed, dark]: readonly [number, number],
 ) {
   const [ax, ay] = a
   const [bx, by] = b
@@ -131,7 +132,7 @@ export function wallRun(
     0.04,
     seed,
   )
-  fillInk(p, TONE.rampart, ink(lod))
+  fillInk(p, shade(TONE.rampart, dark), ink(lod))
   const n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / 1.1))
   const g = p.g
   g.beginPath()
@@ -144,7 +145,7 @@ export function wallRun(
     g.lineTo(e[0], e[1])
     g.closePath()
   }
-  fillInk(p, TONE.rampart, lod === 2 ? 0.7 : 0.9)
+  fillInk(p, shade(TONE.rampart, dark), lod === 2 ? 0.7 : 0.9)
   if (lod === 2) coursed(p, a, b, h, n)
 }
 

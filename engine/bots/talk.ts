@@ -1,5 +1,6 @@
 import { drawInt } from '../numbers'
 import { density } from '../land'
+import { gaveLately } from '../diplomacy'
 import type { GameState, Order } from '../types'
 
 // The bots' diplomacy: whom to ally with, when to renew, when to
@@ -77,8 +78,9 @@ function renewals(
 
 /**
  * The bot's diplomacy, as a person's: it accepts the offers of those it is
- * not fighting while it has fewer than two allies, offers its own to the
- * strongest neighbour while it has none, renews what it holds unless bold
+ * not fighting while it has fewer than two allies, and of one who gave it an
+ * offering lately while it has fewer than three, fighting or not; offers its
+ * own to the strongest neighbour while it has none, renews what it holds unless bold
  * enough to let it lapse, and, bolder still, betrays an ally whose land is
  * held much thinner than its own, to fall on it. It allies with no rival for
  * the win: a lord holding a quarter of the land, or anyone once three are
@@ -99,10 +101,14 @@ export function talk(
       return [{ player: me, type: 'breakAlliance', target: other }]
   }
   const orders = renewals(state, me, allies, boldness)
-  if (allies.length < 2)
-    for (const r of state.requests)
-      if (r.to === me && !foes.has(r.from) && !rival(state, r.from))
-        orders.push({ player: me, type: 'ally', target: r.from })
+  for (const r of state.requests) {
+    if (r.to !== me || rival(state, r.from)) continue
+    // An offering lately makes the giver welcome: a third ally, whatever their past.
+    const welcome = gaveLately(state, r.from, me)
+      ? allies.length < 3
+      : allies.length < 2 && !foes.has(r.from)
+    if (welcome) orders.push({ player: me, type: 'ally', target: r.from })
+  }
   if (allies.length === 0) orders.push(...offer(state, me, fronts, foes))
   return orders
 }

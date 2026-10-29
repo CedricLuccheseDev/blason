@@ -13,6 +13,7 @@ import {
   shade,
   wob,
 } from './ink'
+import { STALL } from './plans'
 import type { Detail } from './house'
 import type { Pen, Pt } from './ink'
 
@@ -70,17 +71,15 @@ function awning(
   g.fill()
 }
 
-/** A stall, its counter's front foot centred at (x, y), so wide. */
+/** A stall, its counter's front foot centred at (x, y), so wide; its counter's side in shade, the awning shading the counter's top. */
 export function stall(
   p: Pen,
-  x: number,
-  y: number,
-  w: number,
+  [x, y, w]: readonly [number, number, number],
   color: number,
   lod: Detail,
   seed: number,
 ) {
-  const o: Pt = [1.12, -0.72]
+  const o = STALL.back
   const ink = lod === 2 ? 0.8 : 1
   const R: Pt = [x + w / 2, y]
   const Rt: Pt = [x + w / 2, y - 1.5]
@@ -93,6 +92,9 @@ export function stall(
     seed + 1,
   )
   fillInk(p, light(WOOD, 0.25), ink)
+  // In the awning's shade.
+  p.g.fillStyle = css(TONE.ink, 0.16)
+  p.g.fill()
   if (lod === 2)
     for (let k = 0; k < 5; k++) {
       ellipse(

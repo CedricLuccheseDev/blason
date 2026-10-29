@@ -9,7 +9,7 @@ import type { Coup, GameState } from '../../../engine'
 // strike, in the lord's colour where a click launches it, in red where it
 // may not go or cannot be paid; from the tile of his it would leave from,
 // ringed, its way there, dotted: the troublemaker's straight walk, the arc
-// of a volley or a pot of fire. For the archers and the fire, which reach
+// of a volley or a trebuchet's stone. For the archers and the trebuchet, which reach
 // only so far from the border, that reach laid as a faint band along it,
 // so that the player sees where he may aim before he aims. Sized on screen.
 

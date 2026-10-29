@@ -2,14 +2,20 @@ import type { Grid, World } from '../../../engine'
 
 // The ground under each tile, read once when a game is mounted: its biome,
 // the biome of the map's land cell nearest the tile's middle (0 a plain, 1
-// a forest, 2 hills, the sea none), and how far it lies from the shore. The
-// simulation knows nothing of it: it is only drawn.
+// a forest, 2 hills, 3 mountains, the water none), and how far it lies from
+// the shore. The simulation knows nothing of it: it is only drawn.
 
 export const PLAIN = 0
 export const FOREST = 1
 export const HILLS = 2
+export const MOUNTAINS = 3
 const SEA = 255
-const BIOMES = { plain: PLAIN, forest: FOREST, hills: HILLS } as const
+const BIOMES = {
+  plain: PLAIN,
+  forest: FOREST,
+  hills: HILLS,
+  mountains: MOUNTAINS,
+} as const
 
 export type Terrain = {
   biome: Uint8Array

@@ -7,6 +7,15 @@ import type { Mark } from './marks'
 
 const GLOW = 'url(#blason-glow)'
 
+/** The wax's edge, a little uneven, round (cx, cy): the points of its polygon. */
+export function waxEdge(cx: number, cy: number, r: number): string {
+  return Array.from({ length: 22 }, (_, i) => {
+    const a = (i / 22) * Math.PI * 2
+    const rr = r * (1 + 0.06 * Math.sin(i * 2.7) + 0.04 * Math.cos(i * 1.3))
+    return `${cx + Math.cos(a) * rr},${cy + Math.sin(a) * rr}`
+  }).join(' ')
+}
+
 /** A wax seal, its drawing pressed into it; lifted and glowing when in hand. */
 export function Seal({
   cx,
@@ -27,11 +36,7 @@ export function Seal({
   dim?: boolean
   lifted?: boolean
 }>) {
-  const points = Array.from({ length: 22 }, (_, i) => {
-    const a = (i / 22) * Math.PI * 2
-    const rr = r * (1 + 0.06 * Math.sin(i * 2.7) + 0.04 * Math.cos(i * 1.3))
-    return `${cx + Math.cos(a) * rr},${cy + Math.sin(a) * rr}`
-  }).join(' ')
+  const points = waxEdge(cx, cy, r)
   return (
     <g filter={lifted ? GLOW : LIFT} opacity={dim ? 0.55 : 1}>
       <polygon
@@ -70,12 +75,13 @@ export function Seal({
   )
 }
 
-/** A work's medallion: a parchment disc ringed with gold, its drawing in ink. */
+/** A medallion: a parchment disc ringed with gold, or another colour for an act (the right click's menu), its drawing in ink. */
 export function Medallion({
   cx,
   cy,
   r,
   icon,
+  ring = 'var(--color-gilt)',
   dim = false,
   lifted = false,
 }: Readonly<{
@@ -83,6 +89,7 @@ export function Medallion({
   cy: number
   r: number
   icon: Mark
+  ring?: string
   dim?: boolean
   lifted?: boolean
 }>) {
@@ -94,7 +101,7 @@ export function Medallion({
         cy={cy}
         r={r - 4}
         fill="none"
-        stroke="var(--color-gilt)"
+        stroke={ring}
         strokeWidth="2.6"
       />
       <circle
@@ -105,6 +112,41 @@ export function Medallion({
         stroke={INK}
         strokeWidth="0.8"
       />
+      <Glyph name={icon} cx={cx} cy={cy + 0.5} size={r * 1.12} sw={1.8} />
+    </g>
+  )
+}
+
+/** A work's plaque: a parchment square ringed with gold, its drawing in ink; lifted and glowing when in hand. Units are round, works square, coups lozenges (« unité = rond, construction = carré, coups = losange »). */
+export function Plaque({
+  cx,
+  cy,
+  r,
+  icon,
+  lifted = false,
+}: Readonly<{
+  cx: number
+  cy: number
+  r: number
+  icon: Mark
+  lifted?: boolean
+}>) {
+  // A square looks larger than a disc of its radius: it reaches a little less.
+  const square = (k: number, round: number) => (
+    <rect x={cx - k} y={cy - k} width={2 * k} height={2 * k} rx={round} />
+  )
+  const reach = r * 0.9
+  return (
+    <g filter={lifted ? GLOW : LIFT}>
+      <g fill={PAPER} stroke={INK} strokeWidth="2">
+        {square(reach, 4)}
+      </g>
+      <g fill="none" stroke="var(--color-gilt)" strokeWidth="2.6">
+        {square(reach - 4, 2.4)}
+      </g>
+      <g fill="none" stroke={INK} strokeWidth="0.8">
+        {square(reach - 5.6, 1.6)}
+      </g>
       <Glyph name={icon} cx={cx} cy={cy + 0.5} size={r * 1.12} sw={1.8} />
     </g>
   )

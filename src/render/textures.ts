@@ -1,11 +1,10 @@
 import { Graphics } from 'pixi.js'
 import { drawCart } from './art/cart'
-import { drawPeasant } from './art/peasant'
-import { drawSoldier } from './art/soldier'
 import type { Renderer, Texture } from 'pixi.js'
 
 // Everything drawn many times is drawn once into a texture, sharp enough for
 // the closest zoom, then laid as sprites: the graphics card does the rest.
+// The men have their own sheets (figures.ts).
 
 /** How much sharper than the map's units a stamp is drawn. */
 const SHARP = 8
@@ -13,11 +12,7 @@ const SHARP = 8
 type Stamp = { texture: Texture; anchor: { x: number; y: number } }
 
 export type Stamps = {
-  /** A soldier of the battles in a lord's colour, drawn the first time it is needed. */
-  soldier: (color: number) => Stamp
-  /** A peasant defending his land with a pitchfork, likewise. */
-  peasant: (color: number) => Stamp
-  /** A caravan under a lord's pennant, likewise. */
+  /** A caravan under a lord's pennant, drawn the first time it is needed. */
   cart: (color: number) => Stamp
 }
 
@@ -55,8 +50,6 @@ function byColor(
 
 export function makeStamps(renderer: Renderer): Stamps {
   return {
-    soldier: byColor(renderer, drawSoldier),
-    peasant: byColor(renderer, drawPeasant),
     cart: byColor(renderer, drawCart),
   }
 }

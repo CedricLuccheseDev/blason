@@ -5,7 +5,9 @@
     "src/**/*.{ts,tsx}",
     "engine/**/*.ts",
     "scripts/*.ts",
-    "design/mockups/*.ts"
+    "design/mockups/*.ts",
+    "server/**/*.ts",
+    "net/**/*.ts"
   ],
   "ignoreDependencies": ["tailwindcss"]
 }

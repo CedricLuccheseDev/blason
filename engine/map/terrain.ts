@@ -1,16 +1,10 @@
-import { makeNoise } from './noise'
 import { makeRelief } from './shapes'
 import type { Cells } from './cells'
-import type { Noise } from './noise'
 import type { Shape } from './shapes'
-
-export type Biome = 'plain' | 'forest' | 'hills'
 
 export type Terrain = {
   /** Below 0 the sea, up to about 2 on the highest ground. */
   elevation: (x: number, y: number) => number
-  moisture: Noise
-  hills: Noise
 }
 
 /**
@@ -23,18 +17,14 @@ export function makeTerrain(
   cells: Cells,
   width: number,
   height: number,
+  scale: number,
 ): Terrain {
-  const relief = makeRelief(seed, shape, width, height)
+  const relief = makeRelief(seed, shape, width, height, scale)
   const raw = cells.sites.map(([x, y]) => relief(x, y))
   const level = seaLevel(cells, raw, shape.seaShare)
-  const scale = 2 / (Math.max(...raw) - level)
-  const wet = makeNoise(`${seed}|moisture`)
-  const high = makeNoise(`${seed}|hills`)
-  return {
-    elevation: (x, y) => (relief(x, y) - level) * scale,
-    moisture: (x, y) => wet(40 + (x / width) * 4.5, 17 + (y / height) * 3),
-    hills: (x, y) => high(80 + (x / width) * 3, 60 + (y / height) * 2.2),
-  }
+  const top = raw.reduce((m, h) => (h > m ? h : m), level + 1e-9)
+  const scaleUp = 2 / (top - level)
+  return { elevation: (x, y) => (relief(x, y) - level) * scaleUp }
 }
 
 /**
@@ -67,7 +57,8 @@ export function findSea(cells: Cells, terrain: Terrain): Array<boolean> {
   return sea.map((_, i) => !land.has(i))
 }
 
-function largestLand(
+/** The largest piece of land, its cells joined by their sides. */
+export function largestLand(
   neighbors: Array<Array<number>>,
   sea: Array<boolean>,
 ): Set<number> {
@@ -88,10 +79,4 @@ function largestLand(
     if (part.size > best.size) best = part
   })
   return best
-}
-
-export function biomeAt(terrain: Terrain, x: number, y: number): Biome {
-  if (terrain.moisture(x, y) > 0.07) return 'forest'
-  if (terrain.hills(x, y) > 0.12) return 'hills'
-  return 'plain'
 }

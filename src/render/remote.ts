@@ -1,47 +1,78 @@
-import { NO_ONE, createBot, createGame, stateHash, step } from '../../engine'
+import {
+  NO_ONE,
+  createBot,
+  createGame,
+  stateHash,
+  step,
+  takeSeat,
+} from '../../engine'
 import { HASH_EVERY, TURN_MS } from '../../net/protocol'
-import { PLAYERS } from './palette'
-import type { Link } from './link'
+import type { Online } from './online'
 import type { Session } from './session'
-import type { Grid, Level, Order } from '../../engine'
+import type { Grid } from '../../engine'
+import type { Turn } from '../../net/protocol'
 
 // A game online, stepped by the relay's turns rather than by the clock: each
 // turn holds the orders of every player, mine with them, and is played as it
 // comes, with the bots' orders, on every browser alike. My orders go to the
-// relay, never straight into my game. The seats of the players are theirs;
-// every other seat is a bot, and so becomes a player's who leaves, at the
-// turn the relay says. Every so many turns, the fingerprint of my state goes
-// back to the relay, which names a turn where two browsers parted.
+// relay, never straight into my game. Each seat begins as its setup says, a
+// bot's or empty; a turn says the seats a person took, whose bots stop from
+// that turn on, an empty one his lord's from then (takeSeat), and those
+// left: the setup's bot plays the seat again, and with none, the lord stays,
+// idle, his peasants holding his land. Who comes in during the opening is
+// handed every turn played so far and plays them as they come, a few a
+// frame, to catch up. Every so many turns, the fingerprint of my state goes
+// back to the relay, which names a turn where two browsers parted. A public
+// game with one alone in it when its doors close begins again
+// (server/rooms.ts): the relay says it begins once more, and the game is
+// made anew from its setup, on the same land, its turns played from the
+// first, the same as any browser that comes in then.
 
-export function startRemoteSession(
-  grid: Grid,
-  seed: string,
-  me: number,
-  level: Level,
-  players: number,
-  link: Link,
-): Session {
-  const state = createGame(grid, PLAYERS.length, seed)
-  const bots = PLAYERS.map((_, id) =>
-    id < players ? null : createBot(id, seed, level),
-  )
-  const turns: Array<{ n: number; orders: Array<Order>; left: Array<number> }> =
-    []
+export function startRemoteSession(grid: Grid, online: Online): Session {
+  const { setup, seat, link } = online
+  // The game travels whole from the relay: the same on every browser.
+  const state = createGame(grid, setup)
+  /** A seat's bot, as its setup gives it. */
+  const botOf = (id: number) => {
+    const level = setup.seats[id]?.bot
+    return level ? createBot(id, setup.seed, level) : null
+  }
+  const seatBots = () => setup.seats.map((_, id) => botOf(id))
+  let bots = seatBots()
+  /** The game begun again, alone in its opening: made anew in place, for whoever holds it, its turns played again from the first. */
+  const again = () => {
+    Object.assign(state, createGame(grid, setup))
+    bots = seatBots()
+  }
+  // The turns, and a word that the game begins again, in the order they come.
+  const turns: Array<Turn | 'again'> = []
   link.listen((message) => {
     if (message.t === 'turn') turns.push(message)
+    else if (message.t === 'begin') turns.push('again')
   })
   let since = 0
   return {
     state,
-    me,
+    me: seat,
     // The relay signs each order with my seat, whatever it says.
     send: (order) => link.send({ t: 'order', move: order }),
-    advance(ms, each) {
+    advance(ms, each, most = Infinity) {
       since += ms
-      // Every turn come is played, several at once to catch up after a pause.
+      // Every turn come is played, several at once to catch up after a
+      // pause, so many at most: the rest at the next call.
+      let played = 0
       for (let turn = turns.shift(); turn; turn = turns.shift()) {
+        if (turn === 'again') {
+          again()
+          continue
+        }
         if (state.winner !== NO_ONE) break
-        for (const seat of turn.left) bots[seat] = createBot(seat, seed, level)
+        played++
+        for (const id of turn.joined) {
+          bots[id] = null
+          takeSeat(state, id)
+        }
+        for (const id of turn.left) bots[id] = botOf(id)
         const orders = [
           ...turn.orders,
           ...state.players.flatMap((p, id) => {
@@ -54,6 +85,7 @@ export function startRemoteSession(
           link.send({ t: 'hash', turn: turn.n, hash: stateHash(state) })
         each?.()
         since = 0
+        if (played >= most) break
       }
       return Math.min(1, since / TURN_MS)
     },

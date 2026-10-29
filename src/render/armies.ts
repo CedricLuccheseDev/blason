@@ -1,19 +1,20 @@
 import { Container } from 'pixi.js'
-import { UNIT } from '../../engine'
+import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
 import { makeFallen } from './layers/fallen'
-import { makeStandard } from './layers/standard'
 import { makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
+import { makeFlags } from './flags'
 import { TONE, playerColor } from './palette'
 import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
+import { ARMY_LOOKS, warmFigures } from './figures'
 import type { Front, Spot } from './fronts'
 import type { Drawn, Line } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
+import type { Box } from './camera'
 import type { GameState, Host } from '../../engine'
-import type { Stamps } from './textures'
 
 // The armies, as one picture. Each army is a few men kept from frame to
 // frame (squads.ts) who walk its road in a column, then stand in ranks at
@@ -22,8 +23,8 @@ import type { Stamps } from './textures'
 // ground between them and face each other there. Men lost fall where they
 // stand (layers/fallen.ts); a side comes and goes in a fade. Among each
 // army's men, its standard-bearer holds high its banner, its lord's arms and
-// its men written on it (layers/standard.ts). An enemy army
-// coming for the player is shown from afar (layers/warning.ts).
+// its men written on it (flags.ts). An enemy army coming for the player is
+// shown from afar (layers/warning.ts).
 
 /** Seconds for an army to fade in or out. */
 const FADE = 0.5
@@ -43,7 +44,7 @@ const peasantColor = (owner: number) =>
 
 /** An army as it is first seen: no men yet, they walk in. */
 const enlist = (host: Host): Army => ({
-  troops: makeSquad('soldier', playerColor(host.owner)),
+  troops: makeSquad(ARMY_LOOKS[host.army], playerColor(host.owner)),
   peasants: makeSquad('peasant', peasantColor(host.target)),
   men: host.men,
   front: null,
@@ -51,11 +52,12 @@ const enlist = (host: Host): Army => ({
   gone: false,
 })
 
-export function makeArmies(stamps: Stamps, me: number) {
+export function makeArmies(me: number) {
+  warmFigures()
   const container = new Container()
   const roads = makeRoads()
-  const fallen = makeFallen(stamps, 0.2)
-  const troops = makeTroops(stamps)
+  const fallen = makeFallen(0.2)
+  const troops = makeTroops()
   const warning = makeWarning(me)
   container.addChild(
     warning.container,
@@ -65,12 +67,12 @@ export function makeArmies(stamps: Stamps, me: number) {
   )
   const fronts = makeFronts()
   const armies = new Map<Host, Army>()
-  const standards = new Map<Army, ReturnType<typeof makeStandard>>()
+  const flags = makeFlags(container)
   let tick = -1
   let last = performance.now() / 1000
 
   const fall = (squad: Squad) => (man: Man) =>
-    fallen.fall(man.x, man.y, squad.color, squad.kind, man.facing)
+    fallen.fall(man.x, man.y, squad.color, squad.look, man.facing, man.seed)
 
   /** The men lost since the last tick fall, the army's and, at the front, the peasants it killed. */
   function count(state: GameState, host: Host, army: Army) {
@@ -128,8 +130,7 @@ export function makeArmies(stamps: Stamps, me: number) {
     army.peasants.alpha = Math.max(0, army.peasants.alpha - dt / FADE)
     if (army.troops.alpha > 0) return
     armies.delete(host)
-    standards.get(army)?.box.destroy({ children: true })
-    standards.delete(army)
+    flags.forget(army)
   }
 
   /** The armies the game has now followed a frame further. */
@@ -173,28 +174,6 @@ export function makeArmies(stamps: Stamps, me: number) {
     return drawn
   }
 
-  /** Each army's standard among its men, following them, faded in and out with them. */
-  function label(zoom: number, shown: number) {
-    for (const army of armies.values()) {
-      const over = middle(army.troops.men)
-      if (!over) continue
-      const was = army.flag ?? over
-      army.flag = {
-        x: was.x + (over.x - was.x) * 0.2,
-        y: was.y + (over.y - was.y) * 0.2,
-      }
-      let drawn = standards.get(army)
-      if (!drawn) {
-        drawn = makeStandard(army.troops.color)
-        standards.set(army, drawn)
-        container.addChild(drawn.box)
-      }
-      drawn.box.alpha = army.troops.alpha
-      drawn.box.position.set(army.flag.x, army.flag.y)
-      drawn.show(Math.floor(army.men / UNIT), zoom, shown)
-    }
-  }
-
   /** Every side drawn: each army's men, and the peasants before it. */
   function sides(): Array<Drawn> {
     return [...armies.values()].flatMap((a) => [
@@ -205,15 +184,27 @@ export function makeArmies(stamps: Stamps, me: number) {
 
   return {
     container,
-    /** `far`: under 1 farther out than the whole land, where the standards shrink with it. */
-    draw(state: GameState, zoom: number, between = 0, far = 1) {
+    /** Where an army's men stand this frame, their middle; none while it shows none. */
+    menOf(host: Host): Spot | null {
+      const army = armies.get(host)
+      return army ? middle(army.troops.men) : null
+    },
+    /** Where the standard of an army stands, by the village or market it left from; none while it shows none. */
+    flagOf: (from: number) => flags.flagOf(armies, from),
+    /** The army to grow, by the village or market it left from; none. */
+    light: flags.light,
+    /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
+    draw(state: GameState, zoom: number, view: Box, between = 0, far = 1) {
       const seconds = performance.now() / 1000
       const dt = Math.min(0.1, seconds - last)
       last = seconds
       follow(state, between, dt)
       const standing = [...armies.values()].filter((a) => !a.gone)
+      // The roads my armies and my allies' march, no other's (« il ne faut
+      // pas voir les traceurs des armées des autres joueurs à part les
+      // alliés »).
       const marches = standing.flatMap((a) =>
-        a.front?.phase === 'march'
+        a.front?.phase === 'march' && isFriendly(state, me, a.front.host.owner)
           ? [{ host: a.front.host, head: a.front.head, alpha: a.troops.alpha }]
           : [],
       )
@@ -223,9 +214,9 @@ export function makeArmies(stamps: Stamps, me: number) {
         zoom,
       )
       roads.draw(state, marches, zoom)
-      troops.draw(sides(), lines(), seconds)
+      troops.draw(sides(), lines(), seconds, view)
       fallen.draw(seconds)
-      label(zoom / far, legible(far))
+      flags.place(armies, zoom / far, legible(far), seconds)
     },
   }
 }

@@ -1,7 +1,7 @@
 import { around } from './grid'
 import { drawInt } from './numbers'
 import { standing } from './land'
-import { isAllied, isFriendly } from './diplomacy'
+import { atWar, isAllied, isFriendly } from './diplomacy'
 import { tradeLinks } from './network'
 import { NEUTRAL } from './types'
 import type { Caravan, GameState } from './types'
@@ -118,7 +118,18 @@ function journeys(state: GameState, lord: number, from: number) {
         found.set(on.end, on)
     }
   }
-  return [...found.values()].filter((j) => owners.get(j.end) !== lord)
+  // Its lord's other markets too (« les marchés internes ne s'envoient pas
+  // de marchands ? »), never a lord's it is at war with (« les caravanes
+  // vont jusqu'aux marchés des royaumes où on est en guerre ? »).
+  return [...found.values()].filter(
+    (j) => j.end !== from && !atWar(state, lord, owners.get(j.end) ?? NEUTRAL),
+  )
+}
+
+/** What a caravan's lord makes of trade with the market's, in percent: an ally's more, his own less. */
+function tradeWith(state: GameState, lord: number, to: number): number {
+  if (to === lord) return state.rules.homeTrade
+  return isAllied(state, lord, to) ? state.rules.allyTrade : 100
 }
 
 /** A journey drawn by lot among those a market may make: the longer and the allies' more often. */
@@ -128,11 +139,9 @@ function drawJourney(
   market: number,
 ): Journey | null {
   const all = journeys(state, lord, market)
-  const weights = all.map((j) => {
-    const to = state.owner[j.end]
-    const bonus = isAllied(state, lord, to) ? state.rules.allyTrade : 100
-    return j.road.length * bonus
-  })
+  const weights = all.map(
+    (j) => j.road.length * tradeWith(state, lord, state.owner[j.end]),
+  )
   const total = weights.reduce((a, b) => a + b, 0)
   if (total === 0) return null
   let lot = drawInt(state.seed, total, 'caravan', state.tick, market)
@@ -159,7 +168,7 @@ function sends(state: GameState, lord: number, market: number): boolean {
 
 /** Each market sends a caravan now and then, each at its own moment. */
 export function sendCaravans(state: GameState) {
-  const { caravanTicks, caravanGold, allyTrade } = state.rules
+  const { caravanTicks, caravanGold } = state.rules
   for (const work of state.works) {
     if (work.work !== 'market' || !standing(state, work)) continue
     if ((state.tick + work.tile * 7) % caravanTicks !== 0) continue
@@ -168,7 +177,7 @@ export function sendCaravans(state: GameState) {
     if (!journey) continue
     const { road, via } = journey
     const to = state.owner[journey.end]
-    const bonus = isAllied(state, work.owner, to) ? allyTrade : 100
+    const bonus = tradeWith(state, work.owner, to)
     const gold = Math.floor((road.length * caravanGold * bonus) / 100)
     state.caravans.push({ owner: work.owner, to, via, road, along: 0, gold })
   }

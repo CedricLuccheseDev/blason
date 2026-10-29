@@ -1,14 +1,15 @@
 import { Ecu } from '../game/svg/kit'
-import { Lozenge, Medallion, Seal } from '../game/svg/seals'
+import { Lozenge, Medallion, Plaque, Seal } from '../game/svg/seals'
 import { Glyph, INK, PAPER } from '../game/svg/marks'
-import { BADGE, RAISE, SEAL, SHIELD, scaled } from './tokens'
+import { BADGE, LINE_MEDALLION, RAISE, SEAL, SHIELD, scaled } from './tokens'
 import type { Mark } from '../game/svg/marks'
 import type { ReactNode } from 'react'
 
 // The HUD's drawn objects at their fixed sizes, each in its own box so the
 // sheets lay them out as they do words: a lord's shield, the wax seal of an
-// army or an act, the medallion of a work, the lozenge of a coup, a badge of
-// standing, a key of the keyboard. Drawn at scale 1, grown by the HUD's scale.
+// army or an act, the medallion of a work or of an act on a line, the lozenge
+// of a coup, a badge of standing, a key of the keyboard. Drawn at scale 1,
+// grown by the HUD's scale.
 
 /** A drawing's box: drawn on `w` by `h` units, laid out at that size grown by the HUD's scale. */
 const box = (w: number, h: number) => ({
@@ -87,16 +88,40 @@ export function SealEmblem({
   )
 }
 
-/** A work's gilt medallion; raised and glowing when in hand. */
-export function MedallionEmblem({
+/** A work's square plaque, ringed in gold; raised and glowing when in hand. */
+export function WorkEmblem({
   icon,
   size = 'l',
   held = false,
 }: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
   return (
     <Round size={size} held={held}>
-      {(at) => <Medallion {...at} icon={icon} lifted={held} />}
+      {(at) => <Plaque {...at} icon={icon} lifted={held} />}
     </Round>
+  )
+}
+
+/**
+ * An act's medallion on a thin line of a list, ringed in the colour of what
+ * it does (the right click's menu: an attack in gules, an alliance in green,
+ * an offering in gold): the cartouche's medallion, drawn smaller.
+ */
+export function ActMedallion({
+  icon,
+  ring,
+}: Readonly<{ icon: Mark; ring: string }>) {
+  // The cartouche's box, laid out smaller.
+  const side = boxOf('s')
+  const c = side / 2
+  return (
+    <svg
+      viewBox={`0 0 ${side} ${side}`}
+      style={{ width: scaled(LINE_MEDALLION), height: scaled(LINE_MEDALLION) }}
+      aria-hidden="true"
+      className="shrink-0 overflow-visible"
+    >
+      <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} />
+    </svg>
   )
 }
 
@@ -201,30 +226,5 @@ export function KeyCap({ k }: Readonly<{ k: string }>) {
       <span className="absolute inset-[3px] rotate-45 border-[1.5px] border-quill bg-vellum" />
       <span className="hud-figure relative text-hud-s">{k}</span>
     </span>
-  )
-}
-
-/** A mouse with its right button lit: what a right click opens. */
-export function RightClick() {
-  return (
-    <svg {...box(20, 30)} aria-hidden="true" className="shrink-0">
-      <rect
-        x={1}
-        y={1}
-        width={18}
-        height={28}
-        rx={9}
-        fill="var(--color-vellum)"
-        stroke={INK}
-        strokeWidth="1.5"
-      />
-      <path
-        d="M10 1 V12 H19 V10 A9 9 0 0 0 10 1 Z"
-        fill="var(--color-gilt)"
-        stroke={INK}
-        strokeWidth="1"
-      />
-      <path d="M1 12 H19" stroke={INK} strokeWidth="1" />
-    </svg>
   )
 }

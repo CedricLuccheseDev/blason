@@ -1,14 +1,13 @@
 import { Container, Graphics } from 'pixi.js'
 import { NEUTRAL } from '../../engine'
 import { mixColor } from './ease'
-import { flatten } from './geometry'
-import { drawLand } from './layers/lands'
+import { flatten, simplifyLoop, straighten } from './geometry'
 import { TONE, playerColor } from './palette'
 import { castleLand, corners, smooth, spread } from './trace'
-import type { GameState, Point, World } from '../../engine'
+import type { GameState, Point } from '../../engine'
 
 // The lands drawn as the boards draw them (design/mockups/cells.ts): each
-// region of the grid, a lord's land or a free domain, traced round its
+// region of the grid, a lord's land or the free land, traced round its
 // tiles, its steps rounded off, filled with its wash, clipped to the coast.
 // The land a castle holds is tinted with stone and walled, one tint for all
 // of a lord's castles. A region is traced again only when its land changed,
@@ -24,14 +23,16 @@ const FREE_WASH = 0.42
 const STONE_ALPHA = 0.3
 /** Points of a rampart's line between two of its merlons. */
 const MERLON = 6
+/** How far a wash's edge may stray from its outline, in map units: less than the border's ink covers. */
+const UNDER_INK = 0.08
 /** How often the lands are traced again, in ms. */
 const EVERY_MS = 200
 
-/** The key of a region: a lord, or a free domain (-3 and down); -2 the open sea; never yet drawn. */
+/** The key of a region: a lord, or the free land (-3); -2 the open sea; never yet drawn. */
 const SEA_KEY = -2
 const UNSET = 1 << 30
 
-export function makeRegions(state: GameState, land: World, me: number) {
+export function makeRegions(state: GameState, me: number) {
   const { grid } = state
   const { width, height } = grid
   const container = new Container()
@@ -41,7 +42,6 @@ export function makeRegions(state: GameState, land: World, me: number) {
   under.sortableChildren = true
   const washes = container.addChild(new Container())
   washes.sortableChildren = true
-  container.mask = container.addChild(drawLand(land))
   /** The castles' stone, laid over the ground's decoration with the borders. */
   const stone = new Graphics()
   // Each tile under the sea near a shore takes the nearest land's region, so the washes reach the coast and the coast clips them.
@@ -61,9 +61,8 @@ export function makeRegions(state: GameState, land: World, me: number) {
     const s = shore[t]
     if (s < 0) return SEA_KEY
     const owner = state.owner[s]
-    if (owner !== NEUTRAL) return owner
-    // The free domains are drawn during the opening only: then the free land is one.
-    return state.tick < state.rules.openingTicks ? -3 - state.realm[s] : -3
+    // The free land is one, in the opening too: only the standards planted are drawn.
+    return owner !== NEUTRAL ? owner : -3
   }
   let keys = new Int32Array(shore.length).fill(UNSET)
   const drawn = new Map<number, Array<Graphics>>()
@@ -86,14 +85,22 @@ export function makeRegions(state: GameState, land: World, me: number) {
     const loops = raw.map((l) => smooth(l, grid.size))
     const color = washOf(key)
     const base = under.addChild(new Graphics())
+    // Filled with fewer points: a straight run is one edge, and a curve's
+    // smallest turns lie under the border's ink.
     for (const loop of raw)
       base
         .poly(
-          flatten(loop.map(([x, y]): Point => [x * grid.size, y * grid.size])),
+          flatten(
+            straighten(loop).map(([x, y]): Point => [
+              x * grid.size,
+              y * grid.size,
+            ]),
+          ),
         )
         .fill(color)
     const wash = washes.addChild(new Graphics())
-    for (const loop of loops) wash.poly(flatten(loop)).fill(color)
+    for (const loop of loops)
+      wash.poly(flatten(simplifyLoop(loop, UNDER_INK))).fill(color)
     wash.zIndex = -spread(loops)
     base.zIndex = wash.zIndex
     drawn.set(key, [base, wash])
@@ -107,7 +114,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
     for (const set of castleLand(state, now))
       for (const loop of corners(width, height, (t) => set.has(t), set)) {
         const round = smooth(loop, grid.size)
-        stone.poly(flatten(round))
+        stone.poly(flatten(simplifyLoop(round, UNDER_INK)))
         walls.push(round)
       }
     stone.fill({ color: TONE.stoneDark, alpha: STONE_ALPHA })
@@ -151,7 +158,7 @@ export function makeRegions(state: GameState, land: World, me: number) {
     stone,
     /** A region's outline as last traced: loops in map units, its land on the right of their course. */
     outline: (key: number) => outlines.get(key) ?? [],
-    /** Each tile's region as last traced: a lord, a free domain (-3 and down), the open sea (-2). */
+    /** Each tile's region as last traced: a lord, the free land (-3), the open sea (-2). */
     keys: () => keys,
     /** Traces again the regions whose land changed, a few times a second; the regions traced, if any. */
     update(now: number): Set<number> | null {

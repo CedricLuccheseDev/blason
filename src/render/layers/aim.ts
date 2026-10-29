@@ -1,28 +1,31 @@
 import { Container, Graphics } from 'pixi.js'
 import {
+  barredBy,
   canBuild,
   canStart,
-  entryFor,
-  freeVillages,
-  roadTo,
+  courseFor,
+  freeWorks,
+  menFor,
 } from '../../../engine'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
 import { makeCoupAim } from './aimCoup'
-import type { GameState, Work } from '../../../engine'
+import type { Army, GameState, Work } from '../../../engine'
 import type { Hand } from '../hand'
 
 // What a click on the tile under the pointer would do. Against another's
-// land or free land: the road the army would march from its village to
-// the border, where it would enter, ringed, and a dotted line from there to
-// the tile aimed at. With a work in hand: its drawing on the
+// land or free land: the road the army would march from its village (the
+// mercenaries from their market) to the border, where it would enter, ringed, and a dotted line from there to
+// the tile aimed at, the very course the click sends it by. With a work in hand: its drawing on the
 // tile, the circle it reaches (the castle's land held, the market's range of
 // trade), red where it may not stand,
 // with the works already standing ringed in red. With a coup in hand, the
 // disc it would strike and its way there (layers/aimCoup.ts). In the opening:
-// the free domain one would start on, whole. Sized on screen.
+// a dotted ring where one's standard would be planted, no land drawn; in red
+// where another lord's standard is too near, his ringed by the ground it
+// holds. Sized on screen.
 
 type At = { x: number; y: number }
 
@@ -42,22 +45,24 @@ export function makeAim(state: GameState, me: number) {
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** The road the army would march from the free village nearest the front, as it would be drawn; none if no village is free. */
-  function roadOf(entry: number): Array<At> {
-    if (entry < 0) return []
-    for (const village of freeVillages(state, me, entry)) {
-      const road = roadTo(state, me, village, entry)
-      if (road) return drawRoad(state, road, (t) => state.owner[t] === me, 0)
-    }
-    return []
-  }
+  /** Whether a click would send the army: a village (or a market) with none out, and men to raise (« si tu peux pas envoyer d'armée ne met pas le chemin du village »). */
+  const sendable = (army: Army) =>
+    freeWorks(state, me, 0, state.rules.raisedAt[army]).length > 0 &&
+    menFor(state, me, army) > 0
 
-  /** Where an army would enter, and its road there, read again only when the pointer or the land moves. */
-  function entryAt(tile: number) {
-    const key = `${tile}:${state.tick}`
+  /** Where an army would enter, and the road it would march there from its free village or, for mercenaries, its free market, as drawn: the engine's own course, the one the click sends it by (courseFor); nothing if no army can leave. Read again only when the pointer, the land or the army in hand changes. */
+  function entryAt(tile: number, army: Army) {
+    const key = `${tile}:${state.tick}:${army}`
     if (key !== read.key) {
-      const entry = entryFor(state, me, tile)
-      read = { key, entry, road: roadOf(entry) }
+      const course = sendable(army) ? courseFor(state, me, tile, army) : null
+      const road = course?.road ?? []
+      read = {
+        key,
+        entry: course?.entry ?? -1,
+        road: road.length
+          ? drawRoad(state, road, (t) => state.owner[t] === me, 0)
+          : [],
+      }
     }
     return read
   }
@@ -91,35 +96,34 @@ export function makeAim(state: GameState, me: number) {
     ghost.visible = true
   }
 
-  /** The tiles of a domain, gathered again only when the pointer enters another. */
-  let domain = { realm: Number.NaN, tiles: [] as Array<number> }
-  function tilesOf(realm: number) {
-    if (domain.realm !== realm) {
-      const tiles: Array<number> = []
-      state.realm.forEach((r, t) => {
-        if (r === realm) tiles.push(t)
-      })
-      domain = { realm, tiles }
+  /** A dotted ring round a point, its dots some twelve pixels apart on screen, sixteen at least. */
+  function dotted(p: At, r: number, tone: number, zoom: number) {
+    const dots = Math.max(16, Math.round((2 * Math.PI * r * zoom) / 12))
+    for (let k = 0; k < dots; k++) {
+      const a = (k / dots) * Math.PI * 2
+      marks.moveTo(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r)
+      marks.arc(p.x, p.y, r, a, a + Math.PI / dots)
     }
-    return domain.tiles
+    marks.stroke({ width: 2.4 / zoom, color: tone, cap: 'round' })
   }
 
-  function opening(tile: number) {
-    if (state.players[me].tiles > 0 || !canStart(state, tile)) return
-    const s = state.grid.size
-    for (const t of tilesOf(state.realm[tile])) {
-      const p = siteOf(state, t)
-      marks.rect(p.x - s / 2, p.y - s / 2, s, s)
-    }
-    marks.fill({ color, alpha: 0.35 })
+  /** Where the standard would be planted: a dotted ring round the tile, no land drawn; too near another lord's, the ring in red, and his standard ringed by the ground it holds. */
+  function opening(tile: number, zoom: number) {
+    if (state.players[me].standard === tile) return
+    const barring = barredBy(state, me, tile)
+    const ok = canStart(state, me, tile)
+    dotted(siteOf(state, tile), 14 / zoom, ok ? color : TONE.fight, zoom)
+    const gap = state.rules.standardGap * state.grid.size
+    for (const lord of barring)
+      dotted(siteOf(state, state.players[lord].standard), gap, TONE.fight, zoom)
   }
 
-  function strike(tile: number, zoom: number) {
-    const { entry, road } = entryAt(tile)
+  function strike(tile: number, army: Army, zoom: number) {
+    const { entry, road } = entryAt(tile, army)
     if (entry < 0) return
     const e = siteOf(state, entry)
     const p = siteOf(state, tile)
-    // From the village to the border, the road the army would walk, then on to the tile aimed at.
+    // From the village or the market to the border, the road the army would walk, then on to the tile aimed at.
     for (let i = 1; i < road.length; i++) line(road[i - 1], road[i], zoom)
     if (road.length > 0) line(road[road.length - 1], e, zoom)
     line(e, p, zoom)
@@ -144,10 +148,10 @@ export function makeAim(state: GameState, me: number) {
       // The reach of a coup in hand shows even with the pointer off the land.
       if (opened && hand.coup && hovered < 0) coups.band(hand.coup)
       if (hovered < 0) return
-      if (!opened) opening(hovered)
+      if (!opened) opening(hovered, zoom)
       else if (hand.coup) coups.draw(hovered, hand.coup, zoom)
       else if (hand.work) building(hovered, hand.work, zoom)
-      else strike(hovered, zoom)
+      else strike(hovered, hand.army, zoom)
     },
   }
 }

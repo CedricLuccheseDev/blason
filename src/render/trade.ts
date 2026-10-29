@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
 import { tradeLinks } from '../../engine'
-import { drawPaving } from './art/paving'
+import { STONE, drawPaving } from './art/paving'
 import { playerColor } from './palette'
 import { drawRoad, pointOn } from './roads'
 import type { Spot } from './roads'
@@ -32,8 +32,10 @@ type Way = { length: number; path: Array<Spot> }
 
 export function makeTrade(stamps: Stamps, me: number) {
   const container = new Container()
-  /** The roads lie under the works; the wagons roll over them. */
+  /** The roads lie under the works; the wagons roll over them. Their stones, under a pixel each from afar, are laid only closer. */
   const roads = new Container()
+  const bands = roads.addChild(new Container())
+  const stones = roads.addChild(new Container())
   const sprites: Array<Sprite> = []
   /** The network's roads as drawn, by their two markets. */
   let paved = new Map<string, Array<Spot>>()
@@ -45,7 +47,8 @@ export function makeTrade(stamps: Stamps, me: number) {
     const links = tradeLinks(state)
     if (links === laid) return
     laid = links
-    roads.removeChildren().forEach((child) => child.destroy())
+    for (const layer of [bands, stones])
+      layer.removeChildren().forEach((child) => child.destroy())
     paved = new Map()
     const land = (t: number) => state.grid.land[t]
     for (const { a, b, road } of links) {
@@ -53,7 +56,12 @@ export function makeTrade(stamps: Stamps, me: number) {
       const owners = state.works
         .filter((w) => w.tile === a || w.tile === b)
         .map((w) => w.owner)
-      drawPaving(roads.addChild(new Graphics()), path, owners.includes(me))
+      drawPaving(
+        bands.addChild(new Graphics()),
+        stones.addChild(new Graphics()),
+        path,
+        owners.includes(me),
+      )
       paved.set(keyOf(a, b), path)
     }
   }
@@ -99,7 +107,9 @@ export function makeTrade(stamps: Stamps, me: number) {
   return {
     container,
     roads,
-    draw(state: GameState, between = 0) {
+    /** At so many pixels per map unit. */
+    draw(state: GameState, zoom: number, between = 0) {
+      stones.visible = STONE * zoom >= 1
       const seconds = performance.now() / 1000
       if (state.tick % 10 === 0) pave(state)
       state.caravans.forEach((caravan, n) => {

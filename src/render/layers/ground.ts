@@ -6,7 +6,6 @@ import { fades } from '../ground/detail'
 import { makeRivers } from '../ground/rivers'
 import { readTerrain } from '../ground/terrain'
 import { makeTones } from '../ground/tones'
-import { drawLand } from './lands'
 import type { Box } from '../camera'
 import type { GameState, Link, World } from '../../../engine'
 
@@ -20,9 +19,9 @@ export function makeGround(world: World, state: GameState) {
   const { grid } = state
   const terrain = readTerrain(world, grid)
   const container = new Container()
-  const tinted = container.addChild(new Container())
+  /** The blooms and the tones, which the scene clips to the coast with the washes. */
+  const tinted = new Container()
   tinted.addChild(makeBlooms(world), makeTones(grid, terrain))
-  tinted.mask = tinted.addChild(drawLand(world))
   const rivers = makeRivers(world.rivers)
   const decor = makeDecor({ grid, terrain })
   container.addChild(rivers.container, decor.container)
@@ -31,18 +30,21 @@ export function makeGround(world: World, state: GameState) {
     works: '',
   }
   let roads = new Uint8Array(grid.land.length)
+  let read = -1
 
   return {
     container,
+    tinted,
     /** The fields of the villages round a view, for the peasants at work in them. */
     fieldsNear: (view: Box) =>
       decor.fieldsNear(view.left, view.top, view.right, view.bottom),
     /** The lands as traced again, or the works or the roads changed: the decoration they touch is painted anew. */
     relayout(keys: Int32Array, traced: boolean) {
+      // The works and the roads change only with a tick.
+      if (!traced && state.tick === read) return
+      read = state.tick
       const links = tradeLinks(state)
-      const works =
-        state.works.map((w) => `${w.tile}:${w.owner}`).join() +
-        state.villages.join()
+      const works = state.works.map((w) => `${w.tile}:${w.owner}`).join()
       if (!traced && links === laid.links && works === laid.works) return
       if (links !== laid.links) {
         roads = new Uint8Array(grid.land.length)
@@ -51,7 +53,7 @@ export function makeGround(world: World, state: GameState) {
       laid = { links, works }
       decor.relayout({
         keys,
-        sites: [...state.works.map((w) => w.tile), ...state.villages],
+        sites: state.works.map((w) => w.tile),
         villages: state.works
           .filter((w) => w.work === 'village')
           .map(({ tile, owner }) => ({ tile, owner })),

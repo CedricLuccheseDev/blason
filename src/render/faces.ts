@@ -6,8 +6,8 @@
 const FACES = [
   "900 64px 'Alegreya Sans'",
   "700 64px 'Alegreya Sans'",
-  "64px 'IM Fell English SC'",
-  "64px 'IM Fell English'",
+  "64px 'Vollkorn SC'",
+  "64px 'Vollkorn'",
 ]
 /** How long to wait for them at most, in ms: past it, the game starts with what it has. */
 const FACES_WAIT = 4000

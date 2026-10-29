@@ -1,6 +1,9 @@
 import { Figure, Icon } from '../hud/Figure'
+import { Hint } from '../hud/Hint'
+import { Inline, Panel } from '../hud/Layout'
+import { Note } from '../hud/Text'
 import { ICON } from '../hud/tokens'
-import { Rule, Sheet } from '../hud/Sheet'
+import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
 import { Ecu } from './svg/kit'
 import { INK } from './svg/marks'
@@ -78,31 +81,45 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
 /**
  * Top centre, on one thin line: the clock, the race to the share of the land
  * that wins (my share in my colour, the leader's shield, the flag at the
- * share to reach), and the share to reach or when it drops next. Who leads
- * is read in the lords' list.
+ * share to reach), and the share to reach or when it drops next, in words,
+ * or its figure alone when the line lacks room (the words then under the
+ * pointer). Who leads is read in the lords' list.
  */
 export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
+  const { room, piece, step } = useFit(1)
   const { needed, dropIn } = summary
+  const words =
+    dropIn === null ? m.race.toWin(needed) : m.race.dropsIn(minutes(dropIn))
+  const figure = dropIn === null ? m.game.percent(needed) : minutes(dropIn)
   return (
-    <Sheet className="flex items-center gap-3 px-3 py-1">
-      <Figure size="m">{minutes(summary.seconds)}</Figure>
-      <Rule />
-      <div className="w-44 max-sm:w-24 short:w-32">
-        <Track summary={summary} />
+    <div ref={room} className="flex w-full min-w-0 justify-center">
+      <div ref={piece} className="w-max">
+        <Hint
+          title={m.hints.race.title}
+          lines={[m.hints.race.line(needed), m.hints.race.drops]}
+          under
+        >
+          <Panel gap="hair" className="w-80 items-center max-sm:w-auto">
+            <div className="w-full max-sm:w-56">
+              <Track summary={summary} />
+            </div>
+            <Inline gap="part">
+              <Figure size="l">{minutes(summary.seconds)}</Figure>
+              <span title={step ? words : undefined}>
+                <Inline gap="hair">
+                  {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
+                  {step ? (
+                    <Figure size="s">{figure}</Figure>
+                  ) : (
+                    <Note className="whitespace-nowrap">{words}</Note>
+                  )}
+                </Inline>
+              </span>
+            </Inline>
+          </Panel>
+        </Hint>
       </div>
-      {dropIn === null ? (
-        <span className="hud-note whitespace-nowrap">
-          {m.race.toWin(needed)}
-        </span>
-      ) : (
-        <span className="flex items-center gap-1">
-          <Icon name="hourglass" size={ICON.s} />
-          <span className="hud-note whitespace-nowrap">
-            {m.race.dropsIn(minutes(dropIn))}
-          </span>
-        </span>
-      )}
-    </Sheet>
+    </div>
   )
 }

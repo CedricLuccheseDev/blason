@@ -3,12 +3,10 @@ import {
   Outlet,
   Scripts,
   createRootRoute,
-  useRouterState,
 } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import appCss from '~/styles/app.css?url'
 import { NotFoundScreen } from '~/components/ErrorScreens'
-import { SiteFooter } from '~/components/SiteFooter'
 import { SITE_URL } from '~/lib/site'
 import { LocaleProvider } from '~/i18n'
 import { getLocale } from '~/i18n/locale'
@@ -84,7 +82,12 @@ export const Route = createRootRoute({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@700;800;900&family=Anton&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Inter:wght@400;500;600;700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@700;800;900&family=Anton&family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Vollkorn+SC:wght@400;600&family=Inter:wght@400;500;600;700&display=swap',
+      },
+      // The game's name alone is still drawn in IM Fell, as a mark: only its letters are fetched.
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&text=BLASONblason&display=swap',
       },
     ],
   }),
@@ -111,13 +114,9 @@ function RootDocument({
   lang: string
   children: ReactNode
 }>) {
-  // A route that is a detour rather than a page (signing in) declares
-  // `chrome: false` and renders on its own, with its own way back.
-  const chrome = useRouterState({
-    select: (s) =>
-      !s.matches.some((match) => match.staticData.chrome === false),
-  })
-
+  // No shared footer: each page carries its foot inside the book's frame,
+  // the home's (Home.tsx) and the leaves' (Leaf.tsx), the game none
+  // (« jamais de panneaux de site », the art direction).
   return (
     <html lang={lang}>
       <head>
@@ -125,7 +124,6 @@ function RootDocument({
       </head>
       <body className="flex min-h-screen flex-col">
         <div className="flex flex-1 flex-col">{children}</div>
-        {chrome ? <SiteFooter /> : null}
         <Scripts />
       </body>
     </html>

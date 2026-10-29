@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js'
 import { strikeAt } from '../../../engine'
 import { TONE, playerColor } from '../palette'
 import { siteOf } from '../marks'
-import { drawArrow, drawPot, drawTroublemaker } from '../art/coups'
+import { drawArrow, drawStone, drawTroublemaker } from '../art/coups'
 import { along, dots, endsOf, progress, wayOf } from '../flight'
 import { drawFallen } from './impacts'
 import type { Fallen } from './impacts'
@@ -11,13 +11,13 @@ import type { GameState, Strike } from '../../../engine'
 // The coups on their way, seen by all, at the land's scale: the
 // troublemaker walking his straight line from his lord's border, a torch
 // held high, his steps dotted behind him; a volley of arrows flying its arc
-// from the border; a pot of Greek fire flying higher, trailing smoke. Where
+// from the border; a trebuchet's stone flying higher, aflame, trailing smoke. Where
 // one comes at the player, the land it will strike ringed in red, beating
 // faster as it nears; where it is his, ringed faintly in his colour. What
 // each does as it falls, or a troublemaker stopped, is drawn by
 // layers/impacts.ts. A figure never shrinks under so many pixels.
 
-/** Arrows in a volley, smoke puffs behind a pot. */
+/** Arrows in a volley, smoke puffs behind a stone. */
 const ARROWS = 9
 const PUFFS = 8
 
@@ -105,7 +105,7 @@ export function makeStrikes(me: number) {
     }
   }
 
-  function pot(
+  function stone(
     state: GameState,
     s: Strike,
     p: number,
@@ -124,7 +124,7 @@ export function makeStrikes(me: number) {
       })
     }
     const at = along(a, b, p, true)
-    drawPot(g, at.x, at.y, r, 0.5 + 0.5 * Math.sin(seconds * 19))
+    drawStone(g, at.x, at.y, r, 0.5 + 0.5 * Math.sin(seconds * 19))
   }
 
   return {
@@ -138,7 +138,7 @@ export function makeStrikes(me: number) {
         ring(state, s, p, seconds, zoom)
         if (s.coup === 'troublemaker') walker(state, s, p, seconds, zoom)
         else if (s.coup === 'archers') volley(state, s, p, zoom)
-        else pot(state, s, p, seconds, zoom)
+        else stone(state, s, p, seconds, zoom)
         // The way a flight still has to go, dotted faintly in ink.
         if (s.coup !== 'troublemaker' && s.owner === me) {
           const { a, b } = endsOf(state, s)

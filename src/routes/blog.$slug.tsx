@@ -1,4 +1,5 @@
 import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+import { Leaf } from '~/components/home/Leaf'
 import { fetchBlogPost } from '~/content/posts.runtime'
 import { useMessages } from '~/i18n'
 import { SITE_URL } from '~/lib/site'
@@ -32,28 +33,21 @@ function PostPage() {
   const { post } = Route.useLoaderData()
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-20">
-      <Link
-        to="/blog"
-        className="rise-in type-label inline-block hover:text-ink"
-      >
-        {m.blog.back}
-      </Link>
-      <h1 className="rise-in stagger-1 mt-8 font-display text-3xl font-bold tracking-tight">
-        {post.title}
-      </h1>
-      <time
-        dateTime={post.date}
-        className="rise-in stagger-1 mt-3 block font-mono text-xs text-dim"
-      >
-        {post.date}
-      </time>
+    <Leaf
+      title={post.title}
+      line={post.date}
+      above={
+        <Link to="/blog" className="hud-note hover:text-gilt-deep">
+          {m.blog.back}
+        </Link>
+      }
+    >
       {/* Author-written Markdown, compiled into the bundle at build time.
           No visitor input ever reaches this string. */}
       <div
-        className="rise-in stagger-2 prose-ink mt-12"
+        className="hud-prose"
         dangerouslySetInnerHTML={{ __html: post.html }}
       />
-    </main>
+    </Leaf>
   )
 }

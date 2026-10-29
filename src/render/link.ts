@@ -20,6 +20,12 @@ export function relayUrl(): string | null {
   return import.meta.env.DEV ? 'ws://localhost:8787/ws' : null
 }
 
+/** Where the relay tells the public game in its opening (GET /public): beside its line, over http(s). */
+export function upcomingUrl(): string | null {
+  const line = relayUrl()
+  return line && new URL('/public', line.replace(/^ws/, 'http')).href
+}
+
 /** A line opened to the relay, once it answers. */
 export function connect(url: string): Promise<Link> {
   return new Promise((resolve, reject) => {

@@ -1,33 +1,46 @@
 import { blogFr } from './blog'
+import { homeFr } from './home'
+import { heraldsFr } from './heralds'
+import { hintsFr } from './hints'
+import { bookFr } from './book'
 import type { Messages } from './en'
 
 export const fr: Messages = {
   blog: blogFr,
+  heralds: heraldsFr,
+  hints: hintsFr,
+  book: bookFr,
   common: {
     author: 'Cédric Lucchese',
     about: 'Comment ça marche',
     legal: 'Mentions légales',
   },
-  home: {
-    tagline:
-      'Un jeu de stratégie médiéval : vingt seigneurs, une terre redessinée à chaque partie.',
-    play: 'Jouer',
-    rivals: 'Adversaires',
-    levels: { easy: 'Faciles', normal: 'Moyens', hard: 'Difficiles' },
-    levelHint: 'Change avec ← →',
-    watch: 'Regarder une partie',
-    journal: 'Journal',
-    back: 'Retour au menu',
-    menu: 'Menu',
-  },
+  home: homeFr,
   game: {
     map: 'La terre de la partie, vue d’en haut',
-    choose: 'Choisis où tu commences',
-    chooseHint: 'Clique un domaine libre sur la carte : il sera tout à toi',
-    others: 'Les autres seigneurs choisissent',
+    choose: 'Plante ton étendard',
+    chooseHint:
+      'Clique où tu veux sur la terre ; tu peux le déplacer jusqu’à la fin du compte',
+    planted: 'Ton étendard est planté',
+    others: 'Les seigneurs plantent leurs étendards',
+    plantedHint:
+      'Clique ailleurs pour le déplacer ; la terre autour sera à toi à la fin du compte',
+    tooNear: 'trop près d’un autre étendard',
     click: 'clic : attaquer',
-    noLevy: 'tous tes villages ont une armée dehors',
-    armies: { raid: 'Chevauchée', host: 'Ost', ban: 'Arrière-ban' },
+    noLevy: {
+      village: 'tous tes villages ont une armée dehors',
+      market: 'aucun marché libre pour les engager',
+    },
+    noMen: {
+      village: 'pas de paysans à lever',
+      market: 'pas assez d’or',
+    },
+    armies: {
+      raid: 'Chevauchée',
+      host: 'Ost',
+      ban: 'Arrière-ban',
+      mercenaries: 'Mercenaires',
+    },
     works: {
       village: 'Village',
       market: 'Marché',
@@ -36,13 +49,15 @@ export const fr: Messages = {
     coups: {
       troublemaker: 'Causeur de troubles',
       archers: 'Archers',
-      fire: 'Feu grégeois',
+      trebuchet: 'Trébuchet',
     },
     launch: 'clic : lancer',
+    campaign: 'En campagne',
+    seek: (army: string) => `Voir : ${army}`,
     beyond: {
       troublemaker: 'seulement sur la terre d’un autre',
       archers: 'trop loin de ta frontière',
-      fire: 'trop loin de ta frontière',
+      trebuchet: 'trop loin de ta frontière',
     },
     noGold: 'pas assez d’or',
     percent: (n: number) => `${n}\u202f%`,
@@ -78,35 +93,20 @@ export const fr: Messages = {
     toWin: (share: number) => `pour gagner : ${share}\u202f%`,
     dropsIn: (left: string) => `pour gagner, baisse dans ${left}`,
   },
-  pacts: {
-    ally: 'Alliance',
-    offer: 'propose une alliance',
-    asked: 'Proposée',
-    accept: 'Accepter',
-    renew: 'Renouveler',
-    break: 'Rompre',
-  },
-  news: {
-    attacked: 't’attaque',
-    took: (tiles: number) => `tu lui as pris ${tiles} tuiles`,
-    lost: (tiles: number) => `t’a pris ${tiles} tuiles`,
-    betrayed: 'a rompu votre alliance',
-    seized: 't’a pris',
-    works: {
-      village: (n: number) => (n === 1 ? 'ton village' : `${n} villages`),
-      market: (n: number) => (n === 1 ? 'ton marché' : `${n} marchés`),
-      castle: (n: number) => (n === 1 ? 'ton château' : `${n} châteaux`),
+  menu: {
+    label: (lord: string) => `Que faire avec ${lord}`,
+    attack: 'Attaquer',
+    alliance: {
+      offer: 'Alliance',
+      accept: 'Valider l’alliance',
+      renew: 'Renouveler l’alliance',
+      break: 'Rompre l’alliance',
+      asked: 'Alliance demandée',
     },
-    and: 'et',
-    fell: 'est tombé',
-    coup: {
-      troublemaker: 'envoie un causeur de troubles chez toi',
-      archers: 'tire une volée sur toi',
-      fire: 'lance le feu grégeois sur toi',
-    },
-    stopped: 'a arrêté ton causeur de troubles',
-    roseAgainst: 'a soulevé ta terre contre toi',
-    roseFrom: 'a perdu sa terre à tes rebelles',
+    offering: 'Offrande',
+    hint: 'clic droit : alliance, offrande',
+    options: 'Alliance, offrande',
+    hintTouch: 'appui long : alliance, offrande',
   },
   lord: {
     allied: 'Ton allié',
@@ -114,11 +114,6 @@ export const fr: Messages = {
     felon: 'Félon',
     list: 'Les seigneurs',
     you: 'toi',
-  },
-  camera: {
-    zoomIn: 'Rapprocher',
-    zoomOut: 'Éloigner',
-    home: 'Revenir à ta terre',
   },
   errors: {
     title: 'Une erreur est survenue',

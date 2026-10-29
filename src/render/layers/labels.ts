@@ -1,36 +1,30 @@
 import { BitmapText, Container, Graphics, TextStyle } from 'pixi.js'
 import { drawSoldier } from '../art/soldier'
+import { smoothstep } from '../ease'
 import { BEAT } from '../men'
 import { TONE } from '../palette'
+import { apart, fadeUnder, offWorks } from './crowd'
+import type { Ground, Label } from './crowd'
 
 // Who holds each land and how strong he is, as in OpenFront: the lord's name
 // and, under it, his army in big figures beside a soldier, written at the
 // heart of his land; mine in gold. Light letters cut out in ink, readable on
-// any wash. Sized on screen, the bigger the land the bigger the words,
-// readable at every zoom. Moved and counted again once a second, as the HUD:
-// the figures step, they do not run.
+// any wash, over the works. Sized on screen, the bigger the land the bigger
+// the words, readable at every zoom: a name never under 16 pixels and at
+// full strength; only a land too small on screen to carry its words leaves
+// them out, never the player's. Moved and counted again once a second, as
+// the HUD: the figures step, they do not run.
 
 /** The fonts are drawn this big, then scaled to their size on screen. */
 const SHARP = 64
 /** Light letters cut out in ink: they read on any lord's wash. */
 const LIGHT = 0xfbf4e2
 const CUT = { color: TONE.ink, join: 'round' } as const
-/** The name against the army's figures, and never under 13 pixels. */
+/** The name against the army's figures, and never under 16 pixels on screen. */
 const NAME = 0.56
-const NAME_MIN = 13
-
-type Label = {
-  box: Container
-  name: BitmapText
-  army: BitmapText
-  mark: Graphics
-  size: number
-  at: { x: number; y: number }
-  /** Where it is drawn now, gliding towards `at`. */
-  shown: { x: number; y: number } | null
-  /** The army as counted at the last beat. */
-  count: number
-}
+const NAME_MIN = 16
+/** A land's side on screen, in pixels, under which its words begin to fade, and under which none show. */
+const ROOM = [14, 26] as const
 
 /** The soldier of the battles, light, beside an army: what the figure counts. */
 function soldier(): Graphics {
@@ -44,7 +38,11 @@ function soldier(): Graphics {
 /** Share of the way a label glides each frame towards its new place. */
 const GLIDE = 0.05
 
-export type Placement = Map<number, { x: number; y: number; size: number }>
+/** Where each lord is written, how big on screen, and the side of the land he is written on, in map units. */
+export type Placement = Map<
+  number,
+  { x: number; y: number; size: number; reach: number }
+>
 
 export function makeLabels<TState extends { tick: number }>(
   me: number,
@@ -52,6 +50,8 @@ export function makeLabels<TState extends { tick: number }>(
   /** The figure written under each lord's name: his army, in soldiers. */
   count: (state: TState, lord: number) => number,
   place: (state: TState) => Placement,
+  /** What the words keep clear of at a zoom: the lords' works and their lands. */
+  ground?: (zoom: number) => Ground,
 ) {
   const container = new Container()
   const armyStyle = new TextStyle({
@@ -62,7 +62,7 @@ export function makeLabels<TState extends { tick: number }>(
     stroke: { ...CUT, width: SHARP * 0.2 },
   })
   const nameStyle = new TextStyle({
-    fontFamily: "'IM Fell English SC', Georgia, serif",
+    fontFamily: "'Vollkorn SC', Georgia, serif",
     fontSize: SHARP,
     fill: LIGHT,
     stroke: { ...CUT, width: SHARP * 0.18 },
@@ -76,7 +76,7 @@ export function makeLabels<TState extends { tick: number }>(
   const mineName = gilt(nameStyle)
   const labels = new Map<number, Label>()
   let beat = -1
-  let placed = 0
+  let placed = { zoom: 0, scale: 0 }
 
   function labelOf(lord: number): Label {
     let label = labels.get(lord)
@@ -100,7 +100,9 @@ export function makeLabels<TState extends { tick: number }>(
       army,
       mark,
       size: 0,
+      reach: 0,
       at: { x: 0, y: 0 },
+      nudge: { x: 0, y: 0 },
       shown: null,
       count: -1,
     }
@@ -113,11 +115,12 @@ export function makeLabels<TState extends { tick: number }>(
     const places = place(state)
     for (const [lord, label] of labels)
       if (!places.has(lord)) label.box.visible = false
-    for (const [lord, { x, y, size }] of places) {
+    for (const [lord, { x, y, size, reach }] of places) {
       const label = labelOf(lord)
       label.box.visible = true
       label.at = { x, y }
       label.size = size
+      label.reach = reach
       const figure = count(state, lord)
       if (figure !== label.count) {
         label.count = figure
@@ -132,7 +135,10 @@ export function makeLabels<TState extends { tick: number }>(
   function glide(): boolean {
     let any = false
     for (const label of labels.values()) {
-      const to = label.at
+      const to = {
+        x: label.at.x + label.nudge.x,
+        y: label.at.y + label.nudge.y,
+      }
       const from = label.shown ?? to
       const dx = to.x - from.x
       const dy = to.y - from.y
@@ -146,11 +152,14 @@ export function makeLabels<TState extends { tick: number }>(
     return any
   }
 
-  /** The name over the army and its soldier; sizes in pixels on screen. */
-  function layout(zoom: number) {
-    for (const label of labels.values()) {
-      const big = label.size / zoom
-      const small = Math.max(NAME_MIN, label.size * NAME) / zoom
+  /** The name over the army and its soldier, `scale` their sizes on screen; the words of a land too small on screen faded. */
+  function layout(zoom: number, scale: number) {
+    for (const [lord, label] of labels) {
+      const shows = lord === me ? 1 : smoothstep(...ROOM, label.reach * zoom)
+      label.box.alpha = shows
+      label.box.renderable = shows > 0
+      const big = (label.size * scale) / zoom
+      const small = Math.max(NAME_MIN, label.size * NAME * scale) / zoom
       label.name.scale.set(small / SHARP)
       label.name.position.set(0, -small * 0.62)
       label.army.scale.set(big / SHARP)
@@ -162,40 +171,40 @@ export function makeLabels<TState extends { tick: number }>(
       label.mark.position.set(-(width + mark * 1.05) / 2 + mark * 0.35, row)
       label.army.position.set(-(width + mark * 1.05) / 2 + mark * 1.05, row)
     }
+    if (ground) offWorks(labels, ground(zoom))
+    apart(labels, me)
   }
 
   return {
     container,
-    /** Where a lord's name is drawn now, and its half width and height, in map units; none while he is not written. */
+    /** Where a lord's name is drawn now, its half width and height, the right end of it or of the figure under it, in map units, and how much his words show; none while he is not written. */
     nameOf(lord: number) {
       const label = labels.get(lord)
-      if (!label?.box.visible || !label.name.visible || !label.shown)
-        return null
-      const { name, shown } = label
+      if (!label?.box.visible || !label.shown) return null
+      const { name, army, shown } = label
       return {
         x: shown.x + name.x,
         y: shown.y + name.y,
         half: name.width / 2,
         tall: name.height,
+        right: shown.x + Math.max(name.x + name.width / 2, army.x + army.width),
+        alpha: label.box.alpha,
       }
     },
-    /** `shown`: how much the names show, faded out when the land grows too small for them. */
-    update(state: TState, zoom: number, shown = 1) {
-      for (const label of labels.values()) {
-        label.name.alpha = shown
-        label.name.visible = shown > 0
-      }
+    /** At `zoom` pixels a map unit; `scale`, the words' size on screen against their size as drawn: smaller on a small screen and farther out than the whole land, a name never under 16 pixels. */
+    update(state: TState, zoom: number, scale = 1, bottom = Infinity) {
       const now = Math.floor(state.tick / BEAT)
-      let moved = zoom !== placed
+      let moved = zoom !== placed.zoom || scale !== placed.scale
       if (now !== beat) {
         beat = now
         settle(state)
         moved = true
       }
       if (glide()) moved = true
+      fadeUnder(labels, bottom)
       if (!moved) return
-      placed = zoom
-      layout(zoom)
+      placed = { zoom, scale }
+      layout(zoom, scale)
     },
   }
 }

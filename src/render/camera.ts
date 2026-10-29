@@ -1,5 +1,7 @@
+import { MAP_SIZES } from '../../engine'
 import { makeGestures } from './gestures'
 import type { Application, Container } from 'pixi.js'
+import type { MapSize } from '../../engine'
 
 // The camera: the wheel zooms towards the pointer, smoothed over a few
 // frames; a drag moves the map, out past its edges if need be, and two
@@ -7,7 +9,7 @@ import type { Application, Container } from 'pixi.js'
 // realm, or to the whole land when there is none. It goes out farther than
 // the whole land, until the page shows round it.
 
-/** The widest and the closest zoom, against the whole land on screen: at the widest it fills half the screen. */
+/** The widest and the closest zoom, against the whole standard land on screen: at the widest it fills half the screen. */
 const [FAR, CLOSE] = [0.5, 9]
 
 export type Box = { left: number; top: number; right: number; bottom: number }
@@ -15,7 +17,7 @@ export type Box = { left: number; top: number; right: number; bottom: number }
 export function makeCamera(
   app: Application,
   world: Container,
-  size: { width: number; height: number },
+  land: { width: number; height: number; size: MapSize },
   home: () => Box | null,
 ) {
   const canvas = app.canvas
@@ -27,16 +29,22 @@ export function makeCamera(
   let aim: { x: number; y: number; frames: number } | null = null
 
   const fitZoom = () =>
-    Math.min(app.screen.width / size.width, app.screen.height / size.height) *
+    Math.min(app.screen.width / land.width, app.screen.height / land.height) *
     0.96
+  // A larger land, its side so many times the standard one's, lets the
+  // camera come as close as the standard land does: the detail up close
+  // is the same whatever its size.
+  const side = Math.sqrt(MAP_SIZES[land.size])
+  /** The closest zoom. */
+  const closest = () => CLOSE * fitZoom() * side
   /** A zoom within the camera's reach. */
   const within = (k: number) =>
-    Math.max(FAR * fitZoom(), Math.min(CLOSE * fitZoom(), k))
+    Math.max(FAR * fitZoom(), Math.min(closest(), k))
 
   function clamp() {
     const k = world.scale.x
-    const w = size.width * k
-    const h = size.height * k
+    const w = land.width * k
+    const h = land.height * k
     const { width, height } = app.screen
     // The map may leave the screen up to its middle: any place, a corner's
     // too, can be brought to the centre. The page round it fills the rest.
@@ -59,23 +67,34 @@ export function makeCamera(
     fitted = true
     target = fitZoom()
     world.scale.set(target)
-    world.x = (app.screen.width - size.width * target) / 2
-    world.y = (app.screen.height - size.height * target) / 2
+    world.x = (app.screen.width - land.width * target) / 2
+    world.y = (app.screen.height - land.height * target) / 2
   }
 
-  function focus(box: Box) {
+  /** A point of the world at the middle of the screen, at a zoom within reach, at once. */
+  function look(x: number, y: number, k: number) {
+    fitted = false
+    aim = null
+    target = within(k)
+    world.scale.set(target)
+    world.x = app.screen.width / 2 - x * target
+    world.y = app.screen.height / 2 - y * target
+    clamp()
+  }
+
+  /** Flies to a box of the world, framed with some room; at once if asked (a saved game shown). */
+  function focus(box: Box, instant = false) {
     fitted = false
     const room = 160
     const k = Math.min(
       app.screen.width / (box.right - box.left + room),
       app.screen.height / (box.bottom - box.top + room),
     )
-    target = Math.max(fitZoom(), Math.min((CLOSE / 2) * fitZoom(), k))
-    aim = {
-      x: (box.left + box.right) / 2,
-      y: (box.top + box.bottom) / 2,
-      frames: 90,
-    }
+    target = Math.max(fitZoom(), Math.min(closest() / 2, k))
+    const x = (box.left + box.right) / 2
+    const y = (box.top + box.bottom) / 2
+    if (instant) look(x, y, target)
+    else aim = { x, y, frames: 90 }
   }
 
   function fly(to: { x: number; y: number; frames: number }) {
@@ -150,6 +169,13 @@ export function makeCamera(
     },
     fit,
     focus,
+    look,
+    /** Flies to a point of the world, at the zoom it is at. */
+    toward(x: number, y: number) {
+      fitted = false
+      target = world.scale.x
+      aim = { x, y, frames: 60 }
+    },
     home: goHome,
     /** One step closer (1) or farther (-1), round the middle of the screen. */
     zoomBy(step: 1 | -1) {

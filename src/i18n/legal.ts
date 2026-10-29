@@ -29,8 +29,8 @@ export const legalEn: LegalContent = {
     {
       heading: 'Personal data',
       body: [
-        'Blason has no accounts, no advertising and no audience measurement. A game is played entirely in your browser: the map, the bots and every move are computed on your machine, and nothing of your game is sent to our server.',
-        'This site sets no cookie. It keeps one thing in your browser, the bots’ level you last chose, so that the home remembers it; nothing leaves your machine. The language follows the one your browser asks for.',
+        'Blason has no accounts, no advertising and no audience measurement. A game against the bots is played entirely in your browser: the map, the bots and every move are computed on your machine, and nothing of it is sent to our server. A game online goes through our relay, which receives your orders and passes them to the other players of the room, with your IP address as any connection; it keeps nothing once the game is over.',
+        'This site sets no cookie and keeps nothing in your browser. The language follows the one your browser asks for.',
         'Fonts are served by Google Fonts (Google Ireland Ltd), which receives your IP address when the page loads.',
         'If a page fails, the error message, its trace and the address of the page are sent to our server with your browser’s user agent, so that the failure can be fixed; they are kept in the server logs for a limited time.',
         'Like any web server, the hosting infrastructure logs requests (IP address, user agent) for security and diagnostics, for a limited time.',
@@ -40,7 +40,7 @@ export const legalEn: LegalContent = {
     {
       heading: 'Intellectual property',
       body: [
-        'The game’s code, its drawings included, is free software under the GNU Affero General Public License v3.0. The texts are © Cédric Lucchese unless stated otherwise. The fonts, IM Fell English and Alegreya Sans among them, are under the SIL Open Font License.',
+        'The game’s code, its drawings included, is free software under the GNU Affero General Public License v3.0. The texts are © Cédric Lucchese unless stated otherwise. The fonts, Vollkorn, IM Fell English and Alegreya Sans among them, are under the SIL Open Font License.',
       ],
     },
   ],
@@ -66,8 +66,8 @@ export const legalFr: LegalContent = {
     {
       heading: 'Données personnelles',
       body: [
-        "Blason n'a ni compte, ni publicité, ni mesure d'audience. Une partie se joue entièrement dans votre navigateur : la carte, les bots et chaque coup sont calculés sur votre machine, et rien de votre partie n'est envoyé à notre serveur.",
-        'Ce site ne dépose aucun cookie. Il garde une seule chose dans votre navigateur, le niveau des bots choisi la dernière fois, pour que l’accueil s’en souvienne ; rien ne quitte votre machine. La langue suit celle que demande votre navigateur.',
+        "Blason n'a ni compte, ni publicité, ni mesure d'audience. Une partie contre les bots se joue entièrement dans votre navigateur : la carte, les bots et chaque coup sont calculés sur votre machine, et rien n'en est envoyé à notre serveur. Une partie en ligne passe par notre relais, qui reçoit vos ordres et les transmet aux autres joueurs de la salle, avec votre adresse IP comme toute connexion ; il n'en garde rien une fois la partie finie.",
+        'Ce site ne dépose aucun cookie et ne garde rien dans votre navigateur. La langue suit celle que demande votre navigateur.',
         'Les polices sont servies par Google Fonts (Google Ireland Ltd), qui reçoit votre adresse IP au chargement de la page.',
         "Si une page échoue, le message d'erreur, sa trace et l'adresse de la page sont envoyés à notre serveur avec le user agent de votre navigateur, pour que la panne soit corrigée ; ils restent dans les journaux du serveur pour une durée limitée.",
         "Comme tout serveur web, l'hébergement journalise les requêtes (adresse IP, user agent) à des fins de sécurité et de diagnostic, pour une durée limitée.",
@@ -77,7 +77,7 @@ export const legalFr: LegalContent = {
     {
       heading: 'Propriété intellectuelle',
       body: [
-        'Le code du jeu, ses dessins compris, est un logiciel libre sous licence GNU Affero General Public License v3.0. Les textes sont © Cédric Lucchese, sauf mention contraire. Les polices, dont IM Fell English et Alegreya Sans, sont sous licence SIL Open Font License.',
+        'Le code du jeu, ses dessins compris, est un logiciel libre sous licence GNU Affero General Public License v3.0. Les textes sont © Cédric Lucchese, sauf mention contraire. Les polices, dont Vollkorn, IM Fell English et Alegreya Sans, sont sous licence SIL Open Font License.',
       ],
     },
   ],

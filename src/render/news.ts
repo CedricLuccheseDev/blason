@@ -1,129 +1,138 @@
+import { UNIT, apart } from '../../engine'
 import { makeCoupNews } from './coupNews'
+import { tilePlaces } from './places'
 import type { CoupNews } from './coupNews'
-import type { GameState, Work } from '../../engine'
+import type { GameState } from '../../engine'
 
-// The news, for the player's letters: who strikes him, who took one of his
-// works (at once: a village, a market lost must never go unseen), an ally
-// who broke faith, a lord who fell, and once a fight with a lord is over, what he took
-// from him and lost to him in all; the coups launched at him, his
-// troublemaker stopped, a land risen (coupNews.ts); never the same letter
-// every second. Read
-// once a second by comparing the game with the second before.
+// The news, as the player hears it, each where it happened (notes.ts lays
+// it on the map, the HUD writes it there): a lord whose army comes for
+// him, at the border it bites into, told once and again only after a
+// while; the coups launched at him, his troublemaker stopped, a land risen
+// (coupNews.ts); an offering given him, and how much gold, on the giver's
+// land nearest his own; his alliances, offered to him, made, or come to
+// their end, there too, though the map shows them (« continue les notifs
+// même si on affiche les alliances sur la map »). And the one cry to all: a lord who broke an
+// alliance, any alliance, and whom he betrayed (the HUD's banner). A work
+// lost is struck out where it stood by the map itself (layers/tidings.ts).
+// Read once a second by comparing the game with the second before.
 
 export type News =
-  | { kind: 'attacked'; lord: number }
-  | { kind: 'took'; lord: number; tiles: number }
-  | { kind: 'lost'; lord: number; tiles: number }
-  | { kind: 'betrayed'; lord: number }
-  | { kind: 'fell'; lord: number }
-  | { kind: 'seized'; lord: number; works: Partial<Record<Work, number>> }
+  | { kind: 'attacked'; lord: number; tile: number }
+  | { kind: 'betrayed'; lord: number; victim: number }
+  | { kind: 'offering'; lord: number; gold: number; tile: number }
+  | { kind: 'pact'; lord: number; how: PactNews; tile: number }
   | CoupNews
 
-/** Below so many tiles in a fight, a change of hands is not news. */
-const NOTABLE = 20
-/** Seconds without a tile changing hands with a lord before the fight with him is told. */
-const QUIET = 3
+/** What befell one of my alliances: offered to me, made, or come to its end (not broken: a betrayal is cried to all). */
+export type PactNews = 'offered' | 'made' | 'ended'
+
+/** Tiles above a lord's name an alliance's pennant stands. */
+const ABOVE = 6
+
 /** Seconds a lord who struck may strike again before it is news once more. */
 const AGAIN = 30
 
 export function makeNews(state: GameState, me: number) {
-  let owner = Int32Array.from(state.owner)
   /** When each lord last had an army against me, in seconds read. */
   const struck = new Map<number, number>()
-  /** Each running fight: the tiles taken and lost with a lord, and the seconds since one changed hands. */
-  const fights = new Map<
-    number,
-    { took: number; lost: number; still: number }
-  >()
   let second = 0
-  let allies = new Set<number>()
-  /** My works at the last reading, by their tile. */
-  let held = new Map<number, Work>()
-  let alive = state.players.map((p) => p.alive)
+  let alliances = [...state.alliances]
+  let felons = state.players.map((p) => p.felonUntil)
+  let given = new Set(state.offerings)
+  let asked = new Set(state.requests)
   const coups = makeCoupNews(state, me)
 
-  const alliesOf = () =>
-    new Set(
-      state.alliances.flatMap((x) => {
-        if (x.a === me) return [x.b]
-        return x.b === me ? [x.a] : []
-      }),
-    )
-
-  /** The lords whose armies come for me, told once, and again only after a while. */
+  /** The lords whose armies come for me, where they enter, told once, and again only after a while. */
   function strikes(news: Array<News>) {
     for (const host of state.hosts) {
       if (host.target !== me) continue
       const last = struck.get(host.owner)
       if (last === undefined || second - last > AGAIN)
-        news.push({ kind: 'attacked', lord: host.owner })
+        news.push({ kind: 'attacked', lord: host.owner, tile: host.entry })
       struck.set(host.owner, second)
     }
   }
 
-  /** The tiles changing hands with each lord counted; a fight gone quiet told in all. */
-  function exchanges(news: Array<News>) {
-    for (const fight of fights.values()) fight.still += 1
-    state.owner.forEach((o, t) => {
-      const was = owner[t]
-      const mine = o === me
-      if (o === was || (!mine && was !== me)) return
-      const lord = mine ? was : o
-      if (lord < 0) return
-      const fight = fights.get(lord) ?? { took: 0, lost: 0, still: 0 }
-      if (mine) fight.took += 1
-      else fight.lost += 1
-      fight.still = 0
-      fights.set(lord, fight)
-    })
-    owner = Int32Array.from(state.owner)
-    for (const [lord, fight] of fights) {
-      if (fight.still < QUIET) continue
-      fights.delete(lord)
-      if (fight.took >= NOTABLE)
-        news.push({ kind: 'took', lord, tiles: fight.took })
-      if (fight.lost >= NOTABLE)
-        news.push({ kind: 'lost', lord, tiles: fight.lost })
+  /**
+   * The alliances gone since the last reading: whose breaker was marked a
+   * traitor for it, cried to all; mine that came to their end unbroken. And
+   * mine made since, and the offers made to me.
+   */
+  function bonds(news: Array<News>) {
+    const now = new Set(state.alliances)
+    const other = (a: number, b: number) => (a === me ? b : a)
+    for (const alliance of alliances) {
+      if (now.has(alliance)) continue
+      const { a, b } = alliance
+      const broke = (lord: number) =>
+        state.players[lord].felonUntil > felons[lord]
+      if (broke(a)) news.push({ kind: 'betrayed', lord: a, victim: b })
+      else if (broke(b)) news.push({ kind: 'betrayed', lord: b, victim: a })
+      else if (a === me || b === me) pact(news, other(a, b), 'ended')
     }
+    const before = new Set(alliances)
+    for (const { a, b } of state.alliances.filter((x) => !before.has(x)))
+      if (a === me || b === me) pact(news, other(a, b), 'made')
+    for (const r of state.requests)
+      if (r.to === me && !asked.has(r)) pact(news, r.from, 'offered')
+    alliances = [...state.alliances]
+    felons = state.players.map((p) => p.felonUntil)
+    asked = new Set(state.requests)
   }
 
-  /** My works another lord took since the last reading, told at once, by lord. */
-  function seizures(news: Array<News>) {
-    const by = new Map<number, Partial<Record<Work, number>>>()
-    for (const work of state.works) {
-      const was = held.get(work.tile)
-      if (was !== work.work || work.owner === me) continue
-      const works = by.get(work.owner) ?? {}
-      works[work.work] = (works[work.work] ?? 0) + 1
-      by.set(work.owner, works)
-    }
-    for (const [lord, works] of by) news.push({ kind: 'seized', lord, works })
-    held = new Map(
-      state.works.filter((w) => w.owner === me).map((w) => [w.tile, w.work]),
-    )
+  /** An alliance's news, over its lord's name (« les drapeaux alliance conclue sont mal placés »): on his land where all read him, rather than on his border nearest mine, wherever that falls. */
+  function pact(news: Array<News>, lord: number, how: PactNews) {
+    if (me >= 0) news.push({ kind: 'pact', lord, how, tile: overName(lord) })
   }
 
-  /** What happened since the last reading. */
-  function read(): Array<News> {
-    if (me < 0) return []
-    const news: Array<News> = []
-    second += 1
-    seizures(news)
-    strikes(news)
-    news.push(...coups.read())
-    exchanges(news)
-    const bound = alliesOf()
-    for (const lord of allies)
-      if (!bound.has(lord) && state.players[lord].felonUntil > state.tick)
-        news.push({ kind: 'betrayed', lord })
-    allies = bound
-    state.players.forEach((p, lord) => {
-      if (alive[lord] && !p.alive && lord !== me)
-        news.push({ kind: 'fell', lord })
+  /** The tile a few tiles above where a lord's name is written; his tile nearest mine while he has no name on the map. */
+  function overName(lord: number): number {
+    const at = tilePlaces(state).get(lord)
+    if (!at) return sentFrom(lord)
+    const { width, size } = state.grid
+    const x = Math.floor(at.x / size)
+    const y = Math.max(0, Math.floor(at.y / size) - ABOVE)
+    return y * width + x
+  }
+
+  /** A lord's tile nearest my standard, where what he sends me comes from; his own standard while I have none. */
+  function sentFrom(lord: number): number {
+    const home = state.players[me].standard
+    if (home < 0) return state.players[lord].standard
+    let best = -1
+    let near = Infinity
+    state.owner.forEach((owner, t) => {
+      if (owner !== lord) return
+      const d = apart(state.grid, t, home)
+      if (d < near) [best, near] = [t, d]
     })
-    alive = state.players.map((p) => p.alive)
-    return news
+    return best
   }
 
-  return { read }
+  /** The offerings given me since the last reading, each where it comes from. */
+  function gifts(news: Array<News>) {
+    for (const o of state.offerings)
+      if (!given.has(o) && o.to === me)
+        news.push({
+          kind: 'offering',
+          lord: o.from,
+          gold: Math.floor(o.gold / UNIT),
+          tile: sentFrom(o.from),
+        })
+    given = new Set(state.offerings)
+  }
+
+  return {
+    /** What happened since the last reading. */
+    read(): Array<News> {
+      const news: Array<News> = []
+      second += 1
+      bonds(news)
+      if (me < 0) return news
+      strikes(news)
+      gifts(news)
+      news.push(...coups.read())
+      return news
+    },
+  }
 }

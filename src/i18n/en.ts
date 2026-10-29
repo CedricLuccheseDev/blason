@@ -1,32 +1,45 @@
 import { blogEn } from './blog'
+import { homeEn } from './home'
+import { heraldsEn } from './heralds'
+import { hintsEn } from './hints'
+import { bookEn } from './book'
 
 export const en = {
   blog: blogEn,
+  heralds: heraldsEn,
+  hints: hintsEn,
+  book: bookEn,
   common: {
     author: 'Cédric Lucchese',
     about: 'How it works',
     legal: 'Legal notice',
   },
-  home: {
-    tagline:
-      'A medieval strategy game: twenty lords, one land drawn anew each game.',
-    play: 'Play',
-    rivals: 'Rivals',
-    levels: { easy: 'Easy', normal: 'Fair', hard: 'Hard' },
-    levelHint: 'Change with ← →',
-    watch: 'Watch a game',
-    journal: 'Journal',
-    back: 'Back to the menu',
-    menu: 'Menu',
-  },
+  home: homeEn,
   game: {
     map: 'The land of the game, seen from above',
-    choose: 'Choose where you start',
-    chooseHint: 'Click a free domain on the map: it will be all yours',
-    others: 'The other lords are choosing',
+    choose: 'Plant your standard',
+    chooseHint:
+      'Click anywhere on the land; you may move it until the count ends',
+    planted: 'Your standard is planted',
+    others: 'The lords are planting their standards',
+    plantedHint:
+      'Click elsewhere to move it; the land round it is yours when the count ends',
+    tooNear: 'too near another standard',
     click: 'click: attack',
-    noLevy: 'every village of yours has an army out',
-    armies: { raid: 'Raid', host: 'Host', ban: 'Levy' },
+    noLevy: {
+      village: 'every village of yours has an army out',
+      market: 'no market free to hire them at',
+    },
+    noMen: {
+      village: 'no peasants to raise',
+      market: 'not enough gold',
+    },
+    armies: {
+      raid: 'Raid',
+      host: 'Host',
+      ban: 'Levy',
+      mercenaries: 'Mercenaries',
+    },
     works: {
       village: 'Village',
       market: 'Market',
@@ -35,13 +48,15 @@ export const en = {
     coups: {
       troublemaker: 'Troublemaker',
       archers: 'Archers',
-      fire: 'Greek fire',
+      trebuchet: 'Trebuchet',
     },
     launch: 'click: launch',
+    campaign: 'On campaign',
+    seek: (army: string) => `See: ${army}`,
     beyond: {
       troublemaker: 'only on another lord’s land',
       archers: 'too far from your border',
-      fire: 'too far from your border',
+      trebuchet: 'too far from your border',
     },
     noGold: 'not enough gold',
     percent: (n: number) => `${n}%`,
@@ -77,35 +92,23 @@ export const en = {
     toWin: (share: number) => `to win: ${share}%`,
     dropsIn: (left: string) => `to win, drops in ${left}`,
   },
-  pacts: {
-    ally: 'Alliance',
-    offer: 'offers an alliance',
-    asked: 'Offered',
-    accept: 'Accept',
-    renew: 'Renew',
-    break: 'Break',
-  },
-  news: {
-    attacked: 'strikes you',
-    took: (tiles: number) => `you took ${tiles} of his tiles`,
-    lost: (tiles: number) => `took ${tiles} of your tiles`,
-    betrayed: 'broke your alliance',
-    seized: 'took',
-    works: {
-      village: (n: number) => (n === 1 ? 'your village' : `${n} villages`),
-      market: (n: number) => (n === 1 ? 'your market' : `${n} markets`),
-      castle: (n: number) => (n === 1 ? 'your castle' : `${n} castles`),
+  // The right click's menu on another lord's land (LordMenu.tsx), and the
+  // cartouche's word that a right click opens it.
+  menu: {
+    label: (lord: string) => `What to do with ${lord}`,
+    attack: 'Attack',
+    // The alliance's line says what it does now.
+    alliance: {
+      offer: 'Alliance',
+      accept: 'Accept the alliance',
+      renew: 'Renew the alliance',
+      break: 'Break the alliance',
+      asked: 'Alliance asked',
     },
-    and: 'and',
-    fell: 'has fallen',
-    coup: {
-      troublemaker: 'sends a troublemaker at you',
-      archers: 'looses a volley at you',
-      fire: 'throws Greek fire at you',
-    },
-    stopped: 'stopped your troublemaker',
-    roseAgainst: 'raised your land against you',
-    roseFrom: 'lost land to your rebels',
+    offering: 'Offering',
+    hint: 'right click: alliance, offering',
+    options: 'Alliance, offering',
+    hintTouch: 'long press: alliance, offering',
   },
   lord: {
     allied: 'Your ally',
@@ -113,11 +116,6 @@ export const en = {
     felon: 'Traitor',
     list: 'The lords',
     you: 'you',
-  },
-  camera: {
-    zoomIn: 'Closer',
-    zoomOut: 'Farther',
-    home: 'Back to your land',
   },
   errors: {
     title: 'Something went wrong',

@@ -5,19 +5,41 @@ import { TICKS_PER_SECOND } from './units'
 // Men and gold are counted in thousandths (UNIT), so every rate stays an
 // integer.
 
-/** The three armies a lord may raise: a share of his peasants. */
-export type Army = 'raid' | 'host' | 'ban'
+/** The armies a lord may send: three levied at a village, a share of his peasants; the mercenaries hired at a market for gold. */
+export type Army = 'raid' | 'host' | 'ban' | 'mercenaries'
 
 /** What a lord may build anywhere on his land, one thing a place. */
 export type Work = 'village' | 'market' | 'castle'
 
 /** The coups that may turn a game, each its own deed: take land, kill troops, ruin an economy. */
-export type Coup = 'troublemaker' | 'archers' | 'fire'
+export type Coup = 'archers' | 'troublemaker' | 'trebuchet'
+
+/** The sizes a map may be drawn at. */
+export type MapSize = 'standard' | 'large' | 'huge'
+
+/**
+ * Each size's land, so many times the standard one's area (some 53,000
+ * tiles): its tiles and cells the same size, more of them.
+ */
+export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
+  standard: 1,
+  large: 2,
+  huge: 4,
+}
 
 /** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. */
-export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
+export const ARMIES: ReadonlyArray<Army> = [
+  'raid',
+  'host',
+  'ban',
+  'mercenaries',
+]
 export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
-export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
+export const COUPS: ReadonlyArray<Coup> = [
+  'archers',
+  'troublemaker',
+  'trebuchet',
+]
 
 /**
  * A coup's figures: its first price in gold; how far from its lord's border
@@ -25,7 +47,7 @@ export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
  * radius it strikes, in tiles; the ticks before it falls (none: it walks
  * there at the armies' pace).
  */
-export type CoupRule = {
+type CoupRule = {
   price: number
   reach: number | null
   radius: number
@@ -33,22 +55,34 @@ export type CoupRule = {
 }
 
 export type Rules = {
-  /** Ticks during which each lord picks where he starts. */
+  /** Ticks during which each lord picks where he starts: the setup's opening, laid over the rules as the game is made (createGame). */
   openingTicks: number
+  /** In the opening, how near another lord's standard none may be planted, in tiles; when it ends, how far round his standard a lord's start reaches, in tiles. */
+  standardGap: number
+  startRadius: number
   /** A tile's side, in map units. */
   tileSize: number
   /** A lord's gold at the start, in gold. */
   startGold: number
-  /** The peasants each village feeds, in men: no village, no peasants; the land alone feeds none. */
-  peasants: { village: number }
+  /**
+   * The peasants a lord's land and villages feed, in men: his land `land` of
+   * them on `tiles` of it, more as it grows but fewer by the tile, as the
+   * square root of its size (four times the land, twice the peasants); each
+   * village built `village` more.
+   */
+  peasants: { land: number; tiles: number; village: number }
   /** An empty gauge fills to its cap in so many seconds; none is born above it. */
   fillSeconds: number
-  /** Of the peasants over what the villages feed, so many in a hundred die of sickness a second. */
+  /** Of the peasants over what the land and villages feed, so many in a hundred die of sickness a second. */
   sickness: number
   /** What a man raised costs, in thousandths of gold: 0 is OpenFront's free attack. */
   menPrice: number
-  /** The share of the peasants each army takes, in percent. */
+  /** The share each army takes, in percent: of the peasants for those levied at a village, of the cap for the mercenaries. */
   armies: Readonly<Record<Army, number>>
+  /** Where each army is raised: at a village, out of the peasants; at a market, hired for gold, the peasants left at home. */
+  raisedAt: Readonly<Record<Army, 'village' | 'market'>>
+  /** What a mercenary costs, in thousandths of gold. */
+  mercenaryPrice: number
   /** Tiles an army takes each tick at most, once at the front: its pace, whatever its size. */
   paceTiles: number
   /** How fast each army goes, on the march and at the front, in percent of the host's pace: a raid rides, the levy plods. */
@@ -73,10 +107,11 @@ export type Rules = {
   neutralFloor: number
   /** An army's band: so many tiles each side of its line, plus the square root of its men. */
   bandTiles: number
-  /** One free domain for so many tiles, to start on. */
-  villageEvery: number
-  /** A castle: the land within so many tiles of it fights as the combat table says. */
+  /** A castle: the land within so many tiles of it fights as the combat table says, and its arrows fall there. */
   castleRadius: number
+  /** A castle looses a volley so many ticks apart, from the tick it stands, at each enemy army fighting within its radius, which loses so many of its men in a hundred, one at least. */
+  volleyTicks: number
+  volleyToll: number
   /**
    * Price of each work, in gold, doubled for each one of its kind the lord
    * holds (so many times at most); the first of the kinds in `firstFree`
@@ -95,6 +130,9 @@ export type Rules = {
   allianceTicks: number
   renewTicks: number
   requestTicks: number
+  /** An offering gives so much of the giver's gold, in percent; it is remembered so long, a bot that received it leaving the giver in peace the while and taking his alliance more readily. */
+  offeringShare: number
+  offeringMemory: number
   /** A traitor's mark lasts so long, and his land holds so much the while, in percent. */
   felonTicks: number
   felonHold: number
@@ -104,10 +142,16 @@ export type Rules = {
   caravanCrowd: number
   /** How far a market reaches, in tiles: two markets within it of each other are joined by a road. */
   tradeRange: number
-  /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent. */
+  /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent; between two markets of one lord, so much, paid once. */
   caravanGold: number
   allyTrade: number
+  homeTrade: number
+  /** A piece of a lord's land under so many tiles, ringed by one other lord and the sea, passes to him as if ringed all round. */
+  seaWalled: number
   /** Share of the land that wins, in thousandths, and how it falls with time. */
+  /** The land's roughness (rough.ts): at most so many tenths of a tile added to the order an army takes a tile in, smooth over a mesh of so many tiles. */
+  roughness: number
+  roughMesh: number
   victoryShare: number
   victoryDropStart: number
   victoryDropPerMinute: number
@@ -123,17 +167,47 @@ export type Rules = {
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
 
+/**
+ * What a game's setup may be (setup.ts): two to twenty lords (64 later); a
+ * seat's team from 0 to 3, or none; an opening of 5 seconds to a minute,
+ * 10 alone and 30 in the public game, the time for players to come into it
+ * while the lords plant their standards (Concept, 29/10); a seed of 64
+ * letters at most.
+ */
+export const SETUP_LIMITS = {
+  seats: { min: 2, max: 20 },
+  teams: 4,
+  opening: {
+    min: 5 * SECOND,
+    max: 60 * SECOND,
+    alone: 10 * SECOND,
+    public: 30 * SECOND,
+    /** No one comes into the public game in its last seconds: the time for the last come to plant his standard (« plus personne n'entre dans les 5 dernières secondes »). */
+    lastCall: 5 * SECOND,
+  },
+  seed: { min: 1, max: 64 },
+} as const
+
 export const RULES: Rules = {
-  openingTicks: 10 * SECOND,
+  openingTicks: SETUP_LIMITS.opening.alone,
+  standardGap: 20,
+  startRadius: 14,
   tileSize: 4,
   startGold: 50,
-  peasants: { village: 100 },
+  peasants: { land: 40, tiles: 600, village: 60 },
   fillSeconds: 60,
   sickness: 10,
   menPrice: 0,
-  armies: { raid: 10, host: 25, ban: 50 },
+  armies: { raid: 10, host: 25, ban: 50, mercenaries: 25 },
+  raisedAt: {
+    raid: 'village',
+    host: 'village',
+    ban: 'village',
+    mercenaries: 'market',
+  },
+  mercenaryPrice: 2000,
   paceTiles: 3,
-  armySpeed: { raid: 125, host: 100, ban: 75 },
+  armySpeed: { raid: 125, host: 100, ban: 75, mercenaries: 100 },
   marchPace: 600,
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
   battleTicks: 40,
@@ -142,8 +216,9 @@ export const RULES: Rules = {
   neutralGold: 100,
   neutralFloor: 100,
   bandTiles: 6,
-  villageEvery: 600,
   castleRadius: 12,
+  volleyTicks: 3 * SECOND,
+  volleyToll: 5,
   workPrice: { village: 100, market: 100, castle: 200 },
   buildTicks: {
     village: 10 * SECOND,
@@ -157,6 +232,8 @@ export const RULES: Rules = {
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,
+  offeringShare: 25,
+  offeringMemory: 2 * MINUTE,
   felonTicks: 30 * SECOND,
   felonHold: 50,
   caravanTicks: 10 * SECOND,
@@ -165,6 +242,10 @@ export const RULES: Rules = {
   tradeRange: 40,
   caravanGold: 150,
   allyTrade: 200,
+  homeTrade: 50,
+  seaWalled: 200,
+  roughness: 30,
+  roughMesh: 5,
   victoryShare: 800,
   victoryDropStart: 10 * MINUTE,
   victoryDropPerMinute: 50,
@@ -172,7 +253,7 @@ export const RULES: Rules = {
   coups: {
     troublemaker: { price: 300, reach: null, radius: 6, flight: null },
     archers: { price: 200, reach: 5, radius: 4, flight: 2 * SECOND },
-    fire: { price: 600, reach: 15, radius: 5, flight: 4 * SECOND },
+    trebuchet: { price: 1000, reach: null, radius: 12, flight: 8 * SECOND },
   },
   coupDoublings: 3,
   arrowToll: 30,

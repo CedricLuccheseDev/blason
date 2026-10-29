@@ -55,16 +55,3 @@ export function buildCells(
 function shares(ring: Array<Point>, a: Point, b: Point): boolean {
   return ring.some((p) => same(p, a)) && ring.some((p) => same(p, b))
 }
-
-/** Is the point inside the outline? (even-odd rule) */
-export function inside(point: Point, ring: Array<Point>): boolean {
-  const [x, y] = point
-  let result = false
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i]
-    const [xj, yj] = ring[j]
-    const crosses = yi > y !== yj > y
-    if (crosses && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) result = !result
-  }
-  return result
-}

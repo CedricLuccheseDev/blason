@@ -8,6 +8,41 @@ export const PAPER = 'var(--color-vellum)'
 
 type Part = { d: string; open?: boolean }
 
+/** A soldier standing, his spear up, centred at x, his head's top at y, at a scale: the troops' figures. */
+function man(x: number, y: number, k: number): Array<Part> {
+  const f = (n: number) => n.toFixed(2)
+  const r = 2.4 * k
+  const hy = y + r
+  return [
+    {
+      d: `M${f(x + 4 * k)} ${f(y + 16 * k)} L${f(x + 4 * k)} ${f(y)}`,
+      open: true,
+    },
+    {
+      d: `M${f(x - 3.2 * k)} ${f(y + 6 * k)} Q${f(x - 3.2 * k)} ${f(y + 5 * k)} ${f(x - 2 * k)} ${f(y + 5 * k)} H${f(x + 2 * k)} Q${f(x + 3.2 * k)} ${f(y + 5 * k)} ${f(x + 3.2 * k)} ${f(y + 6 * k)} V${f(y + 12.5 * k)} H${f(x - 3.2 * k)} Z`,
+    },
+    {
+      d: `M${f(x - r)} ${f(hy)} A${f(r)} ${f(r)} 0 1 0 ${f(x + r)} ${f(hy)} A${f(r)} ${f(r)} 0 1 0 ${f(x - r)} ${f(hy)} Z`,
+    },
+    {
+      d: `M${f(x - 1.6 * k)} ${f(y + 12.5 * k)} L${f(x - 2 * k)} ${f(y + 16 * k)} M${f(x + 1.6 * k)} ${f(y + 12.5 * k)} L${f(x + 2 * k)} ${f(y + 16 * k)}`,
+      open: true,
+    },
+  ]
+}
+
+/** The armies drawn by their size (« la fourche ça fait moins qu'épée »): one man for the raid, two for the host, three for the levy; a man and his gold for the mercenaries. */
+const TROOPS = {
+  troop1: man(11, 3.5, 1.2),
+  troop2: [...man(7.5, 4.5, 1), ...man(15.5, 4.5, 1)],
+  troop3: [...man(5.5, 3, 0.82), ...man(17, 3, 0.82), ...man(11.2, 7, 0.82)],
+  hireling: [
+    ...man(13, 3.5, 1.1),
+    { d: 'M2.5 18.5 A3.2 3.2 0 1 0 8.9 18.5 A3.2 3.2 0 1 0 2.5 18.5 Z' },
+    { d: 'M5.7 16.6 V20.4', open: true },
+  ],
+} satisfies Record<string, Array<Part>>
+
 const MORE = {
   soldier: [
     { d: 'M7.35 20.95 L16.95 1.45', open: true },
@@ -45,9 +80,13 @@ const MORE = {
   ],
 } satisfies Record<string, Array<Part>>
 
-export type Mark = keyof typeof GLYPHS | keyof typeof MORE
+export type Mark = keyof typeof GLYPHS | keyof typeof MORE | keyof typeof TROOPS
 
-const PARTS: Record<Mark, ReadonlyArray<Part>> = { ...GLYPHS, ...MORE }
+const PARTS: Record<Mark, ReadonlyArray<Part>> = {
+  ...GLYPHS,
+  ...MORE,
+  ...TROOPS,
+}
 
 /** A mark of `size` pixels centred on (cx, cy). */
 export function Glyph({
