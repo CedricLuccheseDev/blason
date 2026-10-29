@@ -13,7 +13,7 @@ export const homeEn = {
   levels: { easy: 'Easy', normal: 'Fair', hard: 'Hard' },
   public: {
     title: 'Next public game',
-    line: 'Twenty lords on a standard land; up to eight players, bots in the empty seats.',
+    land: 'The land this game will be played on',
     lost: 'Online play is out of reach for now.',
     join: 'Join',
     leave: 'Leave the room',
@@ -81,7 +81,7 @@ export const homeFr: HomeMessages = {
   levels: { easy: 'Faciles', normal: 'Moyens', hard: 'Difficiles' },
   public: {
     title: 'Prochaine partie publique',
-    line: 'Vingt seigneurs sur une terre standard ; jusqu’à huit joueurs, des bots aux places vides.',
+    land: 'La terre où se jouera cette partie',
     lost: 'Le jeu en ligne est hors d’atteinte pour l’instant.',
     join: 'Rejoindre',
     leave: 'Quitter la salle',

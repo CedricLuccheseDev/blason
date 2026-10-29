@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { whenIdle } from './idle'
 import type { GameHandle } from '~/render/client'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
@@ -10,16 +11,6 @@ import { useMessages } from '~/i18n'
 // is its own: the one made ahead is kept for the player's game.
 
 const NO_ROOM = { left: 0, bottom: 0 }
-
-/** When the browser has a moment: now if it cannot say. */
-function whenIdle(run: () => void): () => void {
-  if ('requestIdleCallback' in window) {
-    const id = requestIdleCallback(run, { timeout: 1500 })
-    return () => cancelIdleCallback(id)
-  }
-  const id = setTimeout(run, 300)
-  return () => clearTimeout(id)
-}
 
 /** Whether this browser draws with WebGL: without it, the game would be drawn by the CPU, too slow behind a menu. */
 function webgl(): boolean {
@@ -65,7 +56,7 @@ export function useSpectator() {
         })
         // No WebGL: the parchment stays behind the menu.
         .catch(() => undefined)
-    const stop = whenIdle(start)
+    const stop = whenIdle(start, 1500)
     return () => {
       cancelled = true
       stop()

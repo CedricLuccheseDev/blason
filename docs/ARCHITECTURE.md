@@ -149,8 +149,10 @@ feeds them, and the gold; other figures for the peasants are tried with
 orders. It decides nothing about the rules.
 
 - `client.ts` mounts a game in a page element: the land (`ahead.ts` makes the
-  next one while the home is read), the session, the scene, the camera, the
-  input, and the handle the React screen drives. What the player holds in
+  next one while the home is read, and keeps the next public game's, which
+  `sketch.ts` draws small on the home's card, for that game when it
+  begins), the session, the scene, the camera, the input, and the handle the
+  React screen drives. What the player holds in
   hand, an army, a work or a coup, and the order a click sends with it, is
   `hand.ts` (the keys 1 to 9, `keys.ts`).
 - `session.ts` runs the simulation in the page: it collects the player's
@@ -330,12 +332,22 @@ nothing else. The look follows the design boards, whose sources are in
 ## The home
 
 The home is built as OpenFront's, in the game's own materials: one column
-on a quiet ground, the player at its head (his shield and "Lord" until
-profiles come), the next public game first and biggest, with one click to
-sit at it, then the solo game and the private rooms, each set on a sheet of
-its own (the browser's modal `<dialog>`); the journal beside it, reading the
-blog's posts. Every piece is the HUD's (`Sheet`, `Act`, `Figure`,
-`Shield`), so the home costs no CSS of its own.
+on a quiet ground, the next public game first and biggest, then the solo
+game and the private rooms, each set on a sheet of its own (the browser's
+modal `<dialog>`); beside it, the player at its head (his shield and "Lord"
+until profiles come), then the journal, reading the blog's posts. Every
+piece is the HUD's (`Sheet`, `Act`, `Figure`, `Shield`), so the home costs
+no CSS of its own.
+
+The next public game is a large card, as OpenFront's, whose body is that
+game's land: the very land it will be played on, made from the relay's seed
+when the browser has a moment and drawn small on a canvas (`sketch.ts`), as
+the map shows it from afar at the opening, the sea's wash and its shore
+lines, the land's parchment, its woods, hills and mountains a shade darker,
+the coast in ink. Its title and its clock lie on it as a map's cartouches;
+under it the seats taken out of eight, and one click to sit. When the relay
+opens another, the land fades for the new one; the land made is kept, so
+that the game, when it begins, is not made again.
 
 Behind the column, the bots' game: the spectator's game of twenty bots
 (`client.ts` with the director) drawn by PixiJS straight into the page's
@@ -348,7 +360,8 @@ is asked about that game every second and a half, only while the page is
 shown (`useUpcoming.ts`).
 
 `src/components/home/`: `Home.tsx` lays it out; `PublicCard.tsx` the next
-public game, `SoloSettings.tsx` (the land's size and the bots' level, then
+public game, its land on `LandPlate.tsx` and its clock `Countdown.tsx`,
+`SoloSettings.tsx` (the land's size and the bots' level, then
 `/play?level=…&size=…`), `PrivateRoom.tsx` (a room made and its code to
 share, or a code typed to join, and the host's start), `Seats.tsx`,
 `Journal.tsx`, `Masthead.tsx`, `Foot.tsx`; the rooms of the relay

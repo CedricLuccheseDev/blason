@@ -101,15 +101,23 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   se paie pas à demi-encre, le seigneur visé, le cartouche près de la souris), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
   système comme openfront en adapté pour nous pour la home » ; la table en 3D est retirée, « c'était de trop ») : une
-  colonne sur un fond calme, le joueur en tête (son écu et « Seigneur » en attendant les profils), la prochaine
-  partie publique en premier et en grand (Rejoindre en un clic, les places et le compte à rebours en direct), puis
-  Solo (la taille de la terre et le niveau des bots, sur un feuillet), Créer et Rejoindre une partie privée (le code
-  à cinq signes, l'hôte lance) ; le Journal à côté. Tout est fait des pièces du HUD. Derrière, la partie des bots
-  filmée par le réalisateur, sous un voile de parchemin, en basse résolution, lancée une fois le menu peint et
-  seulement s'il y a WebGL ; « Regarder la partie » lève le voile. `src/components/home/` (`Home.tsx`,
-  `PublicCard.tsx`, `SoloSettings.tsx`, `PrivateRoom.tsx`, `useRoom.ts` les salles du relais, `useSpectator.ts`).
-  La terre de la prochaine partie s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à
-  `/play?online` (`src/render/online.ts`).
+  colonne sur un fond calme, la prochaine partie publique en premier et en grand, puis Solo (la taille de la terre et
+  le niveau des bots, sur un feuillet), Créer et Rejoindre une partie privée côte à côte (le code à cinq signes,
+  l'hôte lance) ; à côté, le joueur en tête (son écu et « Seigneur » en attendant les profils), puis le Journal. La
+  partie publique est une grosse carte comme celle d'OpenFront (acté le 29/10, « une grosse carte avec la partie
+  dedans pour rejoindre la game qui va se lancer ») : son corps est sa terre, celle même où elle se jouera, tirée de
+  sa graine quand le navigateur a un moment et dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par
+  `ahead.ts`), son titre et son compte à rebours posés dessus en cartouches, ses places sur huit dessous et
+  Rejoindre en un clic. Le relais en tient toujours une ouverte, comme les lobbies d'OpenFront (« un lobby qui tourne
+  toutes les minutes ») : elle part au bout de sa minute avec ceux qui s'y sont assis, ou dès qu'elle est pleine ;
+  vide, une autre la remplace, nouvelle terre et nouvelle minute (`server/rooms.ts`) ; l'accueil la lui demande
+  (`GET /public`) toutes les secondes et demie tant que la page est visible (`useUpcoming.ts`). Tout est fait des
+  pièces du HUD. Derrière, la partie des bots filmée par le réalisateur, sous un voile de parchemin, en basse
+  résolution, lancée une fois le menu peint et seulement s'il y a WebGL ; « Regarder la partie » lève le voile.
+  `src/components/home/` (`Home.tsx`, `PublicCard.tsx` et sa terre `LandPlate.tsx`, `SoloSettings.tsx`,
+  `PrivateRoom.tsx`, `useRoom.ts` les salles du relais, `useUpcoming.ts`, `useSpectator.ts`). La terre de la
+  prochaine partie s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à `/play?online`
+  (`src/render/online.ts`).
 - `src/i18n/` : les mots, en français et en anglais, par section (`home`, `game`, `race`, `pacts`, `errors`).
 - `design/mockups/` : les sources des planches, tirées d'une partie du jeu (`cells.ts`) ; leurs pièces suivent les
   jetons du HUD (`kit.py`).
