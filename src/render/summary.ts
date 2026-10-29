@@ -14,6 +14,7 @@ import {
   isFelon,
   menFor,
   nextDrop,
+  offeringOf,
   priceOf,
   sicknessOf,
   victoryShare,
@@ -94,6 +95,8 @@ export type Summary = {
   >
   offers: Array<Lord & { left: number; ring: number }>
   asked: Array<number>
+  /** The gold an offering of mine would give now: a share of my gold (the right click's menu). */
+  offering: number
 }
 
 type Lord = { seat: number; key: Heraldry; color: number }
@@ -223,6 +226,7 @@ export function summarize(
       return { coup: c, price, can: price <= gold }
     }),
     ...pacts(state, me),
+    offering: me >= 0 ? Math.floor(offeringOf(state, me) / UNIT) : 0,
     lords: lordsOf(state, me),
   }
 }

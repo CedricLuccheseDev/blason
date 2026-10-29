@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { TICKS_PER_SECOND, UNIT } from './units'
 import { createGame, setOwner } from './land'
+import { offeringOf } from './diplomacy'
 import { RULES } from './rules'
 import { step } from './step'
 import { createBot } from './bots/bot'
@@ -22,10 +23,13 @@ describe('the offering', () => {
     hold(state, 1, [7, 8, 9])
     endow(state, 0, 10, 200)
     endow(state, 1, 10, 0)
+    expect(offeringOf(state, 0)).toBe(50 * UNIT)
     run(state, 1, [gift(0, 1)])
     expect(state.players[0].gold).toBe(150 * UNIT)
     expect(state.players[1].gold).toBe(50 * UNIT)
-    expect(state.offerings).toEqual([{ from: 0, to: 1, tick: state.tick - 1 }])
+    expect(state.offerings).toEqual([
+      { from: 0, to: 1, gold: 50 * UNIT, tick: state.tick - 1 },
+    ])
     run(state, 2 * MINUTE)
     expect(state.offerings).toEqual([])
   })
@@ -103,7 +107,7 @@ describe('the bots and an offering', () => {
     state.requests.push({ from: 0, to: 1, expires: state.tick + 100 })
     const accept: Order = { player: 1, type: 'ally', target: 0 }
     expect(talk(state, 1, new Map(), 0)).not.toContainEqual(accept)
-    state.offerings.push({ from: 0, to: 1, tick: state.tick })
+    state.offerings.push({ from: 0, to: 1, gold: UNIT, tick: state.tick })
     expect(talk(state, 1, new Map(), 0)).toContainEqual(accept)
   })
 })

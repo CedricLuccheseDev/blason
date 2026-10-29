@@ -27,6 +27,8 @@ export const heraldsEn = {
   stopped: (lord: string) => `${lord} stopped your troublemaker`,
   roseAgainst: (lord: string) => `${lord} raised your land against you`,
   roseFrom: (lord: string) => `${lord} lost land to your rebels`,
+  // Followed by the gold, in figures with its coins.
+  offering: (lord: string) => `${lord} offers you`,
 }
 
 export type HeraldsMessages = typeof heraldsEn
@@ -55,4 +57,5 @@ export const heraldsFr: HeraldsMessages = {
   stopped: (lord: string) => `${lord} a arrêté ton causeur de troubles`,
   roseAgainst: (lord: string) => `${lord} a soulevé ta terre contre toi`,
   roseFrom: (lord: string) => `${lord} a perdu sa terre à tes rebelles`,
+  offering: (lord: string) => `${lord} t’offre`,
 }

@@ -120,15 +120,18 @@ export function expireDiplomacy(state: GameState) {
   state.offerings = state.offerings.filter((o) => state.tick - o.tick < memory)
 }
 
-/** An offering: a share of the lord's gold to another lord standing, remembered a while. */
+/** What an offering of the lord's would give now: a share of his gold, in thousandths. */
+export const offeringOf = (state: GameState, player: number): number =>
+  Math.floor((state.players[player].gold * state.rules.offeringShare) / 100)
+
+/** An offering: a share of the lord's gold to another lord standing, remembered a while with what it gave. */
 export function offer(state: GameState, player: number, target: number) {
   if (target === player || !state.players[target].alive) return
-  const giver = state.players[player]
-  const gold = Math.floor((giver.gold * state.rules.offeringShare) / 100)
+  const gold = offeringOf(state, player)
   if (gold <= 0) return
-  giver.gold -= gold
+  state.players[player].gold -= gold
   state.players[target].gold += gold
-  state.offerings.push({ from: player, to: target, tick: state.tick })
+  state.offerings.push({ from: player, to: target, gold, tick: state.tick })
 }
 
 /** Whether a lord gave another an offering lately, still remembered. */

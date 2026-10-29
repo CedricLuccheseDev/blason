@@ -1,3 +1,4 @@
+import { UNIT, apart } from '../../engine'
 import { makeCoupNews } from './coupNews'
 import type { CoupNews } from './coupNews'
 import type { GameState } from '../../engine'
@@ -6,14 +7,16 @@ import type { GameState } from '../../engine'
 // it on the map, the HUD writes it there): a lord whose army comes for
 // him, at the border it bites into, told once and again only after a
 // while; the coups launched at him, his troublemaker stopped, a land risen
-// (coupNews.ts). And the one cry to all: a lord who broke an alliance, any
-// alliance, and whom he betrayed (the HUD's banner). A work lost is struck
-// out where it stood by the map itself (layers/tidings.ts). Read once a
-// second by comparing the game with the second before.
+// (coupNews.ts); an offering given him, and how much gold, on the giver's
+// land nearest his own. And the one cry to all: a lord who broke an
+// alliance, any alliance, and whom he betrayed (the HUD's banner). A work
+// lost is struck out where it stood by the map itself (layers/tidings.ts).
+// Read once a second by comparing the game with the second before.
 
 export type News =
   | { kind: 'attacked'; lord: number; tile: number }
   | { kind: 'betrayed'; lord: number; victim: number }
+  | { kind: 'offering'; lord: number; gold: number; tile: number }
   | CoupNews
 
 /** Seconds a lord who struck may strike again before it is news once more. */
@@ -25,6 +28,7 @@ export function makeNews(state: GameState, me: number) {
   let second = 0
   let alliances = [...state.alliances]
   let felons = state.players.map((p) => p.felonUntil)
+  let given = new Set(state.offerings)
   const coups = makeCoupNews(state, me)
 
   /** The lords whose armies come for me, where they enter, told once, and again only after a while. */
@@ -53,6 +57,33 @@ export function makeNews(state: GameState, me: number) {
     felons = state.players.map((p) => p.felonUntil)
   }
 
+  /** A lord's tile nearest my standard, where what he sends me comes from; his own standard while I have none. */
+  function sentFrom(lord: number): number {
+    const home = state.players[me].standard
+    if (home < 0) return state.players[lord].standard
+    let best = -1
+    let near = Infinity
+    state.owner.forEach((owner, t) => {
+      if (owner !== lord) return
+      const d = apart(state.grid, t, home)
+      if (d < near) [best, near] = [t, d]
+    })
+    return best
+  }
+
+  /** The offerings given me since the last reading, each where it comes from. */
+  function gifts(news: Array<News>) {
+    for (const o of state.offerings)
+      if (!given.has(o) && o.to === me)
+        news.push({
+          kind: 'offering',
+          lord: o.from,
+          gold: Math.floor(o.gold / UNIT),
+          tile: sentFrom(o.from),
+        })
+    given = new Set(state.offerings)
+  }
+
   return {
     /** What happened since the last reading. */
     read(): Array<News> {
@@ -61,6 +92,7 @@ export function makeNews(state: GameState, me: number) {
       betrayals(news)
       if (me < 0) return news
       strikes(news)
+      gifts(news)
       news.push(...coups.read())
       return news
     },

@@ -1,20 +1,22 @@
 import { useLayoutEffect, useRef, useState } from 'react'
+import { Figure } from '../hud/Figure'
 import { Sheet } from '../hud/Sheet'
 import { scaled } from '../hud/tokens'
 import { Glyph, INK } from './svg/marks'
 import { COUP_MARKS } from './Bar'
+import { count } from './format'
 import type { Mark } from './svg/marks'
 import type { News } from '~/render/client'
 import type { Messages } from '~/i18n/en'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
-/** What the news says, the mark on its pennant, and whether it is ill news for me. */
+/** What the news says, the gold it brings if any (written after it, in figures), the mark on its pennant, and whether it is ill news for me. */
 function told(
   news: Exclude<News, { kind: 'betrayed' }>,
   lord: string,
   m: Messages,
-): { text: string; mark: Mark; ill: boolean } {
+): { text: string; gold?: number; mark: Mark; ill: boolean } {
   if (news.kind === 'coup')
     return {
       text: m.heralds.coup[news.coup](lord),
@@ -31,6 +33,13 @@ function told(
     return news.mine
       ? { text: m.heralds.roseAgainst(lord), mark: 'pitchfork', ill: true }
       : { text: m.heralds.roseFrom(lord), mark: 'pitchfork', ill: false }
+  if (news.kind === 'offering')
+    return {
+      text: m.heralds.offering(lord),
+      gold: news.gold,
+      mark: 'market',
+      ill: false,
+    }
   return { text: m.heralds.attacks(lord), mark: 'sword', ill: true }
 }
 
@@ -64,8 +73,9 @@ function useFlip() {
  * A piece of news where it happened, once, fading: a pennant planted
  * there, gules for ill news and gold for good, the mark of what happened on
  * it, and what happened beside it: a lord biting my border, a coup falling
- * on my land, my troublemaker stopped, a land risen. Near the screen's
- * right side it flies to the left, its pole where it stood.
+ * on my land, my troublemaker stopped, a land risen, an offering given me
+ * (the market's purse, on the giver's land). Near the screen's right side
+ * it flies to the left, its pole where it stood.
  */
 export function Pennant({
   news,
@@ -73,7 +83,7 @@ export function Pennant({
   const m = useMessages()
   const { box, flip } = useFlip()
   const lord = m.game.colors[PLAYERS[news.lord].key]
-  const { text, mark, ill } = told(news, lord, m)
+  const { text, gold, mark, ill } = told(news, lord, m)
   // Flown the other way, the pole is as far from its right end as it was
   // from its left: the whole drawn back by its width, less that twice.
   const back = flip
@@ -122,9 +132,10 @@ export function Pennant({
           />
         </svg>
         <Sheet
-          className={`px-2 py-1 whitespace-nowrap ${flip ? '-mr-3' : '-ml-3'}`}
+          className={`flex items-center gap-1 px-2 py-1 whitespace-nowrap ${flip ? '-mr-3' : '-ml-3'}`}
         >
           <span className={`hud-word ${ill ? 'text-gules' : ''}`}>{text}</span>
+          {gold !== undefined && <Figure icon="coins">{count(gold)}</Figure>}
         </Sheet>
       </div>
     </div>

@@ -94,8 +94,8 @@ export type Alliance = {
 
 type Request = { from: number; to: number; expires: number }
 
-/** An offering given, remembered a while (rules' offeringMemory): by whom, to whom, at which tick. */
-type Offering = { from: number; to: number; tick: number }
+/** An offering given, remembered a while (rules' offeringMemory): by whom, to whom, how much gold (in thousandths), at which tick. */
+type Offering = { from: number; to: number; gold: number; tick: number }
 
 /** A caravan from one lord's market to another's, by a road through its lord's land, his allies' and free land. */
 export type Caravan = {

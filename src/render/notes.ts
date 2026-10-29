@@ -6,8 +6,8 @@ import type { News } from './news'
 // The news laid on the map where it happened (news.ts says what and
 // where), for the HUD to write there a few seconds (Pennant.tsx): a lord
 // biting the player's border, a coup falling on his land, his troublemaker
-// stopped, a land risen. A betrayal is not here: it is cried to all
-// under the race.
+// stopped, a land risen, an offering given him. A betrayal is not here: it
+// is cried to all under the race.
 
 /** Seconds a piece of news stays on the map. */
 const LIFE = 4
