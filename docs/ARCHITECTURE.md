@@ -362,7 +362,9 @@ orders. It decides nothing about the rules.
 - `summary.ts` reads from the state, once a second, the figures the HUD shows;
   `news.ts` what the player hears and where: a lord biting his border, the
   coups at his land (`coupNews.ts`), an offering given him (on the giver's
-  land nearest his own, with its gold), and any lord who broke an alliance.
+  land nearest his own, with its gold), his alliances offered to him, made
+  or come to their end unbroken (there too, though the map shows them), and
+  any lord who broke an alliance.
 
 ## The interface
 

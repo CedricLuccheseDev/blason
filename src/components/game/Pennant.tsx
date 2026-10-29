@@ -33,6 +33,12 @@ function told(
     return news.mine
       ? { text: m.heralds.roseAgainst(lord), mark: 'pitchfork', ill: true }
       : { text: m.heralds.roseFrom(lord), mark: 'pitchfork', ill: false }
+  if (news.kind === 'pact')
+    return {
+      text: m.heralds.pacts[news.how](lord),
+      mark: 'links',
+      ill: news.how === 'ended',
+    }
   if (news.kind === 'offering')
     return {
       text: m.heralds.offering(lord),

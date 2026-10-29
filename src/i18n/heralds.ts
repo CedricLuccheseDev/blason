@@ -29,6 +29,11 @@ export const heraldsEn = {
   roseFrom: (lord: string) => `${lord} lost land to your rebels`,
   // Followed by the gold, in figures with its coins.
   offering: (lord: string) => `${lord} offers you`,
+  pacts: {
+    offered: (lord: string) => `${lord} offers an alliance`,
+    made: (lord: string) => `Alliance made with ${lord}`,
+    ended: (lord: string) => `Your alliance with ${lord} has ended`,
+  },
 }
 
 export type HeraldsMessages = typeof heraldsEn
@@ -58,4 +63,9 @@ export const heraldsFr: HeraldsMessages = {
   roseAgainst: (lord: string) => `${lord} a soulevé ta terre contre toi`,
   roseFrom: (lord: string) => `${lord} a perdu sa terre à tes rebelles`,
   offering: (lord: string) => `${lord} t’offre`,
+  pacts: {
+    offered: (lord: string) => `${lord} propose une alliance`,
+    made: (lord: string) => `Alliance conclue avec ${lord}`,
+    ended: (lord: string) => `L’alliance avec ${lord} a pris fin`,
+  },
 }

@@ -115,7 +115,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   et "refuser" en rouge ») (`HeraldLetter.tsx`), au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le
   rendu dit où par `heralds.ts`, `envoys.ts` et `besideOf` dans `places.ts`) ; une alliance trahie claque entre
   les deux capitales, devant tous (`layers/pacts.ts`, `art/snap.ts`) ; les nouvelles en fanions plantés là où elles
-  arrivent (`Pennant.tsx`, `notes.ts` ; une offrande reçue, sur la terre de celui qui la donne, avec son or), la
+  arrivent (`Pennant.tsx`, `notes.ts` ; une offrande reçue, sur la terre de celui qui la donne, avec son or ; mes alliances proposées, conclues ou finies, là aussi, bien que la carte les montre, 29/10 « continue les notifs même si on affiche les alliances sur la map »), la
   barre en bas, resserrée (acté le 29/10, « ok go » sur la maquette) : la bourse dedans, puis les quatre armées en
   sceaux sur une ligne, celui des mercenaires en or, payés en or, à part d'un coup d'œil (`ARMY_WAX`), sous chaque sceau son chiffre comme le prix sous une construction, la part des paysans qu'une levée prend, l'or des mercenaires (29/10, « affiche les % en dessous des chevauchées »), seule l'armée
   en main nommée sous la ligne avec ses hommes ; les constructions en médaillons et les coups en losanges cerclés
