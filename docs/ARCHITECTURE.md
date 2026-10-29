@@ -552,8 +552,8 @@ simulation.
 - `server/` is the relay, a small Node WebSocket server of its own
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
   (`server/rooms.ts`) draws its land as it opens, a seed and a size
-  (standard), and seats up to eight persons, the rest of the twenty seats
-  being bots. As on OpenFront there is no room to wait in: one public game
+  (standard), and seats up to twenty persons, every lord, the seats no one
+  took being bots. As on OpenFront there is no room to wait in: one public game
   is always in its opening, which lasts 30 seconds online
   (`ONLINE_OPENING_TICKS`, sent with the game, so that every browser has the
   same). It begins as it opens, bots in every seat, its turns flowing from
@@ -561,7 +561,7 @@ simulation.
   on the first free seat, given the land, the opening and every turn played
   so far, and his seat is a person's from the next turn, on every browser.
   No one comes in during the opening's last 5 seconds, so that the last to
-  come may still plant his standard, nor once eight have come: then the
+  come may still plant his standard, nor once twenty have come: then the
   game goes on with whoever came, and the next opens; if no one came, it is
   dropped and a new land takes its place (`server/rooms.test.ts` runs that
   cycle on a clock of its own). Anyone may see it without joining it: the
