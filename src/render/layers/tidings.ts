@@ -99,9 +99,13 @@ export function makeTidings(me: number) {
       if (out.has(caravan)) continue
       const last = caravan.road.length - 1
       if (along + state.rules.caravanPace * ticks < last * 1000) continue
-      const gold = `+${Math.floor(caravan.gold / UNIT)}`
-      if (caravan.owner === me) say(state, caravan.road[0], gold, GOLD)
+      // Under a whole coin, nothing to say (« j'ai des +0 avec les marchands »);
+      // between two markets of mine, said once, where it arrives.
+      const whole = Math.floor(caravan.gold / UNIT)
+      if (whole < 1) continue
+      const gold = `+${whole}`
       if (caravan.to === me) say(state, caravan.road[last], gold, GOLD)
+      else if (caravan.owner === me) say(state, caravan.road[0], gold, GOLD)
     }
     seen = new Map(state.caravans.map((c) => [c, c.along]))
   }
