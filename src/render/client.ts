@@ -9,8 +9,8 @@ import { takeLand } from './ahead'
 import { makeDirector } from './director'
 import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
-import { startSession } from './session'
-import { startRemoteSession } from './remote'
+import { openSession } from './sessions'
+import { standCamera } from './still'
 import { makeNews } from './news'
 import { makeNotes } from './notes'
 import { summarize } from './summary'
@@ -24,6 +24,7 @@ import type { Room } from './director'
 import type { Level, MapSize } from '../../engine'
 import type { Summary } from './summary'
 import type { Online } from './online'
+import type { Save } from './save'
 
 // The game on screen, the land taken bit by bit: the manuscript map
 // of the game, its lands spreading tile by tile as in OpenFront, with its
@@ -64,10 +65,13 @@ export async function mountGame(
     spectate?: () => Room
     /** A game online (online.ts): its land, its turns and my seat come from the relay. */
     online?: Online
+    /** A saved game (save.ts), held still at its tick: its land, my seat and the camera come from it. */
+    save?: Save
   },
 ): Promise<GameHandle> {
   const app = new Application()
-  const asked = hooks.online ?? { seed, size: hooks.size }
+  const { save } = hooks
+  const asked = hooks.online ?? save ?? { seed, size: hooks.size }
   const { land, grid } = takeLand(asked.seed, asked.size)
   await app.init({
     preference: 'webgl',
@@ -82,22 +86,14 @@ export async function mountGame(
     skipExtensionImports: true,
   })
   element.appendChild(app.canvas)
-  const session = hooks.online
-    ? startRemoteSession(
-        grid,
-        land.seed,
-        me,
-        hooks.online.level,
-        hooks.online.players,
-        hooks.online.link,
-      )
-    : startSession(grid, land.seed, me, hooks.level)
+  const session = openSession(grid, land.seed, me, hooks)
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
   const heralds = makeHeralds(scene.world, () => app.screen)
 
   const home = () => (me < 0 ? null : landBox(state, me))
   const camera = makeCamera(app, scene.world, land, home)
+  if (save) standCamera(camera, state, save)
   const director = hooks.spectate
     ? makeDirector(app, scene.world, land, state, hooks.spectate)
     : null
@@ -164,7 +160,8 @@ export async function mountGame(
   if (me >= 0) window.addEventListener('keydown', onKey)
 
   let drawn = false
-  let found = false
+  // A saved game stands its own camera: the player's land is not looked for.
+  let found = Boolean(save)
   let reported = -1
   const news = makeNews(state, me)
   const notes = makeNotes(state)
@@ -173,8 +170,11 @@ export async function mountGame(
     session.advance(ms, () => earnings.watch(state), most)
   // Stepped down and up with the frames; nothing drawn while hidden
   // (quality.ts): a game alone waits, one online plays the relay's turns on.
+  // A saved game, held still, is drawn at its best.
   const fps = director ? 30 : 60
-  const governed = governFrames(app, 1000 / fps, hooks.online && play)
+  const governed = save
+    ? () => undefined
+    : governFrames(app, 1000 / fps, hooks.online && play)
   let announced = false
   app.ticker.add((ticker) => {
     // How far the game is into its next tick, for what moves between two.

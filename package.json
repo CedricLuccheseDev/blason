@@ -21,6 +21,7 @@
     "depcruise": "depcruise src engine scripts net server",
     "norm": "node scripts/norm-check.mjs $(git ls-files 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css')",
     "arena": "tsx scripts/arena.ts",
+    "maquette": "tsx scripts/maquette.ts",
     "census": "tsx scripts/census.ts",
     "relay": "tsx server/relay.ts"
   },

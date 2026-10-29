@@ -159,6 +159,16 @@ orders. It decides nothing about the rules.
   `hand.ts` (the keys 1 to 9, `keys.ts`).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
+- A saved game (`save.ts`) is a game's state at a tick as plain data, less
+  what the seed makes again (the land and its tiles, the rules, whatever the
+  game has not changed since it began): the arrays over every tile kept as
+  runs, the roads as walks, three steps a letter. `/play?save=<name>` shows
+  one held still at its tick, from the seat and with the camera it was saved
+  with (`still.ts`; `sessions.ts` picks a game's session: saved, online or
+  alone). `npm run maquette` (`scripts/maquette.ts`) plays a game of bots
+  without a screen and saves the moments the maquette is drawn on into
+  `public/saves/`, each read back first and checked to give the same game
+  and the same HUD.
 - `scene.ts` stacks the layers, so that what the game must make read stays
   above what only adorns it: the page and its frame, the sea and its shore
   lines (`layers/lands.ts`), the lands' washes (`regions.ts`, traced around

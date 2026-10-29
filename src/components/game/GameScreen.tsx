@@ -14,6 +14,7 @@ import { Banner } from './Banner'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
+import type { Save } from '~/render/save'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
@@ -39,11 +40,14 @@ export function GameScreen({
   me,
   level,
   online,
+  save,
   size = 'standard',
 }: Readonly<{
   me: number
   level: Level
   online?: Online
+  /** A saved game, held still at its tick (render/save.ts). */
+  save?: Save
   size?: MapSize
 }>) {
   const m = useMessages()
@@ -90,6 +94,7 @@ export function GameScreen({
           names: PLAYERS.map((p) => m.game.colors[p.key]),
           level,
           online,
+          save,
           size,
         })
         if (off()) mounted.destroy()
@@ -103,7 +108,7 @@ export function GameScreen({
       cancelled = true
       handle?.destroy()
     }
-  }, [me, level, online, size])
+  }, [me, level, online, save, size])
 
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it.
