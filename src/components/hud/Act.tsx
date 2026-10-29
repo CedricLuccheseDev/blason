@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 
 const TONES = {
   gilt: 'bg-gilt text-quill hover:bg-gilt-light',
-  pact: 'bg-pact text-vellum hover:bg-pact-deep',
+  pact: 'bg-pact-deep text-vellum hover:bg-pact-deeper',
   gules: 'bg-gules text-wax hover:bg-gules-deep',
   plain: 'bg-vellum text-quill hover:bg-shade',
 } as const
