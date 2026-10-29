@@ -48,9 +48,10 @@ machine computes the same game, tick for tick.
   tile with one of the three armies, build a work, offer or accept an
   alliance, break it.
 - `step(state, orders)` (`engine/step.ts`) applies the valid orders, then runs
-  the rules of a tick in a fixed order: the peasants grow, the armies advance,
-  the markets send caravans, the caravans move, alliances and offers expire,
-  and the game is judged.
+  the rules of a tick in a fixed order: the peasants grow, the battles are
+  fought, the castles shoot, the armies advance, the coups fall, encircled
+  land passes, the markets send caravans, the caravans move, alliances and
+  offers expire, and the game is judged.
 
 Every number of the rules lives in `RULES` (`engine/rules.ts`), so the arena
 can tune them without touching the code. The rules themselves are described in
@@ -68,6 +69,7 @@ can tune them without touching the code. The rules themselves are described in
 | `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                           |
 | `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs                        |
 | `battle.ts`              | Battles between armies that meet, by the combat table                                               |
+| `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone           |
 | `enclosure.ts`           | Encircled land passing to the lord all round it                                                     |
 | `heap.ts`                | The heap that orders the tiles an army strikes next                                                 |
 | `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time               |

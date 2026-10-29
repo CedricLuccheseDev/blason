@@ -98,8 +98,11 @@ export type Rules = {
   neutralFloor: number
   /** An army's band: so many tiles each side of its line, plus the square root of its men. */
   bandTiles: number
-  /** A castle: the land within so many tiles of it fights as the combat table says. */
+  /** A castle: the land within so many tiles of it fights as the combat table says, and its arrows fall there. */
   castleRadius: number
+  /** A castle looses a volley so many ticks apart, from the tick it stands, at each enemy army fighting within its radius, which loses so many of its men in a hundred, one at least. */
+  volleyTicks: number
+  volleyToll: number
   /**
    * Price of each work, in gold, doubled for each one of its kind the lord
    * holds (so many times at most); the first of the kinds in `firstFree`
@@ -175,6 +178,8 @@ export const RULES: Rules = {
   neutralFloor: 100,
   bandTiles: 6,
   castleRadius: 12,
+  volleyTicks: 3 * SECOND,
+  volleyToll: 5,
   workPrice: { village: 100, market: 100, castle: 200 },
   buildTicks: {
     village: 10 * SECOND,

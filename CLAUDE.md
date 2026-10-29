@@ -59,12 +59,14 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ;
     `grid.ts` les tuiles ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte ; `muster.ts` la levée aux villages
-    et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `enclosure.ts` les terres encerclées ;
+    et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `volleys.ts` les flèches des châteaux ;
+    `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.
   - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.
   - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), la diplomatie et les
-    marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les coups (`coups.test.ts`), le générateur (`map/generate.test.ts`).
+    marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les coups (`coups.test.ts`), les flèches des châteaux
+    (`volleys.test.ts`), le générateur (`map/generate.test.ts`).
 - `scripts/arena.ts` : l'arène (`npm run arena -- [parties] [joueurs]`), des parties de bots sans écran. Elle dit si
   le jeu tourne ; le plaisir et la lisibilité se jugent en jouant. `scripts/census.ts`, le recensement
   (`npm run census -- [graine]`) : une partie de bots, et toutes les trois minutes la terre, les constructions,

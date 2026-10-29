@@ -121,7 +121,11 @@ least 10 tiles from one another (`engine/works.ts`):
 - the **village** feeds 40 more peasants and levies the armies, one at a time;
 - the **market** sends the caravans that bring the gold;
 - the **castle**: the land within 12 tiles of it fights as the combat table
-  says, one for one; it sends no army.
+  says, one for one; it sends no army, but its archers shoot into that land:
+  every 3 seconds, from the moment it stands, it looses a volley at each
+  enemy army fighting there (an army striking its lord whose front lies
+  within the 12 tiles), which loses 5 % of its men, one at least; an army
+  striking someone else passes by (`engine/volleys.ts`).
 
 The first village and market cost nothing, so that a lord can always start
 again from nothing; then each costs double the one before (100 gold for the

@@ -9,6 +9,7 @@ import { NO_ONE } from './types'
 import { clash } from './battle'
 import { enclose } from './enclosure'
 import { advanceHosts, attack } from './war'
+import { shoot } from './volleys'
 import { build } from './works'
 import { launch, strikeCoups } from './coups'
 import type { GameState, Order } from './types'
@@ -116,6 +117,7 @@ export function step(state: GameState, orders: Array<Order> = []) {
   if (state.tick >= state.rules.openingTicks) {
     grow(state)
     clash(state)
+    shoot(state)
     advanceHosts(state)
     strikeCoups(state)
     enclose(state)
