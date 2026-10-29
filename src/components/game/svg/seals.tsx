@@ -75,12 +75,13 @@ export function Seal({
   )
 }
 
-/** A work's medallion: a parchment disc ringed with gold, its drawing in ink. */
+/** A work's medallion: a parchment disc ringed with gold, or another colour for an act (the right click's menu), its drawing in ink. */
 export function Medallion({
   cx,
   cy,
   r,
   icon,
+  ring = 'var(--color-gilt)',
   dim = false,
   lifted = false,
 }: Readonly<{
@@ -88,6 +89,7 @@ export function Medallion({
   cy: number
   r: number
   icon: Mark
+  ring?: string
   dim?: boolean
   lifted?: boolean
 }>) {
@@ -99,7 +101,7 @@ export function Medallion({
         cy={cy}
         r={r - 4}
         fill="none"
-        stroke="var(--color-gilt)"
+        stroke={ring}
         strokeWidth="2.6"
       />
       <circle

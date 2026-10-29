@@ -79,11 +79,22 @@ export const en = {
     toWin: (share: number) => `to win: ${share}%`,
     dropsIn: (left: string) => `to win, drops in ${left}`,
   },
-  pacts: {
-    ally: 'Alliance',
-    asked: 'Offered',
-    accept: 'Accept',
-    break: 'Break',
+  // The right click's menu on another lord's land (LordMenu.tsx), and the
+  // cartouche's word that a right click opens it.
+  menu: {
+    label: (lord: string) => `What to do with ${lord}`,
+    attack: 'Attack',
+    // The alliance's line says what it does now.
+    alliance: {
+      offer: 'Alliance',
+      accept: 'Accept the alliance',
+      renew: 'Renew the alliance',
+      break: 'Break the alliance',
+      asked: 'Alliance asked',
+    },
+    offering: 'Offering',
+    hint: 'right click: alliance, offering',
+    hintTouch: 'long press: alliance, offering',
   },
   lord: {
     allied: 'Your ally',

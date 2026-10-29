@@ -80,11 +80,19 @@ export const fr: Messages = {
     toWin: (share: number) => `pour gagner : ${share}\u202f%`,
     dropsIn: (left: string) => `pour gagner, baisse dans ${left}`,
   },
-  pacts: {
-    ally: 'Alliance',
-    asked: 'Proposée',
-    accept: 'Valider',
-    break: 'Rompre',
+  menu: {
+    label: (lord: string) => `Que faire avec ${lord}`,
+    attack: 'Attaquer',
+    alliance: {
+      offer: 'Alliance',
+      accept: 'Valider l’alliance',
+      renew: 'Renouveler l’alliance',
+      break: 'Rompre l’alliance',
+      asked: 'Alliance demandée',
+    },
+    offering: 'Offrande',
+    hint: 'clic droit : alliance, offrande',
+    hintTouch: 'appui long : alliance, offrande',
   },
   lord: {
     allied: 'Ton allié',

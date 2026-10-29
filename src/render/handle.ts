@@ -10,9 +10,12 @@ export type GameHandle = {
   hold: (work: Work | null) => void
   /** A coup taken in hand, or put down. */
   aim: (coup: Coup | null) => void
-  close: () => void
-  /** An order about another lord: to offer or accept an alliance, renew it, or break it. */
-  treat: (type: 'ally' | 'breakAlliance', target: number) => void
+  /** The pointer gone far from the right click's menu: it closes, and a click on the map just after only finishes closing it. */
+  leave: () => void
+  /** From the right click's menu: the army in hand sent at the land right clicked, as a left click there would. */
+  attack: () => void
+  /** An order about another lord: to offer or accept an alliance, renew it, or break it, or to give him an offering. */
+  treat: (type: 'ally' | 'breakAlliance' | 'offering', target: number) => void
   /** The camera: one step closer (1) or farther (-1), back to the player's land. */
   zoom: (step: 1 | -1) => void
   home: () => void

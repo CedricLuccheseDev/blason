@@ -4,6 +4,7 @@ import { Sheet } from '../hud/Sheet'
 import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
+import { LordMenu } from './LordMenu'
 import { Lords } from './Lords'
 import { CameraButtons } from './CameraButtons'
 import { Heralds } from './Heralds'
@@ -27,8 +28,9 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * and a betrayal cried to all; the top right left to the map. On the map,
  * the seal of an alliance asking to be renewed beside the ally's name, the
  * heralds' letters of the offers and the news where it happened (Heralds.tsx);
- * bottom left the lord aimed at, while one is; at the bottom the bar, the
- * purse in it; bottom right the camera; the cartouche beside the pointer.
+ * at the bottom the bar, the purse in it; bottom right the camera; the
+ * cartouche beside the pointer, or, on another lord's land right clicked,
+ * his menu there.
  */
 /** How long a betrayal is cried under the race. */
 const CRY_MS = 3000
@@ -153,12 +155,19 @@ export function GameScreen({
               </div>
             </div>
           </div>
-          <Cursor
-            summary={summary}
-            aim={aim}
-            onTreat={game.treat}
-            floor={floor}
-          />
+          {aim?.pinned ? (
+            <LordMenu
+              key={`${aim.x},${aim.y}`}
+              aim={aim}
+              summary={summary}
+              floor={floor}
+              onAttack={game.attack}
+              onTreat={game.treat}
+              onLeave={game.leave}
+            />
+          ) : (
+            <Cursor summary={summary} aim={aim} floor={floor} />
+          )}
         </>
       )}
     </main>

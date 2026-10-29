@@ -156,7 +156,12 @@ orders. It decides nothing about the rules.
   begins), the session, the scene, the camera, the input, and the handle the
   React screen drives. What the player holds in
   hand, an army, a work or a coup, and the order a click sends with it, is
-  `hand.ts` (the keys 1 to 9, `keys.ts`).
+  `hand.ts` (the keys 1 to 9, `keys.ts`). What the pointer aims at, where
+  the army would enter and whose land it is, is `aiming.ts`; `pin.ts` keeps
+  the aim the HUD is shown, the pointer's, or the one a right click pinned
+  on another lord's land for his menu until it is closed (a click on the map
+  then only closes it, and so does one just after the pointer left it
+  behind, so that no army goes out of a click meant to put it away).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
 - A saved game (`save.ts`) is a game's state at a tick as plain data, less
@@ -313,7 +318,8 @@ orders. It decides nothing about the rules.
   move, to the HUD that listens (`GameHandle.heralds`, `handle.ts`).
 - `summary.ts` reads from the state, once a second, the figures the HUD shows;
   `news.ts` what the player hears and where: a lord biting his border, the
-  coups at his land (`coupNews.ts`), and any lord who broke an alliance.
+  coups at his land (`coupNews.ts`), an offering given him (on the giver's
+  land nearest his own, with its gold), and any lord who broke an alliance.
 
 ## The interface
 
@@ -350,8 +356,9 @@ The HUD is React, laid over the map. It is built on a small design system,
   it lacks it (`useFit.ts`; the bar loses its names, said under the pointer,
   then is laid on rows as on a phone; the race keeps its figure alone), and
   what is placed by the pointer or on the map keeps within the screen
-  (`useSize.ts`: the cartouche, above the bar's row, goes to the pointer's
-  other side; a letter's words; a pennant flies left near the right side).
+  (`useSize.ts`; `useBeside.ts`: the cartouche and the right click's menu,
+  above the bar's row, go to the pointer's other side, and on a phone stand
+  above the bar; a letter's words; a pennant flies left near the right side).
 
 The game's pieces (`src/components/game/`: the lords' list top left, every
 lord standing on a thin line washed in his colour as far as his land goes
@@ -366,9 +373,17 @@ gules, in plain words (`HeraldLetter.tsx`); either waiting at the screen's edge
 with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom with the purse in it, then the armies, the works and the
-coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
-the cartouche beside the pointer) are built from these and
-nothing else. The look follows the design boards, whose sources are in
+coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink;
+the cartouche beside the pointer, what a left click sends, the army in hand
+and its men, and over another lord's land that a right click opens the rest
+(`Cursor.tsx`); a right click there opens his menu beside the pointer, as a
+short list: a small sheet, his shield and his name, then a thin line for
+each act, its medallion ringed in its colour, its word and its figure:
+attack, the men of the army in hand, sent there as a left click would (none
+on an ally's land); the alliance, its word what it does now, to offer,
+accept, renew or break it, asleep while the player's offer waits; an
+offering, the gold it would give (`LordMenu.tsx`, its lines `lordMenu.ts`))
+are built from these and nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 
 ## The maquette

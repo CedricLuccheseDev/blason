@@ -1,6 +1,7 @@
 import { Application } from 'pixi.js'
 import { NO_ONE } from '../../engine'
 import { makeAiming } from './aiming'
+import { makePin } from './pin'
 import { makeCamera } from './camera'
 import { makeInput } from './input'
 import { makeHand } from './hand'
@@ -34,7 +35,8 @@ import type { Save } from './save'
 // border is nearest the click; with a work in hand (4 to 6: a village, a
 // castle, a market), a click on one's own land builds it there; with a coup
 // in hand (7 to 9: a troublemaker, archers, Greek fire), a click launches it
-// at the land clicked (hand.ts).
+// at the land clicked (hand.ts). A right click on another lord's land opens
+// his menu there: the army in hand to send, the alliance, an offering.
 
 export type { GameHandle } from './handle'
 export type { Summary } from './summary'
@@ -53,7 +55,7 @@ export async function mountGame(
   me: number,
   hooks: {
     onSummary: (summary: Summary) => void
-    /** The pointer over land a click would strike, or the one right clicked; none elsewhere. */
+    /** The pointer over land a click would strike, or another lord's land right clicked, for his menu; none elsewhere. */
     onAim: (aim: Aim | null) => void
     /** What happened in the last second that the player should read. */
     onNews?: (news: Array<News>) => void
@@ -105,22 +107,13 @@ export async function mountGame(
   const pick = (x: number, y: number) => tileAt(grid, x, y)
 
   const hand = makeHand()
-  let hovered = -1
-  // The aim pinned by a right click.
-  let pinned: Aim | null = null
   const aiming = makeAiming(app.canvas, state, me, scene.world)
-  const aimAt = (tile: number, pin: boolean) => aiming.at(tile, pin, hand.hand)
-
-  function unpin() {
-    pinned = null
-    hooks.onAim(aimAt(hovered, false))
-  }
+  const pin = makePin(
+    (tile, pinned) => aiming.at(tile, pinned, hand.hand),
+    hooks.onAim,
+  )
   function click(tile: number) {
-    if (tile < 0 || me < 0) return
-    if (pinned) {
-      unpin()
-      return
-    }
+    if (tile < 0 || me < 0 || pin.dismisses()) return
     if (state.tick < state.rules.openingTicks)
       session.send({ player: me, type: 'pickStart', tile })
     else {
@@ -132,21 +125,15 @@ export async function mountGame(
   const input =
     me >= 0
       ? makeInput(app.canvas, scene.world, pick, {
-          hover(tile) {
-            hovered = tile
-            if (!pinned) hooks.onAim(aimAt(tile, false))
-          },
+          hover: pin.hover,
           click,
-          menu(tile) {
-            pinned = aimAt(tile, true)
-            hooks.onAim(pinned)
-          },
-          away: unpin,
+          menu: pin.open,
+          away: pin.close,
         })
       : null
   const onKey = (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
-    if (e.key === 'Escape') unpin()
+    if (e.key === 'Escape') pin.close()
     if (hand.key(keyOf(e))) refresh()
   }
   /** What is in hand changed: the figures and the aim again. */
@@ -157,7 +144,7 @@ export async function mountGame(
   /** The figures and the aim again: when what is in hand changed, and once a second, the land, or in the opening the standards, having moved under the pointer. */
   function refresh() {
     hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
-    if (!pinned) hooks.onAim(aimAt(hovered, false))
+    pin.again()
   }
   if (me >= 0) window.addEventListener('keydown', onKey)
 
@@ -186,7 +173,7 @@ export async function mountGame(
     else camera.step()
     // Farther than the whole land, the names shrink with it (the director never goes so far).
     const far = director ? 1 : Math.min(1, camera.level())
-    scene.draw(hovered, hand.hand, camera.zoom(), between, far)
+    scene.draw(pin.hovered(), hand.hand, camera.zoom(), between, far)
     const now = performance.now() / 1000
     if (!director) heralds.show([...scene.anchors(), ...notes.anchors(now)])
     // The figures are read once a second, as every figure of the game.
@@ -232,13 +219,19 @@ export async function mountGame(
     choose: (next) => handed(() => hand.choose(next)),
     hold: (next) => handed(() => hand.hold(next)),
     aim: (next) => handed(() => hand.aim(next)),
-    close: unpin,
+    leave: pin.leave,
     zoom: (step) => camera.zoomBy(step),
     home: () => camera.home(),
     heralds: heralds.listen,
+    attack() {
+      const tile = pin.menuAt()
+      const { army } = hand.hand
+      if (tile >= 0) session.send({ player: me, type: 'attack', tile, army })
+      pin.close()
+    },
     treat(type, target) {
       session.send({ player: me, type, target })
-      unpin()
+      pin.close()
     },
   }
 }

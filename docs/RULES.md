@@ -139,8 +139,9 @@ village or a market, 20 for a castle.
 
 ## Alliances and traitors
 
-`engine/diplomacy.ts`, by a right click on a lord's land, or on the map: the
-herald's letter of an offer made to you, the seal of an alliance to renew:
+`engine/diplomacy.ts`, from the menu a right click opens on a lord's land
+(attack, alliance, offering), or on the map: the herald's letter of an offer
+made to you, the seal of an alliance to renew:
 
 - One order offers an alliance, accepts one offered, or renews one. An offer
   waits 20 seconds.
@@ -156,12 +157,13 @@ herald's letter of an offer made to you, the seal of an alliance to renew:
   together, when its members' land added up holds the share that wins (or
   it is the last side standing); its member with the most land is named the
   winner. Without teams every lord plays for himself.
-- An **offering** gives another lord a quarter of one's gold. It is
-  remembered 2 minutes: a bot that received it leaves the giver in peace the
-  while (it opens no war on him, though it still answers an army of his), and
-  accepts his alliance though it fights him or holds two allies already
-  (three at most). Between players it is a gift or a ransom, nothing more.
-  (Its button comes with the right click's menu, drawn on the mockup first.)
+- An **offering** gives another lord a quarter of one's gold, from the
+  right click's menu, which shows how much. It is remembered 2 minutes: a
+  bot that received it leaves the giver in peace the while (it opens no war
+  on him, though it still answers an army of his), and accepts his alliance
+  though it fights him or holds two allies already (three at most). Between
+  players it is a gift or a ransom, nothing more; the lord who receives one
+  is told, on the giver's land, and how much.
 
 ## Merchants
 
