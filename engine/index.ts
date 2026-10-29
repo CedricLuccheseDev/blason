@@ -38,6 +38,7 @@ export { hired } from './armies'
 export { costOf, freeWorks, marching, menFor, roadTo } from './muster'
 export { isAllied, isFelon } from './diplomacy'
 export { meet } from './battle'
+export { shootsAt, underFire } from './volleys'
 export { tradeLinks } from './network'
 export type { Link } from './network'
 

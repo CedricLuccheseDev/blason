@@ -258,7 +258,11 @@ orders. It decides nothing about the rules.
   of arrows, a pot of Greek fire trailing smoke, the land they will strike
   ringed in red for their victim (`layers/strikes.ts`, drawn by `art/coups.ts`,
   their ways by `flight.ts`), and how each ends, a rain of arrows, a burst of
-  flames, a land rising, a troublemaker struck out (`layers/impacts.ts`); the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
+  flames, a land rising, a troublemaker struck out (`layers/impacts.ts`); the
+  castles' arrows, the same on the same arc, loosed from their towers a moment
+  before each volley, which the castles' rhythm tells ahead, so that they come
+  down on the enemy army's men as the volley takes them (`layers/volleys.ts`);
+  the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
   (`layers/tidings.ts`), the alliances between the lords' capitals, the
   player's own a ribbon of green silk hemmed in gold, the others' a thin dotted

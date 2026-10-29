@@ -22,6 +22,7 @@ import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
 import { makeScars } from './layers/scars'
 import { makeStrikes } from './layers/strikes'
+import { makeVolleys } from './layers/volleys'
 import { makeBorders } from './layers/borders'
 import { makeGround } from './layers/ground'
 import { makeLife } from './layers/life'
@@ -39,7 +40,8 @@ import type { Anchor } from './heralds'
 // ink, and the coast; what the coups leave (the rebels' land and the
 // ashes); the villages and the works, and their life; the borders between
 // allies in green and those at war in red; the frame; the wagons, the
-// armies, the coups on their way, the aim, the standards planted in the
+// armies and the castles' arrows falling on them, the coups on their way,
+// the aim, the standards planted in the
 // opening, and over all each lord's name and peasants at the heart of his
 // land. The alliances' ribbons and cords run between the names, under the
 // wagons and the armies. The grain of the parchment over the whole page, moving with it. Farther out than the whole land, the
@@ -77,6 +79,7 @@ export function makeScene(
   const marks = makeMarks(state)
   const life = makeLife(ground.fieldsNear)
   const armies = makeArmies(me)
+  const volleys = makeVolleys(armies.menOf)
   const aim = makeAim(state, me)
   const planted = makePlanted(me)
   // Where the lords are written, read once a tick for the names and their marks.
@@ -128,6 +131,7 @@ export function makeScene(
       page.frame,
       trade.container,
       armies.container,
+      volleys.container,
       strikes.container,
       tidings.container,
       aim.container,
@@ -188,6 +192,7 @@ export function makeScene(
       seals.draw(state, zoom)
       trade.draw(state, zoom, between)
       armies.draw(state, zoom, seen, between, far)
+      volleys.draw(state, zoom, seen, between)
       strikes.draw(state, zoom, between)
       tidings.draw(state, zoom)
       aim.draw(hovered, hand, zoom)

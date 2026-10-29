@@ -211,6 +211,11 @@ export function makeArmies(me: number) {
 
   return {
     container,
+    /** Where an army's men stand this frame, their middle; none while it shows none. */
+    menOf(host: Host): Spot | null {
+      const army = armies.get(host)
+      return army ? middle(army.troops.men) : null
+    },
     /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
     draw(state: GameState, zoom: number, view: Box, between = 0, far = 1) {
       const seconds = performance.now() / 1000

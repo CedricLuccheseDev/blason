@@ -13,7 +13,11 @@ import type { GameState, Host } from './types'
 type Building = GameState['works'][number]
 
 /** Whether a castle looses a volley at a tick: once it stands, every so many ticks from the tick it was done. */
-function shootsAt(state: GameState, castle: Building, tick: number): boolean {
+export function shootsAt(
+  state: GameState,
+  castle: Building,
+  tick: number,
+): boolean {
   const ready = castle.ready ?? 0
   return (
     castle.work === 'castle' &&
@@ -23,7 +27,7 @@ function shootsAt(state: GameState, castle: Building, tick: number): boolean {
 }
 
 /** The armies a castle's arrows reach: those striking its lord whose front lies within its radius. */
-function underFire(state: GameState, castle: Building): Array<Host> {
+export function underFire(state: GameState, castle: Building): Array<Host> {
   const r = state.rules.castleRadius
   return state.hosts.filter(
     (host) =>
