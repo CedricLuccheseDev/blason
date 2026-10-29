@@ -83,7 +83,7 @@ export const fr: Messages = {
   pacts: {
     ally: 'Alliance',
     asked: 'Proposée',
-    accept: 'Accepter',
+    accept: 'Valider',
     break: 'Rompre',
   },
   lord: {

@@ -19,12 +19,12 @@ export type Pact = {
   tone: Tone
 }
 
-/** What binds the player to a lord, and what a right click would offer: alliance, acceptance, a break. */
+/** What binds the player to a lord, and what a right click would offer: alliance, acceptance (in green, as on the herald's letter), a break. */
 export function pactWith(summary: Summary, seat: number, m: Messages): Pact {
   if (summary.allies.some((a) => a.seat === seat))
     return { label: m.pacts.break, act: 'breakAlliance', tone: 'gules' }
   if (summary.offers.some((o) => o.seat === seat))
-    return { label: m.pacts.accept, act: 'ally', tone: 'gilt' }
+    return { label: m.pacts.accept, act: 'ally', tone: 'pact' }
   if (summary.asked.includes(seat))
     return { label: m.pacts.asked, act: null, tone: 'gilt' }
   return { label: m.pacts.ally, act: 'ally', tone: 'gilt' }

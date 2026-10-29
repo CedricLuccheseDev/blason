@@ -319,10 +319,11 @@ race on one thin line and under it a betrayal cried to all on a banderole of
 gules (`Banner.tsx`), the top right left to the map; the seals of the player's
 alliances on the map at the middle of their ribbons, a click to renew in their
 last moments; an offer as the herald's sealed letter on the player's land, its
-gold ring the time it stands, which a click breaks open to seal or refuse
-(`HeraldLetter.tsx`); either waiting at the screen's edge with an arrow when
-out of view (`Heralds.tsx`, `PactSeal.tsx`, `edge.ts`); the news as a pennant
-planted where it happened, a few seconds (`Pennant.tsx`); the
+gold ring the time it stands, which a click opens, to accept it in the
+alliance's green or refuse it in gules, in plain words (`HeraldLetter.tsx`);
+either waiting at the screen's edge with an arrow when out of view
+(`Heralds.tsx`, `PactSeal.tsx`, `edge.ts`); the news as a pennant planted
+where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom with the purse in it, then the armies, the works and the
 coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
 the lord aimed at, the cartouche beside the pointer) are built from these and

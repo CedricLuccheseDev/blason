@@ -21,9 +21,9 @@ const COMPACT = 0.84
  * An offer of alliance as the herald brings it, standing on my land nearest
  * the lord who sends it: his sealed letter, the gold ring of the time it
  * stands round the seal, and under it who sends it and what to do. A click
- * breaks the seal, its halves flying apart, and the letter opens: seal the
- * alliance, or refuse it and let the offer lapse. At the edge of the
- * screen, an arrow out of its ring towards where it stands.
+ * opens it, its seal breaking in two: accept the alliance, in green, or
+ * refuse it, in gules, and let the offer lapse. At the edge of the screen,
+ * an arrow out of its ring towards where it stands.
  */
 export function HeraldLetter({
   offer,
@@ -62,8 +62,8 @@ export function HeraldLetter({
           type="button"
           onClick={() => setStage('breaking')}
           disabled={stage !== 'sealed'}
-          aria-label={m.heralds.letter(name)}
-          title={m.heralds.letter(name)}
+          aria-label={m.heralds.openLetter(name)}
+          title={m.heralds.openLetter(name)}
           className="hud-press pointer-events-auto block cursor-pointer"
         >
           <svg
@@ -93,7 +93,7 @@ export function HeraldLetter({
         <Sheet className="flex flex-col items-center px-3 py-1 text-center whitespace-nowrap">
           <span className="hud-word">{m.heralds.offer(name)}</span>
           <span className="hud-note">
-            {compact ? m.heralds.tapSeal : m.heralds.breakSeal}
+            {compact ? m.heralds.tapToOpen : m.heralds.clickToOpen}
           </span>
         </Sheet>
       )}
@@ -101,7 +101,7 @@ export function HeraldLetter({
   )
 }
 
-/** The letter open: who offers, and the two answers; kept within the screen's sides. */
+/** The letter open: who offers, and the two answers, yes in the alliance's green and no in gules; kept within the screen's sides. */
 function Opened({
   offer,
   room,
@@ -132,11 +132,11 @@ function Opened({
           </div>
         </div>
         <div className="flex gap-2">
-          <Act onClick={onSeal}>
+          <Act tone="pact" onClick={onSeal}>
             <Icon name="links" size={ICON.m} />
-            {m.heralds.seal}
+            {m.heralds.accept}
           </Act>
-          <Act tone="plain" onClick={onRefuse}>
+          <Act tone="gules" onClick={onRefuse}>
             {m.heralds.refuse}
           </Act>
         </div>

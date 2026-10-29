@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 
 // The HUD's one button: a plate laid on the sheet, an ink edge, its word in
-// IM Fell, tall enough for a finger. Gold to act, gules to break, parchment
-// for the rest.
+// IM Fell, tall enough for a finger. Gold to act, the alliance's green to
+// accept one, gules to break or refuse, parchment for the rest.
 
 const TONES = {
   gilt: 'bg-gilt text-quill hover:bg-gilt-light',
+  pact: 'bg-pact text-vellum hover:bg-pact-deep',
   gules: 'bg-gules text-wax hover:bg-gules-deep',
   plain: 'bg-vellum text-quill hover:bg-shade',
 } as const

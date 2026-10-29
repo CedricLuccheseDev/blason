@@ -92,8 +92,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
   une trahison criée à tous sous la course sur une banderole de gueules (`Banner.tsx`), le coin haut droit laissé à
   la carte ; les sceaux de mes alliances posés sur la carte au milieu de leurs rubans, un clic pour
-  renouveler dans leurs dernières secondes, les offres en plis scellés du héraut sur ma terre, un clic brise le sceau
-  pour sceller ou refuser (`HeraldLetter.tsx`), au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le
+  renouveler dans leurs dernières secondes, les offres en plis scellés du héraut sur ma terre, un clic les ouvre
+  pour valider, en vert, ou refuser, en gueules (acté le 29/10, « utilise des mots plus simples : "valider" en vert
+  et "refuser" en rouge ») (`HeraldLetter.tsx`), au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le
   rendu dit où par `heralds.ts` et `envoys.ts`, les rubans et les cordons dans `layers/pacts.ts`, qui claquent à la
   trahison), les nouvelles en fanions plantés là où elles arrivent (`Pennant.tsx`, `notes.ts`), la barre en bas avec
   la bourse dedans, puis les armées

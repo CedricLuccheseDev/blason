@@ -52,8 +52,10 @@
   --text-hud-xl: calc(28px * var(--hud));
   --text-hud-xl--line-height: 1;
   /* The alliance's green, as the heralds' vert: an ally in the HUD as on
-     the map, his shared border and his badge (render/palette.ts, TONE.pact). */
+     the map, his shared border and his badge (render/palette.ts, TONE.pact);
+     deeper, under the pointer on the button that accepts one. */
   --color-pact: #3f7f4a;
+  --color-pact-deep: #2f5f37;
   /* norm-ok: the shadow of what lies on the map, the game's art direction. */
   --shadow-lift: 0 2px 4px rgb(43 30 18 / 0.35);
   /* The HUD's motion: one curve, quick to leave and soft to land, and two
