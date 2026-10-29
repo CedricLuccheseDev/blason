@@ -76,7 +76,8 @@ describe('an army, tile by tile', () => {
   })
 
   it('pays a soldier for two peasants, one for one under their lord’s castle', () => {
-    const state = playing(field(30))
+    // A row held whole: no free land for lord 1 to take by the sea's wall.
+    const state = playing(field(5))
     state.rules = { ...state.rules, paceTiles: 1 }
     hold(state, 0, [0])
     muster(state, 0, 0)

@@ -16,6 +16,7 @@ function realm(gold: number): GameState {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
     sickness: 0,
+    seaWalled: 0,
     peasants: { land: 0, tiles: 600, village: 100 },
   })
   state.tick = state.rules.openingTicks

@@ -138,9 +138,12 @@ export type Rules = {
   caravanCrowd: number
   /** How far a market reaches, in tiles: two markets within it of each other are joined by a road. */
   tradeRange: number
-  /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent. */
+  /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent; between two markets of one lord, so much, paid once. */
   caravanGold: number
   allyTrade: number
+  homeTrade: number
+  /** A piece of a lord's land under so many tiles, ringed by one other lord and the sea, passes to him as if ringed all round. */
+  seaWalled: number
   /** Share of the land that wins, in thousandths, and how it falls with time. */
   victoryShare: number
   victoryDropStart: number
@@ -230,6 +233,8 @@ export const RULES: Rules = {
   tradeRange: 40,
   caravanGold: 150,
   allyTrade: 200,
+  homeTrade: 50,
+  seaWalled: 200,
   victoryShare: 800,
   victoryDropStart: 10 * MINUTE,
   victoryDropPerMinute: 50,

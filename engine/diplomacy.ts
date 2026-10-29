@@ -21,6 +21,14 @@ function teammates(state: GameState, a: number, b: number): boolean {
 export const sideOf = (state: GameState, lord: number): string =>
   (state.teams[lord] ?? -1) >= 0 ? `team ${state.teams[lord]}` : `lord ${lord}`
 
+/** Whether two lords are at war: an army of either is sent at the other. */
+export function atWar(state: GameState, a: number, b: number): boolean {
+  return state.hosts.some(
+    (h) =>
+      (h.owner === a && h.target === b) || (h.owner === b && h.target === a),
+  )
+}
+
 export function isAllied(state: GameState, a: number, b: number): boolean {
   return (
     a !== b &&

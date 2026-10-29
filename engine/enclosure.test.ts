@@ -3,8 +3,11 @@ import { field, hold, playing, run } from './testing'
 
 describe('the encircled land', () => {
   it('passes whole to the one lord all round it, works and all', () => {
-    // A row of three: lord 1 holds one tile, ringed by lord 0; lord 2 holds the rest.
+    // A row of three: lord 1 holds one tile, ringed by lord 0; lord 2 holds
+    // the rest. On so narrow a land every piece touches the edge: no piece
+    // is taken for being small, only for being ringed.
     const state = playing(field(10, 3), 3)
+    state.rules = { ...state.rules, seaWalled: 0 }
     hold(
       state,
       2,
@@ -19,8 +22,9 @@ describe('the encircled land', () => {
     expect(state.players[1].alive).toBe(false)
   })
 
-  it('is not taken while it touches the sea, the edge, or two lords', () => {
+  it('is not taken while it touches the sea, the edge, or two lords, unless small', () => {
     const state = playing(field(10, 3), 3)
+    state.rules = { ...state.rules, seaWalled: 0 }
     hold(
       state,
       2,
@@ -42,5 +46,21 @@ describe('the encircled land', () => {
     run(state, 10)
     expect([0, 1, 2].map((t) => state.owner[t])).toEqual([0, 0, 0])
     expect([6, 7].map((t) => state.owner[t])).toEqual([-1, -1])
+  })
+
+  it('takes a small piece of a lord’s land walled by one lord and the sea, not a large one', () => {
+    // Lord 1 at the edge of a row (0 and 1), lord 0 beside him.
+    const state = playing(field(10, 1), 2)
+    state.rules = { ...state.rules, seaWalled: 200 }
+    hold(state, 1, [0, 1])
+    hold(state, 0, [2, 3, 4, 5, 6, 7, 8, 9])
+    run(state, 10)
+    expect(state.owner[0]).toBe(0)
+    const large = playing(field(10, 1), 2)
+    large.rules = { ...large.rules, seaWalled: 2 }
+    hold(large, 1, [0, 1])
+    hold(large, 0, [2, 3, 4, 5, 6, 7, 8, 9])
+    run(large, 10)
+    expect(large.owner[0]).toBe(1)
   })
 })

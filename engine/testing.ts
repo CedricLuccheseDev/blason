@@ -40,10 +40,13 @@ export function setupOf(
 
 /** A game past its opening, no village, no income, nothing born and no one sick: men and gold counted exactly. */
 export function playing(grid: Grid, players = 2): GameState {
+  // The tests' lands are narrow, every piece by the edge: none is taken
+  // for being small (seaWalled), only for being ringed.
   const state = createGame(grid, setupOf(players), {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
     sickness: 0,
+    seaWalled: 0,
   })
   state.tick = state.rules.openingTicks
   return state

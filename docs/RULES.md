@@ -161,7 +161,8 @@ leaves it gives his seat back to its bot.
   touches one lord alone all round (no sea, no edge of the map) passes to him
   whole, with its works; a lord wholly ringed by one other loses everything.
   A piece of free land is his even if the sea or the map's edge closes the
-  rest of the ring: one lord beside it, and no other, is enough. Allies never
+  rest of the ring: one lord beside it, and no other, is enough; so is a
+  piece of a lord's land under 200 tiles, never a whole coastal realm. Allies never
   take each other's land so (`engine/enclosure.ts`).
 
 ## Works
@@ -222,16 +223,18 @@ made to you, the seal of an alliance to renew:
 - **The trade network**: each market reaches 40 tiles. Two markets within
   range of each other are joined by a road over the land, whoever holds them,
   unless a third market lies nearer to both (`engine/network.ts`).
-- Every 10 seconds, each market may send a caravan to a market of another
-  lord, drawn by lot among all those the network reaches: the farther and the
-  allies' more often (the chance goes with the road's length, twice for an
-  ally). It goes along the network's roads, through as many markets as it
+- Every 10 seconds, each market may send a caravan to another market, its
+  lord's own or another lord's, never one of a lord at war with his (an army
+  of either sent at the other), drawn by lot among all those the network
+  reaches: the farther and the allies' more often (the chance goes with the
+  road's length, twice for an ally, half for his own). It goes along the network's roads, through as many markets as it
   takes, over its lord's land, his allies' and free land, and the land of the
   lords whose markets it goes to; any other lord bars the way. The more
   caravans its lord has on the roads, the less often it sends one: with 6 out,
   one time in two.
 - It makes one journey at 4 tiles a second. Arriving, it pays both markets
-  0.15 gold for each tile of its road, twice as much between allies.
+  0.15 gold for each tile of its road, twice as much between allies; between
+  two markets of one lord, half as much, paid once.
 - An enemy who takes a tile of its road ahead takes the caravan: it turns to
   his nearest market and pays him alone. If he has none it can reach, it is
   plundered.
