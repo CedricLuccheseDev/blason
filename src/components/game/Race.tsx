@@ -103,7 +103,7 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
             <div className="w-full max-sm:w-56">
               <Track summary={summary} />
             </div>
-            <div className="flex items-baseline gap-3">
+            <div className="flex items-center gap-3">
               <Figure size="l">{minutes(summary.seconds)}</Figure>
               <span
                 className="flex items-center gap-1"

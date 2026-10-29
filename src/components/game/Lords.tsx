@@ -26,11 +26,14 @@ export function Lords({
   summary,
   aimed,
   onLight,
+  onMenu,
 }: Readonly<{
   summary: Summary
   aimed: number | null
   /** A lord's line pointed at, his land to light on the map; none when the pointer leaves. */
   onLight: (lord: number | null) => void
+  /** A lord's line clicked: his menu, as a right click on his land, by the pointer. */
+  onMenu: (lord: number, x: number, y: number) => void
 }>) {
   const m = useMessages()
   const compact = useCompact()
@@ -93,11 +96,16 @@ export function Lords({
               ring = 'bg-gilt/35 outline-[1.5px] outline-quill outline-solid'
             else if (self) ring = 'outline-[1.5px] outline-gilt outline-solid'
             return (
-              <div
+              <button
                 key={lord.seat}
+                type="button"
                 onPointerEnter={() => point(lord.seat)}
                 onPointerLeave={() => point(null)}
-                className={`pointer-events-auto relative flex items-center border-l-[3px] px-1 ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
+                // A lord's line opens his menu, as a right click on his land (« clique dans le menu seigneur ouvre les options alliance et tout »).
+                onClick={(e) =>
+                  !self && onMenu(lord.seat, e.clientX, e.clientY)
+                }
+                className={`pointer-events-auto relative flex w-full cursor-pointer items-center text-left border-l-[3px] px-1 ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
               >
                 <span
                   aria-hidden="true"
@@ -131,7 +139,7 @@ export function Lords({
                     {m.game.percent(lord.share)}
                   </span>
                 </span>
-              </div>
+              </button>
             )
           })}
         </div>

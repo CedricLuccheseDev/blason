@@ -6,6 +6,7 @@ import { count, hex } from './format'
 import { Divide, Piece } from './BarPiece'
 import type { Army, Coup, Work } from '../../../engine'
 import type { Summary } from '~/render/client'
+import { keyAt } from '~/render/keys'
 import { useMessages } from '~/i18n'
 
 /** The drawing pressed in each army's seal: its men, one, two or three, as its share grows; the mercenaries a man and his gold. */
@@ -67,13 +68,13 @@ function Armies({
   return (
     <div className="flex flex-col items-center">
       <div className={`flex items-start ${gap}`}>
-        {summary.armies.map((a) => {
+        {summary.armies.map((a, i) => {
           const held = !summary.work && !summary.coup && a.army === summary.army
           const wax = held ? hex(me.color) : 'var(--color-vellum)'
           return (
             <Piece
               key={a.army}
-              k={null}
+              k={keyAt(i + 1)}
               name={m.game.armies[a.army]}
               hint={[m.hints.armies.men(count(a.men)), m.hints.armies[a.army]]}
               held={held}
@@ -148,12 +149,12 @@ export function Bar({
           <Armies summary={summary} gap={gap} onArmy={onArmy} />
           {!rows && <Divide close={close} />}
           <div className={`flex items-start ${gap}`}>
-            {summary.works.map((w) => {
+            {summary.works.map((w, i) => {
               const held = summary.work === w.work
               return (
                 <Piece
                   key={w.work}
-                  k={null}
+                  k={keyAt(summary.armies.length + 1 + i)}
                   name={m.game.works[w.work]}
                   hint={[m.hints.works[w.work]]}
                   held={held}
@@ -173,12 +174,14 @@ export function Bar({
           </div>
           {!rows && <Divide close={close} />}
           <div className={`flex items-start ${gap}`}>
-            {summary.coups.map((c) => {
+            {summary.coups.map((c, i) => {
               const held = summary.coup === c.coup
               return (
                 <Piece
                   key={c.coup}
-                  k={null}
+                  k={keyAt(
+                    summary.armies.length + summary.works.length + 1 + i,
+                  )}
                   name={m.game.coups[c.coup]}
                   hint={[m.hints.coups[c.coup]]}
                   held={held}

@@ -1,5 +1,6 @@
 import { canStart } from '../../engine'
 import { keyOf } from './keys'
+import { tilePlaces } from './places'
 import type { GameState, Order } from '../../engine'
 import type { makeHand } from './hand'
 
@@ -41,5 +42,25 @@ export function makeKeys(
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === 'Escape') close()
     if (hand.key(keyOf(e))) refresh()
+  }
+}
+
+/** The tile a lord's name is written on, where his menu opens from his line in the list; -1 while he holds no land. */
+function nameTile(state: GameState, lord: number): number {
+  const at = tilePlaces(state).get(lord)
+  if (!at) return -1
+  const { width, size } = state.grid
+  return Math.floor(at.y / size) * width + Math.floor(at.x / size)
+}
+
+/** A lord's menu opened from his line in the list, by the pointer there, as a right click on his name's tile would open it. */
+export function menuFrom(
+  state: GameState,
+  point: (x: number, y: number) => void,
+  open: (tile: number) => void,
+) {
+  return (lord: number, x: number, y: number) => {
+    point(x, y)
+    open(nameTile(state, lord))
   }
 }

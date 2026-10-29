@@ -94,6 +94,11 @@ export function makeAiming(
   }
 
   return {
+    /** The pointer set where it is on the HUD, off the map: a lord's menu opened from his line in the list stands by it. */
+    point(x: number, y: number) {
+      pointer.x = x
+      pointer.y = y
+    },
     /** The aim at a tile, or pinned there by a right click; none elsewhere. */
     at(tile: number, pin: boolean, hand: Hand): Aim | null {
       if (tile < 0) return null

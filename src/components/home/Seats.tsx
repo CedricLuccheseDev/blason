@@ -29,7 +29,7 @@ export function Seats({
           <Shield key={i} size="s" color={seatColour(i)} />
         ))}
       </span>
-      <span className="flex items-baseline gap-2">
+      <span className="flex items-center gap-2">
         <span className="hud-note">{t.seated}</span>
         <Figure icon="soldier" size="l">
           {taken} / {SEATS}

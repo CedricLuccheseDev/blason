@@ -64,7 +64,12 @@ export function Places({
       </div>
       <div className="w-80 justify-self-end max-sm:w-auto">
         {!waiting && (
-          <Lords summary={summary} aimed={aimed} onLight={game.light} />
+          <Lords
+            summary={summary}
+            aimed={aimed}
+            onLight={game.light}
+            onMenu={game.menu}
+          />
         )}
       </div>
       <div

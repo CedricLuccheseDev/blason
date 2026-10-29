@@ -23,6 +23,8 @@ export type GameHandle = {
   heralds: (listener: (heralds: Heralds) => void) => () => void
   /** The land of a lord pointed at in the list of lords, lit on the map; none. */
   light: (lord: number | null) => void
+  /** A lord's menu opened, as a right click on his land would: from his line in the list. */
+  menu: (lord: number, x: number, y: number) => void
   /** An army of mine called home, by the village or market it left from. */
   recall: (from: number) => void
   /** The host's game launched, as his book set it, on the land it shows. */

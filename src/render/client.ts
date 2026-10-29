@@ -7,7 +7,7 @@ import { makeInput } from './input'
 import { makeHand } from './hand'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
-import { makeClick, makeKeys } from './clicks'
+import { makeClick, makeKeys, menuFrom } from './clicks'
 import { makePerf } from './perf'
 import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
@@ -225,6 +225,7 @@ export async function mountGame(
     home: () => camera.home(),
     heralds: heralds.listen,
     light: scene.light,
+    menu: menuFrom(state, aiming.point, pin.open),
     recall: (tile) => session.send({ player: me, type: 'recall', tile }),
     launch(book) {
       session.launch?.(hostSetup({ ...book, seed: land.seed, size: land.size }))
