@@ -313,7 +313,14 @@ The HUD is React, laid over the map. It is built on a small design system,
   appears, `.hud-life` on what is told a few seconds, and `.hud-glow` on what waits on the map for a click (a seal to
   renew), `.hud-bob` on a herald's letter waiting there, and the halves of a
   seal that breaks (`.hud-broken`); nothing moves under reduced motion;
-- **a compact shape** on phones, upright or sideways (`useCompact.ts`).
+- **a compact shape** on phones, upright or sideways (`useCompact.ts`);
+- **nothing off the screen** and nothing on another piece, at any size from
+  1024 by 600: a piece measures the room it has and grows more compact when
+  it lacks it (`useFit.ts`; the bar loses its names, said under the pointer,
+  then is laid on rows as on a phone; the race keeps its figure alone), and
+  what is placed by the pointer or on the map keeps within the screen
+  (`useSize.ts`: the cartouche, above the bar's row, goes to the pointer's
+  other side; a letter's words; a pennant flies left near the right side).
 
 The game's pieces (`src/components/game/`: the lords' list top left, the
 race on one thin line and under it a betrayal cried to all on a banderole of

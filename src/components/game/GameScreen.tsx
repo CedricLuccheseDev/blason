@@ -48,6 +48,8 @@ export function GameScreen({
 }>) {
   const m = useMessages()
   const host = useRef<HTMLDivElement>(null)
+  // The bottom row, the bar and the camera: the cartouche keeps above it.
+  const floor = useRef<HTMLDivElement>(null)
   const [game, setGame] = useState<GameHandle | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [aim, setAim] = useState<Aim | null>(null)
@@ -118,11 +120,11 @@ export function GameScreen({
       {game && summary && (
         <>
           <Heralds game={game} summary={summary} />
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
+          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
             <div className="relative flex w-80 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
               <Lords summary={summary} aimed={aim?.lord ?? null} />
             </div>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex min-w-0 flex-col items-center gap-2">
               <Race summary={summary} />
               <Moment summary={summary} online={online !== undefined} />
               {cry && (
@@ -130,13 +132,17 @@ export function GameScreen({
               )}
             </div>
             <div className="max-sm:hidden" />
-            <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-3 max-sm:grid-cols-1 max-sm:gap-2">
+            <div
+              ref={floor}
+              className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-3 max-sm:grid-cols-1 max-sm:gap-2"
+            >
               {/* Above the bar's row, at its left, taking none of its room: the
-                  bar has the width of the screen less the camera on either side. */}
+                  bar has the width of the screen less the camera on either side,
+                  or on one side only when it needs more. */}
               <div className="absolute bottom-full left-0 mb-4 flex w-72 flex-col gap-2 max-sm:mb-2 max-sm:w-[calc(100%-3.5rem)] short:mb-2 short:w-60">
                 <Aimed aim={aim} summary={summary} />
               </div>
-              <div className="col-start-2 flex justify-center max-sm:col-start-1">
+              <div className="col-start-2 min-w-0 max-sm:col-start-1">
                 <Bar
                   summary={summary}
                   onArmy={game.choose}
@@ -149,7 +155,12 @@ export function GameScreen({
               </div>
             </div>
           </div>
-          <Cursor summary={summary} aim={aim} onTreat={game.treat} />
+          <Cursor
+            summary={summary}
+            aim={aim}
+            onTreat={game.treat}
+            floor={floor}
+          />
         </>
       )}
     </main>

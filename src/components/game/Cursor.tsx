@@ -1,17 +1,52 @@
+import { useLayoutEffect, useState } from 'react'
 import { CoupEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { Rule, Sheet } from '../hud/Sheet'
 import { useCompact } from '../hud/useCompact'
+import { useSize } from '../hud/useSize'
 import { count, hex } from './format'
 import { ARMY_MARKS, COUP_MARKS } from './Bar'
 import { PactHalf, pactWith } from './Pact'
+import type { RefObject } from 'react'
 import type { Aim, Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
-/** How far from the pointer the cartouche stands. */
-const [DX, DY] = [24, 20]
+/** How far from the pointer the cartouche stands, and from the screen's sides and the bar's row at the least (the HUD's edge). */
+const [DX, DY, EDGE] = [24, 20, 16]
 /** On a phone, how far above the bottom of the screen it stands: over the bar, its three rows. */
 const ABOVE_BAR = 216
+
+/**
+ * Where the cartouche's near side stands along one of the screen's axes:
+ * `gap` past the pointer on the side it would rather be, or on the other
+ * when it would run past `end` there, or held within it when it fits on
+ * neither.
+ */
+function beside(
+  at: number,
+  gap: number,
+  after: boolean,
+  length: number,
+  end: number,
+): number {
+  const fits = (start: number) => start >= EDGE && start + length <= end - EDGE
+  const [rather, other] = after
+    ? [at + gap, at - gap - length]
+    : [at - gap - length, at + gap]
+  if (fits(rather)) return rather
+  if (fits(other)) return other
+  return Math.max(EDGE, Math.min(rather, end - EDGE - length))
+}
+
+/** The top of the HUD's bottom row (the bar, the camera), read before the screen is painted: the screen's bottom without one. */
+function useFloor(row: RefObject<HTMLElement | null>): number {
+  const [top, setTop] = useState(0)
+  useLayoutEffect(() => {
+    const y = row.current?.getBoundingClientRect().top ?? window.innerHeight
+    if (y !== top) setTop(y)
+  })
+  return top || window.innerHeight
+}
 
 /** The left of the cartouche: the army in hand, its men and its gold. */
 function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
@@ -89,19 +124,25 @@ function CoupHalf({
  * alone; over an ally's land or a lord's beyond reach, the right alone.
  * With a coup in hand, the coup alone, on the side away from where it
  * would leave from. In the opening, over a spot where the standard may not
- * stand, why, in gules.
+ * stand, why, in gules. Near an edge of the screen or over the bar's row, it
+ * goes to the pointer's other side rather than off the screen or on them.
  */
 export function Cursor({
   aim,
   summary,
   onTreat,
+  floor,
 }: Readonly<{
   aim: Aim | null
   summary: Summary
   onTreat: (type: 'ally' | 'breakAlliance', target: number) => void
+  /** The HUD's bottom row, which the cartouche stays above. */
+  floor: RefObject<HTMLElement | null>
 }>) {
   const m = useMessages()
   const narrow = useCompact()
+  const { box, size } = useSize()
+  const bottom = useFloor(floor)
   if (!aim || !summary.me) return null
   const seat = aim.lord
   const strikes = aim.entry !== null && !aim.coup
@@ -111,19 +152,25 @@ export function Cursor({
   const pact = seat === null ? null : pactWith(summary, seat, m)
   return (
     <div
-      className="pointer-events-none absolute"
-      // On a phone, above the bar, where no finger hides it.
+      ref={box}
+      className="pointer-events-none absolute w-max"
+      // On a phone, above the bar, where no finger hides it, its halves one
+      // under the other when the screen is too narrow for them side by side.
       style={
         narrow
-          ? { left: '50%', bottom: ABOVE_BAR, transform: 'translateX(-50%)' }
+          ? {
+              left: '50%',
+              bottom: ABOVE_BAR,
+              transform: 'translateX(-50%)',
+              maxWidth: 'calc(100% - 1rem)',
+            }
           : {
-              left: aim.x + (right ? DX : -DX),
-              top: aim.y + (below ? DY : -DY),
-              transform: `translate(${right ? 0 : '-100%'}, ${below ? 0 : '-100%'})`,
+              left: beside(aim.x, DX, right, size.w, window.innerWidth),
+              top: beside(aim.y, DY, below, size.h, bottom),
             }
       }
     >
-      <Sheet className="flex items-stretch gap-3 p-3">
+      <Sheet className="flex flex-wrap items-stretch gap-3 p-3">
         {aim.barred && (
           <span className="hud-note text-gules">{m.game.tooNear}</span>
         )}

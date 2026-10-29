@@ -88,8 +88,13 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   un mouvement unifié, acté le 28/10 (« chaque élément hud interactif soit animé ... des animations unifiés ») :
   une courbe (`ease-hud`), deux durées (120 ms pour ce qu'on touche, 200 ms pour ce qui apparaît), deux rôles
   (`.hud-press`, `.hud-enter`), rien sous `prefers-reduced-motion` ; `useCompact` donne la forme compacte des
-  pièces sur téléphone, debout ou couché. La
-  mise en page en HTML, le SVG pour les seuls objets dessinés.
+  pièces sur téléphone, debout ou couché ; rien ne sort de l'écran ni ne se pose sur une autre pièce, à toute
+  taille dès 1024 × 600 (acté le 29/10, « les hud sortent de l'écran ») : `useFit` mesure la place qu'une pièce a
+  et la fait plus compacte quand elle manque (la barre perd ses noms, dits sous la souris, puis passe sur des
+  lignes comme sur téléphone ; la course garde son chiffre seul), `useSize` tient dans l'écran ce qui se place à
+  la souris ou sur la carte (le cartouche, au-dessus de la barre, passe de l'autre côté de la souris ; les mots
+  d'un pli ; un fanion vole vers la gauche près du bord droit). La mise en page en HTML, le SVG pour les seuls
+  objets dessinés.
 - `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, la course sur une ligne,
   une trahison criée à tous sous la course sur une banderole de gueules (`Banner.tsx`), le coin haut droit laissé à
   la carte ; les sceaux de mes alliances posés sur la carte au milieu de leurs rubans, un clic pour

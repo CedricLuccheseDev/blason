@@ -4,6 +4,7 @@ import { Shield } from '../hud/Emblem'
 import { Icon } from '../hud/Figure'
 import { Sheet } from '../hud/Sheet'
 import { ICON, scaled } from '../hud/tokens'
+import { useSize } from '../hud/useSize'
 import { LETTER, SealedLetter } from './svg/letter'
 import { EdgeArrow } from './svg/pact'
 import { hex } from './format'
@@ -11,6 +12,18 @@ import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
 type Offer = Summary['offers'][number]
+
+/** Pixels between a piece's middle and each of the screen's sides. */
+type Room = { left: number; right: number }
+
+/**
+ * The shift across that keeps a piece `half` wide on each side of its
+ * middle within the screen's sides, with a margin of 8 pixels.
+ */
+function within(half: string, room: Room): string {
+  const reach = `(${half} + 8px)`
+  return `translateX(calc(max(0px, ${reach} - ${room.left}px) - max(0px, ${reach} - ${room.right}px)))`
+}
 
 /** How long the seal takes to break before the letter opens: the HUD's time for what appears. */
 const BREAK_MS = 200
@@ -23,7 +36,8 @@ const COMPACT = 0.84
  * stands round the seal, and under it who sends it and what to do. A click
  * opens it, its seal breaking in two: accept the alliance, in green, or
  * refuse it, in gules, and let the offer lapse. At the edge of the screen,
- * an arrow out of its ring towards where it stands.
+ * an arrow out of its ring towards where it stands; its words, as the open
+ * letter, kept within the screen's sides.
  */
 export function HeraldLetter({
   offer,
@@ -36,12 +50,13 @@ export function HeraldLetter({
   offer: Offer
   toward: number | null
   compact: boolean
-  /** Pixels between the letter and the screen's sides, so that it opens within them. */
-  room: { left: number; right: number }
+  /** Pixels between the letter and the screen's sides, so that its words and the letter open stay within them. */
+  room: Room
   onSeal: () => void
   onRefuse: () => void
 }>) {
   const m = useMessages()
+  const words = useSize()
   const [stage, setStage] = useState<'sealed' | 'breaking' | 'open'>('sealed')
   useEffect(() => {
     if (stage !== 'breaking') return
@@ -90,12 +105,17 @@ export function HeraldLetter({
         </button>
       </div>
       {stage === 'sealed' && (
-        <Sheet className="flex flex-col items-center px-3 py-1 text-center whitespace-nowrap">
-          <span className="hud-word">{m.heralds.offer(name)}</span>
-          <span className="hud-note">
-            {compact ? m.heralds.tapToOpen : m.heralds.clickToOpen}
-          </span>
-        </Sheet>
+        <div
+          ref={words.box}
+          style={{ transform: within(`${words.size.w / 2}px`, room) }}
+        >
+          <Sheet className="flex flex-col items-center px-3 py-1 text-center whitespace-nowrap">
+            <span className="hud-word">{m.heralds.offer(name)}</span>
+            <span className="hud-note">
+              {compact ? m.heralds.tapToOpen : m.heralds.clickToOpen}
+            </span>
+          </Sheet>
+        </div>
       )}
     </div>
   )
@@ -109,20 +129,16 @@ function Opened({
   onRefuse,
 }: Readonly<{
   offer: Offer
-  room: { left: number; right: number }
+  room: Room
   onSeal: () => void
   onRefuse: () => void
 }>) {
   const m = useMessages()
-  const half = `(${scaled(160)} + 8px)`
-  const shift = `calc(max(0px, ${half} - ${room.left}px) - max(0px, ${half} - ${room.right}px))`
+  // Half its width, w-80 as drawn.
+  const shift = within(scaled(160), room)
   return (
     // Over the HUD's corners, as what is being read (Heralds.tsx raises its piece).
-    <div
-      data-open
-      className="pointer-events-auto"
-      style={{ transform: `translateX(${shift})` }}
-    >
+    <div data-open className="pointer-events-auto" style={{ transform: shift }}>
       <Sheet className="flex w-80 flex-col gap-3 p-4">
         <div className="flex items-center gap-3">
           <Shield color={hex(offer.color)} />

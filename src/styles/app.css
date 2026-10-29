@@ -263,9 +263,9 @@
   .hud-life {
     animation: hud-life 4s var(--ease-hud) both;
   }
-  /* norm-ok: a betrayal's banderole, gules cut in a swallowtail and hemmed in gold (the game's art direction). */
+  /* norm-ok: a betrayal's banderole, gules cut in a swallowtail and hemmed in gold (the game's art direction); on two lines rather than past its room. */
   .hud-banner {
-    @apply flex items-center gap-3 font-fell whitespace-nowrap text-wax;
+    @apply flex max-w-full items-center gap-3 font-fell text-wax;
     padding: 0.4em 1.9em;
     background: var(--color-gules);
     clip-path: polygon(
