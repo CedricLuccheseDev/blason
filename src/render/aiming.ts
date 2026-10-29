@@ -1,4 +1,11 @@
-import { NEUTRAL, UNIT, coupPrice, entryFor, launchSite } from '../../engine'
+import {
+  NEUTRAL,
+  UNIT,
+  barredBy,
+  coupPrice,
+  entryFor,
+  launchSite,
+} from '../../engine'
 import { siteOf } from './marks'
 import type { Container } from 'pixi.js'
 import type { Coup, GameState } from '../../engine'
@@ -9,7 +16,9 @@ import type { Hand } from './hand'
 // click (or a long press) pinned it there; over any other lord's land, even
 // one no army of mine reaches, his name and the alliance a right click
 // offers. With a coup in hand, the coup, where it would leave from, and
-// whether it may go and be paid for. In pixels of the map's element.
+// whether it may go and be paid for. In the opening, only a spot where the
+// standard may not stand, another lord's being too near. In pixels of the
+// map's element.
 
 /** Where the pointer aims at another's land: where the army would enter, whose land, and whether a right click pinned it there. */
 export type Aim = {
@@ -21,6 +30,8 @@ export type Aim = {
   pinned: boolean
   /** The coup in hand: whether it may strike there now, and whether the gold is there for it. */
   coup: { coup: Coup; allowed: boolean; can: boolean } | null
+  /** In the opening, whether another lord's standard is too near for mine there. */
+  barred: boolean
 }
 
 export function makeAiming(
@@ -52,14 +63,29 @@ export function makeAiming(
       lord: owner >= 0 && owner !== me ? owner : null,
       pinned: pin,
       coup: { coup, allowed: site >= 0, can: state.players[me].gold >= price },
+      barred: false,
+    }
+  }
+
+  /** In the opening, a tile where the standard may not stand for another's too near; none elsewhere, and nothing pinned. */
+  function plantAt(tile: number, pin: boolean): Aim | null {
+    if (pin || barredBy(state, me, tile).length === 0) return null
+    return {
+      ...pointer,
+      entry: null,
+      lord: null,
+      pinned: false,
+      coup: null,
+      barred: true,
     }
   }
 
   return {
-    /** The aim at a tile; none elsewhere, in the opening, or with a work in hand. */
+    /** The aim at a tile; none elsewhere or with a work in hand. */
     at(tile: number, pin: boolean, hand: Hand): Aim | null {
-      if (tile < 0 || hand.work || state.tick < state.rules.openingTicks)
-        return null
+      if (tile < 0) return null
+      if (state.tick < state.rules.openingTicks) return plantAt(tile, pin)
+      if (hand.work) return null
       if (hand.coup) return coupAt(tile, pin, hand.coup)
       const gate = entryFor(state, me, tile)
       const owner = state.owner[tile]
@@ -72,6 +98,7 @@ export function makeAiming(
         lord: owner === NEUTRAL ? null : owner,
         pinned: pin,
         coup: null,
+        barred: false,
       }
     },
     destroy() {

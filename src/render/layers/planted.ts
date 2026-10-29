@@ -4,19 +4,17 @@ import { TONE, playerColor } from '../palette'
 import { siteOf } from '../marks'
 import type { GameState } from '../../../engine'
 
-// The standards of the opening: each lord's banner planted by the village
-// of the free domain he has chosen, the player's a little taller and ringed
-// in gold at its foot. A standard moved hops to its new village. No land is
-// anyone's yet: the domain is his only when the count ends, and then the
-// standards are gone. Sized on screen.
+// The standards of the opening: each lord's banner planted on the tile he
+// has chosen, the player's a little taller and ringed in gold at its foot. A
+// standard moved hops to its new tile. No land is anyone's yet: the land
+// round it is his only when the count ends, his first village where it
+// stood, and then the standards are gone. Sized on screen.
 
 /** On screen, in pixels: a planted banner's width; how high a moved one hops. */
 const WIDTH = 22
 const HOP = 28
 /** How long a hop takes, in milliseconds. */
 const HOP_MS = 360
-/** Beside the village, in map units, so as not to hide it. */
-const BESIDE = { x: 5, y: 2 }
 
 type At = { x: number; y: number }
 type Planted = {
@@ -24,7 +22,7 @@ type Planted = {
   ring: Graphics
   pole: Graphics
   cloth: Graphics
-  realm: number
+  tile: number
   from: At
   to: At
   since: number
@@ -42,7 +40,7 @@ export function makePlanted(me: number) {
     const pole = box.addChild(new Graphics())
     const cloth = box.addChild(new Graphics())
     const none = { x: 0, y: 0 }
-    const p = { box, ring, pole, cloth, realm: -1, from: none, to: none }
+    const p = { box, ring, pole, cloth, tile: -1, from: none, to: none }
     const made = { ...p, since: 0, zoom: 0 }
     planted.set(lord, made)
     return made
@@ -80,14 +78,13 @@ export function makePlanted(me: number) {
         const p = planted.get(lord) ?? plant(lord)
         p.box.visible = standard >= 0
         if (standard < 0) return
-        if (p.realm !== standard) {
-          const site = siteOf(state, standard)
-          const to = { x: site.x + BESIDE.x, y: site.y + BESIDE.y }
-          // Planted, it hops where it stands; moved, it hops from where it is to its new village.
-          p.from = p.realm < 0 ? to : place(p, now, zoom)
+        if (p.tile !== standard) {
+          const to = siteOf(state, standard)
+          // Planted, it hops where it stands; moved, it hops from where it is to its new tile.
+          p.from = p.tile < 0 ? to : place(p, now, zoom)
           p.to = to
           p.since = now
-          p.realm = standard
+          p.tile = standard
         }
         if (p.zoom !== zoom) redraw(p, lord, zoom)
         const at = place(p, now, zoom)

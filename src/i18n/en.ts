@@ -14,11 +14,13 @@ export const en = {
   game: {
     map: 'The land of the game, seen from above',
     choose: 'Plant your standard',
-    chooseHint: 'Click a free domain; you may change it until the count ends',
+    chooseHint:
+      'Click anywhere on the land; you may move it until the count ends',
     planted: 'Your standard is planted',
     others: 'The lords are planting their standards',
     plantedHint:
-      'Click another free domain to move it; it is yours when the count ends',
+      'Click elsewhere to move it; the land round it is yours when the count ends',
+    tooNear: 'too near another standard',
     click: 'click: attack',
     noLevy: 'every village of yours has an army out',
     armies: {

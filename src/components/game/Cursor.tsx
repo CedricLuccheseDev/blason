@@ -88,7 +88,8 @@ function CoupHalf({
  * break, faint until a right click sets it down. Over free land, the left
  * alone; over an ally's land or a lord's beyond reach, the right alone.
  * With a coup in hand, the coup alone, on the side away from where it
- * would leave from.
+ * would leave from. In the opening, over a spot where the standard may not
+ * stand, why, in gules.
  */
 export function Cursor({
   aim,
@@ -123,6 +124,9 @@ export function Cursor({
       }
     >
       <Sheet className="flex items-stretch gap-3 p-3">
+        {aim.barred && (
+          <span className="hud-note text-gules">{m.game.tooNear}</span>
+        )}
         {aim.coup && <CoupHalf coup={aim.coup} summary={summary} />}
         {strikes && <ArmyHalf summary={summary} />}
         {strikes && pact && <Rule />}

@@ -69,9 +69,21 @@ function nearest(state: GameState, tile: number, planted: Array<number>) {
   return planted.reduce((m, s) => Math.min(m, apart(state.grid, s, tile)), FAR)
 }
 
-/** Whether a standard may stand so far from the nearest other, a square of tiles: no nearer than the gap. */
-const clear = (state: GameState, near: number) =>
-  near >= state.rules.standardGap * state.rules.standardGap
+/** Whether a standard stands too near another so far from it, a square of tiles: within the gap. */
+const tooNear = (state: GameState, near: number) =>
+  near < state.rules.standardGap * state.rules.standardGap
+
+/** The lords whose standards stand too near this tile for another lord's. */
+export function barredBy(
+  state: GameState,
+  player: number,
+  tile: number,
+): Array<number> {
+  return state.players.flatMap(({ standard }, id) => {
+    if (id === player || standard < 0) return []
+    return tooNear(state, apart(state.grid, standard, tile)) ? [id] : []
+  })
+}
 
 /** Whether a lord may plant his standard on this tile: any tile of the land in the game, with no other lord's standard within the gap. */
 export function canStart(
@@ -80,7 +92,7 @@ export function canStart(
   tile: number,
 ): boolean {
   if (state.grid.land[tile] !== true) return false
-  return clear(state, nearest(state, tile, standards(state, player)))
+  return barredBy(state, player, tile).length === 0
 }
 
 /** During the opening a lord plants his standard, or moves it, on a tile of the land. */
@@ -99,7 +111,7 @@ function rank(state: GameState, tile: number, planted: Array<number>) {
   const whole = Math.max(0, shoreOf(state.grid)[tile] - 1)
   const reach = state.rules.startRadius * state.rules.startRadius
   const room = Math.min(whole * whole, Math.floor(near / 4), reach)
-  return [clear(state, near) ? 1 : 0, room, near]
+  return [tooNear(state, near) ? 0 : 1, room, near]
 }
 
 /** Whether a rank comes before another: the first figure that differs is the greater. */

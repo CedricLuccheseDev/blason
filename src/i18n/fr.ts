@@ -16,11 +16,12 @@ export const fr: Messages = {
     map: 'La terre de la partie, vue d’en haut',
     choose: 'Plante ton étendard',
     chooseHint:
-      'Clique un domaine libre ; tu peux changer jusqu’à la fin du compte',
+      'Clique où tu veux sur la terre ; tu peux le déplacer jusqu’à la fin du compte',
     planted: 'Ton étendard est planté',
     others: 'Les seigneurs plantent leurs étendards',
     plantedHint:
-      'Clique un autre domaine libre pour le déplacer ; il sera à toi à la fin du compte',
+      'Clique ailleurs pour le déplacer ; la terre autour sera à toi à la fin du compte',
+    tooNear: 'trop près d’un autre étendard',
     click: 'clic : attaquer',
     noLevy: 'tous tes villages ont une armée dehors',
     armies: {

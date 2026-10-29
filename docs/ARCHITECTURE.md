@@ -244,8 +244,8 @@ orders. It decides nothing about the rules.
   the dead (`layers/fallen.ts`), the warning of an army coming for the player
   and the seal of each battle (`layers/warning.ts`), the standard-bearer
   among their men (`layers/standard.ts`, its banner drawn by `art/banner.ts`);
-  in the opening, each lord's standard planted by the village he has chosen,
-  the player's ringed in gold, hopping to its new village when moved
+  in the opening, each lord's standard planted on the tile he has chosen,
+  the player's ringed in gold, hopping to its new tile when moved
   (`layers/planted.ts`); the roads as they are drawn, straight and even
   (`roads.ts`); the borders being bitten, in red (`layers/raids.ts`); the works being built
   (`layers/building.ts`); what the coups leave, the rebels' land hatched and
@@ -262,7 +262,9 @@ orders. It decides nothing about the rules.
   their bowed line `cord.ts`, drawn by `art/cords.ts`), and one broken
   snapping before all, its seal cracking in two (`art/snap.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
   (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
-  its reach along the border, `layers/aimCoup.ts`), the parchment's grain over the whole page, moving with it
+  its reach along the border, `layers/aimCoup.ts`; in the opening, a ring
+  where the standard would stand, red where another lord's is too near, his
+  ringed by the ground it holds), the parchment's grain over the whole page, moving with it
   (`layers/paper.ts`), and the page round the map: its frame (`layers/page.ts`),
   the leaf browning and foxed outwards (`layers/leaf.ts`), the margin's chain,
   ruling and scale in pale ink (`layers/margin.ts`).

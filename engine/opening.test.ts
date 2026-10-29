@@ -3,6 +3,7 @@ import { generateWorld } from './map/generate'
 import { createBot } from './bots/bot'
 import { apart, around, makeGrid } from './grid'
 import { capOf, createGame } from './land'
+import { barredBy } from './opening'
 import { RULES } from './rules'
 import { stateHash, step } from './step'
 import { field, owned } from './testing'
@@ -95,6 +96,9 @@ describe('the opening', () => {
     expect(state.players[1].standard).toBe(-1)
     step(state, [plant(1, at(39, 20))])
     expect(state.players[1].standard).toBe(-1)
+    // What bars him, for the screen to show.
+    expect(barredBy(state, 1, at(39, 20))).toEqual([0])
+    expect(barredBy(state, 1, at(40, 20))).toEqual([])
     step(state, [plant(1, at(40, 20))])
     expect(state.players[1].standard).toBe(at(40, 20))
     // His own standard bars him nothing: moved a step.

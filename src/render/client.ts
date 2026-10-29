@@ -156,7 +156,7 @@ export async function mountGame(
     change()
     refresh()
   }
-  /** The figures and the aim again, after what is in hand changed. */
+  /** The figures and the aim again: when what is in hand changed, and once a second, the land, or in the opening the standards, having moved under the pointer. */
   function refresh() {
     hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
     if (!pinned) hooks.onAim(aimAt(hovered, false))
@@ -200,7 +200,7 @@ export async function mountGame(
         const box = home()
         if (box) camera.focus(box)
       }
-      hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
+      refresh()
       const fresh = news.read()
       notes.tell(fresh, now)
       if (fresh.length > 0) hooks.onNews?.(fresh)

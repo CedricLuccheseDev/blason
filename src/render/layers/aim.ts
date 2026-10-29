@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
 import {
+  barredBy,
   canBuild,
   canStart,
   entryFor,
@@ -22,8 +23,9 @@ import type { Hand } from '../hand'
 // trade), red where it may not stand,
 // with the works already standing ringed in red. With a coup in hand, the
 // disc it would strike and its way there (layers/aimCoup.ts). In the opening:
-// a dotted ring round the village where one's standard would be planted, no
-// land drawn. Sized on screen.
+// a dotted ring where one's standard would be planted, no land drawn; in red
+// where another lord's standard is too near, his ringed by the ground it
+// holds. Sized on screen.
 
 type At = { x: number; y: number }
 
@@ -92,18 +94,26 @@ export function makeAim(state: GameState, me: number) {
     ghost.visible = true
   }
 
-  /** Where the standard would be planted: a dotted ring round the tile, no land drawn. */
-  function opening(tile: number, zoom: number) {
-    if (state.players[me].standard === tile || !canStart(state, me, tile))
-      return
-    const p = siteOf(state, tile)
-    const r = 14 / zoom
-    for (let k = 0; k < 16; k++) {
-      const a = (k / 16) * Math.PI * 2
+  /** A dotted ring round a point, its dots some twelve pixels apart on screen, sixteen at least. */
+  function dotted(p: At, r: number, tone: number, zoom: number) {
+    const dots = Math.max(16, Math.round((2 * Math.PI * r * zoom) / 12))
+    for (let k = 0; k < dots; k++) {
+      const a = (k / dots) * Math.PI * 2
       marks.moveTo(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r)
-      marks.arc(p.x, p.y, r, a, a + Math.PI / 16)
+      marks.arc(p.x, p.y, r, a, a + Math.PI / dots)
     }
-    marks.stroke({ width: 2.4 / zoom, color, cap: 'round' })
+    marks.stroke({ width: 2.4 / zoom, color: tone, cap: 'round' })
+  }
+
+  /** Where the standard would be planted: a dotted ring round the tile, no land drawn; too near another lord's, the ring in red, and his standard ringed by the ground it holds. */
+  function opening(tile: number, zoom: number) {
+    if (state.players[me].standard === tile) return
+    const barring = barredBy(state, me, tile)
+    const ok = canStart(state, me, tile)
+    dotted(siteOf(state, tile), 14 / zoom, ok ? color : TONE.fight, zoom)
+    const gap = state.rules.standardGap * state.grid.size
+    for (const lord of barring)
+      dotted(siteOf(state, state.players[lord].standard), gap, TONE.fight, zoom)
   }
 
   function strike(tile: number, zoom: number) {

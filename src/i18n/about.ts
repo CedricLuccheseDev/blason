@@ -19,7 +19,7 @@ export type About = {
     | 'cells'
     | 'coast'
     | 'tiles'
-    | 'domains'
+    | 'standards'
     | 'orders'
     | 'player'
     | 'bots'
@@ -46,7 +46,7 @@ export const aboutEn: About = {
       diagram: 'seed',
       body: [
         'Each game starts from a seed, a short word drawn at random. From it the generator scatters some two thousand points, cuts the frame into cells around them, raises a land in the middle of the sea, draws its coast, a few lakes and rivers. The same seed always draws the same land, on every machine: to share a land, one only has to share its seed.',
-        'The land is then cut into a fine grid of tiles, four map units a side, and shared into free domains, one around each village, so that no land is empty. During the first ten seconds each lord plants his standard on the domain he wants, and may move it; when the count ends, that domain is his, whole.',
+        'The land is then cut into a fine grid of tiles, four map units a side. During the first ten seconds each lord plants his standard wherever he wants on it, and may move it, never within twenty tiles of another lord’s; when the count ends, the land within fourteen tiles of it is his, as far as he walks from it, never across the sea.',
       ],
     },
     {
@@ -78,7 +78,7 @@ export const aboutEn: About = {
     cells: 'cells',
     coast: 'coast, lakes, rivers',
     tiles: 'tiles',
-    domains: 'free domains',
+    standards: 'standards',
     orders: 'orders',
     player: 'you',
     bots: 'bots',
@@ -104,7 +104,7 @@ export const aboutFr: About = {
       diagram: 'seed',
       body: [
         'Chaque partie part d’une graine, un mot court tiré au hasard. Le générateur en tire quelque deux mille points, découpe le cadre en cellules autour d’eux, élève une terre au milieu de la mer, trace sa côte, quelques lacs et rivières. La même graine dessine toujours la même terre, sur toutes les machines : pour partager une terre, il suffit de partager sa graine.',
-        'La terre est ensuite découpée en un fin quadrillage de tuiles, de quatre unités de côté, et partagée en domaines libres, un autour de chaque village, si bien qu’aucune terre n’est vide. Pendant les dix premières secondes, chaque seigneur plante son étendard sur le domaine qu’il veut, et peut le déplacer ; à la fin du compte, ce domaine est à lui, entier.',
+        'La terre est ensuite découpée en un fin quadrillage de tuiles, de quatre unités de côté. Pendant les dix premières secondes, chaque seigneur y plante son étendard où il veut, et peut le déplacer, jamais à moins de vingt tuiles de celui d’un autre ; à la fin du compte, la terre à quatorze tuiles alentour est à lui, aussi loin qu’il y marche, jamais par-delà la mer.',
       ],
     },
     {
@@ -136,7 +136,7 @@ export const aboutFr: About = {
     cells: 'cellules',
     coast: 'côte, lacs, rivières',
     tiles: 'tuiles',
-    domains: 'domaines libres',
+    standards: 'étendards',
     orders: 'ordres',
     player: 'vous',
     bots: 'bots',

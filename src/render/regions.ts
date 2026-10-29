@@ -7,7 +7,7 @@ import { castleLand, corners, smooth, spread } from './trace'
 import type { GameState, Point } from '../../engine'
 
 // The lands drawn as the boards draw them (design/mockups/cells.ts): each
-// region of the grid, a lord's land or a free domain, traced round its
+// region of the grid, a lord's land or the free land, traced round its
 // tiles, its steps rounded off, filled with its wash, clipped to the coast.
 // The land a castle holds is tinted with stone and walled, one tint for all
 // of a lord's castles. A region is traced again only when its land changed,
@@ -28,7 +28,7 @@ const UNDER_INK = 0.08
 /** How often the lands are traced again, in ms. */
 const EVERY_MS = 200
 
-/** The key of a region: a lord, or a free domain (-3 and down); -2 the open sea; never yet drawn. */
+/** The key of a region: a lord, or the free land (-3); -2 the open sea; never yet drawn. */
 const SEA_KEY = -2
 const UNSET = 1 << 30
 
@@ -61,7 +61,7 @@ export function makeRegions(state: GameState, me: number) {
     const s = shore[t]
     if (s < 0) return SEA_KEY
     const owner = state.owner[s]
-    // The free land is one, in the opening too: no domain is drawn, only the standards planted.
+    // The free land is one, in the opening too: only the standards planted are drawn.
     return owner !== NEUTRAL ? owner : -3
   }
   let keys = new Int32Array(shore.length).fill(UNSET)
@@ -158,7 +158,7 @@ export function makeRegions(state: GameState, me: number) {
     stone,
     /** A region's outline as last traced: loops in map units, its land on the right of their course. */
     outline: (key: number) => outlines.get(key) ?? [],
-    /** Each tile's region as last traced: a lord, a free domain (-3 and down), the open sea (-2). */
+    /** Each tile's region as last traced: a lord, the free land (-3), the open sea (-2). */
     keys: () => keys,
     /** Traces again the regions whose land changed, a few times a second; the regions traced, if any. */
     update(now: number): Set<number> | null {
