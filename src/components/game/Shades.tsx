@@ -20,6 +20,7 @@ export function Shades() {
     window.addEventListener('pointermove', move)
     return () => window.removeEventListener('pointermove', move)
   }, [])
+  // norm-ok: the shades are gradients by Cédric's own ask (« assombri en fonction de la souris »), an edge that fades rather than a band.
   return (
     <>
       <div

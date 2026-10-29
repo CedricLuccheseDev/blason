@@ -345,6 +345,7 @@
     -webkit-text-stroke: 0.2em var(--color-quill);
     paint-order: stroke fill;
   }
+  /* norm-ok: not a shadow but the ink cut round a floating drawing, as the letters' stroke. */
   .hud-afloat svg {
     filter: drop-shadow(0 0 1.2px var(--color-quill));
   }
