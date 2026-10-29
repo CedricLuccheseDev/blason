@@ -3,18 +3,18 @@ import { readUpcoming } from '../../../net/protocol'
 import type { Upcoming } from '../../../net/protocol'
 import { upcomingUrl } from '~/render/link'
 
-// The next public game as the relay tells it (GET /public, server/relay.ts),
-// without sitting at it: asked again every second and a half while the page
-// is shown, as OpenFront asks for its lobbies, and not at all while it is
-// hidden. What was heard last stays, with when it was heard, so that its
-// clock runs between two answers; an ask unanswered says the relay is lost,
-// until the next is answered.
+// The public game in its opening as the relay tells it (GET /public,
+// server/relay.ts), without joining it: asked again every second and a half
+// while the page is shown, as OpenFront asks for its lobbies, and not at all
+// while it is hidden. What was heard last stays, with when it was heard, so
+// that its clock runs between two answers; an ask unanswered says the relay
+// is lost, until the next is answered.
 
 /** Ms between an answer and the next ask. */
 const EVERY = 1500
 
 export type Heard = {
-  /** The next public game as last heard, and when; none yet. */
+  /** The public game as last heard, and when; none yet. */
   game: Upcoming | null
   at: number
   /** Whether the last ask went unanswered. */

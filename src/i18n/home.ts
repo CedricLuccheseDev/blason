@@ -1,4 +1,4 @@
-// The words of the home: the title, the lord, the next public game, the
+// The words of the home: the title, the lord, the public game, the
 // solo game's settings, the private rooms, the journal.
 
 export const homeEn = {
@@ -12,12 +12,13 @@ export const homeEn = {
   close: 'Close',
   levels: { easy: 'Easy', normal: 'Fair', hard: 'Hard' },
   public: {
-    title: 'Next public game',
-    land: 'The land this game will be played on',
+    title: 'Public game',
+    live: 'The lords are planting their standards',
+    land: 'The land of the game being planted',
     lost: 'Online play is out of reach for now.',
-    join: 'Join',
-    leave: 'Leave the room',
-    startsIn: 'Starts in',
+    play: 'Play',
+    entering: 'Entering the game…',
+    closesIn: 'Closes in',
   },
   solo: {
     open: 'Solo',
@@ -80,12 +81,13 @@ export const homeFr: HomeMessages = {
   close: 'Fermer',
   levels: { easy: 'Faciles', normal: 'Moyens', hard: 'Difficiles' },
   public: {
-    title: 'Prochaine partie publique',
-    land: 'La terre où se jouera cette partie',
+    title: 'Partie publique',
+    live: 'Les seigneurs plantent leurs étendards',
+    land: 'La terre de la partie en cours de pose',
     lost: 'Le jeu en ligne est hors d’atteinte pour l’instant.',
-    join: 'Rejoindre',
-    leave: 'Quitter la salle',
-    startsIn: 'Départ dans',
+    play: 'Jouer',
+    entering: 'On entre dans la partie…',
+    closesIn: 'Se ferme dans',
   },
   solo: {
     open: 'Solo',

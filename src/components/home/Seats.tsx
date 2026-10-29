@@ -13,12 +13,18 @@ import { PLAYERS } from '~/render/palette'
 const seatColour = (seat: number) =>
   `#${PLAYERS[seat % PLAYERS.length].color.toString(16).padStart(6, '0')}`
 
-/** The seats of a room, those taken in their lord's colour, and their count. */
-export function Seats({ taken }: Readonly<{ taken: number }>) {
+/** The seats of a game, those taken in their lord's colour, and their count; brief, the count alone on a phone. */
+export function Seats({
+  taken,
+  brief = false,
+}: Readonly<{ taken: number; brief?: boolean }>) {
   const t = useMessages().home.room
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <span className="flex gap-1" aria-hidden="true">
+      <span
+        className={`flex gap-1 ${brief ? 'max-sm:hidden' : ''}`}
+        aria-hidden="true"
+      >
         {Array.from({ length: SEATS }, (_, i) => (
           <Shield
             key={i}
