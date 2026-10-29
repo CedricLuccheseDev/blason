@@ -82,16 +82,27 @@ export function apart(grid: Grid, a: number, b: number): number {
   return dx * dx + dy * dy
 }
 
-/** Whether the straight line between two tiles stays on land, crossing no sea. */
+/**
+ * Whether the straight line between the middles of two tiles crosses no sea:
+ * every tile it passes through on the way is land, a corner of one as much
+ * as its middle, and both tiles beside a corner it goes through. Walked
+ * tile by tile in whole numbers, the same on every machine.
+ */
 export function overLand(grid: Grid, a: number, b: number): boolean {
-  const [ax, ay] = [a % grid.width, Math.floor(a / grid.width)]
-  const [dx, dy] = [(b % grid.width) - ax, Math.floor(b / grid.width) - ay]
-  const steps = Math.max(Math.abs(dx), Math.abs(dy))
-  // Rounded to the nearest tile in whole numbers, the same on every machine.
-  const near = (d: number, s: number) =>
-    Math.floor((2 * d * s + steps) / (2 * steps))
-  for (let s = 1; s < steps; s++)
-    if (!grid.land[(ay + near(dy, s)) * grid.width + ax + near(dx, s)])
+  const { width, land } = grid
+  let [x, y] = [a % width, Math.floor(a / width)]
+  const [dx, dy] = [(b % width) - x, Math.floor(b / width) - y]
+  const [sx, sy] = [Math.sign(dx), Math.sign(dy)]
+  const [nx, ny] = [Math.abs(dx), Math.abs(dy)]
+  for (let i = 0, j = 0; i < nx || j < ny;) {
+    // The line leaves the tile by the side it reaches first: below zero by its left or right, above zero by its top or bottom, at zero by a corner.
+    const side = (1 + 2 * i) * ny - (1 + 2 * j) * nx
+    if (side === 0 && !(land[y * width + x + sx] && land[(y + sy) * width + x]))
       return false
+    if (side <= 0) [x, i] = [x + sx, i + 1]
+    if (side >= 0) [y, j] = [y + sy, j + 1]
+    const tile = y * width + x
+    if (tile !== b && !land[tile]) return false
+  }
   return true
 }

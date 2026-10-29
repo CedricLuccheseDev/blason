@@ -304,7 +304,9 @@ orders. It decides nothing about the rules.
   sails, smoke, glints and peasants (`art/life.ts`), only on screen, still
   under reduced motion.
 - Over the works, the
-  armies (`armies.ts`): where each one stands and faces (`fronts.ts`), its
+  armies (`armies.ts`): where each one stands and faces (`fronts.ts`; a
+  battle on the ground the engine has its two armies meet on, `groundOf`,
+  never a ground of its own), its
   men kept from frame to frame and running to their places in a column or in
   ranks (`squads.ts`, drawn by `layers/troops.ts`), the peasants facing them;
   each kind of army its own men, riders for the raid, men-at-arms for the

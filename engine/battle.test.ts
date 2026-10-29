@@ -74,4 +74,14 @@ describe('the battles', () => {
     // Round the gulf's end, the line keeps to the land.
     expect(overLand(grid, 6 * 9 + 1, 5 * 9 + 7)).toBe(true)
   })
+
+  it('nor across the corner of a bay that the line between them cuts', () => {
+    // A cove of one tile, on the second column of the top row: the line from the far corner to the first tile cuts through its lower corner.
+    const grid = field(5, 3)
+    grid.land[1] = false
+    expect(overLand(grid, 2 * 5 + 4, 0)).toBe(false)
+    expect(overLand(grid, 0, 2 * 5 + 4)).toBe(false)
+    grid.land[1] = true
+    expect(overLand(grid, 2 * 5 + 4, 0)).toBe(true)
+  })
 })
