@@ -27,8 +27,13 @@ export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
   huge: 4,
 }
 
-/** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. The mercenaries wait for the bar to be redrawn with Cédric (Concept, 29/10). */
-export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
+/** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. */
+export const ARMIES: ReadonlyArray<Army> = [
+  'raid',
+  'host',
+  'ban',
+  'mercenaries',
+]
 export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
 export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
 

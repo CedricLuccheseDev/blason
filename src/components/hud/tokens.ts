@@ -58,8 +58,8 @@ export const SHIELD = {
   l: { w: 52, h: 64 },
 } as const
 
-/** A seal's or a medallion's radius: in the cartouche, on the bar. */
-export const SEAL = { s: 18, l: 26 } as const
+/** A seal's, a medallion's or a lozenge's radius: on the bar, in the cartouche, at its largest. */
+export const SEAL = { xs: 13, s: 18, l: 26 } as const
 
 /** An act's medallion on a thin line of a list (the right click's menu): its side, the cartouche's medallion drawn smaller. */
 export const LINE_MEDALLION = 28

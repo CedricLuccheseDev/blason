@@ -22,7 +22,14 @@ export const en = {
       'Click elsewhere to move it; the land round it is yours when the count ends',
     tooNear: 'too near another standard',
     click: 'click: attack',
-    noLevy: 'every village of yours has an army out',
+    noLevy: {
+      village: 'every village of yours has an army out',
+      market: 'no market free to hire them at',
+    },
+    noMen: {
+      village: 'no peasants to raise',
+      market: 'not enough gold',
+    },
     armies: {
       raid: 'Raid',
       host: 'Host',

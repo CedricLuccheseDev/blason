@@ -98,8 +98,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   (`.hud-press`, `.hud-enter`), rien sous `prefers-reduced-motion` ; `useCompact` donne la forme compacte des
   pièces sur téléphone, debout ou couché ; rien ne sort de l'écran ni ne se pose sur une autre pièce, à toute
   taille dès 1024 × 600 (acté le 29/10, « les hud sortent de l'écran ») : `useFit` mesure la place qu'une pièce a
-  et la fait plus compacte quand elle manque (la barre perd ses noms, dits sous la souris, puis passe sur des
-  lignes comme sur téléphone ; la course garde son chiffre seul), `useSize` tient dans l'écran ce qui se place à
+  et la fait plus compacte quand elle manque (la barre rapproche ses pièces, puis passe sur des lignes comme sur
+  téléphone ; la course garde son chiffre seul), `useSize` tient dans l'écran ce qui se place à
   la souris ou sur la carte (`useBeside` : le cartouche et le menu du clic droit, au-dessus de la barre, passent de
   l'autre côté de la souris, et sur téléphone au-dessus de la barre ; les mots d'un pli ; un fanion vole vers la
   gauche près du bord droit). La mise en page en HTML, le SVG pour les seuls
@@ -115,18 +115,21 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   et "refuser" en rouge ») (`HeraldLetter.tsx`), au bord de l'écran avec une flèche hors de vue (`Heralds.tsx`, le
   rendu dit où par `heralds.ts`, `envoys.ts` et `besideOf` dans `places.ts`) ; une alliance trahie claque entre
   les deux capitales, devant tous (`layers/pacts.ts`, `art/snap.ts`) ; les nouvelles en fanions plantés là où elles
-  arrivent (`Pennant.tsx`, `notes.ts` ; une offrande reçue, sur la terre de celui qui la donne, avec son or), la barre en bas avec
-  la bourse dedans, puis les armées
-  en sceaux, les constructions en médaillons et les coups en losanges cerclés de gueules (touches 1 à 9), ce qui ne
-  se paie pas à demi-encre ; le cartouche près de la souris, ce qu'un clic gauche envoie, l'armée en main et ses
-  hommes, et sur la terre d'un autre seigneur qu'un clic droit ouvre le reste (`Cursor.tsx`) ; le clic droit là
-  ouvre à côté de la souris son menu en liste courte (acté le 29/10, « dans le clic droit rajoute les boutons
-  attaquer / alliance / offrande », dessiné « en liste courte ») : un petit feuillet, son écu et son nom, puis une
-  ligne fine par acte, son médaillon cerclé de sa couleur, son mot et son chiffre : Attaquer, les hommes de l'armée
-  en main, envoyée là comme d'un clic gauche (pas chez un allié) ; Alliance, le mot dit ce qu'elle fait maintenant
-  (proposer, valider, renouveler, rompre en gueules ; « demandée » et endormie quand on l'a proposée) ; Offrande,
-  l'or qu'elle donnerait (`LordMenu.tsx`, ses lignes `lordMenu.ts`) ; Échap, un clic ailleurs ou la souris partie
-  loin le ferment, sans qu'aucune armée parte de ce clic (`render/pin.ts`)), et ses dessins SVG (`svg/`).
+  arrivent (`Pennant.tsx`, `notes.ts` ; une offrande reçue, sur la terre de celui qui la donne, avec son or), la
+  barre en bas, resserrée (acté le 29/10, « ok go » sur la maquette) : la bourse dedans, puis les quatre armées en
+  sceaux sur une ligne, celui des mercenaires en or, payés en or, à part d'un coup d'œil (`ARMY_WAX`), seule l'armée
+  en main nommée sous la ligne avec ses chiffres ; les constructions en médaillons et les coups en losanges cerclés
+  de gueules, leur emblème, leur touche et leur prix seuls, leur nom sous la souris ; touches 1 à 4 les armées, 5 à
+  7 les constructions, 8, 9 et 0 les coups ; ce qui ne se paie pas à demi-encre ; sur téléphone la même sur des
+  lignes ; le cartouche près de la souris, ce qu'un clic gauche envoie, l'armée en main et ses hommes, et sur la
+  terre d'un autre seigneur qu'un clic droit ouvre le reste (`Cursor.tsx`) ; le clic droit là ouvre à côté de la
+  souris son menu en liste courte (acté le 29/10, « dans le clic droit rajoute les boutons attaquer / alliance /
+  offrande », dessiné « en liste courte ») : un petit feuillet, son écu et son nom, puis une ligne fine par acte,
+  son médaillon cerclé de sa couleur, son mot et son chiffre : Attaquer, les hommes de l'armée en main, envoyée là
+  comme d'un clic gauche (pas chez un allié) ; Alliance, le mot dit ce qu'elle fait maintenant (proposer, valider,
+  renouveler, rompre en gueules ; « demandée » et endormie quand on l'a proposée) ; Offrande, l'or qu'elle
+  donnerait (`LordMenu.tsx`, ses lignes `lordMenu.ts`) ; Échap, un clic ailleurs ou la souris partie loin le
+  ferment, sans qu'aucune armée parte de ce clic (`render/pin.ts`)), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
   système comme openfront en adapté pour nous pour la home » ; la table en 3D est retirée, « c'était de trop ») : une
   colonne sur un fond calme, la prochaine partie publique en premier et en grand, puis Solo (la taille de la terre et

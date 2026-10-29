@@ -156,7 +156,7 @@ orders. It decides nothing about the rules.
   begins), the session, the scene, the camera, the input, and the handle the
   React screen drives. What the player holds in
   hand, an army, a work or a coup, and the order a click sends with it, is
-  `hand.ts` (the keys 1 to 9, `keys.ts`). What the pointer aims at, where
+  `hand.ts` (the keys 1 to 9 then 0, `keys.ts`). What the pointer aims at, where
   the army would enter and whose land it is, is `aiming.ts`; `pin.ts` keeps
   the aim the HUD is shown, the pointer's, or the one a right click pinned
   on another lord's land for his menu until it is closed (a click on the map
@@ -297,7 +297,8 @@ orders. It decides nothing about the rules.
   the works, a land too small on screen to carry its words leaving them out,
   never the player's, and the marks beside them (`places.ts`,
   `layers/labels.ts`), the aim
-  (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
+  (`layers/aim.ts`; the road an army would march from its village, the
+  mercenaries' from their market; with a coup in hand, the disc it would strike, its way and
   its reach along the border, `layers/aimCoup.ts`; in the opening, a ring
   where the standard would stand, red where another lord's is too near, his
   ringed by the ground it holds), the parchment's grain over the whole page, moving with it
@@ -353,8 +354,8 @@ The HUD is React, laid over the map. It is built on a small design system,
 - **a compact shape** on phones, upright or sideways (`useCompact.ts`);
 - **nothing off the screen** and nothing on another piece, at any size from
   1024 by 600: a piece measures the room it has and grows more compact when
-  it lacks it (`useFit.ts`; the bar loses its names, said under the pointer,
-  then is laid on rows as on a phone; the race keeps its figure alone), and
+  it lacks it (`useFit.ts`; the bar is laid on rows as on a phone; the race
+  keeps its figure alone), and
   what is placed by the pointer or on the map keeps within the screen
   (`useSize.ts`; `useBeside.ts`: the cartouche and the right click's menu,
   above the bar's row, go to the pointer's other side, and on a phone stand
@@ -372,8 +373,11 @@ which a click opens, to accept it in the alliance's green or refuse it in
 gules, in plain words (`HeraldLetter.tsx`); either waiting at the screen's edge
 with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
-bar at the bottom with the purse in it, then the armies, the works and the
-coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink;
+bar at the bottom, tight, with the purse in it, then the four armies as seals
+in a row, the mercenaries' in gold, paid in gold, and only the one in hand
+named under the row with its figures, then the works and the coups as their
+emblems and their prices alone, their names under the pointer, what cannot be
+paid at half ink, keys 1 to 9 then 0 (`Bar.tsx`, its pieces `BarPiece.tsx`);
 the cartouche beside the pointer, what a left click sends, the army in hand
 and its men, and over another lord's land that a right click opens the rest
 (`Cursor.tsx`); a right click there opens his menu beside the pointer, as a

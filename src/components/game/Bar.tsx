@@ -6,9 +6,9 @@ import { useFit } from '../hud/useFit'
 import { count, hex } from './format'
 import { Purse } from './Purse'
 import { Divide, Piece } from './BarPiece'
-import type { Fit } from './BarPiece'
 import type { Army, Coup, Work } from '../../../engine'
 import type { Summary } from '~/render/client'
+import { keyAt } from '~/render/keys'
 import { useMessages } from '~/i18n'
 
 /** The drawing pressed in each army's seal. */
@@ -17,7 +17,17 @@ export const ARMY_MARKS = {
   host: 'soldier',
   ban: 'pitchfork',
   mercenaries: 'market',
-} as const
+} as const satisfies Record<Army, string>
+
+/**
+ * The armies whose seal has a wax of its own, whatever hand it is in, where
+ * the others' is parchment, or the lord's colour in hand: the mercenaries'
+ * gold, paid in gold, apart at a glance from the three levied from his
+ * peasants. One more army paid otherwise is one more entry here.
+ */
+export const ARMY_WAX: Partial<Record<Army, string>> = {
+  mercenaries: 'var(--color-gilt)',
+}
 
 /** The drawing in each coup's lozenge: its shape says which before its colour does. */
 export const COUP_MARKS = {
@@ -26,27 +36,99 @@ export const COUP_MARKS = {
   fire: 'firepot',
 } as const satisfies Record<Coup, string>
 
-/** The bar's forms, from as drawn to the most compact, each tried in turn until one fits its room. */
-const FITS: ReadonlyArray<Fit> = ['drawn', 'tight', 'narrow']
+/** The bar's forms, from as drawn to the most compact, each tried in turn until one fits its room: one row; one row, its pieces closer; on rows, as on a phone. */
+const FITS = ['drawn', 'tight', 'rows'] as const
 
-/** The band's padding in each form, the narrow one laid on rows. */
-const BAND: Record<Fit, string> = {
-  drawn: 'px-5 py-0.5',
-  tight: 'px-3 py-0.5',
-  narrow: 'flex-col gap-1 px-3 py-1',
+/** Each form's band, the rows laid wrapped and centred, and the room between its pieces, their keys clear of the next. */
+const FORMS: Record<(typeof FITS)[number], { band: string; gap: string }> = {
+  drawn: { band: 'px-4 py-1', gap: 'gap-3' },
+  tight: { band: 'px-3 py-1', gap: 'gap-1' },
+  rows: {
+    band: 'flex-wrap justify-center gap-x-2 gap-y-1 px-3 py-1',
+    gap: 'gap-1',
+  },
+}
+
+/** The armies at the bar's head: their seals in a row, and under them the one in hand, named, with its figures. */
+function Armies({
+  summary,
+  keys,
+  gap,
+  onArmy,
+}: Readonly<{
+  summary: Summary
+  keys: boolean
+  gap: string
+  onArmy: (army: Army) => void
+}>) {
+  const m = useMessages()
+  const { me } = summary
+  const hand = summary.armies.find((a) => a.army === summary.army)
+  if (!me) return null
+  return (
+    <div className="flex flex-col items-center">
+      <div className={`flex items-end ${gap}`}>
+        {summary.armies.map((a, i) => {
+          const held = !summary.work && !summary.coup && a.army === summary.army
+          const wax = held ? hex(me.color) : 'var(--color-vellum)'
+          return (
+            <Piece
+              key={a.army}
+              k={keys ? keyAt(i + 1) : null}
+              name={m.game.armies[a.army]}
+              held={held}
+              // An army that would take no man: the mercenaries without the gold for one.
+              faint={a.men === 0 && !held}
+              onClick={() => onArmy(a.army)}
+              emblem={
+                <SealEmblem
+                  icon={ARMY_MARKS[a.army]}
+                  color={ARMY_WAX[a.army] ?? wax}
+                  size="xs"
+                  held={held}
+                />
+              }
+            />
+          )
+        })}
+      </div>
+      {hand && (
+        <div className="flex items-baseline gap-2">
+          <span className="hud-word text-hud-s whitespace-nowrap">
+            {m.game.armies[hand.army]}
+          </span>
+          {hand.share !== null && (
+            <Figure size="s" tone="dim">
+              {m.game.percent(hand.share)}
+            </Figure>
+          )}
+          <Figure icon="soldier" size="s">
+            {count(hand.men)}
+          </Figure>
+          {hand.gold !== null && (
+            <Figure icon="coins" size="s">
+              {count(hand.gold)}
+            </Figure>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 /**
- * At the bottom, one thin band of parchment rolled at both ends: on its
- * left what the player has (the purse); then the three armies as wax seals,
- * the one in hand raised in his colour, each with its men; then the three
- * works as gilt medallions, then the three coups as lozenges ringed in
- * gules, each with its price, in gules when it cannot be paid, then at half
- * ink: half ink says only that, never where the pointer is, so that no one
- * thinks he lacks the gold when he does not. Keys 1 to 9. It keeps within
- * the screen, its room measured: when it lacks it, the names go (each said
- * under the pointer), then it is laid as on a phone: the purse on a row of
- * its own over the armies and the works, the coups on a row under them.
+ * At the bottom, one thin band of parchment: on its left what the player has
+ * (the purse); then the four armies as wax seals in a row, the three levied
+ * from the peasants at a village, the mercenaries hired at a market in gold,
+ * the one in hand raised and named under the row with its figures; then the
+ * three works as gilt medallions and the three coups as lozenges ringed in
+ * gules, each with its price alone, in gules when it cannot be paid, then at
+ * half ink: half ink says only that, never where the pointer is, so that no
+ * one thinks he lacks the gold when he does not. No other word: a piece's
+ * name is said under the pointer. Keys 1 to 4, 5 to 7, then 8, 9 and 0. It
+ * keeps within the screen, its room measured: when it lacks it, its pieces
+ * and its rules come closer, then it is laid as on a phone, on rows: the
+ * purse on its own, then the armies, the works and the coups as they fit.
  */
 export function Bar({
   summary,
@@ -62,75 +144,41 @@ export function Bar({
   const m = useMessages()
   const compact = useCompact()
   const { room, piece, step } = useFit(FITS.length - 1)
-  const { me } = summary
-  if (!me) return null
-  const fit = compact ? 'narrow' : FITS[step]
-  const narrow = fit === 'narrow'
-  const size = 's'
+  if (!summary.me) return null
+  const fit = compact ? 'rows' : FITS[step]
+  const rows = fit === 'rows'
+  const close = fit !== 'drawn'
+  // A phone has no keyboard: no keys, the pieces side by side.
+  const keys = !compact
+  const gap = keys ? FORMS[fit].gap : 'gap-0'
+  const first = summary.armies.length + 1
   return (
-    // The room is as wide as the layout lets the bar grow; the bar in it,
-    // its rolled ends included, at its own width.
+    // The room is as wide as the layout lets the bar grow; the bar in it at
+    // its own width, or, on rows, as wide as the room.
     <div ref={room} className="flex min-w-0 justify-center">
-      <div ref={piece} className="w-max px-2">
-        <Sheet rolled="sides" className={`flex items-center ${BAND[fit]}`}>
-          <Purse summary={summary} />
-          {!narrow && <Divide fit={fit} />}
-          <div className="flex items-stretch">
-            {summary.armies.map((a, i) => {
-              const held =
-                !summary.work && !summary.coup && a.army === summary.army
-              return (
-                <Piece
-                  key={a.army}
-                  k={i + 1}
-                  held={held}
-                  fit={fit}
-                  onClick={() => onArmy(a.army)}
-                  emblem={
-                    <SealEmblem
-                      icon={ARMY_MARKS[a.army]}
-                      color={held ? hex(me.color) : 'var(--color-vellum)'}
-                      size={size}
-                      held={held}
-                    />
-                  }
-                  name={m.game.armies[a.army]}
-                  aside={
-                    <Figure size="s" tone="dim">
-                      {m.game.percent(a.share)}
-                    </Figure>
-                  }
-                  figures={
-                    <>
-                      <Figure icon="soldier" size="s">
-                        {count(a.men)}
-                      </Figure>
-                      {a.gold > 0 && (
-                        <Figure icon="coins" size="s">
-                          {count(a.gold)}
-                        </Figure>
-                      )}
-                    </>
-                  }
-                />
-              )
-            })}
-            <Divide fit={fit} />
+      <div ref={piece} className={rows ? 'min-w-0' : 'w-max'}>
+        <Sheet className={`flex items-center ${FORMS[fit].band}`}>
+          <div className={rows ? 'flex w-full justify-center' : ''}>
+            <Purse summary={summary} />
+          </div>
+          {!rows && <Divide close={close} />}
+          <Armies summary={summary} keys={keys} gap={gap} onArmy={onArmy} />
+          {!rows && <Divide close={close} />}
+          <div className={`flex items-end ${gap}`}>
             {summary.works.map((w, i) => {
               const held = summary.work === w.work
               return (
                 <Piece
                   key={w.work}
-                  k={summary.armies.length + i + 1}
+                  k={keys ? keyAt(first + i) : null}
+                  name={m.game.works[w.work]}
                   held={held}
-                  fit={fit}
                   faint={!w.can && !held}
                   onClick={() => onWork(held ? null : w.work)}
                   emblem={
-                    <MedallionEmblem icon={w.work} size={size} held={held} />
+                    <MedallionEmblem icon={w.work} size="xs" held={held} />
                   }
-                  name={m.game.works[w.work]}
-                  figures={
+                  figure={
                     <Figure
                       icon="coins"
                       size="s"
@@ -143,27 +191,26 @@ export function Bar({
               )
             })}
           </div>
-          {!narrow && <Divide fit={fit} />}
-          <div className="flex items-stretch">
+          {!rows && <Divide close={close} />}
+          <div className={`flex items-end ${gap}`}>
             {summary.coups.map((c, i) => {
               const held = summary.coup === c.coup
               return (
                 <Piece
                   key={c.coup}
-                  k={summary.armies.length + summary.works.length + i + 1}
+                  k={keys ? keyAt(first + summary.works.length + i) : null}
+                  name={m.game.coups[c.coup]}
                   held={held}
-                  fit={fit}
                   faint={!c.can && !held}
                   onClick={() => onCoup(held ? null : c.coup)}
                   emblem={
                     <CoupEmblem
                       icon={COUP_MARKS[c.coup]}
-                      size={size}
+                      size="xs"
                       held={held}
                     />
                   }
-                  name={m.game.coups[c.coup]}
-                  figures={
+                  figure={
                     <Figure
                       icon="coins"
                       size="s"

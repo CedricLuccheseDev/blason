@@ -31,12 +31,13 @@ import type { Save } from './save'
 // The game on screen, the land taken bit by bit: the manuscript map
 // of the game, its lands spreading tile by tile as in OpenFront, with its
 // villages, works and armies. A click on another's land raises the army in
-// hand (1 to 3: a raid, a host, the whole levy) and sends it in where the
-// border is nearest the click; with a work in hand (4 to 6: a village, a
-// castle, a market), a click on one's own land builds it there; with a coup
-// in hand (7 to 9: a troublemaker, archers, Greek fire), a click launches it
-// at the land clicked (hand.ts). A right click on another lord's land opens
-// his menu there: the army in hand to send, the alliance, an offering.
+// hand (1 to 4: a raid, a host, the whole levy, mercenaries) and sends it in
+// where the border is nearest the click; with a work in hand (5 to 7: a
+// village, a market, a castle), a click on one's own land builds it there;
+// with a coup in hand (8, 9 and 0: a troublemaker, archers, Greek fire), a
+// click launches it at the land clicked (hand.ts). A right click on another
+// lord's land opens his menu there: the army in hand to send, the alliance,
+// an offering.
 
 export type { GameHandle } from './handle'
 export type { Summary } from './summary'

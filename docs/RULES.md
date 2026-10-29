@@ -66,7 +66,7 @@ the standards. Every lord starts with 50 gold.
 - Three armies, which differ by their size and their pace: the **raid**
   takes 10 % of the peasants and goes a quarter faster, the **host** 25 % at
   the common pace, the **levy** 50 % and goes a quarter slower, on the march
-  and at the front alike (keys 1 to 3).
+  and at the front alike (keys 1 to 3; the mercenaries, below, key 4).
 - A left click on another's land, or on free land, raises the army in hand
   at the lord's free **village** nearest the front: each village levies one
   army at a time from its people, so a lord has as many armies out as he has
@@ -77,9 +77,9 @@ the standards. Every lord starts with 50 gold.
   short of it), from his free market nearest the front, one company a market
   at a time. They take no peasants, so the land holds as well while they
   fight; when they are done their survivors go their way instead of home.
-  They march and fight as the host does. (Not yet in the bar: they come with
-  its redesign; the bots hire them when they have the gold for a full
-  company.)
+  They march and fight as the host does. In the bar their seal is gold, apart
+  from the three levied at a village; the bots hire them when they have the
+  gold for a full company.
 - The army first **marches** to the front over its lord's own land and his
   allies', 6 tiles a second, seen by all: a lord met only beyond an ally's
   land may be struck through it, and an alliance broken on the road sends the
@@ -116,7 +116,7 @@ the standards. Every lord starts with 50 gold.
 
 ## Works
 
-Three works, placed anywhere on one's own land (keys 4 to 6), at least 4
+Three works, placed anywhere on one's own land (keys 5 to 7), at least 4
 tiles from any other work so that none lies on another; castles stand at
 least 10 tiles from one another (`engine/works.ts`):
 
@@ -189,8 +189,9 @@ made to you, the seal of an alliance to renew:
 ## Coups
 
 `engine/coups.ts`: three purchases that may turn a game, each its own deed,
-launched from the bar (keys 7 to 9) then a click on the target. Each costs
-twice as much with each launched, eight times at most, and is seen coming.
+launched from the bar (keys 8, 9 and 0) then a click on the target. Each
+costs twice as much with each launched, eight times at most, and is seen
+coming.
 
 | Coup         | Price | Reach                    | Effect                                                                                                                                                                                                 |
 | ------------ | ----- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

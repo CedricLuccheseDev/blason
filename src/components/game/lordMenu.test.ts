@@ -7,8 +7,8 @@ function alone(): MenuSummary {
   return {
     army: 'host',
     armies: [
-      { army: 'raid', share: 10, men: 13, gold: 0 },
-      { army: 'host', share: 25, men: 33, gold: 0 },
+      { army: 'raid', at: 'village', share: 10, men: 13, gold: null, free: 1 },
+      { army: 'host', at: 'village', share: 25, men: 33, gold: null, free: 1 },
     ],
     allies: [],
     offers: [],

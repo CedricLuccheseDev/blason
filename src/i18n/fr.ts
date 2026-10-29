@@ -23,7 +23,14 @@ export const fr: Messages = {
       'Clique ailleurs pour le déplacer ; la terre autour sera à toi à la fin du compte',
     tooNear: 'trop près d’un autre étendard',
     click: 'clic : attaquer',
-    noLevy: 'tous tes villages ont une armée dehors',
+    noLevy: {
+      village: 'tous tes villages ont une armée dehors',
+      market: 'aucun marché libre pour les engager',
+    },
+    noMen: {
+      village: 'pas de paysans à lever',
+      market: 'pas assez d’or',
+    },
     armies: {
       raid: 'Chevauchée',
       host: 'Ost',

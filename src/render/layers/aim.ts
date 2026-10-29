@@ -12,12 +12,12 @@ import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
 import { makeCoupAim } from './aimCoup'
-import type { GameState, Work } from '../../../engine'
+import type { Army, GameState, Work } from '../../../engine'
 import type { Hand } from '../hand'
 
 // What a click on the tile under the pointer would do. Against another's
-// land or free land: the road the army would march from its village to
-// the border, where it would enter, ringed, and a dotted line from there to
+// land or free land: the road the army would march from its village (the
+// mercenaries from their market) to the border, where it would enter, ringed, and a dotted line from there to
 // the tile aimed at. With a work in hand: its drawing on the
 // tile, the circle it reaches (the castle's land held, the market's range of
 // trade), red where it may not stand,
@@ -45,22 +45,27 @@ export function makeAim(state: GameState, me: number) {
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** The road the army would march from the free village nearest the front, as it would be drawn; none if no village is free. */
-  function roadOf(entry: number): Array<At> {
+  /** The road the army would march from where it is raised nearest the front, its free village or, for mercenaries, its free market, as it would be drawn; none if none is free. */
+  function roadOf(entry: number, army: Army): Array<At> {
     if (entry < 0) return []
-    for (const village of freeWorks(state, me, entry)) {
-      const road = roadTo(state, me, village, entry)
+    for (const site of freeWorks(
+      state,
+      me,
+      entry,
+      state.rules.raisedAt[army],
+    )) {
+      const road = roadTo(state, me, site, entry)
       if (road) return drawRoad(state, road, (t) => state.owner[t] === me, 0)
     }
     return []
   }
 
-  /** Where an army would enter, and its road there, read again only when the pointer or the land moves. */
-  function entryAt(tile: number) {
-    const key = `${tile}:${state.tick}`
+  /** Where an army would enter, and its road there, read again only when the pointer, the land or the army in hand changes. */
+  function entryAt(tile: number, army: Army) {
+    const key = `${tile}:${state.tick}:${army}`
     if (key !== read.key) {
       const entry = entryFor(state, me, tile)
-      read = { key, entry, road: roadOf(entry) }
+      read = { key, entry, road: roadOf(entry, army) }
     }
     return read
   }
@@ -116,12 +121,12 @@ export function makeAim(state: GameState, me: number) {
       dotted(siteOf(state, state.players[lord].standard), gap, TONE.fight, zoom)
   }
 
-  function strike(tile: number, zoom: number) {
-    const { entry, road } = entryAt(tile)
+  function strike(tile: number, army: Army, zoom: number) {
+    const { entry, road } = entryAt(tile, army)
     if (entry < 0) return
     const e = siteOf(state, entry)
     const p = siteOf(state, tile)
-    // From the village to the border, the road the army would walk, then on to the tile aimed at.
+    // From the village or the market to the border, the road the army would walk, then on to the tile aimed at.
     for (let i = 1; i < road.length; i++) line(road[i - 1], road[i], zoom)
     if (road.length > 0) line(road[road.length - 1], e, zoom)
     line(e, p, zoom)
@@ -149,7 +154,7 @@ export function makeAim(state: GameState, me: number) {
       if (!opened) opening(hovered, zoom)
       else if (hand.coup) coups.draw(hovered, hand.coup, zoom)
       else if (hand.work) building(hovered, hand.work, zoom)
-      else strike(hovered, zoom)
+      else strike(hovered, hand.army, zoom)
     },
   }
 }

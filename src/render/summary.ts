@@ -8,6 +8,7 @@ import {
   capOf,
   costOf,
   coupPrice,
+  freeWorks,
   hasPicked,
   menFor,
   nextDrop,
@@ -16,7 +17,6 @@ import {
   sicknessOf,
   victoryShare,
   wonBy,
-  worksOf,
 } from '../../engine'
 import { PLAYERS } from './palette'
 import { lordsOf, pacts } from './standings'
@@ -51,13 +51,11 @@ export type Summary = {
         earned: number
         alive: boolean
         picked: boolean
-        /** His villages with no army out: an attack leaves from one of them. */
-        free: number
       })
     | null
-  /** The army in hand, and the men each would take now and their gold. */
+  /** The army in hand, and each as it would be raised now (armiesOf). */
   army: Army
-  armies: Array<{ army: Army; share: number; men: number; gold: number }>
+  armies: ReturnType<typeof armiesOf>
   /** The work in hand, if any, and what each costs now. */
   work: Work | null
   works: Array<{ work: Work; price: number; can: boolean }>
@@ -96,6 +94,32 @@ export type Summary = {
   asked: Array<number>
   /** The gold an offering of mine would give now: a share of my gold (the right click's menu). */
   offering: number
+}
+
+/**
+ * Each army as it would be raised now: where, levied from the peasants at a
+ * village or hired for gold at a market; its share of the peasants, none for
+ * the mercenaries (a company a quarter of the cap, as many as the gold pays);
+ * the men it would take, and their gold for those paid in gold, none for the
+ * levies' men, who cost nothing; its villages or markets with none out, an
+ * army leaving from one of them.
+ */
+function armiesOf(state: GameState, me: number) {
+  return ARMIES.map((army) => {
+    const at = state.rules.raisedAt[army]
+    const levied = at === 'village'
+    const men = me >= 0 ? menFor(state, me, army) : 0
+    const paid = !levied || state.rules.menPrice > 0
+    return {
+      army,
+      at,
+      share: levied ? state.rules.armies[army] : null,
+      men: Math.floor(men / UNIT),
+      gold: paid ? Math.floor(costOf(state, men, army) / UNIT) : null,
+      // Counted, not sought: from any tile, the nearest first is all one.
+      free: me >= 0 ? freeWorks(state, me, 0, at).length : 0,
+    }
+  })
 }
 
 export function summarize(
@@ -143,20 +167,9 @@ export function summarize(
       earned: Math.floor(earned / UNIT),
       alive: lord.alive,
       picked: hasPicked(state, me),
-      free:
-        worksOf(state, me, 'village') -
-        state.hosts.filter((h) => h.owner === me).length,
     },
     army: hand.army,
-    armies: ARMIES.map((a) => {
-      const men = me >= 0 ? menFor(state, me, a) : 0
-      return {
-        army: a,
-        share: state.rules.armies[a],
-        men: Math.floor(men / UNIT),
-        gold: Math.floor(costOf(state, men, a) / UNIT),
-      }
-    }),
+    armies: armiesOf(state, me),
     work: hand.work,
     works: WORKS.map((w) => {
       const price = me >= 0 ? priceOf(state, me, w) : 0

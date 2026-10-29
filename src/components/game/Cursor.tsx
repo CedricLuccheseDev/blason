@@ -4,23 +4,32 @@ import { Sheet } from '../hud/Sheet'
 import { useBeside } from '../hud/useBeside'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
-import { ARMY_MARKS, COUP_MARKS } from './Bar'
+import { ARMY_MARKS, ARMY_WAX, COUP_MARKS } from './Bar'
 import type { RefObject } from 'react'
 import type { Aim, Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
-/** The left of the cartouche: the army in hand, its men and its gold. */
+/**
+ * The left of the cartouche: the army in hand, its men, and for mercenaries
+ * their gold; whether a click sends it, or why not, in gules: every village
+ * (or market) with its army out, or no man to raise, the gold short.
+ */
 function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
   const { me } = summary
   const army = summary.armies.find((a) => a.army === summary.army)
   if (!me || !army) return null
+  let note = <span className="hud-note">{m.game.click}</span>
+  if (army.free === 0)
+    note = <span className="hud-note text-gules">{m.game.noLevy[army.at]}</span>
+  else if (army.men === 0)
+    note = <span className="hud-note text-gules">{m.game.noMen[army.at]}</span>
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <SealEmblem
           icon={ARMY_MARKS[army.army]}
-          color={hex(me.color)}
+          color={ARMY_WAX[army.army] ?? hex(me.color)}
           size="s"
         />
         <span className="hud-word text-hud-l whitespace-nowrap">
@@ -31,17 +40,13 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
         <Figure icon="soldier" size="l">
           {count(army.men)}
         </Figure>
-        {army.gold > 0 && (
+        {army.gold !== null && (
           <Figure icon="coins" size="l">
             {count(army.gold)}
           </Figure>
         )}
       </div>
-      {me.free > 0 ? (
-        <span className="hud-note">{m.game.click}</span>
-      ) : (
-        <span className="hud-note text-gules">{m.game.noLevy}</span>
-      )}
+      {note}
     </div>
   )
 }
