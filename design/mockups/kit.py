@@ -17,6 +17,7 @@ GOLD_L = '#f4d277'
 GULES = '#b3302a'
 GULES_D = '#741c16'
 OK = '#2f7d3f'
+PACT = '#3f7f4a'
 CAPS = "'IM Fell English SC', Georgia, serif"
 FELL = "'IM Fell English', Georgia, serif"
 SANS = "'Alegreya Sans', 'Trebuchet MS', sans-serif"
@@ -149,29 +150,30 @@ def cursor(x, y, s=1.0):
 # what the game lays out, to the pixel, on a 1440 x 900 screen.
 
 WAX = '#f0d9c4'
-#: Four sizes of type, and the height of a line of each (--text-hud-*).
-S, M, L, XL = 13, 16, 20, 28
-LINE = {S: 15.6, M: 19.2, L: 23, XL: 28}
+#: Four sizes of type, none under 15, and the height of a line of each (--text-hud-*).
+S, M, L, XL = 15, 18, 22, 28
+LINE = {S: 18, M: 21.6, L: 25.3, XL: 28}
 #: Where the baseline sits in its line, as Chrome sets it for each face.
-BASELINE = {('fell', S): 11, ('fell', M): 13, ('fell', L): 17, ('fell', XL): 21,
-            ('sans', S): 11, ('sans', M): 14, ('sans', L): 17, ('sans', XL): 22}
+BASELINE = {('fell', S): 13, ('fell', M): 15, ('fell', L): 18, ('fell', XL): 21,
+            ('sans', S): 13, ('sans', M): 15, ('sans', L): 19, ('sans', XL): 22}
 #: The steps of space, Tailwind's own: an icon and its figure (gap-1); the lines of a piece, pieces stacked (gap-2);
 #: inside a sheet, the parts of a piece (p-3, gap-3); from the edge of the screen (p-4); between groups (gap-6).
 TIGHT, APART, PAD, EDGE, GROUP = 4, 8, 12, 16, 24
 STEPS = (TIGHT, APART, PAD, EDGE, GROUP)
 #: An icon beside a figure, sized on its type; a lord's shield; a seal's or a medallion's radius, and what one in hand grows by.
-ICON = {S: 14, M: 16, L: 20, XL: 24}
+ICON = {S: 16, M: 18, L: 22, XL: 24}
 SHIELD = {'s': (16, 20), 'm': (28, 34), 'l': (52, 64)}
 SEAL_R = {'s': 18, 'l': 26}
 RAISE = 3
 #: The sheet: an ink edge of 1.5 (laid out on one pixel at one pixel per pixel, as Chrome does), a gold rule 3 inside it,
 #: rounded 6 (its rule 4), one shadow (filter "sheet": 0 2px 4px, ink at 35 %).
 EDGE_W, EDGE_BOX, RULE_INSET, RADIUS, RULE_RADIUS = 1.5, 1, 3, 6, 4
-#: The one button: 44 high, 16 inside on each side, its word in IM Fell; gold to act, gules to break, parchment for the rest.
+#: The one button: 44 high, 16 inside on each side, its word in IM Fell; gold to act, the alliance's green to accept one,
+#: gules to break or refuse, parchment for the rest.
 ACT_H, ACT_PAD = 44, 16
-TONES = {'gilt': (GOLD, INK), 'gules': (GULES, WAX), 'plain': (PAPER, INK)}
+TONES = {'gilt': (GOLD, INK), 'pact': (PACT, PAPER), 'gules': (GULES, WAX), 'plain': (PAPER, INK)}
 #: A figure's tones: what cannot be had, or matters less, at 70 % ink.
-FIGURE_TONES = {'ink': (INK, 1), 'dim': (INK, 0.7), 'thrive': (OK, 1), 'gilt': (GOLD_D, 1), 'gules': (GULES, 1)}
+FIGURE_TONES = {'ink': (INK, 1), 'dim': (INK, 0.7), 'thrive': (OK, 1), 'gilt': (GOLD_D, 1), 'gules': (GULES, 1), 'pact': (PACT, 1)}
 #: A key cap: a lozenge in a box of 24.
 KEY = 24
 #: Each glyph's advance in thousandths of an em, measured in Chrome (IM Fell English upright and italic, Alegreya Sans 800
@@ -205,18 +207,18 @@ def line_text(x, top, s, size, face='fell', fill=INK, opacity=1, anchor='start')
 
 
 def word(x, top, s, size=M, opacity=1, fill=INK):
-    """.hud-word: IM Fell, 16 unless said."""
+    """.hud-word: IM Fell, 18 unless said."""
     return line_text(x, top, s, size, 'fell', fill, opacity)
 
 
 def lord_name(x, top, s):
-    """.hud-name: a lord, IM Fell italic 20."""
+    """.hud-name: a lord, IM Fell italic 22."""
     return line_text(x, top, s, L, 'italic')
 
 
 def note(x, top, s):
-    """.hud-note: a hint, IM Fell italic 13 at 70 %."""
-    return line_text(x, top, s, S, 'italic', opacity=0.7)
+    """.hud-note: a hint, IM Fell italic 15, at full ink as the rest."""
+    return line_text(x, top, s, S, 'italic')
 
 
 def icon(name, x, y, px):
@@ -274,7 +276,7 @@ def act_width(label, glyph_=None):
 
 
 def act(x, y, label, tone='gilt', glyph_=None, w=None, asleep=False):
-    """The HUD's one button: a plate on the sheet, an ink edge, its word in IM Fell 16, 44 high; its content centred."""
+    """The HUD's one button: a plate on the sheet, an ink edge, its word in IM Fell 18, 44 high; its content centred."""
     w = w or act_width(label, glyph_)
     bg, ink = TONES[tone]
     e = EDGE_W / 2
