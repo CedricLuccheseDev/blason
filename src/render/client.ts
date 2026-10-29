@@ -16,7 +16,7 @@ import { makeNotes } from './notes'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
-import { bestQuality } from './quality'
+import { bestQuality, governFrames } from './quality'
 import type { GameHandle } from './handle'
 import type { Aim } from './aiming'
 import type { News } from './news'
@@ -100,6 +100,8 @@ export async function mountGame(
     : null
   // Behind a menu, half the frames are enough.
   if (director) app.ticker.maxFPS = 30
+  // Stepped down and up with the frames; nothing drawn while hidden (quality.ts).
+  const governed = governFrames(app, 1000 / (director ? 30 : 60))
 
   const pick = (x: number, y: number) => tileAt(grid, x, y)
 
@@ -212,6 +214,7 @@ export async function mountGame(
     destroy() {
       aiming.destroy()
       frame.disconnect()
+      governed()
       input?.destroy()
       window.removeEventListener('keydown', onKey)
       camera.destroy()

@@ -165,12 +165,20 @@ orders. It decides nothing about the rules.
   washes and the borders' watercolour are laid with fewer points, none farther
   from its line than the border's ink covers (`straighten` and `simplify` in
   `geometry.ts`).
-- The map is light on the machine (`quality.ts`): the renderer draws at most
-  a pixel and a half a point, and so do the canvases painted for it (the works,
-  the men's sheets, the decoration). Off the screen, no man is laid; the works
-  and the seals are laid again only with a tick or the zoom; a road's stones
-  show only once each covers a pixel; the sea's shore lines leave out the
-  coast's smallest turns, the farther from it the more.
+- The map is light on the machine (`quality.ts`). The renderer draws at most a
+  pixel and a half a point, and so do the canvases painted for it (the works,
+  the men's sheets, the decoration). The frames are watched: when the middle
+  frame of a second and a half runs much longer than aimed at, the drawing
+  steps down a level, fewer pixels at each (first the smoke, the glints and
+  the peasants at work left out; then the decoration painted with less time a
+  frame and without its cast shadows; at the last, the mills still and the men
+  without their shadows), and back up after several seconds with room, later
+  each time a level had to be left; a step down that did not shorten the
+  frames is undone (a screen or a battery that caps them). Each game begins at
+  the best. While the page is hidden the ticker stops. Off the screen, no man
+  is laid; the works and the seals are laid again only with a tick or the
+  zoom; a road's stones show only once each covers a pixel; the sea's shore
+  lines leave out the coast's smallest turns, the farther from it the more.
 - The map gains detail with the zoom, by the pixels a tile covers on screen
   (`ground/detail.ts`): from afar the wash and the works' silhouettes; at mid
   distance (9 to 18 pixels a tile) hatched hills, groves, rivers, fields round
