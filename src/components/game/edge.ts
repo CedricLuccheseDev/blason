@@ -18,9 +18,9 @@ export type Placed = {
 export const INSET: Inset = { top: 112, right: 64, bottom: 216, left: 64 }
 export const COMPACT_INSET: Inset = {
   top: 96,
-  right: 44,
+  right: 56,
   bottom: 270,
-  left: 44,
+  left: 56,
 }
 
 export function placeOn(

@@ -12,6 +12,7 @@ import { makeScene } from './scene'
 import { startSession } from './session'
 import { startRemoteSession } from './remote'
 import { makeNews } from './news'
+import { makeNotes } from './notes'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
@@ -154,6 +155,7 @@ export async function mountGame(
   let found = false
   let reported = -1
   const news = makeNews(state, me)
+  const notes = makeNotes(state)
   const earnings = makeEarnings(me)
   let announced = false
   app.ticker.add((ticker) => {
@@ -169,7 +171,8 @@ export async function mountGame(
     // Farther than the whole land, the names shrink with it (the director never goes so far).
     const far = director ? 1 : Math.min(1, camera.level())
     scene.draw(hovered, hand.hand, camera.zoom(), between, far)
-    if (!director) heralds.show(scene.anchors())
+    const now = performance.now() / 1000
+    if (!director) heralds.show([...scene.anchors(), ...notes.anchors(now)])
     // The figures are read once a second, as every figure of the game.
     // The end too, whenever it falls: the game stops on its tick, which may
     // not begin a second.
@@ -185,6 +188,7 @@ export async function mountGame(
       }
       hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
       const fresh = news.read()
+      notes.tell(fresh, now)
       if (fresh.length > 0) hooks.onNews?.(fresh)
     }
   })

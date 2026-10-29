@@ -7,11 +7,10 @@ import { Cursor } from './Cursor'
 import { Aimed } from './Aimed'
 import { Lords } from './Lords'
 import { CameraButtons } from './CameraButtons'
-import { Letters } from './News'
 import { Heralds } from './Heralds'
 import { Bar } from './Bar'
 import { Moment } from './Moment'
-import type { Letter } from './News'
+import { Banner } from './Banner'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
@@ -24,15 +23,17 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * The game, the land taken bit by bit: the map in the whole window, and
  * over it a HUD kept to the edges, every piece a sheet of the design system
  * (components/hud) set in a grid kept 16 pixels from them: top left the
- * lords; top centre the race, thin, and under it the opening and the end;
- * top right the letters; on the map, the seals of the alliances at the
- * middle of their ribbons and the heralds' letters of the offers
- * (Heralds.tsx); bottom left
- * the lord aimed at, while one is; at the bottom the bar, the purse in it;
- * bottom right the camera; the cartouche beside the pointer.
+ * lords; top centre the race, thin, and under it the opening and the end,
+ * and a betrayal cried to all; the top right left to the map. On the map,
+ * the seals of the alliances at the middle of their ribbons, the heralds'
+ * letters of the offers and the news where it happened (Heralds.tsx);
+ * bottom left the lord aimed at, while one is; at the bottom the bar, the
+ * purse in it; bottom right the camera; the cartouche beside the pointer.
  */
-/** How many pieces of news at once, and for how long each. */
-const [LETTERS, LETTER_MS] = [4, 6000]
+/** How long a betrayal is cried under the race. */
+const CRY_MS = 3000
+
+type Cry = { id: number; felon: number; victim: number }
 
 export function GameScreen({
   me,
@@ -52,19 +53,20 @@ export function GameScreen({
   const [aim, setAim] = useState<Aim | null>(null)
   // The game could not start (no WebGL, a failed load): said, not a blank page.
   const [failed, setFailed] = useState(false)
-  // The news on screen, each for a few seconds.
-  const [letters, setLetters] = useState<Array<Letter>>([])
-  const told = useRef(0)
+  // The last betrayal, cried under the race for a few seconds; the rest of
+  // the news is laid on the map where it happened (Heralds.tsx).
+  const [cry, setCry] = useState<Cry | null>(null)
+  const cried = useRef(0)
   const tell = (news: Array<News>) => {
-    const first = told.current
-    told.current += news.length
-    const fresh = news.map((n, i) => ({ ...n, id: first + i + 1 }))
-    setLetters((now) => [...now, ...fresh].slice(-LETTERS))
-    const ids = new Set(fresh.map((l) => l.id))
-    setTimeout(
-      () => setLetters((now) => now.filter((l) => !ids.has(l.id))),
-      LETTER_MS,
-    )
+    // Of two at once, mine is the one cried.
+    const betrayals = news.flatMap((n) => (n.kind === 'betrayed' ? [n] : []))
+    const betrayal =
+      betrayals.find((n) => n.victim === me || n.lord === me) ??
+      betrayals.at(-1)
+    if (!betrayal) return
+    const id = ++cried.current
+    setCry({ id, felon: betrayal.lord, victim: betrayal.victim })
+    setTimeout(() => setCry((now) => (now?.id === id ? null : now)), CRY_MS)
   }
 
   useEffect(() => {
@@ -116,18 +118,19 @@ export function GameScreen({
       {game && summary && (
         <>
           <Heralds game={game} summary={summary} />
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
+          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
             <div className="relative flex w-72 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
               <Lords summary={summary} aimed={aim?.lord ?? null} />
             </div>
             <div className="flex flex-col items-center gap-2">
               <Race summary={summary} />
               <Moment summary={summary} online={online !== undefined} />
+              {cry && (
+                <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />
+              )}
             </div>
-            <div className="flex w-72 flex-col gap-2 justify-self-end max-sm:col-span-2 max-sm:row-start-2 max-sm:w-64 short:w-60">
-              <Letters letters={letters} />
-            </div>
-            <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-4 max-sm:grid-cols-1 max-sm:gap-2">
+            <div className="max-sm:hidden" />
+            <div className="relative col-span-3 row-start-3 grid grid-cols-[1fr_auto_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-3 max-sm:grid-cols-1 max-sm:gap-2">
               {/* Above the bar's row, at its left, taking none of its room: the
                   bar has the width of the screen less the camera on either side. */}
               <div className="absolute bottom-full left-0 mb-4 flex w-72 flex-col gap-2 max-sm:mb-2 max-sm:w-[calc(100%-3.5rem)] short:mb-2 short:w-60">

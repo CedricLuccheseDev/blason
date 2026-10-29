@@ -74,33 +74,9 @@ export const en = {
   },
   pacts: {
     ally: 'Alliance',
-    offer: 'offers an alliance',
     asked: 'Offered',
     accept: 'Accept',
-    renew: 'Renew',
     break: 'Break',
-  },
-  news: {
-    attacked: 'strikes you',
-    took: (tiles: number) => `you took ${tiles} of his tiles`,
-    lost: (tiles: number) => `took ${tiles} of your tiles`,
-    betrayed: 'broke your alliance',
-    seized: 'took',
-    works: {
-      village: (n: number) => (n === 1 ? 'your village' : `${n} villages`),
-      market: (n: number) => (n === 1 ? 'your market' : `${n} markets`),
-      castle: (n: number) => (n === 1 ? 'your castle' : `${n} castles`),
-    },
-    and: 'and',
-    fell: 'has fallen',
-    coup: {
-      troublemaker: 'sends a troublemaker at you',
-      archers: 'looses a volley at you',
-      fire: 'throws Greek fire at you',
-    },
-    stopped: 'stopped your troublemaker',
-    roseAgainst: 'raised your land against you',
-    roseFrom: 'lost land to your rebels',
   },
   lord: {
     allied: 'Your ally',

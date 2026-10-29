@@ -5,6 +5,7 @@ import { COMPACT_INSET, INSET, placeOn, spread } from './edge'
 import { PACT_SEAL, PactSeal } from './PactSeal'
 import { HeraldLetter } from './HeraldLetter'
 import { LETTER } from './svg/letter'
+import { POLE, Pennant } from './Pennant'
 import type { ReactNode } from 'react'
 import type { Placed } from './edge'
 import type {
@@ -18,7 +19,8 @@ import type {
  * The diplomacy on the map, as the board's direction A has it: the seal of
  * each of my alliances at the middle of its ribbon, which the render draws
  * between our capitals; the herald's letter of each offer made to me, on my
- * land nearest the lord who sends it, until it is answered or refused. The
+ * land nearest the lord who sends it, until it is answered or refused; the
+ * news where it happened, a pennant planted there a few seconds. The
  * render says where each lies on the screen; one
  * out of view waits at its edge, an arrow towards it. Under the HUD's
  * corners, over the map; only what can be clicked takes the pointer.
@@ -49,10 +51,14 @@ export function Heralds({
     left: drawn.left * k,
   }
   const { box } = PACT_SEAL[compact ? 'compact' : 'wide']
+  // Pushed apart, then kept within the room clear of the HUD.
   const places = spread(
     laid.list.map((h) => placeOn(h, laid.width, laid.height, inset)),
     { x: 200 * k, y: (box + 40) * k },
-  )
+  ).map((p) => ({
+    ...p,
+    x: Math.min(Math.max(p.x, inset.left), laid.width - inset.right),
+  }))
 
   function sealOf(herald: Herald, placed: Placed): ReactNode {
     const ally = summary.allies.find((a) => a.seat === herald.lord)
@@ -95,7 +101,17 @@ export function Heralds({
     )
   }
 
-  const PIECES = { pact: sealOf, offer: letterOf, note: () => null }
+  function noteOf(herald: Herald, placed: Placed): ReactNode {
+    const { news } = herald
+    if (!news || news.kind === 'betrayed') return null
+    return (
+      <At key={herald.key} placed={placed} lift={POLE.h} by={POLE.x}>
+        <Pennant news={news} />
+      </At>
+    )
+  }
+
+  const PIECES = { pact: sealOf, offer: letterOf, note: noteOf }
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -112,19 +128,26 @@ function hudScale(): number {
   return Number.isFinite(k) && k > 0 ? k : 1
 }
 
-/** A piece set at its place, centred across it, its top `lift` pixels (as drawn) above it. */
+/** A piece set at its place: its top `lift` pixels (as drawn) above it, and centred across it, or its left `by` pixels before it. */
 function At({
   placed,
   lift,
+  by,
   children,
-}: Readonly<{ placed: Placed; lift: number; children: ReactNode }>) {
+}: Readonly<{
+  placed: Placed
+  lift: number
+  by?: number
+  children: ReactNode
+}>) {
+  const across = by === undefined ? '-50%' : `calc(-1 * ${scaled(by)})`
   return (
     <div
       className="absolute has-[[data-open]]:z-10"
       style={{
         left: placed.x,
         top: placed.y,
-        transform: `translate(-50%, calc(-1 * ${scaled(lift)}))`,
+        transform: `translate(${across}, calc(-1 * ${scaled(lift)}))`,
       }}
     >
       {children}

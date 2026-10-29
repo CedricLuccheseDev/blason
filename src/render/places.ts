@@ -7,7 +7,8 @@ import type { Placement } from './layers/labels'
 
 // Where each lord is written, and the marks beside his name: an ally's
 // links, a traitor's broken shield, as OpenFront shows its alliances by an
-// icon beside a player's troops. Sized on screen.
+// icon beside a player's troops, each ringed by the time it has left.
+// Sized on screen.
 
 /**
  * Each lord written at the centre of his land as it stands now: the middle
@@ -86,6 +87,16 @@ const RING = 21.5
 
 type Name = { x: number; y: number; half: number; tall: number }
 
+/** A ring round a badge at `x`, the share of its time still to run. */
+function ringRound(g: Graphics, x: number, share: number, color: number) {
+  const end = -Math.PI / 2 + Math.PI * 2 * share
+  g.circle(x, 0, RING)
+    .stroke({ width: 3, color: TONE.ink, alpha: 0.2 })
+    .moveTo(x, -RING)
+    .arc(x, 0, RING, -Math.PI / 2, end)
+    .stroke({ width: 3.6, color, cap: 'round' })
+}
+
 /** The marks beside the lords' names, gliding with them: my allies' links, a traitor's broken shield. */
 export function makeBadges(state: GameState, me: number) {
   const container = new Container()
@@ -94,6 +105,12 @@ export function makeBadges(state: GameState, me: number) {
     number,
     { icons: string; g: Container; ring: Graphics }
   >()
+
+  /** The share of a traitor's mark still to run, 0 to 1. */
+  function shame(lord: number): number {
+    const rest = state.players[lord].felonUntil - state.tick
+    return Math.max(0, Math.min(1, rest / state.rules.felonTicks))
+  }
 
   /** The share of my alliance with a lord still to run, 0 to 1. */
   function left(lord: number): number {
@@ -140,16 +157,16 @@ export function makeBadges(state: GameState, me: number) {
           name.x + name.half + (BADGE / 2 - 6) / zoom,
           name.y - 12 / zoom,
         )
-        // Round the links, the time left to the alliance, emptying as it runs out.
+        // Round the links, the time left to the alliance, emptying as it
+        // runs out; round the broken shield, the time he stays a traitor.
         mark.ring.clear()
-        if (!icons.includes('links')) return
-        const end = -Math.PI / 2 + Math.PI * 2 * left(lord)
-        mark.ring
-          .circle(0, 0, RING)
-          .stroke({ width: 3, color: TONE.ink, alpha: 0.2 })
-          .moveTo(0, -RING)
-          .arc(0, 0, RING, -Math.PI / 2, end)
-          .stroke({ width: 3.6, color: TONE.pact, cap: 'round' })
+        icons.forEach((icon, k) => {
+          const [share, color] =
+            icon === 'links'
+              ? [left(lord), TONE.pact]
+              : [shame(lord), TONE.gules]
+          ringRound(mark.ring, k * 50, share, color)
+        })
       })
     },
   }

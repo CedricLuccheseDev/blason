@@ -176,7 +176,7 @@ export function makeScene(
       labels.update(state, zoom / fit / far, shown)
       badges.update(labels.nameOf, zoom / fit / far)
       badges.container.alpha = shown
-      pacts.draw(state, zoom)
+      pacts.draw(state, zoom, now / 1000)
       pacts.container.alpha = shown
     },
   }

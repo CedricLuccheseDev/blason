@@ -222,7 +222,8 @@ orders. It decides nothing about the rules.
   (`layers/tidings.ts`), the alliances between the lords' capitals, the
   player's own a ribbon of green silk hemmed in gold, the others' a thin dotted
   cord of ink with a tiny seal parted in both lords' colours (`layers/pacts.ts`,
-  their bowed line `cord.ts`, drawn by `art/cords.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
+  their bowed line `cord.ts`, drawn by `art/cords.ts`), and one broken
+  snapping before all, its seal cracking in two (`art/snap.ts`), the names (`places.ts`, `layers/labels.ts`), the aim
   (`layers/aim.ts`; with a coup in hand, the disc it would strike, its way and
   its reach along the border, `layers/aimCoup.ts`), the parchment's grain over the whole page, moving with it
   (`layers/paper.ts`), and the page round the map: its frame (`layers/page.ts`),
@@ -234,11 +235,13 @@ orders. It decides nothing about the rules.
 - `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
   of the player's alliances at the middle of its ribbon, the herald's letter of
   each offer made to him, on his land nearest the lord who sends it,
-  `envoys.ts`), in pixels of the
+  `envoys.ts`; the news where it happened, a few seconds, `notes.ts`), in
+  pixels of the
   screen, each time they move, to the HUD that listens (`GameHandle.heralds`,
   `handle.ts`).
 - `summary.ts` reads from the state, once a second, the figures the HUD shows;
-  `news.ts` what the player's letters tell, the coups among it (`coupNews.ts`).
+  `news.ts` what the player hears and where: a lord biting his border, the
+  coups at his land (`coupNews.ts`), and any lord who broke an alliance.
 
 ## The interface
 
@@ -265,18 +268,20 @@ The HUD is React, laid over the map. It is built on a small design system,
   colour, the same badges as beside the names on the map;
 - **one motion**: a single curve and two durations, through two roles,
   `.hud-press` on whatever is touched and `.hud-enter` on every sheet that
-  appears, and `.hud-glow` on what waits on the map for a click (a seal to
+  appears, `.hud-life` on what is told a few seconds, and `.hud-glow` on what waits on the map for a click (a seal to
   renew), `.hud-bob` on a herald's letter waiting there, and the halves of a
   seal that breaks (`.hud-broken`); nothing moves under reduced motion;
 - **a compact shape** on phones, upright or sideways (`useCompact.ts`).
 
 The game's pieces (`src/components/game/`: the lords' list top left, the
-race on one thin line, the letters top right, the seals of the player's
+race on one thin line and under it a betrayal cried to all on a banderole of
+gules (`Banner.tsx`), the top right left to the map; the seals of the player's
 alliances on the map at the middle of their ribbons, a click to renew in their
 last moments; an offer as the herald's sealed letter on the player's land, its
 gold ring the time it stands, which a click breaks open to seal or refuse
 (`HeraldLetter.tsx`); either waiting at the screen's edge with an arrow when
-out of view (`Heralds.tsx`, `PactSeal.tsx`, `edge.ts`), the
+out of view (`Heralds.tsx`, `PactSeal.tsx`, `edge.ts`); the news as a pennant
+planted where it happened, a few seconds (`Pennant.tsx`); the
 bar at the bottom with the purse in it, then the armies, the works and the
 coups (`Bar.tsx`, its pieces `BarPiece.tsx`), what cannot be paid at half ink,
 the lord aimed at, the cartouche beside the pointer) are built from these and

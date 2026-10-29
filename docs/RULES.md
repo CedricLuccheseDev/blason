@@ -120,7 +120,8 @@ village or a market, 20 for a castle.
 
 ## Alliances and traitors
 
-`engine/diplomacy.ts`, by a right click on a lord's land:
+`engine/diplomacy.ts`, by a right click on a lord's land, or on the map: the
+herald's letter of an offer made to you, the seal of an alliance to renew:
 
 - One order offers an alliance, accepts one offered, or renews one. An offer
   waits 20 seconds.

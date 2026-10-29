@@ -1,5 +1,6 @@
 import type { Container } from 'pixi.js'
 import type { Spot } from './cord'
+import type { News } from './news'
 
 // What the HUD lays on the map at a place of it (components/game/Heralds.tsx):
 // the seal of each of the player's alliances at the middle of its ribbon,
@@ -11,8 +12,14 @@ import type { Spot } from './cord'
 
 type HeraldKind = 'pact' | 'offer' | 'note'
 
-/** A place of the map the HUD lays something on, in map units. */
-export type Anchor = { key: string; kind: HeraldKind; lord: number; at: Spot }
+/** A place of the map the HUD lays something on, in map units; for a piece of news, what it says. */
+export type Anchor = {
+  key: string
+  kind: HeraldKind
+  lord: number
+  at: Spot
+  news?: News
+}
 
 /** The same on the screen, in pixels; off it when it lies beyond the element. */
 export type Herald = Omit<Anchor, 'at'> & { x: number; y: number }

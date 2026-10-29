@@ -21,7 +21,8 @@ export const PACT_SEAL = {
  * last moments it glows, its ring turned gold on those moments; a half
  * pressed is a lord who asked to renew, and a click presses mine. At the
  * edge of the screen, an arrow out of its ring towards where it belongs.
- * Under it, the time left and, in its last moments, whose turn it is.
+ * Under it, the time left and, in its last moments and in view, whose turn
+ * it is.
  */
 export function PactSeal({
   ally,
@@ -101,7 +102,7 @@ export function PactSeal({
         <Figure size="s" tone={ally.closing ? 'ink' : 'pact'}>
           {minutes(ally.left)}
         </Figure>
-        {note && <span className="hud-note">{note}</span>}
+        {note && toward === null && <span className="hud-note">{note}</span>}
       </Sheet>
     </div>
   )

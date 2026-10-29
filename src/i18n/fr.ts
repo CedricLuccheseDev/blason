@@ -76,33 +76,9 @@ export const fr: Messages = {
   },
   pacts: {
     ally: 'Alliance',
-    offer: 'propose une alliance',
     asked: 'Proposée',
     accept: 'Accepter',
-    renew: 'Renouveler',
     break: 'Rompre',
-  },
-  news: {
-    attacked: 't’attaque',
-    took: (tiles: number) => `tu lui as pris ${tiles} tuiles`,
-    lost: (tiles: number) => `t’a pris ${tiles} tuiles`,
-    betrayed: 'a rompu votre alliance',
-    seized: 't’a pris',
-    works: {
-      village: (n: number) => (n === 1 ? 'ton village' : `${n} villages`),
-      market: (n: number) => (n === 1 ? 'ton marché' : `${n} marchés`),
-      castle: (n: number) => (n === 1 ? 'ton château' : `${n} châteaux`),
-    },
-    and: 'et',
-    fell: 'est tombé',
-    coup: {
-      troublemaker: 'envoie un causeur de troubles chez toi',
-      archers: 'tire une volée sur toi',
-      fire: 'lance le feu grégeois sur toi',
-    },
-    stopped: 'a arrêté ton causeur de troubles',
-    roseAgainst: 'a soulevé ta terre contre toi',
-    roseFrom: 'a perdu sa terre à tes rebelles',
   },
   lord: {
     allied: 'Ton allié',
