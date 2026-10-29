@@ -61,7 +61,12 @@ machine computes the same game, tick for tick.
   seat, a bot of the level chosen at every other), a game of bots
   (`botsSetup`, the scripts', the tests' and, for now, every game online's),
   the public game (`publicSetup`, no bot, every
-  seat empty until a person takes it); `readSetup` checks one come down the
+  seat empty until a person takes it). A seat no bot plays and no person
+  holds is empty: no lord there (`alive` false from the first tick), given
+  no standard and no land when the opening ends, and counted for nothing in
+  the race; a person takes one during the opening (`takeSeat`, which the
+  session calls on the turn the relay says so), and it is his lord's from
+  that turn (`engine/seats.test.ts`); `readSetup` checks one come down the
   wire, bounded by `SETUP_LIMITS` (`rules.ts`); `landOf` draws its land and
   its tiles. The state keeps the setup, never changed, and lays its seed, its
   teams and its opening where the rules read them; the fingerprint
@@ -585,8 +590,10 @@ simulation.
   with `readSetup`), each numbered turn, a
   desync. A turn holds the orders received since the last, each signed with
   its sender's seat, and the seats that became a person's (`joined`: their
-  bots stop at that turn) or a bot's again (`left`). Every seat begins a
-  bot's.
+  bots stop at that turn, an empty seat his lord's) or no one's again
+  (`left`: the seat's bot in the setup plays it again, and with none, as in
+  the public game, his lord stays, idle, his peasants defending his land).
+  Every seat begins as the setup says, a bot's or empty.
 - `server/` is the relay, a small Node WebSocket server of its own
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
   (`server/rooms.ts`) is made of its setup (`room.setup`), its land drawn

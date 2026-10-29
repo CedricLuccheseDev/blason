@@ -14,7 +14,13 @@ export { apart, around, makeGrid } from './grid'
 
 // A game: what it is made of, its rules, its state, the orders and the step
 // that applies them.
-export { aloneSetup, botsSetup, landOf, readSetup } from './setup'
+export {
+  aloneSetup,
+  botsSetup,
+  landOf,
+  publicSetup,
+  readSetup,
+} from './setup'
 export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'
 export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
@@ -36,7 +42,7 @@ export {
   standing,
   worksOf,
 } from './land'
-export { barredBy, canStart, hasPicked } from './opening'
+export { barredBy, canStart, hasPicked, takeSeat } from './opening'
 export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.

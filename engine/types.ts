@@ -20,6 +20,7 @@ type Lord = {
   /** His peasants, who hold his land, and his gold, in thousandths. */
   peasants: number
   gold: number
+  /** In the game: from the first tick for a seat a bot or a person plays, from the turn a person takes it for an empty one; no more once his land is lost. */
   alive: boolean
   /** Tick until which he bears the traitor's mark. */
   felonUntil: number

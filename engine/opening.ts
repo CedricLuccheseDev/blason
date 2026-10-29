@@ -13,6 +13,9 @@ import type { GameState, Grid } from './types'
 // from it over the land and never across the sea; where two starts meet,
 // each tile goes to the nearer standard. His first village stands on his
 // standard's tile. Who planted none is given the spot with the most room.
+// A seat no one plays is empty, no lord in the game (createGame): a person
+// may take it while the opening lasts, and it is his from that turn on;
+// left empty, it is given no standard and no land.
 
 /** Farther than any two tiles: how far the nearest standard is while none is planted. */
 const FAR = 1e12
@@ -95,6 +98,14 @@ export function canStart(
   return barredBy(state, player, tile).length === 0
 }
 
+/** A person takes an empty seat while the opening lasts: its lord comes into the game, to plant his standard. A seat held already, or the opening over, stays as it is. */
+export function takeSeat(state: GameState, seat: number): void {
+  const known =
+    Number.isInteger(seat) && seat >= 0 && seat < state.players.length
+  if (known && state.tick < state.rules.openingTicks)
+    state.players[seat].alive = true
+}
+
 /** During the opening a lord plants his standard, or moves it, on a tile of the land. */
 export function pickStart(state: GameState, player: number, tile: number) {
   if (canStart(state, player, tile)) state.players[player].standard = tile
@@ -173,10 +184,10 @@ function shareStarts(state: GameState): void {
   }
 }
 
-/** At the end of the opening: who planted nothing is given the spot with the most room; then each lord receives the land round his standard, his first village on its tile, his peasants at the full. */
+/** At the end of the opening: who planted nothing is given the spot with the most room, an empty seat nothing; then each lord receives the land round his standard, his first village on its tile, his peasants at the full. */
 export function grantStarts(state: GameState): void {
   state.players.forEach((lord, id) => {
-    if (lord.standard < 0)
+    if (lord.alive && lord.standard < 0)
       lord.standard = spotFor(state, id, GIVEN_DRAWS, 'given', id)
   })
   shareStarts(state)

@@ -4,6 +4,7 @@ import {
   createGame,
   stateHash,
   step,
+  takeSeat,
 } from '../../engine'
 import { HASH_EVERY, TURN_MS } from '../../net/protocol'
 import type { Online } from './online'
@@ -14,12 +15,14 @@ import type { Turn } from '../../net/protocol'
 // A game online, stepped by the relay's turns rather than by the clock: each
 // turn holds the orders of every player, mine with them, and is played as it
 // comes, with the bots' orders, on every browser alike. My orders go to the
-// relay, never straight into my game. Every seat begins a bot's; a turn says
-// the seats a person took, whose bots stop from that turn on, and those left,
-// bots again. Who comes in during the opening is handed every turn played so
-// far and plays them as they come, a few a frame, to catch up. Every so many
-// turns, the fingerprint of my state goes back to the relay, which names a
-// turn where two browsers parted.
+// relay, never straight into my game. Each seat begins as its setup says, a
+// bot's or empty; a turn says the seats a person took, whose bots stop from
+// that turn on, an empty one his lord's from then (takeSeat), and those
+// left: the setup's bot plays the seat again, and with none, the lord stays,
+// idle, his peasants holding his land. Who comes in during the opening is
+// handed every turn played so far and plays them as they come, a few a
+// frame, to catch up. Every so many turns, the fingerprint of my state goes
+// back to the relay, which names a turn where two browsers parted.
 
 export function startRemoteSession(grid: Grid, online: Online): Session {
   const { setup, seat, link } = online
@@ -49,7 +52,10 @@ export function startRemoteSession(grid: Grid, online: Online): Session {
       for (let turn = turns.shift(); turn; turn = turns.shift()) {
         if (state.winner !== NO_ONE) break
         played++
-        for (const id of turn.joined) bots[id] = null
+        for (const id of turn.joined) {
+          bots[id] = null
+          takeSeat(state, id)
+        }
         for (const id of turn.left) bots[id] = botOf(id)
         const orders = [
           ...turn.orders,

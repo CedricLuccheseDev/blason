@@ -62,7 +62,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
     graine et sa terre, le mode, l'ouverture, les sièges, chacun son équipe et son bot ou personne), que le livre de
     l'hôte remplira, que le relais passera sans le lire et dont `createGame(grid, setup)` fait la partie, ses
     préréglages (seul, des bots, la partie publique sans bot), sa lecture bornée par `SETUP_LIMITS` et sa terre
-    (`landOf`) ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte ; `muster.ts` la levée aux villages
+    (`landOf`) ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte, et les sièges vides (sans bot ni personne : pas de seigneur, ni étendard ni terre, sauf si une personne le prend pendant l'ouverture, `takeSeat`) ; `muster.ts` la levée aux villages
     et la marche ; `course.ts` le chemin d'une armée, par l'entrée qui la mène le plus vite au clic, marche et traversée
     comptées (acté le 29/10), celui même que la visée dessine ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `volleys.ts` les flèches des châteaux ;
     `enclosure.ts` les terres encerclées ;
@@ -72,7 +72,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), les parties dorées
     (`golden.test.ts` : trois parties de bots, leurs empreintes relevées une fois et écrites en dur ; une refonte qui
     garde le jeu les garde), la victoire (`victory.test.ts`), le setup (`setup.test.ts`), la diplomatie et les
-    marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les coups (`coups.test.ts`), les flèches des châteaux
+    marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les sièges vides (`seats.test.ts`), les coups (`coups.test.ts`), les flèches des châteaux
     (`volleys.test.ts`), le générateur (`map/generate.test.ts`).
 - `scripts/arena.ts` : l'arène (`npm run arena -- [parties] [joueurs]`), des parties de bots sans écran. Elle dit si
   le jeu tourne ; le plaisir et la lisibilité se jugent en jouant. `scripts/census.ts`, le recensement

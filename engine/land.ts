@@ -35,8 +35,9 @@ function mainLand(grid: Grid): Array<boolean> {
 }
 
 /**
- * A new game, as its setup says, a lord a seat: no land anyone's yet, all
- * of it free, held by its villagers; each lord a little gold. The figures
+ * A new game, as its setup says, a lord a seat, but for the empty ones: no
+ * land anyone's yet, all of it free, held by its villagers; each lord a
+ * little gold. The figures
  * are the rules' unless the arena or a test tries others; the setup's
  * opening is laid over them.
  */
@@ -58,10 +59,12 @@ export function createGame(
     tick: 0,
     owner: land.map((on) => (on ? NEUTRAL : SEA)),
     works: [],
-    players: setup.seats.map(() => ({
+    players: setup.seats.map((seat) => ({
       peasants: 0,
       gold: rules.startGold * UNIT,
-      alive: true,
+      // A seat no bot plays and no person holds yet is empty: no lord
+      // there, until a person takes it in the opening (takeSeat).
+      alive: seat.person || seat.bot !== null,
       felonUntil: 0,
       tiles: 0,
       coups: {},

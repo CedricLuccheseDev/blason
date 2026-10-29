@@ -5,8 +5,8 @@ import type { GameSetup, MapSize, Order } from '../engine'
 // relay computes nothing, as OpenFront's. It runs each game as a list of
 // numbered turns, one every 100 ms from the game's first tick: the orders it
 // received since the last, in the order it received them, and the seats that
-// became a person's or a bot's again. Every seat begins a bot's. Every
-// browser plays the whole game from the same seed and the same turns, bots
+// became a person's or no one's again. Every seat begins as the game's setup
+// says, a bot's or empty. Every browser plays the whole game from the same seed and the same turns, bots
 // included, so they all play the same game; one who comes in during the
 // opening is given the turns played so far and plays them again to catch up.
 // Each tells now and then the fingerprint of its state, and the relay names a
@@ -54,7 +54,7 @@ export type Upcoming = {
   seats: number
 }
 
-/** One turn: its number (the tick it is played at), its orders, the seats a person took (their bots stopped from this turn on) and those left (bots again). */
+/** One turn: its number (the tick it is played at), its orders, the seats a person took (their bots stopped from this turn on, an empty one his lord's) and those left (the setup's bot again, or none: the lord idle). */
 export type Turn = {
   t: 'turn'
   n: number
