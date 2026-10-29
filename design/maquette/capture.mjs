@@ -1,23 +1,34 @@
 // The maquette's captures, taken from the game itself: each moment's save
-// (public/saves) opened in /play?save=<name> in a headless Chrome at each
-// size, staged as moments.mjs says, then once the map is drawn, captured
-// apart: the map alone, the HUD hidden, as an image (<moment>-<w>x<h>.webp);
-// the HUD as the page rendered it, its markup (<moment>-<w>x<h>.html); and
-// once, the page's CSS (game.css) with what the document carries round the
-// HUD (page.json: its language, its classes, the fonts' sheets). build.mjs
-// lays them together again into maquette.html.
+// (public/saves) opened in /play?save=<name>, or a page of the site (the
+// home, `path: '/'`), in a headless Chrome at each size, staged as
+// moments.mjs says, then once the map is drawn, captured apart: the map
+// alone, the HUD hidden, as an image (<moment>-<w>x<h>.webp); the HUD as the
+// page rendered it, its markup (<moment>-<w>x<h>.html), the map's place
+// marked (data-map) and any other canvas of it (the land of the home's next
+// game) as the image it showed; and once, the page's CSS (game.css) with
+// what the document carries round the HUD (page.json: its language, its
+// classes, the fonts' sheets). build.mjs lays them together again into
+// maquette.html, planches.mjs into the boards. Then the interface's pieces,
+// for the board of the HUD's system, drawn by the game's own components
+// (pieces.tsx, the moment named `pieces`): their markup (pieces.html).
 //   node design/maquette/capture.mjs [game url] [moment ...]
-// The game must be served (npx vite dev); playwright-core is looked for in
-// PLAYWRIGHT_CORE, the project, then the machine's shots tool, and Chrome in
-// CHROME, else playwright's own. The game is read in French (LOCALE=en for
-// English), under reduced motion, so that its life holds still. PROOF=<dir>
-// keeps the game's whole screen there too, to check a frame against.
+// The game must be served (npx vite dev), and the relay beside it for the
+// home's next public game; the browser is found as browser.mjs says. The
+// game is read in French (LOCALE=en for English), under reduced motion, so
+// that its life holds still. SIZES=1920x1080,390x844 takes those sizes
+// alone. PROOF=<dir> keeps the game's whole screen there too, to check a
+// frame against.
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { launch } from './browser.mjs'
 import { MOMENTS, SIZES } from './moments.mjs'
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3000'
 const ONLY = process.argv.slice(3)
+/** The sizes to take: all the maquette's, unless SIZES names some. */
+const TAKEN = process.env.SIZES
+  ? process.env.SIZES.split(',').map((size) => size.split('x').map(Number))
+  : SIZES
 const OUT = new URL('captures/', import.meta.url)
 const LOCALE = process.env.LOCALE === 'en' ? 'en-GB' : 'fr-FR'
 /** A folder where the game's own screen, map and HUD together, is kept beside each capture, to hold a frame of the maquette against. */
@@ -25,26 +36,6 @@ const PROOF = process.env.PROOF
 /** The map is drawn once two shots a little apart differ by less than this share of their pixels (the men still move); never waited for longer than so many ms. */
 const STILL = 0.002
 const LONGEST = 90_000
-
-async function findChromium() {
-  const places = [
-    process.env.PLAYWRIGHT_CORE,
-    'playwright-core',
-    '/root/Perso/.shots/node_modules/playwright-core/index.mjs',
-  ]
-  for (const place of places.filter(Boolean)) {
-    try {
-      return (await import(place)).chromium
-    } catch {
-      // Not there: the next place.
-    }
-  }
-  throw new Error('No playwright-core: set PLAYWRIGHT_CORE to its index.mjs')
-}
-
-const CHROME =
-  process.env.CHROME ??
-  '/root/.cache/ms-playwright/chromium-1247/chrome-linux64/chrome'
 
 /** A blank page of the same browser where the shots are compared and the map encoded: the browser's own codecs, no image library. */
 async function darkroom(browser) {
@@ -128,8 +119,8 @@ const sameMap = (page) =>
     return known
   }, MAP)
 
-/** The map alone, once it is drawn: shots a little apart until two are alike, the HUD hidden before each; from the start again if the game was mounted anew meanwhile. */
-async function drawnMap(page, room) {
+/** The map alone, once it is drawn: shots a little apart until two are alike, the HUD hidden before each; from the start again if the game was mounted anew meanwhile; never waited for past `longest` ms (a game that never holds still, as the home's). */
+async function drawnMap(page, room, longest = LONGEST) {
   // A frame of the map can take seconds without a graphics card.
   const shoot = async () => {
     await showHud(page, false)
@@ -145,17 +136,30 @@ async function drawnMap(page, room) {
     share = await room.differ(last, shot)
     last = shot
     if (!(await sameMap(page))) continue
-    if (share < STILL || Date.now() - start > LONGEST) break
+    if (share < STILL || Date.now() - start > longest) break
   }
   await showHud(page, true)
   return { map: last, share }
 }
 
-/** The HUD's markup as rendered, the map's place in it left empty, and the document round it. */
+/** The HUD's markup as rendered, the map's place in it left empty and marked, any other canvas as the image it shows, and the document round it. */
 const hudMarkup = (page) =>
   page.evaluate((map) => {
-    const frame = document.body.firstElementChild.cloneNode(true)
-    frame.querySelector(map).replaceChildren()
+    const root = document.body.firstElementChild
+    const frame = root.cloneNode(true)
+    const place = root.querySelector(map)
+    const copies = [...frame.querySelectorAll('canvas')]
+    for (const [i, canvas] of [...root.querySelectorAll('canvas')].entries()) {
+      if (place.contains(canvas)) continue
+      const image = document.createElement('img')
+      for (const { name, value } of canvas.attributes)
+        image.setAttribute(name, value)
+      image.setAttribute('src', canvas.toDataURL('image/webp', 0.9))
+      copies[i].replaceWith(image)
+    }
+    const copy = frame.querySelector(map)
+    copy.replaceChildren()
+    copy.setAttribute('data-map', '')
     const attributes = (element) =>
       Object.fromEntries([...element.attributes].map((a) => [a.name, a.value]))
     return {
@@ -184,10 +188,12 @@ const pageCss = (page) =>
       .join('\n'),
   )
 
-/** What a player would do before the moment is seen: keys, the pointer at the middle, a click on a piece. */
+/** What a player would do before the moment is seen: keys, the pointer at the middle, a right click there, a click on a piece. */
 async function stage(page, moment, [width, height]) {
   for (const key of moment.keys ?? []) await page.keyboard.press(key)
   if (moment.pointer) await page.mouse.move(width / 2, height / 2)
+  if (moment.menu)
+    await page.mouse.click(width / 2, height / 2, { button: 'right' })
   if (moment.click) await page.click(moment.click)
   await page.waitForTimeout(1200)
 }
@@ -197,19 +203,23 @@ async function capture(context, room, moment, size, first) {
   const [width, height] = size
   const page = await context.newPage()
   page.on('pageerror', (e) => console.error(`  ${moment.name}: ${e.message}`))
-  const save = moment.save ?? moment.name
-  await page.goto(`${BASE}/play?save=${save}`, { timeout: 120_000 })
-  // The game mounted from its save (a save missing sends the page home), and its HUD laid.
+  const path = moment.path ?? `/play?save=${moment.save ?? moment.name}`
+  await page.goto(`${BASE}${path}`, { timeout: 120_000 })
+  // The page as it should be: the game mounted from its save (a save
+  // missing sends the page home) and its HUD laid; or what the moment waits
+  // for on its page.
   await page.waitForFunction(
-    (map) =>
-      location.search.includes('save=') &&
-      document.querySelector(map) &&
-      document.querySelectorAll('main > *').length > 3,
-    MAP,
+    ([map, ready]) =>
+      ready
+        ? document.querySelector(ready) && document.querySelector(map)
+        : location.search.includes('save=') &&
+          document.querySelector(map) &&
+          document.querySelectorAll('main > *').length > 3,
+    [MAP, moment.ready],
     { timeout: 120_000 },
   )
   await stage(page, moment, size)
-  const { map, share } = await drawnMap(page, room)
+  const { map, share } = await drawnMap(page, room, moment.longest)
   const name = `${moment.name}-${width}x${height}`
   writeFileSync(new URL(`${name}.webp`, OUT), await room.webp(map))
   const { markup, page: around } = await hudMarkup(page)
@@ -224,6 +234,22 @@ async function capture(context, room, moment, size, first) {
     )
   }
   return { name, share }
+}
+
+/** The interface's pieces, drawn by the game's own components (pieces.tsx) in a page of the game, its Vite serving the module: their markup. */
+async function capturePieces(browser) {
+  const page = await browser.newPage({ locale: LOCALE })
+  try {
+    await page.goto(`${BASE}/legal`, { timeout: 120_000 })
+    await page.waitForLoadState('networkidle')
+    const markup = await page.evaluate(async (module) => {
+      const pieces = await import(module)
+      return pieces.piecesMarkup()
+    }, '/design/maquette/pieces.tsx')
+    writeFileSync(new URL('pieces.html', OUT), `${markup}\n`)
+  } finally {
+    await page.close()
+  }
 }
 
 /** A frame taken in a page of its own, and once more in a fresh one should the first fail (a page the dev server could not serve whole). */
@@ -247,17 +273,13 @@ async function captureFrame(browser, ...rest) {
 }
 
 mkdirSync(OUT, { recursive: true })
-const chromium = await findChromium()
-const browser = await chromium.launch({
-  ...(existsSync(CHROME) ? { executablePath: CHROME } : {}),
-  args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
-})
+const browser = await launch()
 try {
   const room = await darkroom(browser)
   let first = true
   for (const moment of MOMENTS) {
     if (ONLY.length > 0 && !ONLY.includes(moment.name)) continue
-    for (const size of SIZES) {
+    for (const size of TAKEN) {
       const started = Date.now()
       const { name, share } = await captureFrame(
         browser,
@@ -271,6 +293,10 @@ try {
       const moving = (share * 100).toFixed(2)
       console.log(`${name.padEnd(22)} ${seconds} s, ${moving} % still moving`)
     }
+  }
+  if (ONLY.length === 0 || ONLY.includes('pieces')) {
+    await capturePieces(browser)
+    console.log('pieces')
   }
 } finally {
   await browser.close()

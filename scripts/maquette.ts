@@ -25,12 +25,14 @@ import type { Save, Shot } from '../src/render/save'
 // taken at the first tick from its own where the game shows it: an offer
 // made to a lord, an alliance in its last seconds, an army fighting. A save
 // is read back before it is written, and must give the same game and the
-// same HUD as the game played. design/maquette takes the captures from them.
+// same HUD as the game played; the game is played on to its end, the tick it
+// is won. design/maquette takes the captures from them.
 // npm run maquette -- [seed] [easy|normal|hard] [standard|large|huge]
 
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
-const LIMIT = 40 * MINUTE
+/** The game is played until its end, never longer than this. */
+const LIMIT = 60 * MINUTE
 
 /** What a moment shows: from which seat, and where the camera stands. */
 type View = { me: number; camera: Shot }
@@ -75,6 +77,13 @@ function borderTile(state: GameState, me: number): number {
       if (score < best.score) best = { tile: n, score }
     }
   return best.tile
+}
+
+/** The lord standing with the most land after the winner: the end as a loser sees it. */
+function runnerUp(state: GameState): number | undefined {
+  return lords(state)
+    .filter((id) => id !== state.winner)
+    .sort((a, b) => state.players[b].tiles - state.players[a].tiles)[0]
 }
 
 /** The army fighting with the most men, of a lord standing. */
@@ -147,6 +156,22 @@ const MOMENTS: Array<Moment> = [
     name: 'strategic',
     from: 20 * MINUTE,
     find: (state) => ({ me: middling(state), camera: 'land' }),
+  },
+  // The end, the tick the game is won: the whole land from the winner's
+  // seat, and from the seat of the lord who came nearest.
+  {
+    name: 'end',
+    from: 0,
+    find: (state) =>
+      state.winner === NO_ONE ? null : { me: state.winner, camera: 'land' },
+  },
+  {
+    name: 'end-lost',
+    from: 0,
+    find(state) {
+      const me = state.winner === NO_ONE ? undefined : runnerUp(state)
+      return me === undefined ? null : { me, camera: 'land' }
+    },
   },
 ]
 
