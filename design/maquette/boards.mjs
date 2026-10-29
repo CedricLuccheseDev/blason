@@ -359,13 +359,10 @@ export const BOARDS = [
   {
     name: 'systeme-d-interface',
     title: 'Le système d’interface',
-    line: 'Les pièces dont tout écran est fait, telles que le jeu les dessine : quatre tailles, quatre rôles, une matière, un bouton.',
+    line: 'Les briques dont tout écran est fait, telles que le jeu les dessine : les mots par leur niveau, les espaces par ce qu’ils séparent, les feuillets, le bouton, les emblèmes, les couleurs.',
     pieces: {
       from: desk('war'),
-      slots: {
-        lords: 'main > .grid > :first-child > *',
-        bar: 'main .col-start-2 > *',
-      },
+      slots: { bar: 'main .col-span-3.row-start-3 > :nth-child(2) > *' },
     },
   },
 ]

@@ -1,17 +1,34 @@
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
-import { Act } from '../../src/components/hud/Act'
+import { Act, Tap } from '../../src/components/hud/Act'
 import {
   CoupEmblem,
   KeyCap,
   MedallionEmblem,
-  RightClick,
   SealEmblem,
   Shield,
   StandingBadge,
 } from '../../src/components/hud/Emblem'
 import { Figure } from '../../src/components/hud/Figure'
-import { Rule, Sheet } from '../../src/components/hud/Sheet'
+import {
+  Caption,
+  GAP,
+  Inline,
+  Line,
+  Panel,
+  Ruled,
+  Stack,
+  Tag,
+} from '../../src/components/hud/Layout'
+import {
+  Call,
+  Fine,
+  Heading,
+  Name,
+  Note,
+  Title,
+  Word,
+} from '../../src/components/hud/Text'
 import { Defs } from '../../src/components/game/svg/kit'
 import { dictionaries } from '../../src/i18n'
 import type { CSSProperties, ReactNode } from 'react'
@@ -19,11 +36,11 @@ import type { CSSProperties, ReactNode } from 'react'
 // The interface's pieces for the maquette's board of the HUD's system
 // (boards.mjs, « Le système d'interface »), drawn by the game's own
 // components with their own classes, so that the board shows them as the
-// game draws them: the four sizes of type in their four roles, the colours
-// as the game's CSS holds them, the emblems, the button in its tones, the
-// sheet. capture.mjs imports it in a page of the game served by Vite and
+// game draws them: the words by their level (Text.tsx), the spaces by what
+// they part and the sheets they are laid in (Layout.tsx), the colours as the
+// game's CSS holds them, the emblems, the button in its tones. capture.mjs imports it in a page of the game served by Vite and
 // keeps its markup (captures/pieces.html); the board lays it out with the
-// bar and the lords' list taken from a capture. Its own layout is written in
+// bar taken from a capture. Its own layout is written in
 // styles, as the game's CSS is made from the game's sources alone.
 
 const t = dictionaries.fr
@@ -57,36 +74,55 @@ function Named({
   )
 }
 
-const SIZES = [
-  ['s', 15],
-  ['m', 18],
-  ['l', 22],
-  ['xl', 28],
+/** The words' levels, each its component, what it is for and its size as drawn. */
+const LEVELS = [
+  [Title, 'Title', 'le titre d’une page', 28, t.book.yours],
+  [Heading, 'Heading', 'le titre d’une pièce', 22, t.book.lords],
+  [Call, 'Call', 'le seul message d’une pièce', 22, t.book.launch],
+  [Word, 'Word', 'un mot, un bouton', 18, t.book.another],
+  [Name, 'Name', 'le nom d’un seigneur', 18, 'Azur'],
+  [Note, 'Note', 'une aide, une ligne sous une pièce', 15, t.book.next],
+  [Fine, 'Fine', 'une ligne d’une liste serrée', 15, 'Sinople'],
 ] as const
 
-/** The four sizes, each in the four roles. */
-function Type() {
-  const cell: CSSProperties = { whiteSpace: 'nowrap' }
+/** The words by their level, and the figures by their size. */
+function Words() {
   return (
-    <Part title="Les écritures">
+    <Part title="Les mots, par leur niveau">
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '40px repeat(4, auto)',
+          gridTemplateColumns: '84px auto 32px',
           justifyContent: 'start',
           alignItems: 'baseline',
           columnGap: 20,
-          rowGap: 8,
+          rowGap: 10,
         }}
       >
-        <span />
-        <span className="hud-note">le mot</span>
-        <span className="hud-note">le nom</span>
-        <span className="hud-note">la note</span>
-        <span className="hud-note">le chiffre</span>
-        {SIZES.map(([size, px]) => (
-          <Sizes key={size} size={size} px={px} cell={cell} />
+        {LEVELS.map(([Level, name, use, px, sample]) => (
+          <span key={name} className="contents">
+            <span className="hud-figure text-hud-s" style={{ opacity: 0.6 }}>
+              {name}
+            </span>
+            <span style={{ ...column, gap: 2 }}>
+              <Level>{sample}</Level>
+              <Note>{use}</Note>
+            </span>
+            <span className="hud-figure text-hud-s" style={{ opacity: 0.6 }}>
+              {px}
+            </span>
+          </span>
         ))}
+      </div>
+      <div style={{ ...row, gap: 20 }}>
+        <Figure icon="coins" size="l" tone="gilt">
+          1 250
+        </Figure>
+        <Figure icon="soldier" size="m">
+          340
+        </Figure>
+        <Figure size="s">25 %</Figure>
+        <span className="hud-note">les chiffres, 22, 18 et 15</span>
       </div>
       <p className="hud-note" style={{ margin: 0 }}>
         Telles que dessinées ; sur un grand écran, tout grandit d’un cinquième.
@@ -95,30 +131,46 @@ function Type() {
   )
 }
 
-function Sizes({
-  size,
-  px,
-  cell,
-}: Readonly<{ size: string; px: number; cell: CSSProperties }>) {
-  const text = `text-hud-${size}`
+/** The spaces by what they part, each named, never a number. */
+const SPACES = [
+  ['hair', 'une icône et son chiffre'],
+  ['line', 'les lignes d’une pièce'],
+  ['part', 'les parties d’une pièce'],
+  ['piece', 'les pièces d’un coin'],
+  ['group', 'les groupes'],
+] as const
+
+function Spaces() {
   return (
-    <>
-      <span className="hud-figure text-hud-s" style={{ opacity: 0.6 }}>
-        {px}
-      </span>
-      <span className={`hud-word ${text}`} style={cell}>
-        Ost
-      </span>
-      <span className={`hud-name ${text}`} style={cell}>
-        Azur
-      </span>
-      <span className={`hud-note ${text}`} style={cell}>
-        un clic
-      </span>
-      <span className={`hud-figure ${text}`} style={cell}>
-        1 250
-      </span>
-    </>
+    <Part title="Les espaces, par ce qu’ils séparent">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '52px 28px 36px auto',
+          alignItems: 'center',
+          columnGap: 14,
+          rowGap: 8,
+        }}
+      >
+        {SPACES.map(([name, use]) => {
+          const px = 4 * Number(GAP[name].replace('gap-', ''))
+          return (
+            <span key={name} className="contents">
+              <span className="hud-figure text-hud-s" style={{ opacity: 0.6 }}>
+                {name}
+              </span>
+              <span
+                aria-hidden="true"
+                className="bg-gilt"
+                style={{ width: px, height: 14 }}
+              />
+              <span className="hud-figure text-hud-s">{px}</span>
+              <span className="hud-note">{use}</span>
+            </span>
+          )
+        })}
+      </div>
+    </Part>
   )
 }
 
@@ -244,7 +296,6 @@ function Emblems() {
             <KeyCap k="2" />
             <KeyCap k="3" />
           </span>
-          <RightClick />
         </div>
       </div>
     </Part>
@@ -256,78 +307,97 @@ function Buttons() {
   return (
     <Part title="Le bouton">
       <div style={{ ...row, gap: 12, flexWrap: 'wrap' }}>
-        <Act onClick={nothing}>{t.home.public.join}</Act>
+        <Act call onClick={nothing}>
+          {t.book.launch}
+        </Act>
+        <Act onClick={nothing}>{t.home.create}</Act>
         <Act tone="pact" onClick={nothing}>
-          {t.pacts.accept}
+          {t.menu.alliance.accept}
         </Act>
         <Act tone="gules" onClick={nothing}>
-          {t.pacts.break}
+          {t.menu.alliance.break}
         </Act>
         <Act tone="plain" onClick={nothing}>
-          {t.camera.home}
+          {t.book.close}
         </Act>
         <span className="opacity-50">
           <Act asleep onClick={nothing}>
             {t.game.works.castle}
           </Act>
         </span>
+        <Tap onClick={nothing}>{t.book.more}</Tap>
       </div>
+      <p className="hud-note" style={{ margin: 0 }}>
+        Act, et call pour celui qu’un feuillet attend ; Tap, le léger.
+      </p>
     </Part>
   )
 }
 
+/** The sheets and the bricks they are laid with: a panel, its head, its lines, its foot; a tag on the map. */
 function Sheets() {
+  const nothing = () => {}
   return (
-    <Part title="Le feuillet">
+    <Part title="Les feuillets">
       <div style={{ ...row, gap: 28, alignItems: 'flex-start' }}>
-        <Sheet>
-          <div style={{ ...column, gap: 4, padding: '12px 16px' }}>
-            <span className="hud-word text-hud-l">{t.game.planted}</span>
-            <span className="hud-note">Le feuillet, sa règle d’or</span>
-          </div>
-        </Sheet>
-        <div style={{ padding: '0 8px' }}>
-          <Sheet rolled="sides">
-            <div style={{ ...row, gap: 12, padding: '8px 20px' }}>
-              <Figure icon="coins" size="l" tone="gilt">
-                1 250
-              </Figure>
-              <Rule />
-              <Figure icon="soldier" size="l">
-                3 400
-              </Figure>
-            </div>
-          </Sheet>
-        </div>
+        <Panel gap="part" className="w-80">
+          <Caption>
+            <Shield size="s" color={AZURE} />
+            <Heading>{t.book.lords}</Heading>
+          </Caption>
+          <Stack gap="hair">
+            <Line name={<Note>{t.book.level}</Note>}>
+              <Word>{t.book.levels.normal}</Word>
+            </Line>
+            <Line name={<Note>{t.book.opening}</Note>}>
+              <Word>{t.book.seconds(10)}</Word>
+            </Line>
+          </Stack>
+          <Ruled>
+            <Act onClick={nothing}>{t.book.see}</Act>
+          </Ruled>
+        </Panel>
+        <Stack gap="piece" align="start">
+          <Tag>
+            <Figure icon="coins" size="s" tone="gilt">
+              +50
+            </Figure>
+          </Tag>
+          <Inline gap="hair">
+            <Note>Panel, Caption, Line, Ruled ; Tag sur la carte</Note>
+          </Inline>
+        </Stack>
       </div>
     </Part>
   )
 }
 
-/** The whole board's pieces, laid out: the bar and the lords' list are given their places, filled from a capture. */
+/** The whole board's pieces, laid out in three columns on the board's 1792 by 784, the bar under them, filled from a capture. */
 function Pieces() {
   return (
     <div
       className="hud"
       style={{
         display: 'grid',
-        gridTemplateColumns: '560px 1fr 360px',
-        gap: '36px 56px',
+        gridTemplateColumns: 'auto auto 1fr',
+        gap: '32px 56px',
         alignItems: 'start',
       }}
     >
       <Defs />
-      <div style={{ ...column, gap: 36 }}>
-        <Type />
+      <div style={{ ...column, gap: 28, gridRow: 'span 2' }}>
+        <Words />
+        <Spaces />
+      </div>
+      <div style={{ ...column, gap: 28 }}>
+        <Sheets />
+        <Buttons />
+      </div>
+      <div style={{ ...column, gap: 28 }}>
+        <Emblems />
         <Colours />
       </div>
-      <div style={{ ...column, gap: 36 }}>
-        <Emblems />
-        <Buttons />
-        <Sheets />
-      </div>
-      <Part title="La liste des seigneurs" slot="lords" />
-      <div style={{ gridColumn: '1 / -1' }}>
+      <div style={{ gridColumn: '2 / -1' }}>
         <Part title="La barre" slot="bar" />
       </div>
     </div>
