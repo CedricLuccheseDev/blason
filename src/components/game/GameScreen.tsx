@@ -4,7 +4,6 @@ import { Race } from './Race'
 import { Cursor } from './Cursor'
 import { LordMenu } from './LordMenu'
 import { Lords } from './Lords'
-import { CameraButtons } from './CameraButtons'
 import { Heralds } from './Heralds'
 import { Bar } from './Bar'
 import { Moment } from './Moment'
@@ -29,7 +28,8 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * and a betrayal cried to all; the top right left to the map. On the map,
  * the seal of an alliance asking to be renewed beside the ally's name, the
  * heralds' letters of the offers and the news where it happened (Heralds.tsx);
- * at the bottom the bar, the purse in it; bottom right the camera; the
+ * at the bottom the bar, the purse in it; bottom right the book's button, for a hosted game (the camera's are gone:
+ * « enlève les boutons de zoom et centrage à droite ils servent à rien »); the
  * cartouche beside the pointer, or, on another lord's land right clicked,
  * his menu there.
  */
@@ -185,7 +185,6 @@ export function GameScreen({
               </div>
               <div className="pointer-events-auto flex flex-col gap-2 justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
                 {hosting && <BookButton onOpen={() => setOpen(true)} />}
-                <CameraButtons game={game} summary={summary} />
               </div>
             </div>
           </div>

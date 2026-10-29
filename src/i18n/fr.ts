@@ -112,11 +112,6 @@ export const fr: Messages = {
     list: 'Les seigneurs',
     you: 'toi',
   },
-  camera: {
-    zoomIn: 'Rapprocher',
-    zoomOut: 'Éloigner',
-    home: 'Revenir à ta terre',
-  },
   errors: {
     title: 'Une erreur est survenue',
     tryReload: 'Essayez de recharger la page.',

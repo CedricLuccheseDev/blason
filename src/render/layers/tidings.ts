@@ -1,5 +1,11 @@
 import { BitmapText, Container, Graphics, TextStyle } from 'pixi.js'
-import { TICKS_PER_SECOND, UNIT, capOf, sicknessOf } from '../../../engine'
+import {
+  TICKS_PER_SECOND,
+  UNIT,
+  capOf,
+  sicknessOf,
+  standing,
+} from '../../../engine'
 import { TONE } from '../palette'
 import { siteOf } from '../marks'
 import type { Caravan, GameState } from '../../../engine'
@@ -105,8 +111,9 @@ export function makeTidings(me: number) {
     if (seconds - lastVillages < VILLAGE_EVERY) return
     lastVillages = seconds
     const lord = state.players[me]
+    // A village still being built feeds no one yet (« y'a des +1 alors que le village est pas créé »).
     const villages = state.works.filter(
-      (w) => w.owner === me && w.work === 'village',
+      (w) => w.owner === me && w.work === 'village' && standing(state, w),
     )
     if (!lord.alive || villages.length === 0) return
     const { rules } = state

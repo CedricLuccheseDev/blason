@@ -114,11 +114,6 @@ export const en = {
     list: 'The lords',
     you: 'you',
   },
-  camera: {
-    zoomIn: 'Closer',
-    zoomOut: 'Farther',
-    home: 'Back to your land',
-  },
   errors: {
     title: 'Something went wrong',
     tryReload: 'Try reloading the page.',
