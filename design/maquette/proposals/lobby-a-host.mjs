@@ -1,31 +1,19 @@
-import {
-  BAR,
-  CSS,
-  PANEL,
-  SEATED,
-  SEATS,
-  act,
-  rule,
-  seats,
-  sheet,
-} from './lobby.js'
+import { BAR, CSS, MAP, PANEL, book, bookButton, over } from './lobby.js'
 
-// The host's lobby, in the game: before the launch the bar is the lobby's,
-// the people seated and the seats the bots will fill, the invitation's code
-// and its link to copy, « Configurer » and « Lancer ».
-
-const bar = `<div class="w-max px-2">${sheet(
-  `<div class="mq-bar"><div class="mq-group"><span class="hud-note">${SEATED.length} joueurs, ${SEATS - SEATED.length} bots aux sièges vides</span>${seats()}</div>${rule}<div class="mq-group"><span class="hud-note">L’invitation</span><div class="mq-code"><span class="hud-figure text-hud-l">K7Q2M</span>${act('Copier le lien', 'plain')}</div></div>${rule}<div class="mq-code">${act('Configurer', 'plain')}${act('Lancer')}</div></div>`,
-)}</div>`
-
-const panel = sheet(
-  '<div class="mq-panel"><span class="hud-word text-hud-l">Ta partie</span><span class="hud-note">en attente : lance-la quand tu veux</span></div>',
-)
+// The host's lobby: the book open by itself over the map of his game, all
+// of it there (the land, the seats, the invitation, the settings, the
+// launch); « Voir la carte » closes it, the book's button opens it again.
 
 export default {
-  title: 'Le salon de l’hôte, dans le jeu',
-  line: 'Avant le lancement, la barre devient le salon : les joueurs assis et les sièges que prendront les bots, le code et le lien à copier, « Configurer » et « Lancer ». La carte de la partie est déjà là.',
+  title: 'Le salon de l’hôte : le livre de la partie',
+  line: 'Avant le lancement, le livre s’ouvre de lui-même sur la carte : la terre, les sièges, le code à donner, les réglages et « Lancer la partie », tout en un seul endroit. « Voir la carte » le referme ; le bouton du livre, au-dessus de la caméra, le rouvre. Plus de barre de salon.',
   moments: ['opening'],
-  replace: { [BAR]: bar, [PANEL]: panel },
+  replace: {
+    [BAR]: '',
+    [PANEL]: '',
+    [MAP]: over(
+      book('host', 'captures/opening-1920x1080.webp') + bookButton(true),
+    ),
+  },
   css: CSS,
 }
