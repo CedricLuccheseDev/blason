@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { Sheet } from '~/components/hud/Sheet'
+import { Figure } from '~/components/hud/Figure'
+import { Panel, Stack } from '~/components/hud/Layout'
+import { Fine, Title, Word } from '~/components/hud/Text'
 import { useMessages } from '~/i18n'
 
 // The journal, beside the public game and its buttons, as OpenFront's news:
@@ -24,32 +26,34 @@ export function Journal({ entries }: Readonly<{ entries: Array<Entry> }>) {
   // whole wraps into a second column, out of sight.
   return (
     <div className="relative min-w-0">
-      <Sheet className="flex min-w-0 flex-col gap-2 p-4 lg:absolute lg:inset-0">
+      <Panel page className="min-w-0 lg:absolute lg:inset-0">
         <h2>
           <Link
             to="/blog"
-            className="hud-press inline-flex min-h-11 items-center font-caps text-hud-l text-quill hover:text-gilt-deep"
+            className="hud-press inline-flex min-h-11 items-center hover:text-gilt-deep"
           >
-            {t.journal}
+            <Title className="text-current">{t.journal}</Title>
           </Link>
         </h2>
         <ul className="flex min-h-0 flex-1 flex-col flex-wrap content-start divide-y divide-quill/20 overflow-hidden">
           {entries.slice(0, SHOWN).map((entry) => (
-            <li key={entry.slug} className="w-full py-2 first:pt-0">
+            <li key={entry.slug} className="w-full">
               <Link
                 to="/blog/$slug"
                 params={{ slug: entry.slug }}
-                className="hud-press group flex flex-col gap-1 font-words text-quill"
+                className="hud-press group block"
               >
-                <time dateTime={entry.date} className="hud-figure text-hud-s">
-                  {entry.date}
-                </time>
-                <span className="text-hud-m leading-snug font-semibold group-hover:text-gilt-deep">
-                  {entry.title}
-                </span>
-                <span className="line-clamp-2 text-hud-s leading-snug">
-                  {entry.excerpt}
-                </span>
+                <Stack gap="hair" className="hud-row">
+                  <time dateTime={entry.date}>
+                    <Figure size="s">{entry.date}</Figure>
+                  </time>
+                  <Word className="leading-snug font-semibold group-hover:text-gilt-deep">
+                    {entry.title}
+                  </Word>
+                  <Fine className="line-clamp-2 leading-snug">
+                    {entry.excerpt}
+                  </Fine>
+                </Stack>
               </Link>
             </li>
           ))}
@@ -60,7 +64,7 @@ export function Journal({ entries }: Readonly<{ entries: Array<Entry> }>) {
         >
           {t.journalAll}
         </Link>
-      </Sheet>
+      </Panel>
     </div>
   )
 }

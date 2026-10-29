@@ -96,8 +96,14 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   dure à lire ») par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note` en italique à pleine encre, `.hud-figure`),
   l'espace sur les pas 4, 8, 12, 16 et 24 ; une échelle, `--hud` (`app.css`), 1 sur téléphone et petit écran,
   1,2 à partir de 1280 × 640 : le texte, l'espace (dans `.hud`) et les dessins grandissent ensemble, les mesures
-  s'écrivent une fois, telles que dessinées ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
-  (`Act.tsx`) ; la bulle d'aide au survol de chaque pièce, son nom et ce qu'elle fait avec ses chiffres, posée au-dessus de toute la page (`Hint.tsx`, 29/10 « ajoute des helpers ») ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons, touches et insignes de
+  s'écrivent une fois, telles que dessinées ; les mots par leur niveau (`Text.tsx` : `Title` 28, `Heading` 22,
+  `Word` 18, `Name`, `Note` 15, `Fine`, `Call`) et les espaces par ce qu'ils séparent (`Layout.tsx` : `hair`,
+  `line`, `part`, `piece`, `group` ; `Stack`, `Inline`, `Panel`, `Tag`, `Line`, `Caption`, `Ruled`, `Spread`,
+  `Veil`, `MARGIN`), demandé le 29/10 (« il faut une règle très précise de hiérarchie dans le design system ») :
+  `components/game` et `components/home` n'écrivent aucun espacement ni taille de texte à eux, `npm run norm` le
+  refuse (`spacing`, une exception dit pourquoi en `norm-ok`) ; le bas de l'écran aligné sur la même marge que
+  les côtés, bourse, barre et campagnes posées sur une ligne ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
+  (`Act.tsx`, `call` pour celui qu'un feuillet attend, `Tap` le léger) ; la bulle d'aide au survol de chaque pièce, son nom et ce qu'elle fait avec ses chiffres, posée au-dessus de toute la page (`Hint.tsx`, 29/10 « ajoute des helpers ») ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons, touches et insignes de
   rapport (`Emblem.tsx`, `StandingBadge` : l'allié en vert `pact`, des maillons ; l'ennemi en gueules, une épée ;
   le félon, l'écu brisé sur gueules ; la forme dit avant la couleur, les mêmes qu'à côté des noms sur la carte) ;
   un mouvement unifié, acté le 28/10 (« chaque élément hud interactif soit animé ... des animations unifiés ») :

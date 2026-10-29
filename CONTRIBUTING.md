@@ -88,8 +88,10 @@ Code in `engine/` must compute the same thing on every machine:
 ### Interface
 
 - Every piece of the HUD is built from the design system in
-  `src/components/hud/`: its type roles, its spacing steps, the sheet, the
-  button. No size, colour or spacing of its own.
+  `src/components/hud/`: its words by their level (`Text.tsx`), its spaces
+  by what they part (`Layout.tsx`), the sheet, the button. No size, colour or
+  spacing of its own: `npm run norm` refuses a spacing or a type size written
+  in `src/components/game/` or `src/components/home/`.
 - The art direction is a map inked on a manuscript: parchment, ink, gold and
   gules, Vollkorn for words and Alegreya Sans for figures (IM Fell English for
   the game's name alone), never a dark panel.

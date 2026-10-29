@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Act } from '~/components/hud/Act'
-import { Sheet } from '~/components/hud/Sheet'
+import { Inline, Panel } from '~/components/hud/Layout'
+import { Title } from '~/components/hud/Text'
 import { useMessages } from '~/i18n'
 
 // A sheet laid over the home for one thing to set (the solo game, a private
@@ -39,29 +40,32 @@ export function Dialog({
       ref={ref}
       onClose={onClose}
       aria-label={title}
+      // norm-ok: the browser's dialog, centred by its own margin and stripped of its own padding.
       className="hud m-auto w-[calc(100%-2rem)] max-w-[440px] overflow-visible bg-transparent p-0 backdrop:bg-quill/40"
     >
       {open && (
-        <Sheet className="flex flex-col gap-4 p-4">
-          <header className="flex items-center justify-between gap-3">
-            <h2 className="font-caps text-hud-xl leading-none text-quill">
-              {title}
-            </h2>
-            <Act tone="plain" label={t.close} onClick={onClose}>
-              <svg
-                viewBox="0 0 16 16"
-                className="size-4"
-                aria-hidden="true"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              >
-                <path d="M3 3 L13 13 M13 3 L3 13" />
-              </svg>
-            </Act>
+        <Panel page gap="piece">
+          <header>
+            <Inline gap="part" justify="between">
+              <h2>
+                <Title>{title}</Title>
+              </h2>
+              <Act tone="plain" label={t.close} onClick={onClose}>
+                <svg
+                  viewBox="0 0 16 16"
+                  className="size-4"
+                  aria-hidden="true"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                >
+                  <path d="M3 3 L13 13 M13 3 L3 13" />
+                </svg>
+              </Act>
+            </Inline>
           </header>
           {children}
-        </Sheet>
+        </Panel>
       )}
     </dialog>
   )

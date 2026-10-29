@@ -1,6 +1,8 @@
 import { ActMedallion, CoupEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Rule, Sheet } from '../hud/Sheet'
+import { Rule } from '../hud/Sheet'
+import { Inline, Panel, Stack } from '../hud/Layout'
+import { Note } from '../hud/Text'
 import { useBeside } from '../hud/useBeside'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
@@ -51,12 +53,12 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
   if (!me || !army) return null
   let note = null
   if (army.free === 0)
-    note = <span className="hud-note text-gules">{m.game.noLevy[army.at]}</span>
+    note = <Note className="text-gules">{m.game.noLevy[army.at]}</Note>
   else if (army.men === 0)
-    note = <span className="hud-note text-gules">{m.game.noMen[army.at]}</span>
+    note = <Note className="text-gules">{m.game.noMen[army.at]}</Note>
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-2">
+    <Stack gap="hair">
+      <Inline>
         <SealEmblem
           icon={ARMY_MARKS[army.army]}
           color={ARMY_WAX[army.army] ?? hex(me.color)}
@@ -70,9 +72,9 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
             {count(army.gold)}
           </Figure>
         )}
-      </div>
+      </Inline>
       {note}
-    </div>
+    </Stack>
   )
 }
 
@@ -85,21 +87,18 @@ function CoupHalf({
   const price = summary.coups.find((c) => c.coup === coup.coup)?.price ?? 0
   let note = null
   if (!coup.allowed)
-    note = (
-      <span className="hud-note text-gules">{m.game.beyond[coup.coup]}</span>
-    )
-  else if (!coup.can)
-    note = <span className="hud-note text-gules">{m.game.noGold}</span>
+    note = <Note className="text-gules">{m.game.beyond[coup.coup]}</Note>
+  else if (!coup.can) note = <Note className="text-gules">{m.game.noGold}</Note>
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-2">
+    <Stack gap="hair">
+      <Inline>
         <CoupEmblem icon={COUP_MARKS[coup.coup]} size="xs" />
         <Figure icon="coins" size="m" tone={coup.can ? 'ink' : 'gules'}>
           {count(price)}
         </Figure>
-      </div>
+      </Inline>
       {note}
-    </div>
+    </Stack>
   )
 }
 
@@ -107,11 +106,13 @@ function CoupHalf({
 function MenuHint() {
   const m = useMessages()
   const compact = useCompact()
-  if (compact) return <span className="hud-note">{m.menu.hintTouch}</span>
+  if (compact) return <Note>{m.menu.hintTouch}</Note>
   return (
-    <div className="flex items-center gap-1 opacity-50" title={m.menu.options}>
-      <ActMedallion icon="links" ring="var(--color-pact)" />
-      <ActMedallion icon="market" ring="var(--color-gilt)" />
+    <div className="opacity-50" title={m.menu.options}>
+      <Inline gap="hair">
+        <ActMedallion icon="links" ring="var(--color-pact)" />
+        <ActMedallion icon="market" ring="var(--color-gilt)" />
+      </Inline>
     </div>
   )
 }
@@ -149,29 +150,29 @@ export function Cursor({
       className="pointer-events-none absolute w-max"
       style={place(aim.x, aim.y, entry.x <= aim.x, entry.y <= aim.y)}
     >
-      <Sheet className="flex items-center gap-3 px-3 py-2">
-        {aim.barred && (
-          <span className="hud-note text-gules">{m.game.tooNear}</span>
-        )}
-        {aim.coup && <CoupHalf coup={aim.coup} summary={summary} />}
-        {strikes && <ArmyHalf summary={summary} />}
-        {/* The two mice in the middle (« mets les icônes souris gauche et droite au centre »): the left's action on the left, the right's, greyed, on the right. */}
-        {(strikes || aim.coup) && (
-          <span className="flex items-center gap-2">
-            <Mouse button="left" />
-            {aim.lord !== null && !aim.coup && (
-              <>
-                {/* The rule between the two halves (« remets la barre au milieu »). */}
-                <Rule />
-                <span className="opacity-50">
-                  <Mouse button="right" />
-                </span>
-              </>
-            )}
-          </span>
-        )}
-        {aim.lord !== null && !aim.coup && <MenuHint />}
-      </Sheet>
+      <Panel>
+        <Inline gap="part">
+          {aim.barred && <Note className="text-gules">{m.game.tooNear}</Note>}
+          {aim.coup && <CoupHalf coup={aim.coup} summary={summary} />}
+          {strikes && <ArmyHalf summary={summary} />}
+          {/* The two mice in the middle (« mets les icônes souris gauche et droite au centre »): the left's action on the left, the right's, greyed, on the right. */}
+          {(strikes || aim.coup) && (
+            <Inline>
+              <Mouse button="left" />
+              {aim.lord !== null && !aim.coup && (
+                <>
+                  {/* The rule between the two halves (« remets la barre au milieu »). */}
+                  <Rule />
+                  <span className="opacity-50">
+                    <Mouse button="right" />
+                  </span>
+                </>
+              )}
+            </Inline>
+          )}
+          {aim.lord !== null && !aim.coup && <MenuHint />}
+        </Inline>
+      </Panel>
     </div>
   )
 }

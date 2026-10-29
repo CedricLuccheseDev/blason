@@ -28,12 +28,15 @@ export function Act({
   onClick,
   tone = 'gilt',
   asleep = false,
+  call = false,
   label,
 }: Readonly<{
   children: ReactNode
   onClick: () => void
   tone?: Tone
   asleep?: boolean
+  /** A sheet's main act: its word larger, its plate wider. */
+  call?: boolean
   label?: string
 }>) {
   return (
@@ -43,7 +46,26 @@ export function Act({
       aria-label={label}
       title={label}
       tabIndex={asleep ? -1 : undefined}
-      className={`${actClass(tone)} ${asleep ? 'pointer-events-none' : ''}`}
+      className={`${actClass(tone)} ${call ? 'px-12 text-hud-l' : ''} ${asleep ? 'pointer-events-none' : ''}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+/** A light button, no plate: an arrow, a short word, a mark, in gilt ink, darkening under the pointer, tall enough for a finger. */
+export function Tap({
+  children,
+  onClick,
+  label,
+}: Readonly<{ children: ReactNode; onClick: () => void; label?: string }>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="hud-press inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center text-gilt-deep hover:text-quill"
     >
       {children}
     </button>

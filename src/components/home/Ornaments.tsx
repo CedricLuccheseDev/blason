@@ -9,6 +9,7 @@ const GOLD = 'var(--color-gilt)'
 /** A gold rule across the column, a lozenge at its middle. */
 export function Flourish() {
   return (
+    // norm-ok: the flourish keeps its own room above it, as drawn.
     <span aria-hidden="true" className="relative mt-3 h-px w-full bg-gilt">
       <span className="absolute top-1/2 left-1/2 size-2.5 -translate-1/2 rotate-45 border border-quill bg-gilt" />
     </span>

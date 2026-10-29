@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { Act } from '../hud/Act'
+import { Act, Tap } from '../hud/Act'
+import { Figure } from '../hud/Figure'
+import { Inline, Line, Stack } from '../hud/Layout'
+import { Call, Note, Title, Word } from '../hud/Text'
 import { Shield } from '../hud/Emblem'
 import { hex } from './format'
 import type { ReactNode } from 'react'
@@ -18,18 +21,13 @@ export function stepped<T>(list: ReadonlyArray<T>, value: T, by: 1 | -1): T {
   return list[Math.max(0, Math.min(list.length - 1, at + by))]
 }
 
-/** A line of the book: its name on the left, its value in a column of one width on the right, every line as tall, ruled under. */
-function Row({
+/** A line of the book: its name, then its value (Line, the HUD's line of a list). */
+const Row = ({
   name,
   children,
-}: Readonly<{ name: string; children: ReactNode }>) {
-  return (
-    <div className="flex h-11 items-center justify-between gap-3 border-b border-dotted border-quill/45">
-      <span className="hud-note text-hud-m">{name}</span>
-      <span className="flex w-56 items-center">{children}</span>
-    </div>
-  )
-}
+}: Readonly<{ name: string; children: ReactNode }>) => (
+  <Line name={<Note>{name}</Note>}>{children}</Line>
+)
 
 /** One setting: its name, and its value between two arrows; read only for whoever may not change it. */
 export function Setting({
@@ -44,19 +42,17 @@ export function Setting({
   const m = useMessages().book
   const arrow = (by: 1 | -1) =>
     onStep && (
-      <button
-        type="button"
-        aria-label={`${name} : ${by < 0 ? m.less : m.more}`}
+      <Tap
+        label={`${name} : ${by < 0 ? m.less : m.more}`}
         onClick={() => onStep(by)}
-        className="hud-press inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center font-words text-hud-l text-gilt-deep hover:text-quill"
       >
-        {by < 0 ? '‹' : '›'}
-      </button>
+        <Call className="text-current">{by < 0 ? '‹' : '›'}</Call>
+      </Tap>
     )
   return (
     <Row name={name}>
       {arrow(-1)}
-      <span className="hud-word flex-1 text-center">{value}</span>
+      <Word className="flex-1 text-center">{value}</Word>
       {arrow(1)}
     </Row>
   )
@@ -68,14 +64,16 @@ export function Head({
   title,
 }: Readonly<{ kicker: string; title: string }>) {
   return (
-    <header className="flex flex-col items-center text-center">
-      <span className="hud-note">{kicker}</span>
-      <h2 className="font-caps text-hud-xl leading-tight text-quill">
-        {title}
-      </h2>
-      <span className="mt-1 w-3/5">
-        <Flourish />
-      </span>
+    <header>
+      <Stack gap="hair" align="center" className="text-center">
+        <Note>{kicker}</Note>
+        <h2>
+          <Title>{title}</Title>
+        </h2>
+        <span className="w-3/5">
+          <Flourish />
+        </span>
+      </Stack>
     </header>
   )
 }
@@ -96,15 +94,15 @@ export function Seats({ book }: Readonly<{ book: Book }>) {
         )
       : [lords]
   return (
-    <div className="flex flex-col gap-2">
+    <Stack>
       {sides.map((side, t) => (
-        <div key={t} className="flex items-start justify-center gap-2">
+        <Inline key={t} justify="center">
           {book.teams >= 2 && (
-            <span className="hud-figure w-6 pt-1 text-gilt-deep">
+            <span className="hud-figure w-6 text-gilt-deep">
               {['I', 'II', 'III', 'IV'][t]}
             </span>
           )}
-          <div className="flex flex-wrap justify-center gap-1">
+          <Inline gap="hair" justify="center" wrap>
             {side.map((i) => (
               <span
                 key={i}
@@ -114,10 +112,10 @@ export function Seats({ book }: Readonly<{ book: Book }>) {
                 <Shield color={hex(PLAYERS[i].color)} size="s" />
               </span>
             ))}
-          </div>
-        </div>
+          </Inline>
+        </Inline>
       ))}
-    </div>
+    </Stack>
   )
 }
 
@@ -177,16 +175,12 @@ export function Invite({ code }: Readonly<{ code: string }>) {
   }
   return (
     <Row name={m.invite}>
-      <span className="hud-figure flex-1 text-center text-hud-l tracking-widest">
-        {code}
+      <span className="flex-1 text-center tracking-widest">
+        <Figure size="l">{code}</Figure>
       </span>
-      <button
-        type="button"
-        onClick={copy}
-        className="hud-note hud-press min-h-11 min-w-11 cursor-pointer text-gilt-deep hover:text-quill"
-      >
-        {copied ? m.copied : m.copy}
-      </button>
+      <Tap onClick={copy}>
+        <Note className="text-current">{copied ? m.copied : m.copy}</Note>
+      </Tap>
     </Row>
   )
 }

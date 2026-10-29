@@ -1,4 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import { Figure } from '~/components/hud/Figure'
+import { Inline } from '~/components/hud/Layout'
 import { useMessages } from '~/i18n'
 
 // The rest of the site, small at the foot of the home: the version, how it
@@ -13,22 +15,24 @@ const FOOT =
 export function Foot() {
   const m = useMessages()
   return (
-    <footer className="flex flex-wrap items-center justify-center gap-x-4">
-      <Link to="/blog" className={FOOT} aria-label={m.blog.title}>
-        <span className="hud-figure text-hud-s">
-          v{__APP_VERSION__}
-          {__APP_VERSION__.startsWith('0.') ? ' alpha' : ''}
-        </span>
-      </Link>
-      <Link to="/about" className={FOOT}>
-        {m.common.about}
-      </Link>
-      <Link to="/legal" className={FOOT}>
-        {m.common.legal}
-      </Link>
-      <a href={PORTFOLIO_URL} className={FOOT}>
-        {m.common.author}
-      </a>
+    <footer>
+      <Inline gap="piece" justify="center" wrap>
+        <Link to="/blog" className={FOOT} aria-label={m.blog.title}>
+          <Figure size="s">
+            v{__APP_VERSION__}
+            {__APP_VERSION__.startsWith('0.') ? ' alpha' : ''}
+          </Figure>
+        </Link>
+        <Link to="/about" className={FOOT}>
+          {m.common.about}
+        </Link>
+        <Link to="/legal" className={FOOT}>
+          {m.common.legal}
+        </Link>
+        <a href={PORTFOLIO_URL} className={FOOT}>
+          {m.common.author}
+        </a>
+      </Inline>
     </footer>
   )
 }

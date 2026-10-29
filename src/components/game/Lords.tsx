@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { Act } from '../hud/Act'
 import { Shield, StandingBadge } from '../hud/Emblem'
 import { useCompact } from '../hud/useCompact'
-import { Sheet } from '../hud/Sheet'
+import { Figure } from '../hud/Figure'
+import { Inline, Panel } from '../hud/Layout'
+import { Fine, Note } from '../hud/Text'
 import { hex } from './format'
 import { standingsOf } from './standing'
 import type { Summary } from '~/render/client'
@@ -63,8 +65,9 @@ export function Lords({
       </Act>
     )
   return (
-    <Sheet
-      className={`flex w-full flex-col gap-1 px-3 py-2 ${
+    <Panel
+      gap="hair"
+      className={`w-full ${
         compact ? 'absolute top-0 left-0 z-10 w-[calc(100vw-1rem)]' : ''
       }`}
     >
@@ -74,13 +77,12 @@ export function Lords({
         onClick={() => setOpen(!open)}
         className="pointer-events-auto flex cursor-pointer items-center justify-between hud-press"
       >
-        <span className="hud-note">{m.lord.list}</span>
-        <span
-          aria-hidden="true"
-          className={`hud-note transition-transform duration-(--duration-hud-press) ease-hud ${open ? '' : '-rotate-90'}`}
+        <Note>{m.lord.list}</Note>
+        <Note
+          className={`transition-transform duration-(--duration-hud-press) ease-hud ${open ? '' : '-rotate-90'}`}
         >
           ▾
-        </span>
+        </Note>
       </button>
       {open && (
         <div className="flex flex-col gap-px">
@@ -105,7 +107,7 @@ export function Lords({
                 onClick={(e) =>
                   !self && onMenu(lord.seat, e.clientX, e.clientY)
                 }
-                className={`pointer-events-auto relative flex w-full cursor-pointer items-center text-left border-l-[3px] px-1 ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
+                className={`pointer-events-auto relative flex w-full cursor-pointer items-center text-left border-l-[3px] ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
               >
                 <span
                   aria-hidden="true"
@@ -115,18 +117,18 @@ export function Lords({
                     background: `color-mix(in srgb, ${hex(lord.color)} 30%, transparent)`,
                   }}
                 />
-                <span className="relative flex min-w-0 flex-1 items-center gap-2">
-                  <span className="hud-figure text-hud-s w-5 shrink-0 text-right leading-[1.1] opacity-60">
-                    {rank}
+                <Inline className="relative min-w-0 flex-1">
+                  <span className="w-6 shrink-0 text-right opacity-60">
+                    <Figure size="s">{rank}</Figure>
                   </span>
                   <Shield color={hex(lord.color)} size="xs" />
-                  <span
-                    className={`hud-word min-w-0 flex-1 truncate text-hud-s leading-[1.1] ${self ? 'font-bold' : ''}`}
+                  <Fine
+                    className={`min-w-0 flex-1 truncate leading-[1.1] ${self ? 'font-bold' : ''}`}
                   >
                     {m.game.colors[lord.key]}
-                    {self && <span className="hud-note"> ({m.lord.you})</span>}
-                  </span>
-                  <span className="flex shrink-0 gap-0.5 empty:hidden">
+                    {self && <Note> ({m.lord.you})</Note>}
+                  </Fine>
+                  <Inline gap="hair" className="shrink-0 empty:hidden">
                     {standingsOf(lord, m).map((s) => (
                       <StandingBadge
                         key={s.standing}
@@ -134,16 +136,16 @@ export function Lords({
                         label={s.label}
                       />
                     ))}
+                  </Inline>
+                  <span className="w-12 shrink-0 text-right">
+                    <Figure size="s">{m.game.percent(lord.share)}</Figure>
                   </span>
-                  <span className="hud-figure text-hud-s w-10 shrink-0 text-right leading-[1.1]">
-                    {m.game.percent(lord.share)}
-                  </span>
-                </span>
+                </Inline>
               </button>
             )
           })}
         </div>
       )}
-    </Sheet>
+    </Panel>
   )
 }

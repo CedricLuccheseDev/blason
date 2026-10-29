@@ -417,8 +417,28 @@ The HUD is React, laid over the map. It is built on a small design system,
   measures above are written once, as drawn, and nothing is resized piece by
   piece (on a desk: type 18, 21.6, 26.4 and 33.6, steps 4.8 to 28.8, the
   button 53);
+- **the words by their level** (`Text.tsx`), each its one size and its one
+  hand, so that a level reads the same in the game and on the home page:
+  `Title` (small capitals, 28), `Heading` (small capitals, 22), `Word` (18),
+  `Name` (a lord's, italic 18), `Note` (italic 15, at full ink), `Fine` (a
+  dense list's line, 15) and `Call` (one piece's whole message, 22);
+- **the layout by what it parts** (`Layout.tsx`): a space is named, never a
+  number (`hair` 4 between an icon and its figure, `line` 8 between the lines
+  of a piece, `part` 12 between its parts, `piece` 16 between the pieces of a
+  corner, `group` 24 between groups), laid by `Stack` and `Inline`; a sheet
+  has one inside margin (`Panel`, or `Panel page` for the book and the home's
+  sheets), a small sheet on the map one narrower (`Tag`); a list's line one
+  height (`Line`); then a panel's head ruled in gold (`Caption`), its buttons
+  ruled off at its foot (`Ruled`), two pages side by side (`Spread`), the
+  veil under a sheet held in the screen's middle (`Veil`), and the screen's
+  one margin round the HUD's places (`MARGIN`). The pieces of
+  `src/components/game/` and `src/components/home/` may set no spacing nor
+  type size of their own: `npm run norm` refuses it (`spacing`), and a line
+  that must (a dialog's own margin, a fleuron's) says why, marked `norm-ok`;
 - **one material**, the sheet of parchment (`Sheet.tsx`);
-- **one button**, 44 pixels tall at scale 1 (`Act.tsx`);
+- **one button**, 44 pixels tall at scale 1 (`Act.tsx`; `call` for the one a
+  sheet is opened for, its word at 22), and its light kin for an act among
+  others (`Tap`);
 - **one hint**, a small sheet a piece pointed at a moment opens over the
   whole page, its name and what it does with its figures (`Hint.tsx`; its
   words in `i18n/hints.ts`);

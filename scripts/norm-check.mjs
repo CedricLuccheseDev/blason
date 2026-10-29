@@ -67,6 +67,15 @@ const RULES = [
     unless: /theme-color/,
   },
   {
+    id: 'spacing',
+    // Blason: the screen's pieces set no space and no type size of their own
+    // (« je veux le même design system partout »); the HUD's bricks do
+    // (src/components/hud/Layout.tsx, Text.tsx, Figure.tsx).
+    re: /(?<![\w-])(?:p|px|py|pt|pb|pl|pr|ps|pe|m|mx|my|mt|mb|ml|mr|gap|gap-x|gap-y|space-x|space-y)-\d|\btext-hud-(?:s|m|l|xl)\b/,
+    msg: 'spaces and type sizes come from the HUD bricks (Stack, Inline, Panel, Line, Title, Word, Note, Figure)',
+    only: /src\/components\/(game|home)\/.*\.tsx$/,
+  },
+  {
     id: 'unlocalized',
     // Visible copy that never went through useMessages(). The `(?<!=)` keeps
     // TypeScript signatures out of it: in `=> Promise<void>` the arrow's `>`

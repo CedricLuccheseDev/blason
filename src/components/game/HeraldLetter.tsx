@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Act } from '../hud/Act'
 import { Shield } from '../hud/Emblem'
 import { Icon } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
+import { Inline, Panel, Stack, Tag } from '../hud/Layout'
+import { Name, Note, Word } from '../hud/Text'
 import { ICON, scaled } from '../hud/tokens'
 import { useSize } from '../hud/useSize'
 import { LETTER, SealedLetter } from './svg/letter'
@@ -109,12 +110,10 @@ export function HeraldLetter({
           ref={words.box}
           style={{ transform: within(`${words.size.w / 2}px`, room) }}
         >
-          <Sheet className="flex flex-col items-center px-3 py-1 text-center whitespace-nowrap">
-            <span className="hud-word">{m.heralds.offer(name)}</span>
-            <span className="hud-note">
-              {compact ? m.heralds.tapToOpen : m.heralds.clickToOpen}
-            </span>
-          </Sheet>
+          <Tag className="flex-col text-center">
+            <Word>{m.heralds.offer(name)}</Word>
+            <Note>{compact ? m.heralds.tapToOpen : m.heralds.clickToOpen}</Note>
+          </Tag>
         </div>
       )}
     </div>
@@ -139,15 +138,15 @@ function Opened({
   return (
     // Over the HUD's corners, as what is being read (Heralds.tsx raises its piece).
     <div data-open className="pointer-events-auto" style={{ transform: shift }}>
-      <Sheet className="flex w-80 flex-col gap-3 p-4">
-        <div className="flex items-center gap-3">
+      <Panel gap="part" className="w-80">
+        <Inline gap="part">
           <Shield color={hex(offer.color)} />
-          <div className="flex min-w-0 flex-col">
-            <span className="hud-name">{m.game.colors[offer.key]}</span>
-            <span className="hud-note">{m.heralds.offers}</span>
-          </div>
-        </div>
-        <div className="flex gap-2">
+          <Stack gap="hair" className="min-w-0">
+            <Name>{m.game.colors[offer.key]}</Name>
+            <Note>{m.heralds.offers}</Note>
+          </Stack>
+        </Inline>
+        <Inline>
           <Act tone="pact" onClick={onSeal}>
             <Icon name="links" size={ICON.m} />
             {m.heralds.accept}
@@ -155,8 +154,8 @@ function Opened({
           <Act tone="gules" onClick={onRefuse}>
             {m.heralds.refuse}
           </Act>
-        </div>
-      </Sheet>
+        </Inline>
+      </Panel>
     </div>
   )
 }

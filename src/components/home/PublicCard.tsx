@@ -6,7 +6,8 @@ import { useUpcoming } from './useUpcoming'
 import type { ReactNode } from 'react'
 import type { Room, RoomActions } from './useRoom'
 import { Act } from '~/components/hud/Act'
-import { Sheet } from '~/components/hud/Sheet'
+import { Inline, Panel, Stack } from '~/components/hud/Layout'
+import { Heading, Note } from '~/components/hud/Text'
 import { useMessages } from '~/i18n'
 
 // The public game, the biggest thing on the home as on OpenFront's: a card
@@ -28,7 +29,9 @@ function Cartouche({
 }: Readonly<{ at: string; children: ReactNode }>) {
   return (
     <div className={`pointer-events-none absolute ${at}`}>
-      <Sheet className="flex items-center gap-3 px-3 py-2">{children}</Sheet>
+      <Panel>
+        <Inline gap="part">{children}</Inline>
+      </Panel>
     </div>
   )
 }
@@ -59,7 +62,7 @@ export function PublicCard({
   if (entering) word = t.public.entering
   else if (failed) word = t.room.retry
   return (
-    <Sheet className="flex flex-col gap-3 p-3">
+    <Panel gap="part">
       <LandPlate
         seed={game?.seed ?? null}
         size={game?.size ?? 'standard'}
@@ -76,22 +79,20 @@ export function PublicCard({
           />
         )}
         <Cartouche at="top-2 left-2">
-          <h2 className="flex flex-col gap-1">
-            <span className="font-caps text-hud-l leading-none text-quill">
-              {t.public.title}
-            </span>
-            {/* One alone in the last opening waits in this one: said even on a phone, it is why to play now. */}
-            {game && game.waiting > 0 && (
-              <span className="hud-note">{t.public.waiting}</span>
-            )}
-            {game && game.waiting === 0 && (
-              <span className="hud-note max-sm:hidden">{t.public.live}</span>
-            )}
+          <h2>
+            <Stack gap="hair">
+              <Heading>{t.public.title}</Heading>
+              {/* One alone in the last opening waits in this one: said even on a phone, it is why to play now. */}
+              {game && game.waiting > 0 && <Note>{t.public.waiting}</Note>}
+              {game && game.waiting === 0 && (
+                <Note className="max-sm:hidden">{t.public.live}</Note>
+              )}
+            </Stack>
           </h2>
         </Cartouche>
         {game && (
           <Cartouche at="top-2 right-2">
-            <span className="hud-note max-sm:hidden">{t.public.closesIn}</span>
+            <Note className="max-sm:hidden">{t.public.closesIn}</Note>
             <Countdown ms={game.startsIn} at={heard.at} />
           </Cartouche>
         )}
@@ -102,11 +103,11 @@ export function PublicCard({
         <div
           className={`absolute right-2 bottom-2 ${ready || failed ? '' : 'opacity-50'}`}
         >
-          <Act asleep={!ready && !failed} onClick={() => rooms.join(null)}>
-            <span className="px-6 py-1 text-hud-xl">{word}</span>
+          <Act call asleep={!ready && !failed} onClick={() => rooms.join(null)}>
+            {word}
           </Act>
         </div>
       </LandPlate>
-    </Sheet>
+    </Panel>
   )
 }

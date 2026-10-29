@@ -2,7 +2,9 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Act, actClass } from '../hud/Act'
 import { Figure } from '../hud/Figure'
-import { Rule, Sheet } from '../hud/Sheet'
+import { Rule } from '../hud/Sheet'
+import { Inline, Panel, Stack } from '../hud/Layout'
+import { Call, Note, Title } from '../hud/Text'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
@@ -20,14 +22,16 @@ export function Moment({
     if (me && !me.picked) [title, hint] = [m.game.choose, m.game.chooseHint]
     else if (me) [title, hint] = [m.game.planted, m.game.plantedHint]
     return (
-      <Sheet className="flex items-center gap-4 px-6 py-4">
-        <Figure size="xl">{opening}</Figure>
-        <Rule />
-        <div className="flex flex-col gap-1">
-          <span className="hud-word text-hud-l">{title}</span>
-          {hint && <span className="hud-note">{hint}</span>}
-        </div>
-      </Sheet>
+      <Panel page>
+        <Inline gap="piece">
+          <Figure size="xl">{opening}</Figure>
+          <Rule />
+          <Stack gap="hair">
+            <Call>{title}</Call>
+            {hint && <Note>{hint}</Note>}
+          </Stack>
+        </Inline>
+      </Panel>
     )
   }
   const fallen = me && !me.alive
@@ -37,11 +41,11 @@ export function Moment({
   if (summary.won) title = m.game.victory
   else if (fallen) title = m.game.fallen
   return (
-    <Sheet className="flex flex-col items-center gap-3 px-6 py-4">
-      <span className="hud-word text-hud-xl" aria-live="polite">
-        {title}
+    <Panel page gap="part" className="items-center">
+      <span aria-live="polite">
+        <Title>{title}</Title>
       </span>
-      <div className="flex gap-2">
+      <Inline>
         <Link to={online ? '/' : '/play'} reloadDocument className={actClass()}>
           {m.game.playAgain}
         </Link>
@@ -50,7 +54,7 @@ export function Moment({
             {m.game.watchEnd}
           </Act>
         )}
-      </div>
-    </Sheet>
+      </Inline>
+    </Panel>
   )
 }

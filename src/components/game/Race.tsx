@@ -1,6 +1,7 @@
 import { Figure, Icon } from '../hud/Figure'
 import { Hint } from '../hud/Hint'
-import { Sheet } from '../hud/Sheet'
+import { Inline, Panel } from '../hud/Layout'
+import { Note } from '../hud/Text'
 import { ICON } from '../hud/tokens'
 import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
@@ -99,25 +100,24 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <Sheet className="flex w-80 flex-col items-center px-4 py-1 max-sm:w-auto">
+          <Panel gap="hair" className="w-80 items-center max-sm:w-auto">
             <div className="w-full max-sm:w-56">
               <Track summary={summary} />
             </div>
-            <div className="flex items-center gap-3">
+            <Inline gap="part">
               <Figure size="l">{minutes(summary.seconds)}</Figure>
-              <span
-                className="flex items-center gap-1"
-                title={step ? words : undefined}
-              >
-                {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
-                {step ? (
-                  <Figure size="s">{figure}</Figure>
-                ) : (
-                  <span className="hud-note whitespace-nowrap">{words}</span>
-                )}
+              <span title={step ? words : undefined}>
+                <Inline gap="hair">
+                  {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
+                  {step ? (
+                    <Figure size="s">{figure}</Figure>
+                  ) : (
+                    <Note className="whitespace-nowrap">{words}</Note>
+                  )}
+                </Inline>
               </span>
-            </div>
-          </Sheet>
+            </Inline>
+          </Panel>
         </Hint>
       </div>
     </div>

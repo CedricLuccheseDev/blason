@@ -1,4 +1,4 @@
-import { Sheet } from '../hud/Sheet'
+import { GAP, Inline, MARGIN, Panel, Stack } from '../hud/Layout'
 import { BookButton, HomeMark } from './BookParts'
 import { Banner } from './Banner'
 import { Bar } from './Bar'
@@ -46,23 +46,25 @@ export function Places({
   onBook: (() => void) | null
 }>) {
   return (
-    <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-7 max-sm:gap-2 max-sm:p-3 short:gap-2 short:p-3">
-      <div className="flex items-center gap-2">
-        <Sheet className="flex h-11 items-center px-3">
+    <div
+      className={`pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
+    >
+      <Inline className="self-start">
+        <Panel className="h-11 justify-center">
           <HomeMark onHome={onHome} />
-        </Sheet>
+        </Panel>
         {onBook && (
           <span className="pointer-events-auto">
             <BookButton onOpen={onBook} />
           </span>
         )}
-      </div>
-      <div className="flex min-w-0 flex-col items-center gap-2">
+      </Inline>
+      <Stack align="center" className="min-w-0">
         {!waiting && <Race summary={summary} />}
         {!waiting && <Moment summary={summary} online={online} />}
         {cry && <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />}
-      </div>
-      <div className="w-80 justify-self-end max-sm:w-auto">
+      </Stack>
+      <div className="w-64 justify-self-end max-sm:w-auto">
         {!waiting && (
           <Lords
             summary={summary}
@@ -74,7 +76,7 @@ export function Places({
       </div>
       <div
         ref={floor}
-        className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-4 max-sm:gap-2"
+        className={`relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end ${GAP.piece}`}
       >
         <div className="min-w-0">{!waiting && <Purse summary={summary} />}</div>
         <div className="min-w-0">

@@ -1,3 +1,5 @@
+import { Figure } from '../hud/Figure'
+import { Inline } from '../hud/Layout'
 import { Glyph } from './svg/marks'
 import { ARMY_MARKS } from './Bar'
 import { count, hex } from './format'
@@ -45,8 +47,8 @@ export function Campaign({
   const { me, campaign } = summary
   if (!me || campaign.length === 0) return null
   return (
-    <div className="hud-afloat flex items-start gap-3" title={m.game.campaign}>
-      <div className="flex items-start gap-3">
+    <div className="hud-afloat" title={m.game.campaign}>
+      <Inline gap="part" align="start">
         {campaign.map((host) => (
           <button
             key={host.from}
@@ -57,7 +59,7 @@ export function Campaign({
             className="group hud-press pointer-events-auto relative flex cursor-pointer flex-col items-center"
           >
             <Banner color={hex(me.color)} mark={ARMY_MARKS[host.army]} />
-            <span className="hud-figure text-hud-s">{count(host.men)}</span>
+            <Figure size="s">{count(host.men)}</Figure>
             {/* Under the pointer, the cross that calls it home (« une croix pour les rappeler »). norm-ok: a round red seal, the game's own mark, not a box. */}
             <span
               aria-hidden="true"
@@ -67,7 +69,7 @@ export function Campaign({
             </span>
           </button>
         ))}
-      </div>
+      </Inline>
     </div>
   )
 }

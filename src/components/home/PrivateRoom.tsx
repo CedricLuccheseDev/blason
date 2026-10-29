@@ -3,6 +3,8 @@ import { RoomTrouble, Seats } from './Seats'
 import type { KeyboardEvent } from 'react'
 import type { Room, RoomActions } from './useRoom'
 import { Act } from '~/components/hud/Act'
+import { GAP, Stack } from '~/components/hud/Layout'
+import { Note } from '~/components/hud/Text'
 import { useMessages } from '~/i18n'
 
 // A private room, from either side: the host's, made as the sheet opens, its
@@ -55,29 +57,33 @@ export function PrivateRoom({
   return (
     <>
       {(way === 'join' || inside) && (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="hud-note mb-2">{t.code}</legend>
-          <div className="grid grid-cols-5 gap-2">
-            {shown.map((c, i) => (
-              <input
-                key={i}
-                ref={(el) => {
-                  boxes.current[i] = el
-                }}
-                value={c}
-                readOnly={inside || way === 'create'}
-                maxLength={2}
-                autoComplete="off"
-                autoCapitalize="characters"
-                spellCheck={false}
-                aria-label={t.char(i + 1)}
-                data-first={i === 0 && way === 'join' ? true : undefined}
-                onChange={(e) => type(i, e.target.value)}
-                onKeyDown={(e) => back(i, e)}
-                className={BOX}
-              />
-            ))}
-          </div>
+        <fieldset>
+          <Stack>
+            <legend>
+              <Note>{t.code}</Note>
+            </legend>
+            <div className={`grid grid-cols-5 ${GAP.line}`}>
+              {shown.map((c, i) => (
+                <input
+                  key={i}
+                  ref={(el) => {
+                    boxes.current[i] = el
+                  }}
+                  value={c}
+                  readOnly={inside || way === 'create'}
+                  maxLength={2}
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  aria-label={t.char(i + 1)}
+                  data-first={i === 0 && way === 'join' ? true : undefined}
+                  onChange={(e) => type(i, e.target.value)}
+                  onKeyDown={(e) => back(i, e)}
+                  className={BOX}
+                />
+              ))}
+            </div>
+          </Stack>
         </fieldset>
       )}
       <Inside way={way} room={room} actions={actions} />
@@ -95,33 +101,35 @@ function Inside({
   if (room.status === 'off') return <p className="hud-note">{p.note}</p>
   if (room.status !== 'seated')
     return (
-      <div className="flex flex-col gap-3" aria-live="polite">
-        <RoomTrouble room={room} />
-        {room.status === 'error' && way === 'create' && (
-          <div className="grid">
-            <Act tone="plain" onClick={() => actions.join('new')}>
-              {t.room.retry}
-            </Act>
-          </div>
-        )}
+      <div aria-live="polite">
+        <Stack gap="part">
+          <RoomTrouble room={room} />
+          {room.status === 'error' && way === 'create' && (
+            <div className="grid">
+              <Act tone="plain" onClick={() => actions.join('new')}>
+                {t.room.retry}
+              </Act>
+            </div>
+          )}
+        </Stack>
       </div>
     )
   const host = room.seat === room.lobby.host
   return (
-    <div className="flex flex-col gap-3">
+    <Stack gap="part">
       <p className="hud-word" aria-live="polite">
         {host ? p.yours : p.joined}
       </p>
       <Seats taken={room.lobby.names.length} />
       {host ? (
         <div className="grid">
-          <Act onClick={actions.start}>
-            <span className="text-hud-l">{p.start}</span>
+          <Act call onClick={() => actions.start()}>
+            {p.start}
           </Act>
         </div>
       ) : (
         <p className="hud-note">{p.waitHost}</p>
       )}
-    </div>
+    </Stack>
   )
 }

@@ -237,6 +237,10 @@
   .hud {
     --spacing: calc(0.25rem * var(--hud));
   }
+  /* A line of a ruled list (the journal's posts): its room above and below, on the HUD's step of 8. */
+  .hud-row {
+    @apply py-2;
+  }
   .hud-word {
     @apply font-words text-hud-m;
     color: var(--hud-ink, var(--color-quill));

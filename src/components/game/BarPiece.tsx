@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 
 // norm-ok: the piece's hover wash follows the sheet's worn corners (the art direction).
 const PIECE =
-  'pointer-events-auto flex cursor-pointer flex-col items-center gap-1 rounded-md p-1 hud-press hover:bg-quill/5'
+  'pointer-events-auto flex cursor-pointer flex-col items-center gap-1 rounded-md px-1 pt-1 hud-press hover:bg-quill/5'
 
 /**
  * One piece of the bar: its emblem, its key at its top right (none on a
@@ -64,6 +64,7 @@ export function Divide({ close }: Readonly<{ close: boolean }>) {
   return (
     <span
       aria-hidden="true"
+      // norm-ok: the rule's own room, either side of it and above and below, as drawn.
       className={`relative my-3 w-px self-stretch bg-quill/30 ${close ? 'mx-1' : 'mx-3'}`}
     >
       <span className="absolute top-1/2 left-1/2 size-2.5 -translate-1/2 rotate-45 border border-quill bg-gilt" />

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Shield } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { Hint } from '../hud/Hint'
+import { GAP } from '../hud/Layout'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
 import type { Summary } from '~/render/client'
@@ -106,7 +107,7 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   if (me.growth < 0) growing = t.peasants.sick(count(-me.growth))
   else if (me.peasants >= me.cap) growing = t.peasants.full
   return (
-    <div className="hud-afloat flex items-center gap-2">
+    <div className={`hud-afloat flex items-end ${GAP.line}`}>
       {!compact && (
         <Shield
           color={hex(me.color)}
@@ -117,15 +118,15 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
       <div
         className={
           compact
-            ? 'flex items-center gap-3'
-            : 'grid grid-cols-[auto_auto] items-center gap-x-2 gap-y-1'
+            ? `flex items-center ${GAP.part}`
+            : `grid grid-cols-[auto_auto] items-center ${GAP.hair}`
         }
       >
         <Hint title={t.peasants.title} lines={[fed, growing]}>
           <Figure icon="soldier" size={compact ? 'm' : 'l'}>
             {count(me.peasants)}
             <span
-              className={`text-hud-m transition-colors duration-(--duration-hud-enter) ease-hud ${
+              className={`transition-colors duration-(--duration-hud-enter) ease-hud ${
                 shrunk ? 'text-gules' : 'opacity-70'
               }`}
             >

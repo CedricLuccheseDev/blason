@@ -1,5 +1,5 @@
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
+import { Stack, Tag } from '../hud/Layout'
 import { scaled } from '../hud/tokens'
 import { INK, PAPER } from './svg/marks'
 import { EdgeArrow, PairSeal, TimeRing } from './svg/pact'
@@ -81,7 +81,7 @@ export function PactSeal({
   )
   const note = ally.theirs ? m.heralds.yourTurn(name) : m.heralds.press
   return (
-    <div className="flex flex-col items-center gap-1">
+    <Stack gap="hair" align="center">
       {ally.pressed ? (
         <div role="img" aria-label={m.heralds.pact(name, minutes(ally.left))}>
           {seal}
@@ -98,11 +98,11 @@ export function PactSeal({
           {seal}
         </button>
       )}
-      <Sheet className="px-2 py-1 whitespace-nowrap">
+      <Tag>
         <Figure size="s" tone="ink">
           {minutes(ally.left)}
         </Figure>
-      </Sheet>
-    </div>
+      </Tag>
+    </Stack>
   )
 }

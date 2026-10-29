@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { ActMedallion, Shield, StandingBadge } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
+import { Caption, Inline, Panel } from '../hud/Layout'
+import { Word } from '../hud/Text'
 import { useBeside } from '../hud/useBeside'
 import { count, hex } from './format'
 import { menuOf } from './lordMenu'
@@ -134,46 +135,44 @@ export function LordMenu({
       className="pointer-events-none absolute w-max"
       style={place(aim.x, aim.y, true, true)}
     >
-      <Sheet className="pointer-events-auto flex flex-col gap-2 px-3 py-2">
-        <div className="flex items-center gap-2 border-b border-gilt/60 pb-1">
+      <Panel className="pointer-events-auto">
+        <Caption>
           <Shield color={hex(lord.color)} size="s" />
-          <span className="hud-word whitespace-nowrap">{name}</span>
+          <Word className="whitespace-nowrap">{name}</Word>
           {standingsOf(summary.lords[seat], m).map(({ standing, label }) => (
             <StandingBadge key={standing} standing={standing} label={label} />
           ))}
-        </div>
+        </Caption>
         {/* The acts as the bar's pieces (« mets des icônes pareil pour le menu clic droit »): each its medallion and its figure, its word under the pointer. */}
-        <div
-          role="group"
-          aria-label={m.menu.label(name)}
-          className="flex items-start justify-center gap-3"
-        >
-          {menuOf(summary, aim).map((line) => {
-            const { word, tone, figure } = told(line, m)
-            return (
-              <Piece
-                key={line.act}
-                k={null}
-                name={word}
-                hint={[]}
-                held={false}
-                faint={!line.can}
-                onClick={() =>
-                  line.act === 'alliance'
-                    ? acts.alliance(line.say)
-                    : acts[line.act]()
-                }
-                emblem={
-                  <span className={tone}>
-                    <ActMedallion {...LOOKS[line.act]} />
-                  </span>
-                }
-                figure={figure}
-              />
-            )
-          })}
+        <div role="group" aria-label={m.menu.label(name)}>
+          <Inline gap="part" align="start" justify="center">
+            {menuOf(summary, aim).map((line) => {
+              const { word, tone, figure } = told(line, m)
+              return (
+                <Piece
+                  key={line.act}
+                  k={null}
+                  name={word}
+                  hint={[]}
+                  held={false}
+                  faint={!line.can}
+                  onClick={() =>
+                    line.act === 'alliance'
+                      ? acts.alliance(line.say)
+                      : acts[line.act]()
+                  }
+                  emblem={
+                    <span className={tone}>
+                      <ActMedallion {...LOOKS[line.act]} />
+                    </span>
+                  }
+                  figure={figure}
+                />
+              )
+            })}
+          </Inline>
         </div>
-      </Sheet>
+      </Panel>
     </div>
   )
 }

@@ -2,6 +2,8 @@ import { SEATS } from '../../../net/protocol'
 import type { Room } from './useRoom'
 import { Shield } from '~/components/hud/Emblem'
 import { Figure } from '~/components/hud/Figure'
+import { Inline } from '~/components/hud/Layout'
+import { Note } from '~/components/hud/Text'
 import { useMessages } from '~/i18n'
 import { PLAYERS } from '~/render/palette'
 
@@ -20,22 +22,21 @@ export function Seats({
 }: Readonly<{ taken: number; brief?: boolean }>) {
   const t = useMessages().home.room
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <span
-        className={`flex gap-1 ${brief ? 'max-sm:hidden' : ''}`}
-        aria-hidden="true"
-      >
-        {Array.from({ length: taken }, (_, i) => (
-          <Shield key={i} size="s" color={seatColour(i)} />
-        ))}
+    <Inline gap="part" justify="between" wrap>
+      <span className={brief ? 'max-sm:hidden' : ''} aria-hidden="true">
+        <Inline gap="hair">
+          {Array.from({ length: taken }, (_, i) => (
+            <Shield key={i} size="s" color={seatColour(i)} />
+          ))}
+        </Inline>
       </span>
-      <span className="flex items-center gap-2">
-        <span className="hud-note">{t.seated}</span>
+      <Inline>
+        <Note>{t.seated}</Note>
         <Figure icon="soldier" size="l">
           {taken} / {SEATS}
         </Figure>
-      </span>
-    </div>
+      </Inline>
+    </Inline>
   )
 }
 

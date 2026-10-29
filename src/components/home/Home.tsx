@@ -11,6 +11,7 @@ import { PublicCard } from './PublicCard'
 import { atPrivate, atPublic, useRoom } from './useRoom'
 import type { Entry } from './Journal'
 import { Act } from '~/components/hud/Act'
+import { GAP, Stack } from '~/components/hud/Layout'
 import { useMessages } from '~/i18n'
 import { relayUrl } from '~/render/link'
 import { holdOnline } from '~/render/online'
@@ -68,23 +69,27 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
     <main className="hud relative flex min-h-dvh w-full flex-col bg-vellum select-none">
       <Frame />
       <Rose className="absolute top-8 right-8 size-28 opacity-25 max-sm:top-6 max-sm:right-6 max-sm:size-14" />
+      {/* norm-ok: the home's page, its column and the journal's beside it, its room round them as drawn (the HUD's bricks lay what is inside). */}
       <div className="relative mx-auto grid w-full max-w-[46rem] flex-1 content-center gap-6 px-6 pt-10 pb-4 short:pt-6 lg:max-w-[66rem] lg:grid-cols-[minmax(0,46rem)_minmax(0,18rem)] lg:gap-x-4">
         <div className="lg:col-span-2">
           <Title />
         </div>
-        <nav aria-label={t.menu} className="flex min-w-0 flex-col gap-3">
-          <PublicCard room={room} rooms={rooms} online={online} />
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Act tone="plain" onClick={create}>
-              {t.create}
-            </Act>
-            <Act tone="plain" asleep={!online} onClick={() => show('join')}>
-              {t.joinPrivate}
-            </Act>
-          </div>
+        <nav aria-label={t.menu} className="min-w-0">
+          <Stack gap="part">
+            <PublicCard room={room} rooms={rooms} online={online} />
+            <div className={`grid sm:grid-cols-2 ${GAP.line}`}>
+              <Act tone="plain" onClick={create}>
+                {t.create}
+              </Act>
+              <Act tone="plain" asleep={!online} onClick={() => show('join')}>
+                {t.joinPrivate}
+              </Act>
+            </div>
+          </Stack>
         </nav>
         <Journal entries={entries} />
       </div>
+      {/* norm-ok: the page's foot, the player on the left and the site in the middle, its room from the page's edge as drawn. */}
       <div className="relative flex flex-wrap items-center justify-between gap-x-6 px-8 pb-6 max-sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr]">
         <Lord />
         <div className="max-sm:basis-full">

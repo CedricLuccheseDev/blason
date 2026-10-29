@@ -2,6 +2,7 @@ import { CoupEmblem, MedallionEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { useCompact } from '../hud/useCompact'
 import { useFit } from '../hud/useFit'
+import { GAP } from '../hud/Layout'
 import { count, hex } from './format'
 import { Divide, Piece } from './BarPiece'
 import type { Army, Coup, Work } from '../../../engine'
@@ -39,12 +40,9 @@ const FITS = ['drawn', 'tight', 'rows'] as const
 
 /** Each form's band, the rows laid wrapped and centred, and the room between its pieces, their keys clear of the next. */
 const FORMS: Record<(typeof FITS)[number], { band: string; gap: string }> = {
-  drawn: { band: 'px-4', gap: 'gap-3' },
-  tight: { band: 'px-3', gap: 'gap-1' },
-  rows: {
-    band: 'flex-wrap justify-center gap-x-2 gap-y-1 px-3',
-    gap: 'gap-1',
-  },
+  drawn: { band: '', gap: GAP.part },
+  tight: { band: '', gap: GAP.hair },
+  rows: { band: `flex-wrap justify-center ${GAP.hair}`, gap: GAP.hair },
 }
 
 /**

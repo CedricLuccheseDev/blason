@@ -4,8 +4,9 @@ import {
   SETUP_LIMITS,
   TICKS_PER_SECOND,
 } from '../../../engine'
-import { Act } from '../hud/Act'
-import { Sheet } from '../hud/Sheet'
+import { Act, Tap } from '../hud/Act'
+import { Inline, Panel, Ruled, Spread, Veil } from '../hud/Layout'
+import { Note } from '../hud/Text'
 import { Head, Invite, Seats, Setting, stepped } from './BookParts'
 import type { ReactNode } from 'react'
 import type { Book, Level, MapSize } from '../../../engine'
@@ -59,8 +60,8 @@ export function GameBook({
       <Act tone="plain" onClick={onClose}>
         {m.see}
       </Act>
-      <Act onClick={onLaunch}>
-        <span className="px-8 text-hud-l">{m.launch}</span>
+      <Act call onClick={onLaunch}>
+        {m.launch}
       </Act>
     </>
   ) : (
@@ -68,83 +69,89 @@ export function GameBook({
       <Act tone="plain" onClick={onQuit}>
         {m.quit}
       </Act>
-      <Act onClick={onRestart}>
-        <span className="px-8 text-hud-l">{m.restart}</span>
+      <Act call onClick={onRestart}>
+        {m.restart}
       </Act>
     </>
   )
   return (
-    <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/50 p-3">
-      <Sheet className="flex max-h-full w-full max-w-[calc(820px*var(--hud))] flex-col gap-4 overflow-y-auto px-6 py-5 max-sm:px-4">
+    <Veil>
+      <Panel
+        page
+        gap="piece"
+        className="relative max-h-full w-full max-w-[calc(820px*var(--hud))] overflow-y-auto"
+      >
         {!lobby && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="hud-note hud-press absolute top-3 right-4 min-h-11 cursor-pointer"
-          >
-            {m.close}
-          </button>
+          <span className="absolute top-2 right-3">
+            <Tap onClick={onClose}>
+              <Note className="text-current">{m.close}</Note>
+            </Tap>
+          </span>
         )}
-        <div className="grid gap-6 sm:grid-cols-[1fr_auto_1fr]">
-          <section className="flex min-w-0 flex-col gap-3">
-            <Head kicker={lobby ? m.yours : m.going(running)} title={m.land} />
-            <LandPlate seed={book.seed} size={book.size} label={m.land} />
-            <Setting
-              name={m.size}
-              value={m.sizes[book.size]}
-              onStep={(by) => set({ size: stepped(SIZES, book.size, by) })}
-            />
-            <div className="flex items-center justify-center gap-2">
-              <span className="hud-note">{m.or}</span>
-              <Act tone="plain" onClick={onAnother}>
-                {m.another}
-              </Act>
-            </div>
-          </section>
-          <span aria-hidden="true" className="w-px bg-quill/35 max-sm:hidden" />
-          <section className="flex min-w-0 flex-col gap-3">
-            <Head
-              kicker={m.seated(book.bots, book.guests ?? 0)}
-              title={m.lords}
-            />
-            <Seats book={book} />
-            {code && <Invite code={code} />}
-            <Setting
-              name={m.bots}
-              value={String(book.bots)}
-              onStep={(by) => set({ bots: stepped(bots, book.bots, by) })}
-            />
-            <Setting
-              name={m.level}
-              value={m.levels[book.level]}
-              onStep={(by) =>
-                set({ level: stepped<Level>(LEVELS, book.level, by) })
-              }
-            />
-            <Setting
-              name={m.teams}
-              value={book.teams ? String(book.teams) : m.none}
-              onStep={(by) =>
-                set({ teams: stepped<number>(TEAMS, book.teams, by) })
-              }
-            />
-            <Setting
-              name={m.opening}
-              value={m.seconds(seconds)}
-              onStep={(by) =>
-                set({
-                  opening:
-                    stepped<number>(OPENINGS, seconds, by) * TICKS_PER_SECOND,
-                })
-              }
-            />
-            {!lobby && <p className="hud-note text-center">{m.next}</p>}
-          </section>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-4 border-t border-gilt/50 pt-3">
-          {foot}
-        </div>
-      </Sheet>
-    </div>
+        <Spread
+          left={
+            <>
+              <Head
+                kicker={lobby ? m.yours : m.going(running)}
+                title={m.land}
+              />
+              <LandPlate seed={book.seed} size={book.size} label={m.land} />
+              <Setting
+                name={m.size}
+                value={m.sizes[book.size]}
+                onStep={(by) => set({ size: stepped(SIZES, book.size, by) })}
+              />
+              <Inline justify="center">
+                <Note>{m.or}</Note>
+                <Act tone="plain" onClick={onAnother}>
+                  {m.another}
+                </Act>
+              </Inline>
+            </>
+          }
+          right={
+            <>
+              <Head
+                kicker={m.seated(book.bots, book.guests ?? 0)}
+                title={m.lords}
+              />
+              <Seats book={book} />
+              {code && <Invite code={code} />}
+              <Setting
+                name={m.bots}
+                value={String(book.bots)}
+                onStep={(by) => set({ bots: stepped(bots, book.bots, by) })}
+              />
+              <Setting
+                name={m.level}
+                value={m.levels[book.level]}
+                onStep={(by) =>
+                  set({ level: stepped<Level>(LEVELS, book.level, by) })
+                }
+              />
+              <Setting
+                name={m.teams}
+                value={book.teams ? String(book.teams) : m.none}
+                onStep={(by) =>
+                  set({ teams: stepped<number>(TEAMS, book.teams, by) })
+                }
+              />
+              <Setting
+                name={m.opening}
+                value={m.seconds(seconds)}
+                onStep={(by) =>
+                  set({
+                    opening:
+                      stepped<number>(OPENINGS, seconds, by) * TICKS_PER_SECOND,
+                  })
+                }
+              />
+              {!lobby && <Note className="text-center">{m.next}</Note>}
+            </>
+          }
+        />
+        <Ruled>{foot}</Ruled>
+      </Panel>
+    </Veil>
   )
 }

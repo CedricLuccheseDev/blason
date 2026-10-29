@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
+import { Tag } from '../hud/Layout'
+import { Word } from '../hud/Text'
 import { scaled } from '../hud/tokens'
 import { Glyph, INK } from './svg/marks'
 import { COUP_MARKS } from './Bar'
@@ -137,12 +138,13 @@ export function Pennant({
             sw={1.4}
           />
         </svg>
-        <Sheet
-          className={`flex items-center gap-1 px-2 py-1 whitespace-nowrap ${flip ? '-mr-3' : '-ml-3'}`}
-        >
-          <span className={`hud-word ${ill ? 'text-gules' : ''}`}>{text}</span>
-          {gold !== undefined && <Figure icon="coins">{count(gold)}</Figure>}
-        </Sheet>
+        {/* norm-ok: the flag's cloth runs under its pole, the tag pulled onto it. */}
+        <span className={flip ? '-mr-3' : '-ml-3'}>
+          <Tag>
+            <Word className={ill ? 'text-gules' : ''}>{text}</Word>
+            {gold !== undefined && <Figure icon="coins">{count(gold)}</Figure>}
+          </Tag>
+        </span>
       </div>
     </div>
   )
