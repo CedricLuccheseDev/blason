@@ -19,6 +19,14 @@ import type { Host, Level, MapSize } from '../engine'
 // making and each tick (the bots' thinking and the step), and weighs the
 // memory a game holds, which tells what a larger map costs.
 // npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]
+// RULES='{"volleyToll":3}' npm run arena … plays with other figures than the
+// rules', laid over them (a figure's object, as peasants, given whole).
+
+/** The rules played: the game's, with the figures RULES gives laid over them. */
+const rules = {
+  ...RULES,
+  ...(JSON.parse(process.env.RULES ?? '{}') as Partial<typeof RULES>),
+}
 
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
@@ -79,7 +87,7 @@ function play(seed: string, players: number, level: Level, size: MapSize) {
   const made = performance.now()
   const world = generateWorld(seed, { size })
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
-  const state = createGame(grid, players, seed)
+  const state = createGame(grid, players, seed, rules)
   const making = (performance.now() - made) / 1000
   const bots = state.players.map((_, id) => createBot(id, seed, level))
   const watch = watcher(state)
@@ -114,7 +122,7 @@ const level = (process.argv[4] ?? 'normal') as Level
 const size = (process.argv[5] ?? 'standard') as MapSize
 if (!(size in MAP_SIZES)) throw new Error(`No map size ${size}`)
 write(
-  `Arena: ${games} games of ${players} ${level} bots on a ${size} land of small tiles`,
+  `Arena: ${games} games of ${players} ${level} bots on a ${size} land of small tiles${process.env.RULES ? `, with ${process.env.RULES}` : ''}`,
 )
 write(
   cols(

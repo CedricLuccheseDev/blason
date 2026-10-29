@@ -158,7 +158,7 @@ export const RULES: Rules = {
   startRadius: 14,
   tileSize: 4,
   startGold: 50,
-  peasants: { land: 60, tiles: 600, village: 40 },
+  peasants: { land: 40, tiles: 600, village: 60 },
   fillSeconds: 60,
   sickness: 10,
   menPrice: 0,
