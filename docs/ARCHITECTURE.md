@@ -194,7 +194,8 @@ orders. It decides nothing about the rules.
   zoom; a road's stones show only once each covers a pixel; the sea's shore
   lines leave out the coast's smallest turns, the farther from it the more.
 - The map gains detail with the zoom, by the pixels a tile covers on screen
-  (`ground/detail.ts`): from afar the wash and the works' silhouettes; at mid
+  (`ground/detail.ts`): from afar, the strategist's map, the wash and the
+  works' small marks; at mid
   distance (9 to 18 pixels a tile) hatched hills, groves, rivers, fields round
   the villages, the works drawn, the mills turning; up close single trees,
   tufts, close furrows, the sea's ripples, roof tiles, smoke, peasants at work,
@@ -223,11 +224,18 @@ orders. It decides nothing about the rules.
   silhouettes laid flat by a shear on a small canvas, where they merge, then
   stretched over the drawing, which softens their edge; never each frame.
 - The works (`art/works.ts`) are drawn once per lord's colour and level of
-  detail into a texture: a silhouette cut out by a parchment halo, never under
-  thirty pixels on screen; a drawing; an illustration (`art/village.ts`,
-  `art/house.ts`, `art/church.ts`, `art/castle.ts`, `art/ramparts.ts`,
-  `art/market.ts`, `art/stall.ts`, `art/gold.ts`, with the pen of
-  `art/ink.ts`), each piece where its plan sets it (`art/plans.ts`). Drawn and
+  detail into a texture: a silhouette cut out by a parchment halo; a drawing;
+  an illustration (`art/village.ts`, `art/house.ts`, `art/church.ts`,
+  `art/castle.ts`, `art/ramparts.ts`, `art/market.ts`, `art/stall.ts`,
+  `art/gold.ts`, with the pen of `art/ink.ts`), each piece where its plan sets
+  it (`art/plans.ts`). Up close a work stands at the map's scale; under 24
+  pixels it shrinks twice as fast as the map, a small mark of some 14 at the
+  whole land's zoom. That map is the strategist's, to be read at once and
+  with room round everything: there another's market is left out (the trade's
+  roads stand for it), another's work goes once it would be a speck, the
+  player's own stay marks of 8 pixels at least, and the villages' seals and
+  another's work being built (`layers/levy.ts`, `layers/building.ts`) come
+  back only from mid distance (`workShown`, `toldShown`). Drawn and
   illustrated, they stand in the map's light with volume: the faces turned from
   it in shade, a line of shade under the eaves and the verges, the towers lit
   round, and, laid on their ground before them, the shadows of their volumes
@@ -262,7 +270,8 @@ orders. It decides nothing about the rules.
   castles' arrows, the same on the same arc, loosed from their towers a moment
   before each volley, which the castles' rhythm tells ahead, so that they come
   down on the enemy army's men as the volley takes them (`layers/volleys.ts`);
-  the villages' seals, their army home or out (`layers/levy.ts`), the caravans on
+  the villages' seals, their army home or out, from mid distance
+  (`layers/levy.ts`), the caravans on
   their roads of beaten earth (`trade.ts`), what the player's works bring
   (`layers/tidings.ts`), no line between allies in ordinary times (their
   green border and the badge beside each ally's name say it), but an alliance

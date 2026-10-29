@@ -1,22 +1,22 @@
 import { Container, Graphics } from 'pixi.js'
 import { TONE, playerColor } from '../palette'
 import { siteOf } from '../marks'
+import { toldShown, workPx, workScale } from '../art/works'
 import { standing } from '../../../engine'
 import type { GameState } from '../../../engine'
 
 // Over each village, a small seal says where the army it levies is: in its
 // lord's colour with the sleeper's "z z" while the army rests at home, ready
 // to march; in red with crossed swords while it is out. Every lord's, so that
-// the player reads at a glance who can strike now. At the land's scale, as
-// the works, never too small to see.
+// the player reads at a glance who can strike now. A matter of the close
+// game: none on the strategist's map, where the villages are small marks;
+// they come as one zooms in (art/works.ts), hung where the village is
+// drawn, never too small to see.
 
-/** The seal's radius, and where it hangs from the village's middle, in map units; never smaller on screen than so many pixels. */
+/** The seal's radius, and where it hangs from the village's middle as drawn at the map's scale, in map units; never smaller on screen than so many pixels. */
 const R = 3.4
 const [DX, DY] = [6, -11]
 const SEEN = 7
-/** A village's width in map units, and on screen the least for its seal to show. */
-const VILLAGE = 20
-const FAR = 16
 
 /** The sleeper's two z, centred on (x, y). */
 function sleep(g: Graphics, x: number, y: number, k: number) {
@@ -52,14 +52,15 @@ export function makeLevySeals() {
       if (state.tick === seen.tick && zoom === seen.zoom) return
       seen = { tick: state.tick, zoom }
       g.clear()
-      // Too far to see the villages, too far for their seals.
-      if (VILLAGE * zoom < FAR) return
+      g.alpha = toldShown(workPx(zoom))
+      if (g.alpha <= 0) return
       const k = Math.max(1, SEEN / zoom / R)
+      const hung = workScale(zoom)
       const out = new Set(state.hosts.map((h) => h.from))
       for (const work of state.works) {
         if (work.work !== 'village' || !standing(state, work)) continue
         const { x, y } = siteOf(state, work.tile)
-        const [cx, cy] = [x + DX * k, y + DY * k]
+        const [cx, cy] = [x + DX * hung, y + DY * hung]
         const away = out.has(work.tile)
         g.circle(cx, cy, R * k)
           .fill(away ? TONE.fight : playerColor(work.owner))

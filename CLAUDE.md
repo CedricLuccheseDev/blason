@@ -76,7 +76,12 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   repassée à la plume (`regions.ts`, `trace.ts`, `pen.ts`, le ruban `layers/borders.ts`), comme les planches ; la
   carte gagne du détail en zoomant, par paliers de pixels par tuile (`ground/detail.ts`) : le décor (`ground/`,
   collines, bois, champs, rivières) peint par morceaux de seize tuiles gardés par palier et multiplié dans le lavis,
-  les constructions à trois niveaux (`art/works.ts`) et leur vie (`layers/life.ts`) ; `camera.ts` la caméra du joueur,
+  les constructions à trois niveaux (`art/works.ts`) et leur vie (`layers/life.ts`) ; la carte dézoomée est celle du
+  stratège, acté le 29/10 (« map dézoomée = map stratégique : tout doit être compréhensible super rapidement et
+  facilement, et aéré ; map zoomée = map micro-gestion et spectacle, on peut s'amuser plus mais il faut que ça reste
+  lisible ») : les constructions y rétrécissent plus vite que la carte en petites marques, celles des autres
+  s'effacent (leurs marchés d'abord, les routes en tiennent lieu), les sceaux des villages et les chantiers des
+  autres ne reviennent qu'en zoomant ; `camera.ts` la caméra du joueur,
   `director.ts` celle du spectateur ; `summary.ts` ce que lit le HUD, une fois par seconde.
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (15, 18, 22, 28, rien sous 15, acté le 29/10 : « La police texte toute petite là elle est
