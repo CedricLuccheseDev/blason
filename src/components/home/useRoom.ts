@@ -22,7 +22,7 @@ export type Room =
       status: 'error'
       /** What failed: the public game (null), or a room's code or 'new'. */
       code: string | null
-      reason: 'full' | 'unknown' | 'started' | 'lost'
+      reason: 'full' | 'unknown' | 'started' | 'gone' | 'lost'
     }
 
 export type RoomActions = {

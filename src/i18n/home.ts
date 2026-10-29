@@ -31,6 +31,7 @@ export const homeEn = {
       full: 'That room is full.',
       unknown: 'No room by that code.',
       started: 'That game has already begun.',
+      gone: 'The host has left: the game will not begin.',
     },
   },
   privateRoom: {
@@ -77,6 +78,7 @@ export const homeFr: HomeMessages = {
       full: 'Cette salle est pleine.',
       unknown: 'Aucune salle à ce code.',
       started: 'Cette partie a déjà commencé.',
+      gone: 'L’hôte est parti : la partie ne commencera pas.',
     },
   },
   privateRoom: {

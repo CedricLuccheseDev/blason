@@ -34,7 +34,12 @@ const http = createServer((req, res) => {
   res.writeHead(404).end()
 })
 
-const wss = new WebSocketServer({ server: http, path: '/ws' })
+// No message is larger than a host's book (rooms.ts, BOOK_MAX).
+const wss = new WebSocketServer({
+  server: http,
+  path: '/ws',
+  maxPayload: 16 * 1024,
+})
 
 wss.on('connection', (socket) => {
   const player: Player = {

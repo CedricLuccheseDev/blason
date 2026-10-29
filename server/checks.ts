@@ -8,13 +8,17 @@ import type { Move } from '../net/protocol'
 // name the turn where two browsers parted. Only the first is said: after it,
 // the game is no longer one.
 
-/** Whether something sent as an order looks like one. */
+/** The longest order the relay passes on, as its JSON: an order is a type and a few figures. */
+const MOVE_MAX = 512
+
+/** Whether something sent as an order looks like one, and is no larger than one. */
 export function isMove(move: unknown): move is Move {
   return (
     typeof move === 'object' &&
     move !== null &&
     'type' in move &&
-    typeof move.type === 'string'
+    typeof move.type === 'string' &&
+    JSON.stringify(move).length <= MOVE_MAX
   )
 }
 
@@ -29,19 +33,26 @@ export const fingerprints = (): Fingerprints => ({
   parted: false,
 })
 
-/** A fingerprint told for a turn; whether the game parts there, said once. */
+/** Turns back a fingerprint may be told for, and kept. */
+const KEPT = 10 * HASH_EVERY
+
+/** A fingerprint told for a turn played lately, `now` the game's turn; whether the game parts there, said once. Any other is not heard. */
 export function tell(
   prints: Fingerprints,
   seat: number,
-  turn: number,
-  hash: string,
+  turn: unknown,
+  hash: unknown,
+  now: number,
 ): boolean {
-  if (turn % HASH_EVERY !== 0 || prints.parted) return false
+  if (typeof turn !== 'number' || !Number.isInteger(turn)) return false
+  if (turn % HASH_EVERY !== 0 || turn > now || turn < now - KEPT) return false
+  if (typeof hash !== 'string' || hash.length > 64 || prints.parted)
+    return false
   const told = prints.told.get(turn) ?? new Map<number, string>()
   told.set(seat, hash)
   prints.told.set(turn, told)
   for (const old of prints.told.keys())
-    if (old < turn - 10 * HASH_EVERY) prints.told.delete(old)
+    if (old < now - KEPT) prints.told.delete(old)
   prints.parted = new Set(told.values()).size > 1
   return prints.parted
 }

@@ -182,6 +182,8 @@ export const SETUP_LIMITS = {
     max: 60 * SECOND,
     alone: 10 * SECOND,
     public: 30 * SECOND,
+    /** No one comes into the public game in its last seconds: the time for the last come to plant his standard (« plus personne n'entre dans les 5 dernières secondes »). */
+    lastCall: 5 * SECOND,
   },
   seed: { min: 1, max: 64 },
 } as const

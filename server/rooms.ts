@@ -1,5 +1,11 @@
 import { randomBytes } from 'node:crypto'
-import { SETUP_LIMITS, botsSetup, publicSetup, readSetup } from '../engine'
+import {
+  SETUP_LIMITS,
+  botsSetup,
+  publicSetup,
+  readSetup,
+  seatPersons,
+} from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import { fingerprints, isMove, tell } from './checks'
 import {
@@ -19,7 +25,7 @@ import type { Lobby, ToRelay, Upcoming } from '../net/protocol'
 // opens, its land drawn and no bot in it (« en ligne il faut 0 bot »), every
 // seat empty, its turns flowing from the first; whoever comes sits at once
 // on the first free seat, given the turns so far to catch up, and plants his
-// standard. No one comes in during the opening's last seconds (LAST_CALL),
+// standard. No one comes in during the opening's last seconds (SETUP_LIMITS.opening.lastCall),
 // so that the last to come still has the time to plant: then the game goes
 // on with whoever came, the seats no one took empty, and the next opens; if
 // no one came, it is dropped and the next takes its place; if one alone
@@ -31,10 +37,8 @@ import type { Lobby, ToRelay, Upcoming } from '../net/protocol'
 // gives it one, on every browser at the same turn, and his lord idle if not;
 // before a private game begins, he frees it.
 
-/** Turns before the opening ends when no one may come in any more: the time for the last to come to plant his standard. */
-const LAST_CALL = 50
-/** Turns a public game may be joined for, from its first. */
-const JOIN_TURNS = SETUP_LIMITS.opening.public - LAST_CALL
+/** Turns a public game may be joined for, from its first: all its opening but its last call. */
+const JOIN_TURNS = SETUP_LIMITS.opening.public - SETUP_LIMITS.opening.lastCall
 /** Ms a public game may be joined for: then the next opens. */
 export const JOIN_MS = JOIN_TURNS * TURN_MS
 
@@ -208,18 +212,20 @@ function keepBook(room: Room, setup: unknown) {
 export function hear(room: Room, player: Player, message: ToRelay) {
   const seat = room.players.indexOf(player)
   if (seat < 0) return
-  if (message.t === 'start' && seat === 0) {
-    // The host's book, if the relay can read it and it seats every person here.
+  // Once begun, a game's setup is never changed (the public game, begun
+  // from its first turn, takes no start at all).
+  if (message.t === 'start' && seat === 0 && !started(room)) {
+    // The host's book, if the relay can read it, fitted to who sits now:
+    // a guest come or gone since he launched keeps it his game.
     const setup = message.setup === undefined ? null : readSetup(message.setup)
-    if (setup && setup.seats.filter((s) => s.person).length >= seated(room))
-      room.setup = setup
+    if (setup) room.setup = seatPersons(setup, seated(room))
     begin(room)
   } else if (message.t === 'book' && seat === 0) keepBook(room, message.setup)
   else if (message.t === 'order' && started(room) && isMove(message.move))
     order(room, { ...message.move, player: seat })
   else if (
     message.t === 'hash' &&
-    tell(room.prints, seat, message.turn, message.hash)
+    tell(room.prints, seat, message.turn, message.hash, room.turn)
   )
     broadcast(room, { t: 'desync', turn: message.turn })
 }
@@ -230,7 +236,11 @@ export function leave(room: Room, player: Player) {
   if (seat < 0) return
   if (!started(room)) {
     room.players.splice(seat, 1)
-    if (room.players.length === 0) close(room)
+    // The host gone before his game, no one may launch it: his guests are
+    // told, and the room is no more.
+    if (seat === 0)
+      for (const p of room.players) p?.send({ t: 'error', reason: 'gone' })
+    if (seat === 0 || room.players.length === 0) close(room)
     else tellLobby(room)
     return
   }

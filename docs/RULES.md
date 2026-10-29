@@ -272,4 +272,6 @@ coming.
 - A lord who holds no land is out.
 - A lord who holds **80 %** of the land wins. From the tenth minute the share
   needed drops by 5 points a minute, down to 50 %.
-- The last lord standing wins.
+- The last lord standing wins, or the last side, in a game begun with more
+  than one: one begun with a single side (every lord in one team) is won by
+  the share alone.

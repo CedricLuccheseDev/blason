@@ -79,7 +79,8 @@ export type FromRelay =
   | Turn
   /** The players' states parted at this turn: a bug, not a cheat to punish. */
   | { t: 'desync'; turn: number }
-  | { t: 'error'; reason: 'full' | 'unknown' | 'started' }
+  /** A room that cannot be sat in: full, unknown, begun, or its host gone before his game. */
+  | { t: 'error'; reason: 'full' | 'unknown' | 'started' | 'gone' }
 
 /** A message read from the wire, or null if it is not one. */
 export function parse<T extends { t: string }>(data: unknown): T | null {

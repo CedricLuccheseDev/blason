@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { TICKS_PER_SECOND, UNIT } from './units'
-import { setOwner } from './land'
+import { createGame, setOwner } from './land'
 import { nextDrop, step, victoryShare } from './step'
-import { field, hold, playing } from './testing'
+import { RULES } from './rules'
+import { field, hold, playing, setupOf } from './testing'
 import { NEUTRAL, NO_ONE } from './types'
 import type { GameState, Host } from './types'
 
@@ -97,6 +98,22 @@ describe('the victory', () => {
     step(state)
     expect(state.players[1].alive).toBe(false)
     expect(state.winner).toBe(0)
+  })
+
+  it('waits for the share in a game begun with every lord in one team, not its first tick', () => {
+    const state = createGame(field(1000), setupOf(2, { teams: [0, 0] }), {
+      ...RULES,
+      fillSeconds: Number.MAX_SAFE_INTEGER,
+      sickness: 0,
+      seaWalled: 0,
+    })
+    state.players[0].standard = 0
+    state.players[1].standard = 999
+    state.tick = state.rules.openingTicks + 1
+    hold(state, 0, [0, 1, 2])
+    hold(state, 1, [997, 998, 999])
+    step(state)
+    expect(state.winner).toBe(NO_ONE)
   })
 
   it('takes from a lord with no land left his armies, his caravans and his alliances', () => {

@@ -97,6 +97,22 @@ export function hostSetup(book: Book): GameSetup {
   return drawn(book.seed, book.size, opening, seats)
 }
 
+/**
+ * A host's setup fitted to the persons seated when his game begins: the
+ * first seats theirs, a bot's seat given up for a guest come since he
+ * launched; a person's seat no one sits empty, no lord. His land, his bots
+ * and his teams stay as his book set them.
+ */
+export function seatPersons(setup: GameSetup, persons: number): GameSetup {
+  return {
+    ...setup,
+    seats: setup.seats.map((seat, i) => {
+      if (i < persons) return { ...seat, bot: null, person: true }
+      return seat.person ? { ...seat, person: false } : seat
+    }),
+  }
+}
+
 /** A host's book read back from the setup it made (hostSetup), as his guests see it before the game. */
 export function bookOf(setup: GameSetup): Book {
   const { seats } = setup

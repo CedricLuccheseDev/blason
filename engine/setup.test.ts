@@ -8,6 +8,7 @@ import {
   hostSetup,
   publicSetup,
   readSetup,
+  seatPersons,
 } from './setup'
 import { stateHash } from './step'
 import { field, setupOf } from './testing'
@@ -115,12 +116,19 @@ describe('the host’s setup', () => {
       [0, 'hard'],
       [1, 'hard'],
     ])
-    expect(seats.slice(6).every((s) => !s.bot && !s.person && s.team === -1)).toBe(true)
+    expect(
+      seats.slice(6).every((s) => !s.bot && !s.person && s.team === -1),
+    ).toBe(true)
     expect(opening).toBe(300)
   })
 
   it('keeps each for himself without teams, and its figures within their bounds', () => {
-    const { seats, opening } = hostSetup({ ...book, bots: 99, teams: 0, opening: 1 })
+    const { seats, opening } = hostSetup({
+      ...book,
+      bots: 99,
+      teams: 0,
+      opening: 1,
+    })
     expect(seats.every((s) => s.team === -1)).toBe(true)
     expect(seats.filter((s) => s.bot)).toHaveLength(SETUP_LIMITS.seats.max - 1)
     expect(opening).toBe(SETUP_LIMITS.opening.min)
@@ -141,5 +149,37 @@ describe('a host’s book read back', () => {
     expect(bookOf(hostSetup(book))).toEqual(book)
     const alone = { ...book, guests: 0, bots: 0, teams: 0 }
     expect(bookOf(hostSetup(alone))).toEqual({ ...alone, level: 'normal' })
+  })
+})
+
+describe('a host’s setup fitted to who sits', () => {
+  const book = {
+    seed: 'fit',
+    size: 'standard' as const,
+    guests: 1,
+    bots: 3,
+    level: 'hard' as const,
+    teams: 2,
+    opening: 200,
+  }
+
+  it('gives a bot’s seat to a guest come since the launch', () => {
+    const seats = seatPersons(hostSetup(book), 3).seats.slice(0, 5)
+    expect(seats.map((s) => [s.person, s.bot])).toEqual([
+      [true, null],
+      [true, null],
+      [true, null],
+      [false, 'hard'],
+      [false, 'hard'],
+    ])
+  })
+
+  it('leaves the seat of a guest gone empty, no lord, his land and teams kept', () => {
+    const fitted = seatPersons(hostSetup(book), 1)
+    expect(fitted.seats[1]).toEqual({
+      ...hostSetup(book).seats[1],
+      person: false,
+    })
+    expect(fitted.seed).toBe('fit')
   })
 })

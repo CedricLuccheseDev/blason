@@ -129,6 +129,8 @@ function Hosted() {
         restart: () => {
           setLaunched(false)
           setBook({ ...book, seed: randomSeed() })
+          // A game played alone left its room: a new one, that friends may come again.
+          if (relayUrl() && !seated) rooms.join('new')
         },
         quit: () => void navigate({ to: '/' }),
       }}

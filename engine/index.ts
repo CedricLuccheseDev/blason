@@ -22,6 +22,7 @@ export {
   landOf,
   publicSetup,
   readSetup,
+  seatPersons,
 } from './setup'
 export type { Book } from './setup'
 export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'

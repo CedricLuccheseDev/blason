@@ -71,15 +71,27 @@ function judge(state: GameState): void {
     lords.reduce((sum, id) => sum + state.players[id].tiles, 0)
   const share = victoryShare(state)
   const standing = [...sides.values()]
-  const won =
-    standing.length === 1
-      ? standing[0]
-      : standing.find((lords) => land(lords) * 1000 >= share * state.grid.area)
+  // The last side standing wins a game begun with others; one begun with a
+  // single side (a host alone, or every lord in one team) is won by the
+  // share alone, not as soon as its opening ends.
+  const last = standing.length === 1 && sidesAtStart(state) > 1
+  const won = last
+    ? standing[0]
+    : standing.find((lords) => land(lords) * 1000 >= share * state.grid.area)
   if (!won) return
   state.winner = won.reduce(
     (a, b) => (state.players[b].tiles > state.players[a].tiles ? b : a),
     won[0],
   )
+}
+
+/** The sides a game began with: its teams, and its lords alone, of those given a standard at its opening, the fallen among them (an empty seat had none). */
+function sidesAtStart(state: GameState): number {
+  const sides = new Set<string>()
+  state.players.forEach((lord, id) => {
+    if (lord.standard >= 0) sides.add(sideOf(state, id))
+  })
+  return sides.size
 }
 
 function isSeat(state: GameState, seat: number): boolean {
