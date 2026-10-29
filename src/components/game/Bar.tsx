@@ -14,6 +14,7 @@ export const ARMY_MARKS = {
   raid: 'sword',
   host: 'soldier',
   ban: 'pitchfork',
+  mercenaries: 'market',
 } as const
 
 /** The drawing in each coup's lozenge: its shape says which before its colour does. */

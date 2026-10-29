@@ -1,3 +1,4 @@
+import { disband } from './armies'
 import type { Alliance, GameState } from './types'
 
 // The alliances, as in OpenFront (docs/RULES.md): one order for all,
@@ -55,8 +56,7 @@ function seal(state: GameState, a: number, b: number) {
   })
   for (const host of state.hosts) {
     if (!isAllied(state, host.owner, host.target)) continue
-    state.players[host.owner].peasants += host.men
-    host.men = 0
+    disband(state, host)
   }
 }
 

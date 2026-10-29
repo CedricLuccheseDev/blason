@@ -6,20 +6,22 @@ import { holdOf, setOwner } from './land'
 import { NEUTRAL } from './types'
 import { pop, push } from './heap'
 import { walled } from './battle'
-import { freeVillages, marching, roadTo } from './muster'
+import { disband, hired } from './armies'
+import { costOf, freeWorks, marching, menFor, roadTo } from './muster'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
 
 // The war. A click raises an army out of the lord's peasants at his free
-// village nearest the front (muster.ts); it marches there over his land,
+// village nearest the front, or hires mercenaries for gold at his free
+// market nearest it (muster.ts); it marches there over his land,
 // seen by all, then enters by the border tile nearest the click and spreads
 // from there as a bulge moving towards it, a tile a tick whatever its size:
 // more men take it further, never faster. Each tile is held by its share of
 // its lord's peasants, or its militia when free, and costs the attacker as
 // the combat table says: a soldier is worth two peasants, one under a castle.
 // An army fights until it cannot pay for the next tile; with nothing left to
-// take, its survivors go home to the peasants. Two enemy armies that meet
-// fight a battle first (battle.ts).
+// take, its survivors go home to the peasants, the mercenaries their way
+// (armies.ts). Two enemy armies that meet fight a battle first (battle.ts).
 
 /**
  * The order an army takes tiles in: from where it entered, twice as fast
@@ -87,21 +89,7 @@ export function entryFor(state: GameState, player: number, tile: number) {
   return best
 }
 
-/** The men an army would take now: its share of the peasants, as many as the gold pays. */
-export function menFor(state: GameState, player: number, army: Army): number {
-  const lord = state.players[player]
-  const share = Math.floor((lord.peasants * state.rules.armies[army]) / 100)
-  const { menPrice } = state.rules
-  if (menPrice === 0) return share
-  return Math.min(share, Math.floor((lord.gold * UNIT) / menPrice))
-}
-
-/** What so many men cost, in thousandths of gold. */
-export function costOf(state: GameState, men: number): number {
-  return Math.floor((men * state.rules.menPrice) / UNIT)
-}
-
-/** A click: an army raised at the lord's free village nearest the front, marching there to strike the clicked tile's lord or free domain. */
+/** A click: an army raised at the lord's free village nearest the front, or mercenaries hired at his free market, marching there to strike the clicked tile's lord or free domain. */
 export function attack(
   state: GameState,
   player: number,
@@ -115,17 +103,18 @@ export function attack(
   if (men < UNIT) return
   let from = -1
   let road: Array<number> | null = null
-  for (const village of freeVillages(state, player, entry)) {
-    road = roadTo(state, player, village, entry)
+  const at = state.rules.raisedAt[army]
+  for (const site of freeWorks(state, player, entry, at)) {
+    road = roadTo(state, player, site, entry)
     if (road) {
-      from = village
+      from = site
       break
     }
   }
   if (!road) return
   const lord = state.players[player]
-  lord.peasants -= men
-  lord.gold -= costOf(state, men)
+  if (!hired(state, army)) lord.peasants -= men
+  lord.gold -= costOf(state, men, army)
   const target = state.owner[tile]
   state.hosts.push({
     owner: player,
@@ -229,8 +218,7 @@ function walk(state: GameState, host: Host) {
       host.queue = [[0, tile]]
       return
     }
-    state.players[host.owner].peasants += host.men
-    host.men = 0
+    disband(state, host)
     return
   }
   host.along = Math.min(
@@ -249,8 +237,7 @@ export function advanceHosts(state: GameState): void {
     }
     march(state, host)
     if (host.men === 0 || host.queue.length > 0) continue
-    state.players[host.owner].peasants += host.men
-    host.men = 0
+    disband(state, host)
   }
   state.hosts = state.hosts.filter((host) => host.men > 0)
 }

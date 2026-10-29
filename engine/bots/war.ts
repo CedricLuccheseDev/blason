@@ -1,7 +1,9 @@
+import { UNIT } from '../units'
 import { drawInt } from '../numbers'
-import { density } from '../land'
+import { capOf, density } from '../land'
 import { isAllied } from '../diplomacy'
-import { menFor } from '../war'
+import { hired } from '../armies'
+import { freeWorks, menFor } from '../muster'
 import type { Army } from '../rules'
 import type { GameState, Order } from '../types'
 
@@ -9,7 +11,9 @@ import type { GameState, Order } from '../types'
 // sweep away whole first, else the neighbour whose land is held thinnest; a
 // lord already struck by as many others as the level allows is left alone,
 // so that no one is hunted from every side at once; a bot that slips
-// strikes a neighbour drawn by lot, whenever, short of men.
+// strikes a neighbour drawn by lot, whenever, short of men. A bot with the
+// gold for a full company and a market free hires mercenaries, its peasants
+// left to hold its land.
 
 export const attack = (player: number, tile: number, army: Army): Order => ({
   player,
@@ -67,6 +71,17 @@ function weakest(state: GameState, me: number, open: Array<number>): number {
   return found
 }
 
+/** Whether a full company of mercenaries is in the lord's gold, and a market free to hire it at. */
+export function canHire(state: GameState, me: number): boolean {
+  const { armies } = state.rules
+  const full = Math.floor((capOf(state, me) * armies.mercenaries) / 100)
+  return (
+    full >= UNIT &&
+    menFor(state, me, 'mercenaries') >= full &&
+    freeWorks(state, me, 0, 'market').length > 0
+  )
+}
+
 /** A slip: a war on an enemy neighbour drawn by lot, at once, whatever its men. */
 function blunder(
   state: GameState,
@@ -108,10 +123,11 @@ export function war(
   if (prey < 0 || mine * 100 < thin * (115 - boldness / 2)) return []
   let army: Army = 'host'
   const roll = drawInt(state.seed, 100, 'army', me, state.tick)
-  if (roll < 20) army = 'raid'
+  if (canHire(state, me)) army = 'mercenaries'
+  else if (roll < 20) army = 'raid'
   else if (boldness > 60 && mine > thin * 1.5) army = 'ban'
   const share = (state.players[me].peasants * state.rules.armies[army]) / 100
-  if (menFor(state, me, army) * 10 < share * 8) return []
+  if (!hired(state, army) && menFor(state, me, army) * 10 < share * 8) return []
   const cells = fronts.get(prey) ?? []
   const aim = cells[drawInt(state.seed, cells.length, 'aim', me, state.tick)]
   return [attack(me, aim, army)]

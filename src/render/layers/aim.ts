@@ -3,7 +3,7 @@ import {
   canBuild,
   canStart,
   entryFor,
-  freeVillages,
+  freeWorks,
   roadTo,
 } from '../../../engine'
 import { drawRoad } from '../roads'
@@ -46,7 +46,7 @@ export function makeAim(state: GameState, me: number) {
   /** The road the army would march from the free village nearest the front, as it would be drawn; none if no village is free. */
   function roadOf(entry: number): Array<At> {
     if (entry < 0) return []
-    for (const village of freeVillages(state, me, entry)) {
+    for (const village of freeWorks(state, me, entry)) {
       const road = roadTo(state, me, village, entry)
       if (road) return drawRoad(state, road, (t) => state.owner[t] === me, 0)
     }

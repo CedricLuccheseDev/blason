@@ -9,7 +9,7 @@ import { makeWarning } from './layers/warning'
 import { TONE, playerColor } from './palette'
 import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
-import { warmFigures } from './figures'
+import { ARMY_LOOKS, warmFigures } from './figures'
 import type { Front, Spot } from './fronts'
 import type { Drawn, Line } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
@@ -44,7 +44,7 @@ const peasantColor = (owner: number) =>
 
 /** An army as it is first seen: no men yet, they walk in. */
 const enlist = (host: Host): Army => ({
-  troops: makeSquad(host.army, playerColor(host.owner)),
+  troops: makeSquad(ARMY_LOOKS[host.army], playerColor(host.owner)),
   peasants: makeSquad('peasant', peasantColor(host.target)),
   men: host.men,
   front: null,
@@ -212,13 +212,7 @@ export function makeArmies(me: number) {
   return {
     container,
     /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
-    draw(
-      state: GameState,
-      zoom: number,
-      view: Box,
-      between = 0,
-      far = 1,
-    ) {
+    draw(state: GameState, zoom: number, view: Box, between = 0, far = 1) {
       const seconds = performance.now() / 1000
       const dt = Math.min(0.1, seconds - last)
       last = seconds

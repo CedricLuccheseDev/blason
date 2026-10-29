@@ -55,9 +55,9 @@ Every lord starts with 50 gold.
 - **Gold** comes from the merchants alone: each **market** sends caravans,
   and a caravan arriving pays both its markets (see Merchants). There is no
   gold by the second.
-- Men are raised from the peasants for free: gold pays for works. (Paying a
-  man in gold stalled the games past forty minutes; the price stays in
-  `RULES.menPrice`, at 0.)
+- Men are raised from the peasants for free: gold pays for works and
+  mercenaries. (Paying a man raised in gold stalled the games past forty
+  minutes; the price stays in `RULES.menPrice`, at 0.)
 
 ## War
 
@@ -70,6 +70,14 @@ Every lord starts with 50 gold.
   army at a time from its people, so a lord has as many armies out as he has
   villages (`engine/muster.ts`). With every village's army out, a click
   raises none.
+- **Mercenaries** are hired at a **market** for gold: a company of a quarter
+  of the lord's cap of peasants, 2 gold a man (as many as the gold pays,
+  short of it), from his free market nearest the front, one company a market
+  at a time. They take no peasants, so the land holds as well while they
+  fight; when they are done their survivors go their way instead of home.
+  They march and fight as the host does. (Not yet in the bar: they come with
+  its redesign; the bots hire them when they have the gold for a full
+  company.)
 - The army first **marches** to the front over its lord's own land, 6 tiles a
   second, seen by all. Then it enters by the border tile nearest the click and
   pushes on towards it, in a **band** as wide as its men (6 tiles each side of

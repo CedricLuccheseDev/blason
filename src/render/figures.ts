@@ -7,6 +7,7 @@ import { css } from './art/ink'
 import type { Layer } from './art/men/kit'
 import type { Look } from './art/men/looks'
 import type { Sheet } from './art/men/atlas'
+import type { Army } from '../../engine'
 
 // The men as the map lays them: each look's sheet (art/men/atlas.ts) made a
 // texture once, every frame of it a sprite's texture; a man is two sprites,
@@ -15,6 +16,14 @@ import type { Sheet } from './art/men/atlas'
 // tile tall.
 
 export type { Look } from './art/men/looks'
+
+/** How each army's men look: the mercenaries, for now, as the host's (their own look comes with the bar redrawn). */
+export const ARMY_LOOKS: Readonly<Record<Army, Look>> = {
+  raid: 'raid',
+  host: 'host',
+  ban: 'ban',
+  mercenaries: 'host',
+}
 
 /** Map units for a unit of the drawings: a man some four map units tall, about a tile. */
 export const SIZE = 0.36

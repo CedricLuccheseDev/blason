@@ -21,7 +21,12 @@ export const en = {
       'Click another free domain to move it; it is yours when the count ends',
     click: 'click: attack',
     noLevy: 'every village of yours has an army out',
-    armies: { raid: 'Raid', host: 'Host', ban: 'Levy' },
+    armies: {
+      raid: 'Raid',
+      host: 'Host',
+      ban: 'Levy',
+      mercenaries: 'Mercenaries',
+    },
     works: {
       village: 'Village',
       market: 'Market',

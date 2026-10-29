@@ -201,7 +201,7 @@ export function summarize(
         army: a,
         share: state.rules.armies[a],
         men: Math.floor(men / UNIT),
-        gold: Math.floor(costOf(state, men) / UNIT),
+        gold: Math.floor(costOf(state, men, a) / UNIT),
       }
     }),
     work: hand.work,

@@ -23,7 +23,12 @@ export const fr: Messages = {
       'Clique un autre domaine libre pour le déplacer ; il sera à toi à la fin du compte',
     click: 'clic : attaquer',
     noLevy: 'tous tes villages ont une armée dehors',
-    armies: { raid: 'Chevauchée', host: 'Ost', ban: 'Arrière-ban' },
+    armies: {
+      raid: 'Chevauchée',
+      host: 'Ost',
+      ban: 'Arrière-ban',
+      mercenaries: 'Mercenaires',
+    },
     works: {
       village: 'Village',
       market: 'Marché',

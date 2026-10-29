@@ -5,8 +5,8 @@ import { TICKS_PER_SECOND } from './units'
 // Men and gold are counted in thousandths (UNIT), so every rate stays an
 // integer.
 
-/** The three armies a lord may raise: a share of his peasants. */
-export type Army = 'raid' | 'host' | 'ban'
+/** The armies a lord may send: three levied at a village, a share of his peasants; the mercenaries hired at a market for gold. */
+export type Army = 'raid' | 'host' | 'ban' | 'mercenaries'
 
 /** What a lord may build anywhere on his land, one thing a place. */
 export type Work = 'village' | 'market' | 'castle'
@@ -27,7 +27,7 @@ export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
   huge: 4,
 }
 
-/** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. */
+/** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. The mercenaries wait for the bar to be redrawn with Cédric (Concept, 29/10). */
 export const ARMIES: ReadonlyArray<Army> = ['raid', 'host', 'ban']
 export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
 export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
@@ -65,8 +65,12 @@ export type Rules = {
   sickness: number
   /** What a man raised costs, in thousandths of gold: 0 is OpenFront's free attack. */
   menPrice: number
-  /** The share of the peasants each army takes, in percent. */
+  /** The share each army takes, in percent: of the peasants for those levied at a village, of the cap for the mercenaries. */
   armies: Readonly<Record<Army, number>>
+  /** Where each army is raised: at a village, out of the peasants; at a market, hired for gold, the peasants left at home. */
+  raisedAt: Readonly<Record<Army, 'village' | 'market'>>
+  /** What a mercenary costs, in thousandths of gold. */
+  mercenaryPrice: number
   /** Tiles an army takes each tick at most, once at the front: its pace, whatever its size. */
   paceTiles: number
   /** How fast each army goes, on the march and at the front, in percent of the host's pace: a raid rides, the levy plods. */
@@ -149,9 +153,16 @@ export const RULES: Rules = {
   fillSeconds: 60,
   sickness: 10,
   menPrice: 0,
-  armies: { raid: 10, host: 25, ban: 50 },
+  armies: { raid: 10, host: 25, ban: 50, mercenaries: 25 },
+  raisedAt: {
+    raid: 'village',
+    host: 'village',
+    ban: 'village',
+    mercenaries: 'market',
+  },
+  mercenaryPrice: 2000,
   paceTiles: 3,
-  armySpeed: { raid: 125, host: 100, ban: 75 },
+  armySpeed: { raid: 125, host: 100, ban: 75, mercenaries: 100 },
   marchPace: 600,
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
   battleTicks: 40,

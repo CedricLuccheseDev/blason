@@ -3,10 +3,11 @@ import { apart, around } from '../grid'
 import { capOf, worksOf } from '../land'
 import { canStart, hasPicked, standards } from '../opening'
 import { NEUTRAL } from '../types'
-import { menFor } from '../war'
+import { hired } from '../armies'
+import { menFor } from '../muster'
 import { canBuild, priceOf } from '../works'
 import { TALK_EVERY, talk } from './talk'
-import { attack, war } from './war'
+import { attack, canHire, war } from './war'
 import { SKILLS } from './levels'
 import { plot } from './coups'
 import type { Level, Skill } from './levels'
@@ -138,6 +139,14 @@ function construct(
   return tile < 0 ? [] : [{ player: me, type: 'build', tile, work }]
 }
 
+/** Whether it has an army to send: a village with none out, or, every village's out, the gold to hire mercenaries at a market. */
+function armed(state: GameState, me: number): boolean {
+  const levied = state.hosts.filter(
+    (h) => h.owner === me && !hired(state, h.army),
+  ).length
+  return levied < worksOf(state, me, 'village') || canHire(state, me)
+}
+
 /** The free land, at a point of its edge drawn, struck well inside. */
 function expand(state: GameState, me: number, free: Array<number>) {
   const edge = free[drawInt(state.seed, free.length, 'edge', me, state.tick)]
@@ -173,8 +182,7 @@ export function createBot(
     if (built.length) return built
     const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
     if (state.tick < rest || !full) return []
-    const out = state.hosts.filter((h) => h.owner === me).length
-    if (out >= worksOf(state, me, 'village')) return []
+    if (!armed(state, me)) return []
     const free = fronts.get(NEUTRAL)
     const orders = free
       ? expand(state, me, free)
