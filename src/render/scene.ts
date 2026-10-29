@@ -15,6 +15,7 @@ import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
+import { makeLit } from './layers/lit'
 import { makePacts } from './layers/pacts'
 import { makeEnvoys } from './envoys'
 import { makeBuilding } from './layers/building'
@@ -100,6 +101,7 @@ export function makeScene(
   const trade = makeTrade(makeStamps(app.renderer), me)
   const tidings = makeTidings(me)
   const allies = makeAllies(me, regions.outline)
+  const lit = makeLit(regions.outline)
   const raids = makeRaids(regions.outline)
   const building = makeBuilding(me)
   const seals = makeLevySeals()
@@ -120,6 +122,7 @@ export function makeScene(
       trade.roads,
       lines,
       borders.coast,
+      lit.container,
       scars.container,
       marks.container,
       life.container,
@@ -172,6 +175,8 @@ export function makeScene(
       })
       return [...asking, ...envoys.anchors()]
     },
+    /** The lord whose land is lit, pointed at in the HUD's list; none. */
+    light: lit.light,
     /** The page's textures, which the game's end does not take with it. */
     destroy() {
       page.destroy()
@@ -189,6 +194,7 @@ export function makeScene(
       ground.relayout(regions.keys(), traced)
       ground.draw(seen, zoom, now)
       borders.update(retraced, zoom)
+      lit.draw(zoom, retraced)
       marks.update(zoom)
       life.draw(state, seen, zoom, now)
       allies.draw(state, zoom, traced, now)

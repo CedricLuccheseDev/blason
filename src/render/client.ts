@@ -213,6 +213,7 @@ export async function mountGame(
     zoom: (step) => camera.zoomBy(step),
     home: () => camera.home(),
     heralds: heralds.listen,
+    light: scene.light,
     attack() {
       const tile = pin.menuAt()
       const { army } = hand.hand

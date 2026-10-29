@@ -16,18 +16,33 @@ import { useMessages } from '~/i18n'
  * (an ally's links on a line ruled in green, a foe's sword, a traitor's
  * broken shield) and his share. Mine ringed in gold; the lord under the
  * pointer lit, as he stands out on the map (« enlève le hud en bas à gauche
- * qui affiche le royaume que tu vises, highlight sur le panneau »). The fallen leave it,
- * so that it shortens as the game goes; it folds away at a click.
+ * qui affiche le royaume que tu vises, highlight sur le panneau »), and the
+ * other way, a line under the pointer lights its lord's land on the map
+ * (« quand on hover highlight sur la map le territoire du seigneur »). The
+ * fallen leave it, so that it shortens as the game goes; it folds away at a
+ * click.
  */
 export function Lords({
   summary,
   aimed,
-}: Readonly<{ summary: Summary; aimed: number | null }>) {
+  onLight,
+}: Readonly<{
+  summary: Summary
+  aimed: number | null
+  /** A lord's line pointed at, his land to light on the map; none when the pointer leaves. */
+  onLight: (lord: number | null) => void
+}>) {
   const m = useMessages()
   const compact = useCompact()
   // Folded on a phone, where the map needs the room; open elsewhere. The
   // first render cannot know the screen yet: it folds once it does.
   const [open, setOpen] = useState(true)
+  /** The line under the pointer, lit as its land is on the map. */
+  const [pointed, setPointed] = useState<number | null>(null)
+  const point = (lord: number | null) => {
+    setPointed(lord)
+    onLight(lord)
+  }
   useEffect(() => {
     if (compact) setOpen(false)
   }, [compact])
@@ -67,7 +82,7 @@ export function Lords({
       {open && (
         <div className="flex flex-col gap-px">
           {rows.map(({ lord, rank }) => {
-            const lit = lord.seat === aimed
+            const lit = lord.seat === aimed || lord.seat === pointed
             const self = lord.key === me
             // An ally's line is ruled in the alliance's green down its left,
             // as his border is on the map; mine ringed in gold; the lord
@@ -80,7 +95,9 @@ export function Lords({
             return (
               <div
                 key={lord.seat}
-                className={`relative flex items-center border-l-[3px] px-1 ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
+                onPointerEnter={() => point(lord.seat)}
+                onPointerLeave={() => point(null)}
+                className={`pointer-events-auto relative flex items-center border-l-[3px] px-1 ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
               >
                 <span
                   aria-hidden="true"

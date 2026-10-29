@@ -21,4 +21,6 @@ export type GameHandle = {
   home: () => void
   /** Where the HUD lays its pieces on the map, told each time they move; the call returned stops it. */
   heralds: (listener: (heralds: Heralds) => void) => () => void
+  /** The land of a lord pointed at in the list of lords, lit on the map; none. */
+  light: (lord: number | null) => void
 }
