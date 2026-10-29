@@ -60,10 +60,13 @@ export function mercenarySeal(html, px) {
   const purse = after(html, 'Marché')
     .match(/<svg[\s\S]*?<\/svg>/)[0]
     .match(/<g transform="translate[^"]*">([\s\S]*?)<\/g><\/g><\/svg>/)[1]
-  return seal.replace(
-    /<g transform="translate\(15 15\.5\) scale\(0\.75\)">[\s\S]*?<\/g><\/g><\/svg>/,
-    `<g transform="translate(15 15) scale(0.75)">${purse}</g></g></svg>`,
-  )
+  // In gold, paid in gold: apart from the three levied at a village at a glance.
+  return seal
+    .replace('fill="var(--color-vellum)"', 'fill="var(--color-gilt)"')
+    .replace(
+      /<g transform="translate\(15 15\.5\) scale\(0\.75\)">[\s\S]*?<\/g><\/g><\/svg>/,
+      `<g transform="translate(15 15) scale(0.75)">${purse}</g></g></svg>`,
+    )
 }
 
 /** The HUD's key badge, a lozenge with the key in it, at an emblem's top right. */
@@ -73,3 +76,16 @@ export const key = (k) =>
 /** The sheet of the HUD round a piece, its gilt rule inside. */
 export const sheet = (body, extra = '') =>
   `<div class="hud-enter relative rounded-md border-[1.5px] border-quill bg-vellum shadow-lift ${extra}"><span class="pointer-events-none absolute inset-[3px] rounded-sm border border-gilt"></span>${body}</div>`
+
+/** The glyph at an emblem's heart, its paths alone (drawn on 24 units). */
+export function glyph(html, label) {
+  const svg = after(html, label).match(/<svg[\s\S]*?<\/svg>/)[0]
+  const groups = [
+    ...svg.matchAll(/<g transform="translate[^"]*">([\s\S]*?)<\/g>/g),
+  ]
+  return groups.at(-1)[1]
+}
+
+/** A medallion as the bar's works are drawn: parchment, ink, a ring of a colour, a glyph at its heart; so many pixels wide. */
+export const medallion = (paths, ring, px) =>
+  `<svg viewBox="0 0 48 48" aria-hidden="true" class="shrink-0 overflow-visible" style="width: calc(${px}px * var(--hud)); height: calc(${px}px * var(--hud));"><circle cx="24" cy="24" r="18" fill="var(--color-vellum)" stroke="var(--color-quill)" stroke-width="2"></circle><circle cx="24" cy="24" r="14" fill="none" stroke="${ring}" stroke-width="2.6"></circle><g transform="translate(13.92 13.92) scale(0.84)">${paths}</g></svg>`
