@@ -6,8 +6,9 @@ import type { Caravan, GameState } from '../../../engine'
 
 // What the player's works bring, written where they bring it: a "+" of gold
 // rises from a market when a caravan arrives there, a "+" of peasants from
-// the villages every few seconds while they are born, those of the whole
-// land shared among them; while there are more than the land and villages
+// the villages each second while they are born, those of the whole land
+// shared among them so that their figures add up to the purse's "+N/s"
+// (« on voit encore les +1 alors qu'ils génèrent plus »); while there are more than the land and villages
 // feed, a red "−" of the sick instead, and a red cross on each
 // village, as on a plague house. A work of his taken by
 // another is struck out where it stood: red rings spread from it and a red
@@ -16,26 +17,36 @@ import type { Caravan, GameState } from '../../../engine'
 // that the map does not swarm with figures. Sized on screen.
 
 const SHARP = 8
-/** How long a figure rises, in seconds, and how high, in pixels. */
+/** How long a figure rises, in seconds, and how high, in pixels: the gold, rarer, longer and higher. */
 const LIFE = 1.2
 const RISE = 22
+const GOLD_LIFE = 2.2
+const GOLD_RISE = 34
 /** Seconds between two figures over the villages. */
 const VILLAGE_EVERY = 1
 
-const styleOf = (fill: number) =>
+const styleOf = (fill: number, size = 16) =>
   new TextStyle({
     fontFamily: "'Alegreya Sans', 'Trebuchet MS', sans-serif",
     fontWeight: '900',
-    fontSize: 16 * SHARP,
+    fontSize: size * SHARP,
     fill,
-    stroke: { color: TONE.ink, width: 3 * SHARP, join: 'round' },
+    stroke: { color: TONE.ink, width: (size / 5) * SHARP, join: 'round' },
   })
-const GOLD = styleOf(TONE.gold)
+/** A caravan's gold, a few times a minute a market: larger, to be seen. */
+const GOLD = styleOf(TONE.gold, 22)
 /** A light green, read on the ink of its stroke; the sick in red. */
 const PEASANTS = styleOf(0x8fd19e)
 const SICK = styleOf(TONE.fight)
 
-type Tiding = { text: BitmapText; x: number; y: number; born: number }
+type Tiding = {
+  text: BitmapText
+  x: number
+  y: number
+  born: number
+  life: number
+  rise: number
+}
 /** How long a lost work stays struck out, in seconds, and its seal's radius on screen. */
 const STRUCK = 5
 const SEAL = 10
@@ -47,6 +58,9 @@ export function makeTidings(me: number) {
   let seen = new Map<Caravan, number>()
   let tick = -1
   let lastVillages = 0
+  /** The births not yet written, in peasants, and the village the next share goes to first. */
+  let owed = 0
+  let turn = 0
   const marks = container.addChild(new Graphics())
   /** My works at the last tick, by tile; those I lost, where and when. */
   let held = new Map<number, string>()
@@ -61,7 +75,15 @@ export function makeTidings(me: number) {
     const text = container.addChild(new BitmapText({ text: words, style }))
     text.anchor.set(0.5, 1)
     const { x, y } = siteOf(state, tile)
-    live.push({ text, x, y, born: performance.now() / 1000 })
+    const gold = style === GOLD
+    live.push({
+      text,
+      x,
+      y,
+      born: performance.now() / 1000,
+      life: gold ? GOLD_LIFE : LIFE,
+      rise: gold ? GOLD_RISE : RISE,
+    })
   }
 
   /** The caravans gone since the last tick that had reached the end of their road. */
@@ -96,10 +118,22 @@ export function makeTidings(me: number) {
       return
     }
     const cap = capOf(state, me)
-    if (lord.peasants >= cap) return
-    const born = (cap * VILLAGE_EVERY) / rules.fillSeconds / UNIT
-    const each = Math.max(1, Math.floor(born / villages.length))
-    for (const v of villages) say(state, v.tile, `+${each}`, PEASANTS)
+    if (lord.peasants >= cap) {
+      owed = 0
+      return
+    }
+    // The whole births of the second, shared out whole: the first villages
+    // in turn take one more, so that every figure written is a true one.
+    owed += (cap * VILLAGE_EVERY) / rules.fillSeconds / UNIT
+    const born = Math.floor(owed)
+    owed -= born
+    const n = villages.length
+    turn = (turn + 1) % n
+    villages.forEach((v, i) => {
+      const each =
+        Math.floor(born / n) + ((i - turn + n) % n < born % n ? 1 : 0)
+      if (each > 0) say(state, v.tile, `+${each}`, PEASANTS)
+    })
   }
 
   /** My works taken since the last tick, struck out where they stood. */
@@ -178,15 +212,15 @@ export function makeTidings(me: number) {
       strike(zoom, seconds)
       if (me >= 0) plague(state, zoom)
       for (let i = live.length - 1; i >= 0; i--) {
-        const { text, x, y, born } = live[i]
-        const t = (seconds - born) / LIFE
+        const { text, x, y, born, life, rise } = live[i]
+        const t = (seconds - born) / life
         if (t >= 1) {
           text.destroy()
           live.splice(i, 1)
           continue
         }
         text.scale.set(1 / zoom / SHARP)
-        text.position.set(x, y - (8 + RISE * t) / zoom)
+        text.position.set(x, y - (8 + rise * t) / zoom)
         text.alpha = t < 0.7 ? 1 : (1 - t) / 0.3
       }
     },
