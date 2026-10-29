@@ -10,7 +10,7 @@ import { Bar } from './Bar'
 import { Moment } from './Moment'
 import { Banner } from './Banner'
 import { GameBook } from './GameBook'
-import { BookButton, HomeButton } from './BookParts'
+import { BookButton, HomeMark } from './BookParts'
 import { Failed } from './Failed'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Book, Level, MapSize } from '../../../engine'
@@ -30,7 +30,9 @@ const seedOf = () => new URLSearchParams(window.location.search).get('seed')
  * the seal of an alliance asking to be renewed beside the ally's name, the
  * heralds' letters of the offers and the news where it happened (Heralds.tsx);
  * at the bottom the bar, the purse in it; bottom right the book's button, for a hosted game (the camera's are gone:
- * « enlève les boutons de zoom et centrage à droite ils servent à rien »); the
+ * « enlève les boutons de zoom et centrage à droite ils servent à rien »);
+ * top left, over the lords, the game's name, the way home (« met dans le
+ * header en haut à gauche, au moins le logo du jeu »); the
  * cartouche beside the pointer, or, on another lord's land right clicked,
  * his menu there.
  */
@@ -153,6 +155,7 @@ export function GameScreen({
           <Heralds game={game} summary={summary} />
           <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
             <div className="relative flex w-80 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
+              <HomeMark onHome={() => void navigate({ to: '/' })} />
               {!waiting && (
                 <Lords
                   summary={summary}
@@ -187,7 +190,6 @@ export function GameScreen({
               </div>
               <div className="pointer-events-auto flex flex-col gap-2 justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
                 {hosting && <BookButton onOpen={() => setOpen(true)} />}
-                <HomeButton onHome={() => void navigate({ to: '/' })} />
               </div>
             </div>
           </div>

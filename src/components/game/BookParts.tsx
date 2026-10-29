@@ -1,4 +1,4 @@
-import { Act } from '../hud/Act'
+import { Act, actClass } from '../hud/Act'
 import { Shield } from '../hud/Emblem'
 import { hex } from './format'
 import type { Book } from '../../../engine'
@@ -127,27 +127,21 @@ export function BookButton({ onOpen }: Readonly<{ onOpen: () => void }>) {
   )
 }
 
-/** The way back to the home, over the book's: a little gatehouse (« ça manque d'un bouton home pour revenir à l'accueil »). */
-export function HomeButton({ onHome }: Readonly<{ onHome: () => void }>) {
+/** The game's name top left, its mark in IM Fell on a sheet, the way back to the home (« met dans le header en haut à gauche, au moins le logo du jeu »). */
+export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
   const m = useMessages().book
   return (
-    <Act tone="plain" label={m.home} onClick={onHome}>
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6">
-        <path
-          d="M4 20 V9 L7 6 L10 9 V11 H14 V9 L17 6 L20 9 V20 Z"
-          fill="var(--color-vellum)"
-          stroke="var(--color-quill)"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M10 20 V16 Q12 13.5 14 16 V20"
-          fill="var(--color-gilt)"
-          stroke="var(--color-quill)"
-          strokeWidth="1.4"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </Act>
+    <button
+      type="button"
+      onClick={onHome}
+      aria-label={m.home}
+      title={m.home}
+      className={`${actClass('plain')} cursor-pointer`}
+    >
+      {/* norm-ok: wordmark, not copy */}
+      <span className="font-mark text-hud-xl leading-none text-quill">
+        Blason
+      </span>
+    </button>
   )
 }
