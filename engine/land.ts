@@ -65,6 +65,7 @@ export function createGame(
     hosts: [],
     alliances: [],
     requests: [],
+    offerings: [],
     caravans: [],
     strikes: [],
     scars: [],

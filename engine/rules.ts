@@ -121,6 +121,9 @@ export type Rules = {
   allianceTicks: number
   renewTicks: number
   requestTicks: number
+  /** An offering gives so much of the giver's gold, in percent; it is remembered so long, a bot that received it leaving the giver in peace the while and taking his alliance more readily. */
+  offeringShare: number
+  offeringMemory: number
   /** A traitor's mark lasts so long, and his land holds so much the while, in percent. */
   felonTicks: number
   felonHold: number
@@ -193,6 +196,8 @@ export const RULES: Rules = {
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,
+  offeringShare: 25,
+  offeringMemory: 2 * MINUTE,
   felonTicks: 30 * SECOND,
   felonHold: 50,
   caravanTicks: 10 * SECOND,

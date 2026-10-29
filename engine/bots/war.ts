@@ -1,7 +1,7 @@
 import { UNIT } from '../units'
 import { drawInt } from '../numbers'
 import { capOf, density } from '../land'
-import { isAllied } from '../diplomacy'
+import { gaveLately, isAllied } from '../diplomacy'
 import { hired } from '../armies'
 import { freeWorks, menFor } from '../muster'
 import type { Army } from '../rules'
@@ -10,6 +10,7 @@ import type { GameState, Order } from '../types'
 // The bots' wars: whom to strike, and with which army. A lord its host could
 // sweep away whole first, else the neighbour whose land is held thinnest; a
 // lord already struck by as many others as the level allows is left alone,
+// and so is one who gave it an offering lately,
 // so that no one is hunted from every side at once; a bot that slips
 // strikes a neighbour drawn by lot, whenever, short of men. A bot with the
 // gold for a full company and a market free hires mercenaries, its peasants
@@ -30,7 +31,7 @@ function hunted(state: GameState, me: number, lord: number, hunters: number) {
   return by.size >= hunters
 }
 
-/** The lords bordering mine that I may strike: no ally, none already hunted. */
+/** The lords bordering mine that I may strike: no ally, none already hunted, none who gave me an offering lately. */
 function preys(
   state: GameState,
   me: number,
@@ -41,7 +42,8 @@ function preys(
     (owner) =>
       owner >= 0 &&
       !isAllied(state, me, owner) &&
-      !hunted(state, me, owner, hunters),
+      !hunted(state, me, owner, hunters) &&
+      !gaveLately(state, owner, me),
   )
 }
 

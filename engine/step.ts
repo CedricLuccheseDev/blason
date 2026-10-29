@@ -1,7 +1,7 @@
 import { TICKS_PER_SECOND } from './units'
 import { fingerprint } from './numbers'
 import { moveCaravans, sendCaravans } from './caravans'
-import { ally, breakAlliance, expireDiplomacy } from './diplomacy'
+import { ally, breakAlliance, expireDiplomacy, offer } from './diplomacy'
 import { grow } from './land'
 import { grantStarts, pickStart } from './opening'
 import { COUPS, WORKS } from './rules'
@@ -76,11 +76,16 @@ const KINDS: ReadonlySet<string> = new Set<Order['type']>([
   'coup',
   'ally',
   'breakAlliance',
+  'offering',
 ])
 
 function isValid(state: GameState, order: Order): boolean {
   if (!KINDS.has(order.type) || !isSeat(state, order.player)) return false
-  if (order.type === 'ally' || order.type === 'breakAlliance')
+  if (
+    order.type === 'ally' ||
+    order.type === 'breakAlliance' ||
+    order.type === 'offering'
+  )
     return isSeat(state, order.target)
   const { tile } = order
   if (!Number.isInteger(tile) || tile < 0 || tile >= state.owner.length)
@@ -106,6 +111,7 @@ function apply(state: GameState, order: Order): void {
   else if (order.type === 'coup')
     launch(state, order.player, order.tile, order.coup)
   else if (order.type === 'ally') ally(state, order.player, order.target)
+  else if (order.type === 'offering') offer(state, order.player, order.target)
   else breakAlliance(state, order.player, order.target)
 }
 

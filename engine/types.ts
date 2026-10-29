@@ -94,6 +94,9 @@ export type Alliance = {
 
 type Request = { from: number; to: number; expires: number }
 
+/** An offering given, remembered a while (rules' offeringMemory): by whom, to whom, at which tick. */
+type Offering = { from: number; to: number; tick: number }
+
 /** A caravan from one lord's market to another's, by a road through its lord's land, his allies' and free land. */
 export type Caravan = {
   owner: number
@@ -121,6 +124,7 @@ export type GameState = {
   hosts: Array<Host>
   alliances: Array<Alliance>
   requests: Array<Request>
+  offerings: Array<Offering>
   caravans: Array<Caravan>
   strikes: Array<Strike>
   scars: Array<Scar>
@@ -133,5 +137,6 @@ export type Order = { player: number } & (
   | { type: 'build'; tile: number; work: Work }
   | { type: 'ally'; target: number }
   | { type: 'breakAlliance'; target: number }
+  | { type: 'offering'; target: number }
   | { type: 'coup'; tile: number; coup: Coup }
 )

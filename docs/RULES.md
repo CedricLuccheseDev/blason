@@ -148,6 +148,12 @@ herald's letter of an offer made to you, the seal of an alliance to renew:
   against each other go home.
 - Breaking an alliance is immediate and seen by all: the breaker bears the
   **traitor's mark** for 30 seconds, his land holding half as well.
+- An **offering** gives another lord a quarter of one's gold. It is
+  remembered 2 minutes: a bot that received it leaves the giver in peace the
+  while (it opens no war on him, though it still answers an army of his), and
+  accepts his alliance though it fights him or holds two allies already
+  (three at most). Between players it is a gift or a ransom, nothing more.
+  (Its button comes with the right click's menu, drawn on the mockup first.)
 
 ## Merchants
 

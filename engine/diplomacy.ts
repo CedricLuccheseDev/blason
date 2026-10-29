@@ -6,7 +6,8 @@ import type { Alliance, GameState } from './types'
 // once both ask. Allies may not strike each other: their fights stop and
 // the men go home. An alliance runs out after a few minutes, which makes no
 // traitor; broken, it marks its breaker a traitor a while, his land holding
-// half as well, seen by all.
+// half as well, seen by all. An offering gives another lord a share of one's
+// gold, remembered a while (the bots leave the giver in peace for it).
 
 export function isAllied(state: GameState, a: number, b: number): boolean {
   return (
@@ -101,4 +102,21 @@ export function breakAlliance(
 export function expireDiplomacy(state: GameState) {
   state.requests = state.requests.filter((r) => r.expires > state.tick)
   state.alliances = state.alliances.filter((x) => x.expires > state.tick)
+  const memory = state.rules.offeringMemory
+  state.offerings = state.offerings.filter((o) => state.tick - o.tick < memory)
 }
+
+/** An offering: a share of the lord's gold to another lord standing, remembered a while. */
+export function offer(state: GameState, player: number, target: number) {
+  if (target === player || !state.players[target].alive) return
+  const giver = state.players[player]
+  const gold = Math.floor((giver.gold * state.rules.offeringShare) / 100)
+  if (gold <= 0) return
+  giver.gold -= gold
+  state.players[target].gold += gold
+  state.offerings.push({ from: player, to: target, tick: state.tick })
+}
+
+/** Whether a lord gave another an offering lately, still remembered. */
+export const gaveLately = (state: GameState, from: number, to: number) =>
+  state.offerings.some((o) => o.from === from && o.to === to)
