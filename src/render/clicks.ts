@@ -3,6 +3,7 @@ import { keyOf } from './keys'
 import { tilePlaces } from './places'
 import type { GameState, Order } from '../../engine'
 import type { makeHand } from './hand'
+import type { Spot } from './roads'
 
 // What a left click on the map sends, and a key: in the opening, the player's
 // standard, only where it may stand (the last one sent is the one a lone
@@ -62,5 +63,24 @@ export function menuFrom(
   return (lord: number, x: number, y: number) => {
     point(x, y)
     open(nameTile(state, lord))
+  }
+}
+
+/** Where a click on the HUD brings the camera: to an army of mine, by the village or market it left from, grown while pointed at; to a lord's land, where his name is written. */
+export function seeking(
+  scene: {
+    flagOf: (from: number) => Spot | null
+    placeOf: (lord: number) => Spot | null
+    lightArmy: (from: number | null) => void
+  },
+  camera: { toward: (x: number, y: number) => void },
+) {
+  const go = (at: Spot | null) => {
+    if (at) camera.toward(at.x, at.y)
+  }
+  return {
+    seek: (from: number) => go(scene.flagOf(from)),
+    spot: scene.lightArmy,
+    seekLord: (lord: number) => go(scene.placeOf(lord)),
   }
 }

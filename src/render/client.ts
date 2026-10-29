@@ -7,7 +7,7 @@ import { makeInput } from './input'
 import { makeHand } from './hand'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
-import { makeClick, makeKeys, menuFrom } from './clicks'
+import { makeClick, makeKeys, menuFrom, seeking } from './clicks'
 import { makePerf } from './perf'
 import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
@@ -226,15 +226,7 @@ export async function mountGame(
     heralds: heralds.listen,
     light: scene.light,
     menu: menuFrom(state, aiming.point, pin.open),
-    seek(from) {
-      const at = scene.flagOf(from)
-      if (at) camera.toward(at.x, at.y)
-    },
-    spot: scene.lightArmy,
-    seekLord(lord) {
-      const at = scene.placeOf(lord)
-      if (at) camera.toward(at.x, at.y)
-    },
+    ...seeking(scene, camera),
     launch(book) {
       session.launch?.(hostSetup({ ...book, seed: land.seed, size: land.size }))
       refresh()

@@ -3,9 +3,9 @@ import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
 import { makeFallen } from './layers/fallen'
-import { makeStandard } from './layers/standard'
 import { makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
+import { makeFlags } from './flags'
 import { TONE, playerColor } from './palette'
 import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
@@ -23,12 +23,8 @@ import type { GameState, Host } from '../../engine'
 // ground between them and face each other there. Men lost fall where they
 // stand (layers/fallen.ts); a side comes and goes in a fade. Among each
 // army's men, its standard-bearer holds high its banner, its lord's arms and
-// its men written on it (layers/standard.ts), grown while the player points
-// at it in his campaigns (« quand on hover ça la met en valeur »). An enemy
-// army coming for the player is shown from afar (layers/warning.ts).
-
-/** How much a standard pointed at in the campaigns grows. */
-const LIT = 1.45
+// its men written on it (flags.ts). An enemy army coming for the player is
+// shown from afar (layers/warning.ts).
 
 /** Seconds for an army to fade in or out. */
 const FADE = 0.5
@@ -71,9 +67,7 @@ export function makeArmies(me: number) {
   )
   const fronts = makeFronts()
   const armies = new Map<Host, Army>()
-  const standards = new Map<Army, ReturnType<typeof makeStandard>>()
-  /** The army pointed at in the campaigns, by the village or market it left from; none. */
-  let lit: number | null = null
+  const flags = makeFlags(container)
   let tick = -1
   let last = performance.now() / 1000
 
@@ -136,8 +130,7 @@ export function makeArmies(me: number) {
     army.peasants.alpha = Math.max(0, army.peasants.alpha - dt / FADE)
     if (army.troops.alpha > 0) return
     armies.delete(host)
-    standards.get(army)?.box.destroy({ children: true })
-    standards.delete(army)
+    flags.forget(army)
   }
 
   /** The armies the game has now followed a frame further. */
@@ -181,34 +174,6 @@ export function makeArmies(me: number) {
     return drawn
   }
 
-  /** Each army's standard among its men, following them, faded in and out with them. */
-  function label(zoom: number, shown: number, seconds: number) {
-    for (const [host, army] of armies) {
-      const over = middle(army.troops.men)
-      if (!over) continue
-      const was = army.flag ?? over
-      army.flag = {
-        x: was.x + (over.x - was.x) * 0.2,
-        y: was.y + (over.y - was.y) * 0.2,
-      }
-      let drawn = standards.get(army)
-      if (!drawn) {
-        drawn = makeStandard(army.troops.color, army.troops.look)
-        standards.set(army, drawn)
-        container.addChild(drawn.box)
-      }
-      drawn.box.alpha = army.troops.alpha
-      drawn.box.position.set(army.flag.x, army.flag.y)
-      drawn.box.scale.set(host.from === lit && !army.gone ? LIT : 1)
-      if (host.from === lit) container.addChild(drawn.box)
-      drawn.show(Math.floor(army.men / UNIT), zoom, shown, {
-        walking: army.troops.men.some((m) => m.moving),
-        face: army.troops.men[0]?.facing ?? 1,
-        seconds,
-      })
-    }
-  }
-
   /** Every side drawn: each army's men, and the peasants before it. */
   function sides(): Array<Drawn> {
     return [...armies.values()].flatMap((a) => [
@@ -225,15 +190,9 @@ export function makeArmies(me: number) {
       return army ? middle(army.troops.men) : null
     },
     /** Where the standard of an army stands, by the village or market it left from; none while it shows none. */
-    flagOf(from: number): Spot | null {
-      for (const [host, army] of armies)
-        if (host.from === from && !army.gone) return army.flag
-      return null
-    },
+    flagOf: (from: number) => flags.flagOf(armies, from),
     /** The army to grow, by the village or market it left from; none. */
-    light(from: number | null) {
-      lit = from
-    },
+    light: flags.light,
     /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
     draw(state: GameState, zoom: number, view: Box, between = 0, far = 1) {
       const seconds = performance.now() / 1000
@@ -257,7 +216,7 @@ export function makeArmies(me: number) {
       roads.draw(state, marches, zoom)
       troops.draw(sides(), lines(), seconds, view)
       fallen.draw(seconds)
-      label(zoom / far, legible(far), seconds)
+      flags.place(armies, zoom / far, legible(far), seconds)
     },
   }
 }

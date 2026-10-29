@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { ActMedallion, Shield, StandingBadge } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
 import { Caption, Inline, Panel } from '../hud/Layout'
-import { Word } from '../hud/Text'
+import { Name } from '../hud/Text'
 import { useBeside } from '../hud/useBeside'
 import { count, hex } from './format'
 import { menuOf } from './lordMenu'
@@ -138,7 +138,7 @@ export function LordMenu({
       <Panel className="pointer-events-auto">
         <Caption>
           <Shield color={hex(lord.color)} size="s" />
-          <Word className="whitespace-nowrap">{name}</Word>
+          <Name className="whitespace-nowrap">{name}</Name>
           {standingsOf(summary.lords[seat], m).map(({ standing, label }) => (
             <StandingBadge key={standing} standing={standing} label={label} />
           ))}

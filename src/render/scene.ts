@@ -27,6 +27,7 @@ import { makeVolleys } from './layers/volleys'
 import { makeBorders } from './layers/borders'
 import { makeGround } from './layers/ground'
 import { makeLife } from './layers/life'
+import { groundOf } from './clearance'
 import type { Measure } from './perf'
 import type { GameState, World } from '../../engine'
 import type { Hand } from './hand'
@@ -99,6 +100,7 @@ export function makeScene(
     names,
     (s: GameState, lord) => Math.floor(s.players[lord].peasants / UNIT),
     placesOf,
+    groundOf(state, me),
   )
   const badges = makeBadges(state, me)
   const pacts = makePacts(me, labels.nameOf)

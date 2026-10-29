@@ -212,8 +212,9 @@ export function makeBadges(state: GameState, me: number) {
         // drawn again only when they moved.
         // A teammate's links, for good, have no time running round them.
         const team = isTeammate(state, me, lord)
+        const linked = team ? -1 : left(lord)
         const shares = icons.map((icon) =>
-          icon === 'links' ? (team ? -1 : left(lord)) : shame(lord),
+          icon === 'links' ? linked : shame(lord),
         )
         const rings = shares.join()
         if (rings === mark.rings) return

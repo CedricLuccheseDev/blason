@@ -3,7 +3,8 @@ import { drawSoldier } from '../art/soldier'
 import { smoothstep } from '../ease'
 import { BEAT } from '../men'
 import { TONE } from '../palette'
-import { apart, fadeUnder } from './crowd'
+import { apart, fadeUnder, offWorks } from './crowd'
+import type { Ground, Label } from './crowd'
 
 // Who holds each land and how strong he is, as in OpenFront: the lord's name
 // and, under it, his army in big figures beside a soldier, written at the
@@ -24,21 +25,6 @@ const NAME = 0.56
 const NAME_MIN = 16
 /** A land's side on screen, in pixels, under which its words begin to fade, and under which none show. */
 const ROOM = [14, 26] as const
-
-export type Label = {
-  box: Container
-  name: BitmapText
-  army: BitmapText
-  mark: Graphics
-  size: number
-  /** His land's side, in map units. */
-  reach: number
-  at: { x: number; y: number }
-  /** Where it is drawn now, gliding towards `at`. */
-  shown: { x: number; y: number } | null
-  /** The army as counted at the last beat. */
-  count: number
-}
 
 /** The soldier of the battles, light, beside an army: what the figure counts. */
 function soldier(): Graphics {
@@ -64,6 +50,8 @@ export function makeLabels<TState extends { tick: number }>(
   /** The figure written under each lord's name: his army, in soldiers. */
   count: (state: TState, lord: number) => number,
   place: (state: TState) => Placement,
+  /** What the words keep clear of at a zoom: the lords' works and their lands. */
+  ground?: (zoom: number) => Ground,
 ) {
   const container = new Container()
   const armyStyle = new TextStyle({
@@ -114,6 +102,7 @@ export function makeLabels<TState extends { tick: number }>(
       size: 0,
       reach: 0,
       at: { x: 0, y: 0 },
+      nudge: { x: 0, y: 0 },
       shown: null,
       count: -1,
     }
@@ -146,7 +135,10 @@ export function makeLabels<TState extends { tick: number }>(
   function glide(): boolean {
     let any = false
     for (const label of labels.values()) {
-      const to = label.at
+      const to = {
+        x: label.at.x + label.nudge.x,
+        y: label.at.y + label.nudge.y,
+      }
       const from = label.shown ?? to
       const dx = to.x - from.x
       const dy = to.y - from.y
@@ -179,6 +171,7 @@ export function makeLabels<TState extends { tick: number }>(
       label.mark.position.set(-(width + mark * 1.05) / 2 + mark * 0.35, row)
       label.army.position.set(-(width + mark * 1.05) / 2 + mark * 1.05, row)
     }
+    if (ground) offWorks(labels, ground(zoom))
     apart(labels, me)
   }
 
