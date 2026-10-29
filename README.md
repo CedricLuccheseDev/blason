@@ -56,18 +56,19 @@ playing behind. Online play needs the relay beside it (`npm run relay`).
 
 ## Commands
 
-| Command                                             | What it does                                                 |
-| --------------------------------------------------- | ------------------------------------------------------------ |
-| `npm run dev`                                       | The game with live reloading                                 |
-| `npm run build`                                     | The production build, then a type check                      |
-| `npm start`                                         | Serves the production build                                  |
-| `npm test`                                          | The tests (Vitest), among them the rules and determinism     |
-| `npm run lint`                                      | TypeScript and ESLint                                        |
-| `npm run knip`                                      | Dead files, exports and dependencies                         |
-| `npm run depcruise`                                 | The architecture's dependency rules                          |
-| `npm run norm`                                      | The house style checks (`scripts/norm-check.mjs`)            |
-| `npm run format`                                    | Prettier                                                     |
-| `npm run arena -- [games] [players] [level] [size]` | Whole games of bots, without a screen, and what they measure |
+| Command                                                         | What it does                                                 |
+| --------------------------------------------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                                                   | The game with live reloading                                 |
+| `npm run build`                                                 | The production build, then a type check                      |
+| `npm start`                                                     | Serves the production build                                  |
+| `npm test`                                                      | The tests (Vitest), among them the rules and determinism     |
+| `npm run lint`                                                  | TypeScript and ESLint                                        |
+| `npm run knip`                                                  | Dead files, exports and dependencies                         |
+| `npm run depcruise`                                             | The architecture's dependency rules                          |
+| `npm run norm`                                                  | The house style checks (`scripts/norm-check.mjs`)            |
+| `npm run format`                                                | Prettier                                                     |
+| `npm run arena -- [games] [players] [level] [size] [generator]` | Whole games of bots, without a screen, and what they measure |
+| `npm run maps -- <board.html>`                                  | A board of the lands of both generators, side by side        |
 
 ## Project structure
 

@@ -10,7 +10,7 @@ import {
   step,
   TICKS_PER_SECOND,
 } from '../engine'
-import type { Host, Level, MapSize } from '../engine'
+import type { Generator, Host, Level, MapSize } from '../engine'
 
 // The arena: twenty bots play whole games on a land of small
 // tiles, and the arena tells how long an attack lasts, when the free land is
@@ -18,7 +18,7 @@ import type { Host, Level, MapSize } from '../engine'
 // game turns; the pleasure is judged by playing. It also times the land's
 // making and each tick (the bots' thinking and the step), and weighs the
 // memory a game holds, which tells what a larger map costs.
-// npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]
+// npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge] [classic|relief]
 // RULES='{"volleyToll":3}' npm run arena … plays with other figures than the
 // rules', laid over them (a figure's object, as peasants, given whole).
 
@@ -83,9 +83,15 @@ function watcher(state: ReturnType<typeof createGame>) {
 
 const megabytes = () => process.memoryUsage().heapUsed / 1e6
 
-function play(seed: string, players: number, level: Level, size: MapSize) {
+function play(
+  seed: string,
+  players: number,
+  level: Level,
+  size: MapSize,
+  generator: Generator,
+) {
   const made = performance.now()
-  const world = generateWorld(seed, { size })
+  const world = generateWorld(seed, { size, generator })
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
   const state = createGame(grid, players, seed, rules)
   const making = (performance.now() - made) / 1000
@@ -120,9 +126,10 @@ const games = Number(process.argv[2] ?? 4)
 const players = Number(process.argv[3] ?? 20)
 const level = (process.argv[4] ?? 'normal') as Level
 const size = (process.argv[5] ?? 'standard') as MapSize
+const generator = (process.argv[6] ?? 'classic') as Generator
 if (!(size in MAP_SIZES)) throw new Error(`No map size ${size}`)
 write(
-  `Arena: ${games} games of ${players} ${level} bots on a ${size} land of small tiles${process.env.RULES ? `, with ${process.env.RULES}` : ''}`,
+  `Arena: ${games} games of ${players} ${level} bots on a ${size} land of small tiles, by the ${generator} generator${process.env.RULES ? `, with ${process.env.RULES}` : ''}`,
 )
 write(
   cols(
@@ -144,7 +151,7 @@ write(
   ),
 )
 for (let i = 0; i < games; i++) {
-  const r = play(`arena-${i}`, players, level, size)
+  const r = play(`arena-${i}`, players, level, size, generator)
   const leader = Math.round(r.leaderAt10 * 100)
   write(
     cols(

@@ -115,9 +115,10 @@ height):
    of the neighbours, twice, so that they lie in regions. They are only
    drawn: the simulation knows land and water.
 
-The second generator (`relief.ts`), to be judged on a board before it may
-replace the first, raises a land as a land is, so that its coasts are the
-outline of a relief rather than of a figure:
+The second generator (`relief.ts`), judged on a board before it may
+replace the first (`npm run maps -- <board.html>`, `scripts/maps.ts`),
+raises a land as a land is, so that its coasts are the outline of a relief
+rather than of a figure:
 
 1. **The recipe** (`recipes.ts`, `bench.ts`, `sculpt.ts`): the same six
    families, each a recipe of the sculptor's tools, hills, ranges, troughs
@@ -179,13 +180,14 @@ long it rests, how full it waits to be, how often it slips, and how many lords
 may hunt the same one: a bot leaves alone a lord already struck by another
 (two at the hard level), its answers to an attack apart, so that no one, bot
 or player, is set upon from every side at once. The arena takes
-it too: `npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]`,
-and times there the land's making and each tick, and weighs the memory a game
-holds. The census (`npm run census -- [seed] [level] [minutes]`,
-`scripts/census.ts`) plays one game and every few minutes counts, for the
-first lord and the median one, the land, the works, the peasants and what
-feeds them, and the gold; other figures for the peasants are tried with
-`LAND=… VILLAGE=…` and for the works' prices with `DOUBLINGS=…`.
+it too: `npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge] [classic|relief]`,
+the last the generator of its lands, and times there the land's making and
+each tick, and weighs the memory a game holds. The census
+(`npm run census -- [seed] [level] [minutes]`, `scripts/census.ts`) plays
+one game and every few minutes counts, for the first lord and the median
+one, the land, the works, the peasants and what feeds them, and the gold;
+other figures for the peasants are tried with `LAND=… VILLAGE=…` and for
+the works' prices with `DOUBLINGS=…`.
 
 ## The rendering
 
