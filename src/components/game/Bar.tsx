@@ -63,7 +63,6 @@ function Armies({
 }>) {
   const m = useMessages()
   const { me } = summary
-  const hand = summary.armies.find((a) => a.army === summary.army)
   if (!me) return null
   return (
     <div className="flex flex-col items-center">
@@ -106,16 +105,6 @@ function Armies({
           )
         })}
       </div>
-      {hand && (
-        <div className="flex items-baseline gap-2">
-          <span className="hud-word text-hud-s whitespace-nowrap">
-            {m.game.armies[hand.army]}
-          </span>
-          <Figure icon="soldier" size="s">
-            {count(hand.men)}
-          </Figure>
-        </div>
-      )}
     </div>
   )
 }

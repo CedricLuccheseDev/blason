@@ -37,9 +37,8 @@ export function Campaign({ summary }: Readonly<{ summary: Summary }>) {
   const { me, campaign } = summary
   if (!me || campaign.length === 0) return null
   return (
-    <div className="hud-afloat flex flex-col items-end gap-1">
-      <span className="font-caps text-hud-s text-quill">{m.game.campaign}</span>
-      <div className="flex items-end gap-3">
+    <div className="hud-afloat flex items-start gap-3" title={m.game.campaign}>
+      <div className="flex items-start gap-3">
         {campaign.map((host, i) => (
           <div
             key={i}

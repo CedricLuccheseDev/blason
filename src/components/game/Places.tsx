@@ -1,3 +1,4 @@
+import { Sheet } from '../hud/Sheet'
 import { BookButton, HomeMark } from './BookParts'
 import { Banner } from './Banner'
 import { Bar } from './Bar'
@@ -46,8 +47,11 @@ export function Places({
 }>) {
   return (
     <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-7 max-sm:gap-2 max-sm:p-3 short:gap-2 short:p-3">
-      <div className="hud-afloat flex flex-col items-start gap-2">
-        <HomeMark onHome={onHome} />
+      <div className="flex items-start gap-2">
+        <Sheet className="flex items-center gap-3 px-3 py-1">
+          <HomeMark onHome={onHome} />
+          {onBook && <BookButton onOpen={onBook} />}
+        </Sheet>
       </div>
       <div className="flex min-w-0 flex-col items-center gap-2">
         {!waiting && <Race summary={summary} />}
@@ -61,7 +65,7 @@ export function Places({
       </div>
       <div
         ref={floor}
-        className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end gap-4 max-sm:gap-2"
+        className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-4 max-sm:gap-2"
       >
         <div className="min-w-0">{!waiting && <Purse summary={summary} />}</div>
         <div className="min-w-0">
@@ -74,13 +78,8 @@ export function Places({
             />
           )}
         </div>
-        <div className="flex items-end gap-4 justify-self-end">
+        <div className="justify-self-end">
           {!waiting && <Campaign summary={summary} />}
-          {onBook && (
-            <span className="pointer-events-auto">
-              <BookButton onOpen={onBook} />
-            </span>
-          )}
         </div>
       </div>
     </div>

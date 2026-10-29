@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Shield, StandingBadge } from '../hud/Emblem'
+import { Sheet } from '../hud/Sheet'
 import { hex } from './format'
 import { standingsOf } from './standing'
 import type { Summary } from '~/render/client'
@@ -39,7 +40,7 @@ export function Realms({
     onLight(lord)
   }
   return (
-    <div className="hud-afloat flex flex-col items-end gap-1">
+    <Sheet className="flex flex-col items-end gap-1 px-3 py-2">
       <button
         type="button"
         aria-expanded={all}
@@ -83,6 +84,6 @@ export function Realms({
           )
         })}
       </div>
-    </div>
+    </Sheet>
   )
 }

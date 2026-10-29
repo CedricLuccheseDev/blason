@@ -1,5 +1,6 @@
 import { Figure, Icon } from '../hud/Figure'
 import { Hint } from '../hud/Hint'
+import { Sheet } from '../hud/Sheet'
 import { ICON } from '../hud/tokens'
 import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
@@ -28,8 +29,8 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
         y1={Y}
         x2={X(100)}
         y2={Y}
-        stroke="var(--color-vellum)"
-        strokeWidth="2.5"
+        stroke={INK}
+        strokeWidth="1"
       />
       {Array.from({ length: 11 }, (_, i) => i * 10).map((p) => (
         <line
@@ -38,8 +39,9 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
           y1={Y - (p % 50 ? 3 : 5)}
           x2={X(p)}
           y2={Y + (p % 50 ? 3 : 5)}
-          stroke="var(--color-vellum)"
-          strokeWidth="2"
+          stroke={INK}
+          strokeWidth="1"
+          strokeOpacity="0.6"
         />
       ))}
       {me && (
@@ -98,13 +100,13 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const figure = dropIn === null ? m.game.percent(needed) : minutes(dropIn)
   return (
     <div ref={room} className="flex w-full min-w-0 justify-center">
-      <div ref={piece} className="hud-afloat w-max">
+      <div ref={piece} className="w-max">
         <Hint
           title={m.hints.race.title}
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <div className="flex flex-col items-center">
+          <Sheet className="flex flex-col items-center px-4 py-1">
             <div className="w-[360px] max-sm:w-56 short:w-72">
               <Track summary={summary} />
             </div>
@@ -122,7 +124,7 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
                 )}
               </span>
             </div>
-          </div>
+          </Sheet>
         </Hint>
       </div>
     </div>
