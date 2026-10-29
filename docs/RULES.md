@@ -14,13 +14,16 @@ applies each rule is named beside it.
   mountains, hills, woods and plains are drawn only: they change nothing to
   the rules. The land is cut into a fine grid of tiles, four map units a side
   (`engine/grid.ts`), some 53,000 tiles of land.
-- On trial, not yet the game's: a second generator raises truer lands
-  (`generator: 'relief'`), with **high mountains** that close the ground as
+- The game's lands are raised by the relief's generator since 29/10
+  (`generator: 'relief'`; the first, `classic`, stays for the arena), with
+  **high mountains** that close the ground as
   the sea does: no one takes, crosses or builds on their tiles, and no
   caravan's road goes over them. They stand in ranges, some 9 % of the land
   (as much land is left to play as on today's maps), cut by **passes** a few
   tiles wide, the ranges' fronts and chokepoints; the land is always one
-  piece through them.
+  piece through them. On the map, a range is washed in stone and ringed in
+  ink, a mount on each of its cells, and each pass marked by two strokes
+  facing each other (`src/render/layers/peaks.ts`).
 - A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
   huge (four times), chosen by `/play?size=large` or `huge` until the home
   offers it. Its tiles and cells keep their size: a larger land has more of
@@ -128,7 +131,8 @@ leaves it gives his seat back to its bot.
 - **The land's roughness**: each tile bears a little roughness, fixed and
   drawn from the map's seed, an unseen relief smooth over a mesh of 5 tiles,
   at most 3 tiles' worth, added to the order an army takes tiles in; each
-  lord reads it shifted by his own offset. Two fronts meet in a ragged line,
+  lord reads it shifted by his own offset. It bends the band's edge too, up
+  to 3 tiles in or out. Two fronts meet in a ragged line,
   as a coast, rather than a straight one (`engine/rough.ts`).
 - **The entry that brings it soonest**: of all the border tiles, the army
   enters by the one that brings it to the click soonest, counting its march

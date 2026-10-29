@@ -61,9 +61,16 @@ function inBand(state: GameState, host: Host, tile: number): boolean {
   const ax = (host.aim % w) - (host.entry % w)
   const ay = Math.floor(host.aim / w) - Math.floor(host.entry / w)
   const length = ax * ax + ay * ay
-  if (length === 0) return dx * dx + dy * dy <= host.wide * host.wide
+  // The band's edge bends with the land's roughness, some tiles in or out,
+  // so that it is no straight wall (rough.ts).
+  const { roughness } = state.rules
+  const bend = Math.floor(
+    (2 * roughAt(state, host.owner, tile) - roughness) / 10,
+  )
+  const wide = Math.max(1, host.wide + bend)
+  if (length === 0) return dx * dx + dy * dy <= wide * wide
   const across = dx * ay - dy * ax
-  return across * across <= host.wide * host.wide * length
+  return across * across <= wide * wide * length
 }
 
 /** Whether a tile borders land the lord's armies walk: his own, or an ally's, through which they go to strike beyond it. */

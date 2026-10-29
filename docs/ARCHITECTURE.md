@@ -116,8 +116,9 @@ can tune them without touching the code. The rules themselves are described in
 `engine/map/generate.ts` grows a land from a seed, in stages, each its own
 module, all pure and seeded (floating point, but only `+ − × ÷`, so every
 machine draws the same land). It has two generators, chosen by
-`generateWorld(seed, { generator })` from a table: the first, the game's
-(`classic.ts`), below, and a second on trial, the relief's, after it. They
+`generateWorld(seed, { generator })` from a table: the first (`classic.ts`),
+below, kept for the arena, and the relief's, the game's since 29/10, after
+it. They
 share the cells, the borders, the rivers and the biomes; each makes its own
 ground (`Ground` in `types.ts`: the water, the high mountains, each cell's
 height):
@@ -148,8 +149,8 @@ height):
    of the neighbours, twice, so that they lie in regions. They are only
    drawn: the simulation knows land and water.
 
-The second generator (`relief.ts`), judged on a board before it may
-replace the first (`npm run maps -- <board.html>`, `scripts/maps.ts`),
+The second generator (`relief.ts`), the game's (its board:
+`npm run maps -- <board.html>`, `scripts/maps.ts`),
 raises a land as a land is, so that its coasts are the outline of a relief
 rather than of a figure:
 

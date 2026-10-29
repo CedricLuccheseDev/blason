@@ -90,14 +90,15 @@ const GENERATORS: Readonly<
 /**
  * A land of the size asked for (rules.ts, MAP_SIZES), its cells the same
  * size whatever it is: a larger map has more of them, and more lakes,
- * rivers, woods and ranges, not larger ones. The first generator unless
- * another is asked for.
+ * rivers, woods and ranges, not larger ones. The relief unless another is
+ * asked for (« pourquoi pas rajouter les montagnes aussi sur les maps, qui
+ * obstrue le terrain ? »).
  */
 export function generateWorld(
   seed: string,
   {
     size = 'standard',
-    generator = 'classic',
+    generator = 'relief',
   }: { size?: MapSize; generator?: Generator } = {},
 ): World {
   const scale = MAP_SIZES[size]

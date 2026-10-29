@@ -53,13 +53,14 @@ function pieces(cells: Array<{ neighbors: Array<number> }>): number {
 const gridOf = (w: World) => makeGrid(w.map, w.width, w.height, RULES.tileSize)
 
 describe('the relief generator', () => {
-  it('draws the same land from the same seed, another from another, and leaves the first generator the default', () => {
+  it('draws the same land from the same seed, another from another, and is the default', () => {
     const w = families[0].world
     expect(relief(w.seed)).toEqual(w)
     expect(relief('montfroid').map).not.toEqual(w.map)
     expect(w.generator).toBe('relief')
-    expect(generateWorld(w.seed).generator).toBe('classic')
-    expect(generateWorld(w.seed).map.peaks).toEqual([])
+    expect(generateWorld(w.seed)).toEqual(w)
+    const classic = generateWorld(w.seed, { generator: 'classic' })
+    expect(classic.map.peaks).toEqual([])
   })
 
   it('raises each of the six families as one land of some two thousand cells', () => {

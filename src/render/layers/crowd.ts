@@ -22,10 +22,9 @@ export type Label = {
   count: number
 }
 
-/** What the words keep clear of: each lord's works where they stand and how far they reach at this zoom, in map units; whether a point is on his land. */
+/** What the words keep clear of: for each lord, what they may not lie over and how far each reaches at this zoom (his works, the high mountains), in map units; whether a point is on his land. */
 export type Ground = {
-  worksOf: (lord: number) => Array<{ x: number; y: number }>
-  reach: (lord: number) => number
+  blocks: (lord: number) => Array<{ x: number; y: number; r: number }>
   holds: (lord: number, x: number, y: number) => boolean
 }
 
@@ -53,39 +52,51 @@ function extent(l: Label) {
 }
 
 /**
- * A lord's words moved off his works (« essaye de pas superposer les choses,
- * le nom/unités des royaumes essaye de les décaler quand ils sont sur un
- * bâtiment »): if his name and figure would lie over one of his works as
- * drawn at this zoom, the nearest place round it, on his land, that lies
- * over none; where it was if none does.
+ * A lord's words moved off his works and the mountains (« essaye de pas
+ * superposer les choses, le nom/unités des royaumes essaye de les décaler
+ * quand ils sont sur un bâtiment »): if his name and figure would lie over
+ * one of his works as drawn at this zoom, or a high mountain, the nearest
+ * place round it, on his land, that lies over none; where it was if none
+ * does.
  */
 export function offWorks(labels: Map<number, Label>, ground: Ground) {
   for (const [lord, l] of labels)
     if (l.box.visible) l.nudge = clearOf(lord, l, ground)
 }
 
-/** How far a lord's words go from their place to lie over none of his works: none if they lie over none there, or nowhere round it does. */
+/** How far a lord's words go from their place to lie over none of what they keep clear of, or over the fewest: none if they lie over none there. */
 function clearOf(lord: number, l: Label, ground: Ground) {
-  const works = ground.worksOf(lord)
-  const r = ground.reach(lord)
   const box = extent(l)
-  const covers = (x: number, y: number) =>
-    works.some(
-      (w) =>
-        w.x > x - box.half - r &&
-        w.x < x + box.half + r &&
-        w.y > y + box.top - r &&
-        w.y < y + box.bottom + r,
+  // Only what lies within the farthest ring tried may matter.
+  const far = (RINGS + 1) * (box.half + box.bottom - box.top)
+  const blocks = ground
+    .blocks(lord)
+    .filter(
+      (b) =>
+        Math.abs(b.x - l.at.x) < far + b.r &&
+        Math.abs(b.y - l.at.y) < far + b.r,
     )
-  if (!covers(l.at.x, l.at.y)) return { x: 0, y: 0 }
+  /** How many of them the words would lie over, there. */
+  const covered = (x: number, y: number) =>
+    blocks.filter(
+      (b) =>
+        b.x > x - box.half - b.r &&
+        b.x < x + box.half + b.r &&
+        b.y > y + box.top - b.r &&
+        b.y < y + box.bottom + b.r,
+    ).length
+  // The nearest place clear of all; else the one over the fewest.
+  let best = { x: 0, y: 0, over: covered(l.at.x, l.at.y) }
   const step = { x: box.half, y: (box.bottom - box.top) / 2 }
-  for (let ring = 1; ring <= RINGS; ring++)
+  for (let ring = 1; ring <= RINGS && best.over > 0; ring++)
     for (const [dx, dy] of AROUND) {
       const [x, y] = [dx * step.x * ring, dy * step.y * ring]
-      if (ground.holds(lord, l.at.x + x, l.at.y + y))
-        if (!covers(l.at.x + x, l.at.y + y)) return { x, y }
+      if (!ground.holds(lord, l.at.x + x, l.at.y + y)) continue
+      const over = covered(l.at.x + x, l.at.y + y)
+      if (over < best.over) best = { x, y, over }
+      if (over === 0) break
     }
-  return { x: 0, y: 0 }
+  return { x: best.x, y: best.y }
 }
 
 /** The words of two lords that would lie on each other: the smaller land's give way, mine never (« les textes ne se chevauchent pas sur la map »). */

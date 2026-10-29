@@ -5,9 +5,12 @@ import { generateWorld } from './generate'
 import { pickShape } from './shapes'
 import type { ShapeKind } from './shapes'
 
-const world = generateWorld('valbrune')
+/** The first generator's lands, as drawn before the relief became the default. */
+const CLASSIC = { generator: 'classic' } as const
+
+const world = generateWorld('valbrune', CLASSIC)
 const { land, sea } = world.map
-const many = 'abcdef'.split('').map((seed) => generateWorld(seed))
+const many = 'abcdef'.split('').map((seed) => generateWorld(seed, CLASSIC))
 
 /** The first seed that draws each family of shapes. */
 function seedsByFamily(): Map<ShapeKind, string> {
@@ -21,7 +24,7 @@ function seedsByFamily(): Map<ShapeKind, string> {
 }
 const families = [...seedsByFamily()].map(([kind, seed]) => ({
   kind,
-  world: generateWorld(seed),
+  world: generateWorld(seed, CLASSIC),
 }))
 
 /** Pieces of a graph, the cells of each walked by their neighbours. */
@@ -45,8 +48,8 @@ function pieces(cells: Array<{ neighbors: Array<number> }>): number {
 
 describe('the map generator', () => {
   it('draws the same land from the same seed, another from another', () => {
-    expect(generateWorld('valbrune')).toEqual(world)
-    expect(generateWorld('montfroid').map).not.toEqual(world.map)
+    expect(generateWorld('valbrune', CLASSIC)).toEqual(world)
+    expect(generateWorld('montfroid', CLASSIC).map).not.toEqual(world.map)
   })
 
   it('cuts some two thousand cells of land of the same size, whatever the sea', () => {
@@ -133,8 +136,8 @@ describe('the map generator', () => {
     const tiles = (w: typeof world) =>
       makeGrid(w.map, w.width, w.height, RULES.tileSize).area
     const standard = tiles(world)
-    const large = generateWorld('valbrune', { size: 'large' })
-    const huge = generateWorld('valbrune', { size: 'huge' })
+    const large = generateWorld('valbrune', { ...CLASSIC, size: 'large' })
+    const huge = generateWorld('valbrune', { ...CLASSIC, size: 'huge' })
     expect(world.size).toBe('standard')
     expect(large.size).toBe('large')
     expect(tiles(large) / standard).toBeGreaterThan(1.8)
@@ -150,6 +153,8 @@ describe('the map generator', () => {
     // More rivers and lakes on a larger land, not longer ones only.
     expect(huge.rivers.length).toBeGreaterThan(world.rivers.length * 2)
     expect(pieces(huge.map.sea)).toBeGreaterThan(pieces(world.map.sea))
-    expect(generateWorld('valbrune', { size: 'huge' })).toEqual(huge)
+    expect(generateWorld('valbrune', { ...CLASSIC, size: 'huge' })).toEqual(
+      huge,
+    )
   })
 })

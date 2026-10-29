@@ -128,7 +128,7 @@ const games = Number(process.argv[2] ?? 4)
 const players = Number(process.argv[3] ?? 20)
 const level = (process.argv[4] ?? 'normal') as Level
 const size = (process.argv[5] ?? 'standard') as MapSize
-const generator = (process.argv[6] ?? 'classic') as Generator
+const generator = (process.argv[6] ?? 'relief') as Generator
 if (!(size in MAP_SIZES)) throw new Error(`No map size ${size}`)
 write(
   `Arena: ${games} games of ${players} ${level} bots on a ${size} land of small tiles, by the ${generator} generator${process.env.RULES ? `, with ${process.env.RULES}` : ''}`,

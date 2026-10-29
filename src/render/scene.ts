@@ -2,6 +2,7 @@ import { Container, Graphics } from 'pixi.js'
 import { UNIT, canRenew } from '../../engine'
 import { makeLabels } from './layers/labels'
 import { landShape, makeSea } from './layers/lands'
+import { makePeaks } from './layers/peaks'
 import { REACH, makePage } from './layers/page'
 import { makePaper } from './layers/paper'
 import { makeStamps } from './textures'
@@ -71,6 +72,7 @@ export function makeScene(
 ) {
   const page = makePage(land)
   const sea = makeSea(land)
+  const peaks = makePeaks(land)
   const regions = makeRegions(state, me)
   const ground = makeGround(land, state)
   const borders = makeBorders(land, regions.outline)
@@ -100,7 +102,7 @@ export function makeScene(
     names,
     (s: GameState, lord) => Math.floor(s.players[lord].peasants / UNIT),
     placesOf,
-    groundOf(state, me),
+    groundOf(state, me, land),
   )
   const badges = makeBadges(state, me)
   const pacts = makePacts(me, labels.nameOf)
@@ -129,6 +131,7 @@ export function makeScene(
       trade.roads,
       lines,
       borders.coast,
+      peaks.container,
       lit.container,
       scars.container,
       marks.container,
