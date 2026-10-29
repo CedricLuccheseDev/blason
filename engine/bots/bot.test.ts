@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { TICKS_PER_SECOND, UNIT } from '../units'
 import { createGame, setOwner } from '../land'
 import { RULES } from '../rules'
+import { setupOf } from '../testing'
 import { step } from '../step'
 import { createBot } from './bot'
 import type { GameState, Grid, Order } from '../types'
@@ -14,7 +15,7 @@ function field(width: number): Grid {
 
 /** A game past its opening, no village, nothing born, no gold. */
 function playing(grid: Grid): GameState {
-  const state = createGame(grid, 2, 'test', {
+  const state = createGame(grid, setupOf(2), {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
   })
@@ -47,7 +48,7 @@ describe('the bots at war', () => {
 describe('the bots on a lord already struck', () => {
   /** Lord 2, a bot, on the left of a row; lord 0 in the middle, held thin; lord 1 on the right. */
   function three(): GameState {
-    const state = createGame(field(60), 3, 'test', {
+    const state = createGame(field(60), setupOf(3), {
       ...RULES,
       fillSeconds: Number.MAX_SAFE_INTEGER,
     })

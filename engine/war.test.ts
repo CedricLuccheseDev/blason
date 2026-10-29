@@ -15,6 +15,7 @@ import {
   owned,
   playing,
   run,
+  setupOf,
 } from './testing'
 
 const SECOND = TICKS_PER_SECOND
@@ -166,7 +167,7 @@ describe('the game is deterministic', () => {
     const play = () => {
       const world = generateWorld('same')
       const grid = makeGrid(world.map, world.width, world.height, 4)
-      const state = createGame(grid, 8, 'same')
+      const state = createGame(grid, setupOf(8, { seed: 'same' }))
       const bots = state.players.map((_, id) => createBot(id, 'same'))
       for (let t = 0; t < 25 * SECOND; t++)
         step(

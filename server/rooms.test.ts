@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ONLINE_OPENING_TICKS } from '../engine'
+import { SETUP_LIMITS } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import type { FromRelay, Turn } from '../net/protocol'
 import type * as Rooms from './rooms'
@@ -44,7 +44,7 @@ describe('the public game', () => {
       seats: SEATS,
     })
     // Joining closes before the opening ends: the last to come may plant.
-    expect(rooms.JOIN_MS).toBeLessThan(ONLINE_OPENING_TICKS * TURN_MS)
+    expect(rooms.JOIN_MS).toBeLessThan(SETUP_LIMITS.opening.public * TURN_MS)
     vi.advanceTimersByTime(10_000)
     expect(rooms.upcoming()).toMatchObject({
       seed: first.seed,
@@ -76,7 +76,7 @@ describe('the public game', () => {
       seed,
       size: 'standard',
       level: 'normal',
-      opening: ONLINE_OPENING_TICKS,
+      opening: SETUP_LIMITS.opening.public,
     })
     // The forty turns played, from the first, every seat a bot's.
     const past = turns(one.heard)
@@ -106,10 +106,10 @@ describe('the public game', () => {
     expect(next.seed).not.toBe(seed)
     expect(next).toMatchObject({ closesIn: rooms.JOIN_MS, taken: 0 })
     // The game goes on past its opening, its turns flowing.
-    vi.advanceTimersByTime(ONLINE_OPENING_TICKS * TURN_MS)
+    vi.advanceTimersByTime(SETUP_LIMITS.opening.public * TURN_MS)
     expect(one.heard.at(-1)).toMatchObject({
       t: 'turn',
-      n: rooms.JOIN_MS / TURN_MS + ONLINE_OPENING_TICKS - 1,
+      n: rooms.JOIN_MS / TURN_MS + SETUP_LIMITS.opening.public - 1,
     })
     // Whoever comes now comes into the one in its opening.
     const shown = rooms.upcoming()
@@ -184,7 +184,7 @@ describe('a private room', () => {
     rooms.hear(room, host, { t: 'start' })
     expect(begun(host.heard)).toMatchObject({
       seat: 0,
-      opening: ONLINE_OPENING_TICKS,
+      opening: SETUP_LIMITS.opening.public,
     })
     expect(begun(friend.heard)).toMatchObject({ seat: 1 })
     vi.advanceTimersByTime(TURN_MS)

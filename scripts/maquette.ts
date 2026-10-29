@@ -1,21 +1,20 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import {
   around,
+  botsSetup,
   createBot,
   createGame,
-  generateWorld,
   isAllied,
-  makeGrid,
+  landOf,
   NEUTRAL,
   NO_ONE,
-  RULES,
   stateHash,
   step,
   TICKS_PER_SECOND,
 } from '../engine'
 import { restoreGame, saveGame } from '../src/render/save'
 import { summarize } from '../src/render/summary'
-import type { GameState, Host, Level, MapSize } from '../engine'
+import type { GameState, Grid, Host, Level, MapSize } from '../engine'
 import type { Save, Shot } from '../src/render/save'
 
 // The maquette's moments, saved: one game of twenty bots played without a
@@ -184,12 +183,7 @@ mkdirSync(out, { recursive: true })
 const write = (text: string) => process.stdout.write(`${text}\n`)
 
 /** A save read back must be the game it was made from, and show the same HUD. */
-function check(
-  name: string,
-  state: GameState,
-  grid: ReturnType<typeof makeGrid>,
-  save: Save,
-) {
+function check(name: string, state: GameState, grid: Grid, save: Save) {
   const back = restoreGame(grid, JSON.parse(JSON.stringify(save)) as Save)
   const hand = { army: 'host', work: null, coup: null } as const
   const same =
@@ -199,9 +193,9 @@ function check(
   if (!same) throw new Error(`The save ${name} does not give its game back`)
 }
 
-const world = generateWorld(seed, { size })
-const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
-const state = createGame(grid, 20, seed)
+const setup = botsSetup({ seed, size, level })
+const { grid } = landOf(setup)
+const state = createGame(grid, setup)
 const bots = state.players.map((_, id) => createBot(id, seed, level))
 const waiting = [...MOMENTS]
 write(`Maquette: the moments of ${seed}, ${level} bots on a ${size} land`)

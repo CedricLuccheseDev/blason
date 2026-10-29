@@ -6,7 +6,7 @@ import { isFelon } from './diplomacy'
 import { rebelled } from './scars'
 import { NEUTRAL, NO_ONE, SEA } from './types'
 import type { Rules } from './rules'
-import type { GameState, Grid } from './types'
+import type { GameSetup, GameState, Grid } from './types'
 
 // The land, its peasants and its gold. At the start no land is anyone's:
 // each lord plants his standard where he wants and receives the land round
@@ -34,14 +34,16 @@ function mainLand(grid: Grid): Array<boolean> {
   return grid.land.map((on, tile) => on && piece[tile] === main)
 }
 
-/** A new game: no land anyone's yet, all of it free, held by its villagers; each lord a little gold. */
+/**
+ * A new game, as its setup says, a lord a seat: no land anyone's yet, all
+ * of it free, held by its villagers; each lord a little gold. The figures
+ * are the rules' unless the arena or a test tries others; the setup's
+ * opening is laid over them.
+ */
 export function createGame(
   grid: Grid,
-  players: number,
-  seed: string,
+  setup: GameSetup,
   rules: Rules = RULES,
-  /** Each seat's team, or none: every lord for himself. */
-  teams: Array<number> = [],
 ): GameState {
   // Land no walk reaches, an islet cut off by the sea, is no part of the
   // game: no army could ever take it, so it does not count in the share
@@ -49,13 +51,14 @@ export function createGame(
   const land = mainLand(grid)
   const reached = { ...grid, land, area: land.filter(Boolean).length }
   return {
-    seed,
-    rules,
+    setup,
+    seed: setup.seed,
+    rules: { ...rules, openingTicks: setup.opening },
     grid: reached,
     tick: 0,
     owner: land.map((on) => (on ? NEUTRAL : SEA)),
     works: [],
-    players: Array.from({ length: players }, () => ({
+    players: setup.seats.map(() => ({
       peasants: 0,
       gold: rules.startGold * UNIT,
       alive: true,
@@ -71,7 +74,7 @@ export function createGame(
     caravans: [],
     strikes: [],
     scars: [],
-    teams: Array.from({ length: players }, (_, seat) => teams[seat] ?? -1),
+    teams: setup.seats.map((seat) => seat.team),
     winner: NO_ONE,
   }
 }

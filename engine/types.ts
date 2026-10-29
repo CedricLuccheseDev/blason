@@ -1,4 +1,5 @@
-import type { Army, Coup, Rules, Work } from './rules'
+import type { Army, Coup, MapSize, Rules, Work } from './rules'
+import type { Level } from './bots/levels'
 
 export const NEUTRAL = -1
 export const SEA = -2
@@ -46,6 +47,31 @@ export type Scar = {
   tile: number
   radius: number
   until: number
+}
+
+/** A seat, a lord of the game: his team, the bot that plays him, whether a person holds him from the first turn. */
+export type Seat = {
+  /** His team from 0, or -1: he plays for himself. */
+  team: number
+  /** The bot of that level that plays him; none for a person's seat, empty until a person takes it and idle once he left. */
+  bot: Level | null
+  /** Held by a person from the first turn, as a private game's players are; a public game's persons take empty seats during the opening. */
+  person: boolean
+}
+
+/** What a game is made of (setup.ts): the host's book fills it, the relay passes it on, every machine makes the same game from it. */
+export type GameSetup = {
+  /** The format's version: a setup of another is refused, never half read. */
+  v: 1
+  seed: string
+  /** The land, drawn from the seed at its size (its shape drawn too, until a host may choose it). */
+  land: { kind: 'drawn'; size: MapSize }
+  /** How it is won: the conquest of the land, for now (step.ts). */
+  mode: 'conquest'
+  /** The opening, in ticks. */
+  opening: number
+  /** A seat a lord. */
+  seats: ReadonlyArray<Seat>
 }
 
 /** Something a lord built on a tile of his: it passes to whoever takes the tile. */
@@ -113,6 +139,8 @@ export type Caravan = {
 }
 
 export type GameState = {
+  /** What the game was made of, never changed: its seed, its opening (in the rules) and its teams are laid below, where the rules read them. */
+  setup: GameSetup
   seed: string
   rules: Rules
   grid: Grid
@@ -128,7 +156,7 @@ export type GameState = {
   caravans: Array<Caravan>
   strikes: Array<Strike>
   scars: Array<Scar>
-  /** Each seat's team, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */
+  /** Each seat's team, as the setup gives it, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */
   teams: Array<number>
   winner: number
 }

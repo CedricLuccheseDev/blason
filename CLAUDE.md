@@ -58,7 +58,11 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   millièmes, `UNIT`, jamais l'horloge, 10 pas par seconde). Son seul contrat est `engine/index.ts` : hors du moteur,
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ;
-    `grid.ts` les tuiles ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte ; `muster.ts` la levée aux villages
+    `grid.ts` les tuiles ; `setup.ts` ce dont une partie est faite, en un objet (`GameSetup`, dans `types.ts` : la
+    graine et sa terre, le mode, l'ouverture, les sièges, chacun son équipe et son bot ou personne), que le livre de
+    l'hôte remplira, que le relais passera sans le lire et dont `createGame(grid, setup)` fait la partie, ses
+    préréglages (seul, des bots, la partie publique sans bot), sa lecture bornée par `SETUP_LIMITS` et sa terre
+    (`landOf`) ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte ; `muster.ts` la levée aux villages
     et la marche ; `war.ts` les armées ; `battle.ts` les batailles entre armées ; `volleys.ts` les flèches des châteaux ;
     `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
@@ -66,7 +70,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.
   - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), les parties dorées
     (`golden.test.ts` : trois parties de bots, leurs empreintes relevées une fois et écrites en dur ; une refonte qui
-    garde le jeu les garde), la victoire (`victory.test.ts`), la diplomatie et les
+    garde le jeu les garde), la victoire (`victory.test.ts`), le setup (`setup.test.ts`), la diplomatie et les
     marchands (`diplomacy.test.ts`), l'ouverture (`opening.test.ts`), les coups (`coups.test.ts`), les flèches des châteaux
     (`volleys.test.ts`), le générateur (`map/generate.test.ts`).
 - `scripts/arena.ts` : l'arène (`npm run arena -- [parties] [joueurs]`), des parties de bots sans écran. Elle dit si

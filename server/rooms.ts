@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { ONLINE_OPENING_TICKS } from '../engine'
+import { SETUP_LIMITS } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import { fingerprints, isMove, tell } from './checks'
 import type { Fingerprints } from './checks'
@@ -22,7 +22,7 @@ import type { MapSize, Order } from '../engine'
 /** Turns before the opening ends when no one may come in any more: the time for the last to come to plant his standard. */
 const LAST_CALL = 50
 /** Turns a public game may be joined for, from its first. */
-const JOIN_TURNS = ONLINE_OPENING_TICKS - LAST_CALL
+const JOIN_TURNS = SETUP_LIMITS.opening.public - LAST_CALL
 /** Ms a public game may be joined for: then the next opens. */
 export const JOIN_MS = JOIN_TURNS * TURN_MS
 /** The land of a game online. */
@@ -122,7 +122,7 @@ function beginning(room: Room, seat: number): FromRelay {
     seed,
     size,
     level: 'normal',
-    opening: ONLINE_OPENING_TICKS,
+    opening: SETUP_LIMITS.opening.public,
   }
 }
 

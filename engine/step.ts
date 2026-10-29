@@ -158,7 +158,8 @@ export function step(state: GameState, orders: Array<Order> = []) {
   state.tick += 1
 }
 
-/** The same game, ordered the same way, gives the same fingerprint each tick. */
+/** The same game, ordered the same way, gives the same fingerprint each tick: what it was made of, its tiles and its rules, which never change, left out. */
 export function stateHash(state: GameState): string {
-  return fingerprint(JSON.stringify({ ...state, grid: null, rules: null }))
+  const still = { setup: undefined, grid: null, rules: null }
+  return fingerprint(JSON.stringify({ ...state, ...still }))
 }

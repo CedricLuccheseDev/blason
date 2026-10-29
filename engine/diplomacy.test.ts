@@ -4,6 +4,7 @@ import { moveCaravans, sendCaravans } from './caravans'
 import { isAllied } from './diplomacy'
 import { createGame, holdOf, setOwner } from './land'
 import { RULES } from './rules'
+import { setupOf } from './testing'
 import { step } from './step'
 import type { GameState, Grid, Order } from './types'
 
@@ -14,7 +15,7 @@ function field(width: number, height = 1): Grid {
 
 /** A game past its opening, no income, nothing born and no one sick; lord 0 on the left, lord 1 on the right of a row. */
 function playing(width = 20): GameState {
-  const state = createGame(field(width), 3, 'test', {
+  const state = createGame(field(width), setupOf(3), {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
     sickness: 0,

@@ -1,8 +1,8 @@
 import {
+  botsSetup,
   createBot,
   createGame,
-  generateWorld,
-  makeGrid,
+  landOf,
   MAP_SIZES,
   NEUTRAL,
   NO_ONE,
@@ -91,9 +91,11 @@ function play(
   generator: Generator,
 ) {
   const made = performance.now()
-  const world = generateWorld(seed, { size, generator })
-  const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
-  const state = createGame(grid, players, seed, rules)
+  // The opening as the rules played say, so that RULES may try another.
+  const opening = rules.openingTicks
+  const setup = botsSetup({ seed, size, level, lords: players, opening })
+  const { grid } = landOf(setup, generator)
+  const state = createGame(grid, setup, rules)
   const making = (performance.now() - made) / 1000
   const bots = state.players.map((_, id) => createBot(id, seed, level))
   const watch = watcher(state)

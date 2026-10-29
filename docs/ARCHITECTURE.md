@@ -49,6 +49,23 @@ machine computes the same game, tick for tick.
 
 ### The state, the orders, the step
 
+- What a game is made of is one object, its setup (`GameSetup` in
+  `engine/types.ts`, made and read by `engine/setup.ts`): its seed and the
+  land drawn from it at a size, how it is won (the conquest, for now), the
+  opening's length, and its seats, a lord each, his team, the bot of a level
+  that plays him or none for a person's seat. The host's book will fill it,
+  the relay pass it on unread and every machine make the same game from it:
+  `createGame(grid, setup, rules?)`, the rules the game's unless the arena or
+  a test tries others, the setup's opening laid over them. Presets make the
+  setups played today: a game alone (`aloneSetup`, the player at the first
+  seat, a bot of the level chosen at every other), a game of bots
+  (`botsSetup`, the scripts', the tests' and, until the relay sends its
+  setup, a game online's), the public game (`publicSetup`, no bot, every
+  seat empty until a person takes it); `readSetup` checks one come down the
+  wire, bounded by `SETUP_LIMITS` (`rules.ts`); `landOf` draws its land and
+  its tiles. The state keeps the setup, never changed, and lays its seed, its
+  teams and its opening where the rules read them; the fingerprint
+  (`stateHash`) leaves it out with the tiles and the rules.
 - `GameState` (`engine/types.ts`) holds the land (`owner`, the lord of each
   tile), the works, the players (peasants, gold, traitor's mark, the tile of
   their standard), the armies on the march (`hosts`), the alliances and
@@ -73,7 +90,8 @@ can tune them without touching the code. The rules themselves are described in
 | `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                     |
 | `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes |
 | `grid.ts`                | The land cut into tiles of four map units                                                           |
-| `land.ts`                | The land in the game, the peasants, the men holding a tile                                          |
+| `setup.ts`               | What a game is made of: the presets, a setup read from the wire, the land drawn for it              |
+| `land.ts`                | A new game from its setup; the land in the game, the peasants, the men holding a tile               |
 | `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given |
 | `muster.ts`              | Raising an army: the free village, its road to the front, where it stands                           |
 | `war.ts`                 | Armies: their march, where they enter, how they spread, what each tile costs                        |
@@ -566,8 +584,8 @@ simulation.
   (standard), and seats up to twenty persons, every lord, the seats no one
   took being bots. As on OpenFront there is no room to wait in: one public game
   is always in its opening, which lasts 30 seconds online
-  (`ONLINE_OPENING_TICKS`, sent with the game, so that every browser has the
-  same). It begins as it opens, bots in every seat, its turns flowing from
+  (`SETUP_LIMITS.opening.public`, sent with the game, so that every browser
+  has the same). It begins as it opens, bots in every seat, its turns flowing from
   the first and kept while players may come in; whoever joins sits at once
   on the first free seat, given the land, the opening and every turn played
   so far, and his seat is a person's from the next turn, on every browser.

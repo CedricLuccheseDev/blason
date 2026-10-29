@@ -1,8 +1,8 @@
 import {
+  botsSetup,
   createBot,
   createGame,
-  generateWorld,
-  makeGrid,
+  landOf,
   NO_ONE,
   RULES,
   step,
@@ -30,8 +30,8 @@ const seed = process.argv[2] ?? 'arena-0'
 const level = (process.argv[3] ?? 'normal') as Level
 const every = Number(process.argv[4] ?? 3) * MINUTE
 
-const world = generateWorld(seed, { size: 'standard' })
-const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
+const setup = botsSetup({ seed, level })
+const { grid } = landOf(setup)
 const peasants = {
   ...RULES.peasants,
   land: Number(process.env.LAND ?? RULES.peasants.land),
@@ -39,7 +39,7 @@ const peasants = {
 }
 const priceDoublings = Number(process.env.DOUBLINGS ?? RULES.priceDoublings)
 const rules = { ...RULES, peasants, priceDoublings }
-const state = createGame(grid, 20, seed, rules)
+const state = createGame(grid, setup, rules)
 const bots = state.players.map((_, id) => createBot(id, seed, level))
 
 const write = (text: string) => process.stdout.write(`${text}\n`)

@@ -1,6 +1,6 @@
 import {
   NO_ONE,
-  RULES,
+  botsSetup,
   createBot,
   createGame,
   stateHash,
@@ -24,10 +24,10 @@ import type { Turn } from '../../net/protocol'
 // turn where two browsers parted.
 
 export function startRemoteSession(grid: Grid, online: Online): Session {
-  const { seed, level, opening, seat, link } = online
-  // The opening's length travels with the game: the same on every browser.
-  const rules = { ...RULES, openingTicks: opening }
-  const state = createGame(grid, PLAYERS.length, seed, rules)
+  const { seed, level, seat, link } = online
+  // The land, the bots' level and the opening travel with the game: the
+  // same on every browser.
+  const state = createGame(grid, botsSetup(online))
   const bots: Array<ReturnType<typeof createBot> | null> = PLAYERS.map(
     (_, id) => createBot(id, seed, level),
   )
