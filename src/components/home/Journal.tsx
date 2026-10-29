@@ -4,9 +4,8 @@ import { useMessages } from '~/i18n'
 
 // The journal, beside the public game and its buttons, as OpenFront's news:
 // a sheet with its name, leading to the whole journal, then its last posts,
-// each its date, its title and its first line, leading to it. They are read,
-// not glanced at: written in Alegreya Sans, the game's plain hand, at full
-// ink (« le journal est ignoble à lire », « la police est dur à lire »).
+// each its date, its title and its first line, leading to it, at full ink:
+// they are read, not glanced at (« le journal est ignoble à lire »).
 
 export type Entry = {
   slug: string
@@ -40,12 +39,12 @@ export function Journal({ entries }: Readonly<{ entries: Array<Entry> }>) {
               <Link
                 to="/blog/$slug"
                 params={{ slug: entry.slug }}
-                className="hud-press group flex flex-col gap-1 font-figures text-quill"
+                className="hud-press group flex flex-col gap-1 font-words text-quill"
               >
-                <time dateTime={entry.date} className="text-hud-s">
+                <time dateTime={entry.date} className="hud-figure text-hud-s">
                   {entry.date}
                 </time>
-                <span className="text-hud-m leading-snug font-bold group-hover:text-gilt-deep">
+                <span className="text-hud-m leading-snug font-semibold group-hover:text-gilt-deep">
                   {entry.title}
                 </span>
                 <span className="line-clamp-2 text-hud-s leading-snug">

@@ -1,5 +1,5 @@
 /* The maquette's page: the game's parchment and ink (src/styles/app.css),
-   its two hands, IM Fell for the words and Alegreya Sans for the figures;
+   its two hands, Vollkorn for the words and Alegreya Sans for the figures;
    the frames side by side, as tall as each other, filling the column. */
 :root {
   color-scheme: light;
@@ -8,7 +8,7 @@
   --lead: #5e5749;
   --shade: #d9c49a;
   --gilt-deep: #946512;
-  --fell: 'IM Fell English', Georgia, serif;
+  --fell: 'Vollkorn', Georgia, serif;
   --figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
 }
 * {

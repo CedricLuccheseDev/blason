@@ -10,7 +10,7 @@ export function Title() {
   return (
     <header className="flex flex-col gap-1 text-center">
       {/* norm-ok: wordmark, not copy */}
-      <h1 className="font-caps text-6xl leading-none text-quill max-sm:text-5xl short:text-5xl">
+      <h1 className="font-mark text-6xl leading-none text-quill max-sm:text-5xl short:text-5xl">
         Blason
       </h1>
       <Flourish />

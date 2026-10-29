@@ -26,8 +26,9 @@
   --font-display: 'Anton', 'Inter', system-ui, sans-serif;
   --font-mono: 'Inter', system-ui, sans-serif;
   /* The game's own hand, its art direction: a manuscript's
-     parchment and brown ink, gold and gules; IM Fell for the words,
-     Alegreya Sans for the figures. */
+     parchment and brown ink, gold and gules; Vollkorn for the words
+     (IM Fell was too hard to read: « Go la C », 29/10), Alegreya Sans for
+     the figures, and IM Fell kept for the game's name alone, its mark. */
   --color-vellum: #f6eedb;
   --color-quill: #2b1e12;
   --color-gilt: #d9a41e;
@@ -42,8 +43,9 @@
   --color-lead-deep: #5e5749;
   --color-wax: #f0d9c4;
   --color-leather: #7a5a3c;
-  --font-fell: 'IM Fell English', Georgia, serif;
-  --font-caps: 'IM Fell English SC', Georgia, serif;
+  --font-words: 'Vollkorn', Georgia, serif;
+  --font-caps: 'Vollkorn SC', Georgia, serif;
+  --font-mark: 'IM Fell English SC', Georgia, serif;
   --font-figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
   /* The HUD's measures (src/components/hud/tokens.ts): four sizes of type
      and nothing between them, 15, 18, 22 and 28 as drawn, none smaller so
@@ -226,7 +228,7 @@
   }
 }
 
-/* The HUD's type roles: words in IM Fell, figures in Alegreya Sans, at the
+/* The HUD's type roles: words in Vollkorn, figures in Alegreya Sans, at the
    sizes above. A piece picks a role, never a font or a size of its own. */
 @layer components {
   /* What the HUD is laid out in: Tailwind's spacing steps (4, 8, 12, 16,
@@ -236,14 +238,14 @@
     --spacing: calc(0.25rem * var(--hud));
   }
   .hud-word {
-    @apply font-fell text-hud-m text-quill;
+    @apply font-words text-hud-m text-quill;
   }
   .hud-name {
-    @apply font-fell text-hud-l text-quill italic;
+    @apply font-words text-hud-l text-quill italic;
   }
   /* A hint is told in italics, at full ink like the rest: never fainter. */
   .hud-note {
-    @apply font-fell text-hud-s text-quill italic;
+    @apply font-words text-hud-s text-quill italic;
   }
   /* The HUD's motion roles: what is touched lifts under the pointer and
      sinks when pressed; a sheet that appears rises a little as it comes. */
@@ -272,7 +274,7 @@
   }
   /* norm-ok: a betrayal's banderole, gules cut in a swallowtail and hemmed in gold (the game's art direction); on two lines rather than past its room. */
   .hud-banner {
-    @apply flex max-w-full items-center gap-3 font-fell text-wax;
+    @apply flex max-w-full items-center gap-3 font-words text-wax;
     padding: 0.4em 1.9em;
     background: var(--color-gules);
     clip-path: polygon(

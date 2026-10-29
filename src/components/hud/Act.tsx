@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // The HUD's one button: a plate laid on the sheet, an ink edge, its word in
-// IM Fell, tall enough for a finger. Gold to act, the alliance's green to
+// Vollkorn, tall enough for a finger. Gold to act, the alliance's green to
 // accept one, gules to break or refuse, parchment for the rest.
 
 const TONES = {
@@ -15,7 +15,7 @@ export type Tone = keyof typeof TONES
 
 // norm-ok: a plate of the game's own material (CLAUDE.md, the art direction), as the sheet it lies on.
 const PLATE =
-  'pointer-events-auto inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border-[1.5px] border-quill px-4 font-fell text-hud-m shadow-lift hud-press'
+  'pointer-events-auto inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border-[1.5px] border-quill px-4 font-words text-hud-m shadow-lift hud-press'
 
 /** The button's look, for a link that acts as one. */
 export function actClass(tone: Tone = 'gilt'): string {

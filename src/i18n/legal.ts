@@ -40,7 +40,7 @@ export const legalEn: LegalContent = {
     {
       heading: 'Intellectual property',
       body: [
-        'The game’s code, its drawings included, is free software under the GNU Affero General Public License v3.0. The texts are © Cédric Lucchese unless stated otherwise. The fonts, IM Fell English and Alegreya Sans among them, are under the SIL Open Font License.',
+        'The game’s code, its drawings included, is free software under the GNU Affero General Public License v3.0. The texts are © Cédric Lucchese unless stated otherwise. The fonts, Vollkorn, IM Fell English and Alegreya Sans among them, are under the SIL Open Font License.',
       ],
     },
   ],
@@ -77,7 +77,7 @@ export const legalFr: LegalContent = {
     {
       heading: 'Propriété intellectuelle',
       body: [
-        'Le code du jeu, ses dessins compris, est un logiciel libre sous licence GNU Affero General Public License v3.0. Les textes sont © Cédric Lucchese, sauf mention contraire. Les polices, dont IM Fell English et Alegreya Sans, sont sous licence SIL Open Font License.',
+        'Le code du jeu, ses dessins compris, est un logiciel libre sous licence GNU Affero General Public License v3.0. Les textes sont © Cédric Lucchese, sauf mention contraire. Les polices, dont Vollkorn, IM Fell English et Alegreya Sans, sont sous licence SIL Open Font License.',
       ],
     },
   ],

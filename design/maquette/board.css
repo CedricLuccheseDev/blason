@@ -1,6 +1,6 @@
 /* A board of the maquette, as a studio lays one out: a page of 1920 by
    1080 in the game's own matter (src/styles/app.css), the parchment, the
-   brown ink and the gilt, IM Fell for the words and Alegreya Sans for the
+   brown ink and the gilt, Vollkorn for the words and Alegreya Sans for the
    figures; its number, its title and its line at the head, the screens
    large in a thin ink frame, and the notes in a column on the left, each
    with its gilt number and a fine line to what it names. Every measure is
@@ -15,8 +15,8 @@
   --shade-deep: #b89f6e;
   --gilt: #d9a41e;
   --gilt-deep: #946512;
-  --fell: 'IM Fell English', Georgia, serif;
-  --caps: 'IM Fell English SC', Georgia, serif;
+  --fell: 'Vollkorn', Georgia, serif;
+  --caps: 'Vollkorn SC', Georgia, serif;
   --figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
   --margin: 64px;
   --notes: 340px;

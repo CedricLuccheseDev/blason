@@ -69,7 +69,7 @@ const data = {
 // The data rides in the page as JSON: nothing in it may close its script.
 const json = JSON.stringify(data).replace(/</g, '\\u003c')
 const fonts =
-  'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500;700;800&family=IM+Fell+English:ital@0;1&display=swap'
+  'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500;700;800&family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Vollkorn+SC:wght@400;600&family=IM+Fell+English+SC&display=swap'
 
 // Written as a page's content, as the artifacts it is published to wrap it
 // in their own document (their head carries the charset and the viewport).

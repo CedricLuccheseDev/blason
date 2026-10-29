@@ -84,7 +84,12 @@ export const Route = createRootRoute({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@700;800;900&family=Anton&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Inter:wght@400;500;600;700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@700;800;900&family=Anton&family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Vollkorn+SC:wght@400;600&family=Inter:wght@400;500;600;700&display=swap',
+      },
+      // The game's name alone is still drawn in IM Fell, as a mark: only its letters are fetched.
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&text=BLASONblason&display=swap',
       },
     ],
   }),

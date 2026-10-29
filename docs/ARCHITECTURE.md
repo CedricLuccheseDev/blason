@@ -474,7 +474,7 @@ in three steps, and a fourth makes it into boards:
    `frame.js`, which the boards share.
 4. `npm run planches` (`design/maquette/planches.mjs`) makes the maquette
    into a studio's boards, eleven pages of 1920 by 1080 in the game's own
-   matter (`board.css`: the parchment, the ink, the gilt rules, IM Fell and
+   matter (`board.css`: the parchment, the ink, the gilt rules, Vollkorn and
    Alegreya Sans): a cover, a board for each moment, and one for the HUD's
    system. `boards.mjs` says what each shows: its title and its line, the
    moments and their sizes, and its notes in French, each naming a piece of

@@ -65,7 +65,9 @@ export function PublicCard({
       >
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}
         {(ready || failed) && (
-          <div
+          <button
+            type="button"
+            tabIndex={-1}
             aria-hidden
             onClick={() => rooms.join(null)}
             className="absolute inset-0 cursor-pointer transition-colors duration-(--duration-hud-press) ease-hud hover:bg-gilt/10 motion-reduce:transition-none"

@@ -73,7 +73,7 @@ export function makeLabels<TState extends { tick: number }>(
     stroke: { ...CUT, width: SHARP * 0.2 },
   })
   const nameStyle = new TextStyle({
-    fontFamily: "'IM Fell English SC', Georgia, serif",
+    fontFamily: "'Vollkorn SC', Georgia, serif",
     fontSize: SHARP,
     fill: LIGHT,
     stroke: { ...CUT, width: SHARP * 0.18 },

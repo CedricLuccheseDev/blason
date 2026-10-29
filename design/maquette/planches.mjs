@@ -95,7 +95,7 @@ const today = () =>
   new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date())
 
 const FONTS =
-  'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@700;800&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap'
+  'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@700;800&family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Vollkorn+SC:wght@400;600&family=IM+Fell+English+SC&display=swap'
 
 function boardPage(data) {
   // The data rides in the page as JSON: nothing in it may close its script.

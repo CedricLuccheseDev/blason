@@ -179,8 +179,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - **La direction artistique, actée** (Concept, section 3) : une carte dessinée à l'encre sur un
   manuscrit (parchemin, lavis de la couleur de chaque seigneur, lignes de côte, cadre et page autour,
   jamais de fond noir ou gris), et une interface faite d'objets de ce monde (écu, parchemins, rubans,
-  sceaux, or), jamais de panneaux de site ni de copie d'OpenFront. Deux écritures : IM Fell English
-  pour les noms et les mots, Alegreya Sans pour les chiffres. Chaque élément sert, se comprend d'un coup
+  sceaux, or), jamais de panneaux de site ni de copie d'OpenFront. Deux écritures : Vollkorn et ses
+  petites capitales pour les noms et les mots (acté le 29/10, « Go la C » : l'IM Fell English, trop dure à lire,
+  ne dessine plus que le nom du jeu, comme une marque), Alegreya Sans pour les chiffres. Chaque élément sert, se comprend d'un coup
   d'œil par un nouveau joueur et reste à l'échelle de la terre.
 - **La carte à deux échelles, actée le 29/10** (« map dézoomé = map stratégique. tout doit etre compréhensible
   super rapidement et facilement et aéré. map zoomé = map micro gestion et spectacle, on peut s'amusé plus mais il

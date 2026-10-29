@@ -44,7 +44,7 @@ const element = (tag, className, text) => {
   return made
 }
 
-/** Words set as French is: no line begins with its colon or its semicolon; and the figures in Alegreya Sans, IM Fell's own reading as letters. */
+/** Words set as French is: no line begins with its colon or its semicolon; and the figures in Alegreya Sans, Vollkorn's old-style figures reading as letters. */
 function words(tag, className, text) {
   const made = element(tag, className)
   const french = text.replace(/ ([:;?!])/g, '\u00a0$1')

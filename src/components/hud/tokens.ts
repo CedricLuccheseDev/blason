@@ -15,7 +15,7 @@
 // - type: four sizes, hud-s 15, hud-m 18, hud-l 22, hud-xl 28, each a fifth
 //   or more above the one before and none under 15, so that every word
 //   reads at a glance, through four roles: .hud-word, .hud-name (a lord)
-//   and .hud-note (a hint, in italics at full ink) in IM Fell, .hud-figure
+//   and .hud-note (a hint, in italics at full ink) in Vollkorn, .hud-figure
 //   in Alegreya Sans;
 // - one material, the sheet (Sheet.tsx), one button (Act.tsx), one shadow
 //   (shadow-lift), one rounding (rounded-md, its rule rounded-sm);

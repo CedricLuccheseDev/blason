@@ -91,8 +91,8 @@ Code in `engine/` must compute the same thing on every machine:
   `src/components/hud/`: its type roles, its spacing steps, the sheet, the
   button. No size, colour or spacing of its own.
 - The art direction is a map inked on a manuscript: parchment, ink, gold and
-  gules, IM Fell English for words and Alegreya Sans for figures, never a dark
-  panel.
+  gules, Vollkorn for words and Alegreya Sans for figures (IM Fell English for
+  the game's name alone), never a dark panel.
 - Every string the player reads is in `src/i18n/`, in French and in English.
 - Anything clickable is at least 44 pixels tall, keyboard focus stays visible,
   and colour never carries meaning alone.
