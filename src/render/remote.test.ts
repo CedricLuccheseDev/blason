@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  ONLINE_OPENING_TICKS,
   RULES,
+  SETUP_LIMITS,
   canStart,
   generateWorld,
   makeGrid,
@@ -80,16 +80,20 @@ describe('a game online', () => {
   })
 
   it('opens as long as the relay says, the same on every browser', () => {
-    const { session } = browser('online-opening', 0, ONLINE_OPENING_TICKS)
-    expect(session.state.rules.openingTicks).toBe(ONLINE_OPENING_TICKS)
-    expect(ONLINE_OPENING_TICKS).toBe(30 * 10)
+    const { session } = browser(
+      'online-opening',
+      0,
+      SETUP_LIMITS.opening.public,
+    )
+    expect(session.state.rules.openingTicks).toBe(SETUP_LIMITS.opening.public)
+    expect(SETUP_LIMITS.opening.public).toBe(30 * 10)
   })
 
   it('is the same game for one who came in during the opening, the turns so far played again', () => {
     // The public game: a player at seat 0 from turn 30, another who comes
     // in at turn 120 at seat 1, given every turn played until then.
     const seed = 'online-joined'
-    const opening = ONLINE_OPENING_TICKS
+    const opening = SETUP_LIMITS.opening.public
     const joins = new Map([
       [30, [0]],
       [120, [1]],

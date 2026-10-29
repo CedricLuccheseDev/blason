@@ -5,11 +5,10 @@ import {
   createGame,
   step,
 } from '../../engine'
-import { PLAYERS } from './palette'
-import type { GameState, Grid, Level, Order } from '../../engine'
+import type { GameSetup, GameState, Grid, Order } from '../../engine'
 
-// The game, stepped in the page ten times a second: the player
-// in his seat, a bot of the level chosen in every other.
+// The game, stepped in the page ten times a second: the player in his
+// seat, a bot in every other its setup gives one.
 
 const TICK_MS = 1000 / TICKS_PER_SECOND
 
@@ -27,13 +26,12 @@ export type Session = {
 
 export function startSession(
   grid: Grid,
-  seed: string,
+  setup: GameSetup,
   me: number,
-  level: Level = 'normal',
 ): Session {
-  const state = createGame(grid, PLAYERS.length, seed)
-  const bots = PLAYERS.map((_, id) =>
-    id === me ? null : createBot(id, seed, level),
+  const state = createGame(grid, setup)
+  const bots = setup.seats.map(
+    (seat, id) => seat.bot && createBot(id, setup.seed, seat.bot),
   )
   let pending: Array<Order> = []
   let clock = 0

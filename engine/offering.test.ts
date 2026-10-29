@@ -6,7 +6,7 @@ import { RULES } from './rules'
 import { step } from './step'
 import { createBot } from './bots/bot'
 import { talk } from './bots/talk'
-import { endow, field, hold, playing, run } from './testing'
+import { endow, field, hold, playing, run, setupOf } from './testing'
 import type { GameState, Order } from './types'
 
 const MINUTE = 60 * TICKS_PER_SECOND
@@ -49,7 +49,7 @@ describe('the offering', () => {
 describe('the bots and an offering', () => {
   /** Lord 2, a bot, on the left of a row; lord 0 in the middle, held thin; lord 1 on the right. */
   function three(): GameState {
-    const state = createGame(field(60), 3, 'test', {
+    const state = createGame(field(60), setupOf(3), {
       ...RULES,
       fillSeconds: Number.MAX_SAFE_INTEGER,
     })
@@ -84,7 +84,7 @@ describe('the bots and an offering', () => {
   })
 
   it('take the giver for an ally though they hold two already', () => {
-    const state = createGame(field(10), 5, 'test')
+    const state = createGame(field(10), setupOf(5))
     state.tick = state.rules.openingTicks
     hold(state, 0, [0, 1])
     for (const [lord, tile] of [

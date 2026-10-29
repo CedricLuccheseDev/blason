@@ -6,7 +6,7 @@ import { capOf, createGame } from './land'
 import { barredBy } from './opening'
 import { RULES } from './rules'
 import { stateHash, step } from './step'
-import { field, owned } from './testing'
+import { field, owned, setupOf } from './testing'
 import { NEUTRAL, SEA } from './types'
 import type { GameState, Order } from './types'
 
@@ -15,7 +15,8 @@ const world = generateWorld('standards')
 const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
 
 /** A game on the drawn land, at its first tick. */
-const drawn = (players = 2) => createGame(grid, players, 'standards')
+const drawn = (players = 2) =>
+  createGame(grid, setupOf(players, { seed: 'standards' }))
 
 const plant = (player: number, tile: number): Order => ({
   player,
@@ -57,7 +58,7 @@ describe('the opening', () => {
     // A strait cuts the last three columns of a field off.
     const islet = field(12, 3)
     for (let y = 0; y < 3; y++) islet.land[y * 12 + 8] = false
-    const state = createGame(islet, 1, 'islet')
+    const state = createGame(islet, setupOf(1, { seed: 'islet' }))
     expect(state.grid.area).toBe(24)
     expect(state.owner[10]).toBe(SEA)
     step(state, [plant(0, 10)])
@@ -90,7 +91,7 @@ describe('the opening', () => {
   })
 
   it('keeps each standard twenty tiles from the others: the first to plant holds the ground round his', () => {
-    const state = createGame(field(80, 40), 2, 'gap')
+    const state = createGame(field(80, 40), setupOf(2, { seed: 'gap' }))
     const at = (x: number, y: number) => y * 80 + x
     step(state, [plant(0, at(20, 20)), plant(1, at(20, 20))])
     expect(state.players[1].standard).toBe(-1)
@@ -110,7 +111,7 @@ describe('the opening', () => {
   })
 
   it('grants a lord the land within fourteen tiles of his standard when the count ends, his first village on it, his peasants full', () => {
-    const state = createGame(field(60, 60), 1, 'reach')
+    const state = createGame(field(60, 60), setupOf(1, { seed: 'reach' }))
     const heart = 30 * 60 + 30
     toTheEnd(state, [plant(0, heart)])
     expect(owned(state, 0)).toEqual(reached(state, heart))
@@ -127,7 +128,7 @@ describe('the opening', () => {
     for (let y = 0; y < 50; y++) bay.land[y * 60 + 35] = false
     for (let y = 29; y <= 31; y++)
       for (let x = 23; x <= 25; x++) bay.land[y * 60 + x] = false
-    const state = createGame(bay, 1, 'bay')
+    const state = createGame(bay, setupOf(1, { seed: 'bay' }))
     toTheEnd(state, [plant(0, 30 * 60 + 30)])
     expect(owned(state, 0).every((t) => t % 60 < 35)).toBe(true)
     expect(state.owner[30 * 60 + 40]).toBe(NEUTRAL)
@@ -135,7 +136,7 @@ describe('the opening', () => {
   })
 
   it('shares out two starts that meet: each tile to the nearer standard, a tie to the lower seat', () => {
-    const state = createGame(field(80, 40), 2, 'meet')
+    const state = createGame(field(80, 40), setupOf(2, { seed: 'meet' }))
     const at = (x: number, y: number) => y * 80 + x
     // Twenty tiles apart, as near as the gap allows: their starts overlap.
     const [west, east] = [at(25, 20), at(45, 20)]

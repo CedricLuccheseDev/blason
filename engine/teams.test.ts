@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { createGame, setOwner } from './land'
-import { RULES } from './rules'
 import { step } from './step'
 import { entryFor } from './course'
 import { isAllied } from './diplomacy'
-import { field } from './testing'
+import { field, setupOf } from './testing'
 import { NO_ONE } from './types'
 import type { GameState } from './types'
 
 /** Four lords on a row of 40, ten tiles each: 0 and 1 a team, 2 and 3 another. */
 function teamed(): GameState {
-  const state = createGame(field(40), 4, 'test', RULES, [0, 0, 1, 1])
+  const state = createGame(field(40), setupOf(4, { teams: [0, 0, 1, 1] }))
   state.tick = state.rules.openingTicks
   for (let t = 0; t < 40; t++) setOwner(state, t, Math.floor(t / 10))
   return state
@@ -42,7 +41,7 @@ describe('the teams', () => {
   })
 
   it('leave a lord without a team to play for himself', () => {
-    const state = createGame(field(40), 4, 'test')
+    const state = createGame(field(40), setupOf(4))
     expect(state.teams).toEqual([-1, -1, -1, -1])
     expect(isAllied(state, 0, 1)).toBe(false)
   })

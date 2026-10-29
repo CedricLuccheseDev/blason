@@ -17,6 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import {
   apart,
   around,
+  botsSetup,
   canBuild,
   capOf,
   costOf,
@@ -101,7 +102,7 @@ const GW = grid.width
 const GH = grid.height
 const CASTLE_R = RULES.castleRadius * TILE
 const GAP = RULES.workGap * TILE
-const live = createGame(grid, PLAYERS.length, SEED)
+const live = createGame(grid, botsSetup({ seed: SEED }))
 const bots = live.players.map((_, id) => createBot(id, SEED))
 /** Lords kept from giving orders for a while: the staging. */
 const quiet = new Set<number>()

@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
-  RULES,
+  botsSetup,
   createBot,
   createGame,
-  generateWorld,
-  makeGrid,
+  landOf,
   stateHash,
   step,
 } from '../../engine'
@@ -14,8 +13,8 @@ import type { GameState } from '../../engine'
 import type { Save } from './save'
 
 const seed = 'save-test'
-const world = generateWorld(seed)
-const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
+const setup = botsSetup({ seed })
+const { grid } = landOf(setup)
 
 /** So many ticks of a game, twenty bots playing it, new ones if none are given. */
 function play(state: GameState, ticks: number, each?: () => void) {
@@ -30,7 +29,7 @@ function play(state: GameState, ticks: number, each?: () => void) {
 }
 
 describe('a saved game', () => {
-  const state = createGame(grid, 20, seed)
+  const state = createGame(grid, setup)
   play(state, 1500)
   const save = saveGame(state, grid, {
     size: 'standard',
@@ -72,6 +71,7 @@ describe('a saved game', () => {
   }, 30_000)
 
   it('leaves out what the seed makes again, and packs the land and the roads', () => {
+    expect(Object.keys(save.state)).not.toContain('setup')
     expect(Object.keys(save.state)).not.toContain('grid')
     expect(Object.keys(save.state)).not.toContain('rules')
     expect(Object.keys(save.state)).not.toContain('realm')

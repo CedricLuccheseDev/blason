@@ -1,5 +1,4 @@
-import { createGame } from '../../engine'
-import { PLAYERS } from './palette'
+import { botsSetup, createGame } from '../../engine'
 import type { GameState, Grid, Level, MapSize } from '../../engine'
 
 // A saved game: a game's state at a tick, as plain data, to come back to
@@ -110,8 +109,8 @@ function unpack(value: unknown, grid: Grid): unknown {
   )
 }
 
-/** Fields a save never holds: the seed's, the land's tiles and the rules. */
-const REMADE = new Set(['seed', 'grid', 'rules'])
+/** Fields a save never holds: what the game was made of, its seed, the land's tiles and the rules. */
+const REMADE = new Set(['setup', 'seed', 'grid', 'rules'])
 
 /** A game's state saved at its tick, seen from a seat; `grid` is the land's tiles as made from the seed, before the game began. */
 export function saveGame(
@@ -121,8 +120,7 @@ export function saveGame(
 ): Save {
   const fresh: Record<string, unknown> = createGame(
     grid,
-    state.players.length,
-    state.seed,
+    state.setup,
     state.rules,
   )
   const kept: Record<string, unknown> = {}
@@ -134,9 +132,9 @@ export function saveGame(
   return { seed: state.seed, ...view, state: kept }
 }
 
-/** The game a save holds: a new game on its land, its saved fields laid over it. */
+/** The game a save holds: a new game of bots on its land, its saved fields laid over it. */
 export function restoreGame(grid: Grid, save: Save): GameState {
-  const state = createGame(grid, PLAYERS.length, save.seed)
+  const state = createGame(grid, botsSetup(save))
   const fields: Record<string, unknown> = state
   for (const [key, value] of Object.entries(save.state))
     fields[key] = unpack(value, grid)

@@ -87,7 +87,7 @@ export async function mountGame(
     skipExtensionImports: true,
   })
   element.appendChild(app.canvas)
-  const session = openSession(grid, land.seed, me, hooks)
+  const session = openSession(grid, land, me, hooks)
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
   const heralds = makeHeralds(scene.world, () => app.screen)

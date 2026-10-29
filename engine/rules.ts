@@ -51,7 +51,7 @@ type CoupRule = {
 }
 
 export type Rules = {
-  /** Ticks during which each lord picks where he starts: 10 seconds alone, `ONLINE_OPENING_TICKS` online. */
+  /** Ticks during which each lord picks where he starts: the setup's opening, laid over the rules as the game is made (createGame). */
   openingTicks: number
   /** In the opening, how near another lord's standard none may be planted, in tiles; when it ends, how far round his standard a lord's start reaches, in tiles. */
   standardGap: number
@@ -157,11 +157,27 @@ export type Rules = {
 const SECOND = TICKS_PER_SECOND
 const MINUTE = 60 * SECOND
 
-/** A game online opens longer than one alone: 30 seconds, the time for players to come into it while the lords plant their standards (Concept, 29/10). The relay sends it with the game, in place of `openingTicks`. */
-export const ONLINE_OPENING_TICKS = 30 * SECOND
+/**
+ * What a game's setup may be (setup.ts): two to twenty lords (64 later); a
+ * seat's team from 0 to 3, or none; an opening of 5 seconds to a minute,
+ * 10 alone and 30 in the public game, the time for players to come into it
+ * while the lords plant their standards (Concept, 29/10); a seed of 64
+ * letters at most.
+ */
+export const SETUP_LIMITS = {
+  seats: { min: 2, max: 20 },
+  teams: 4,
+  opening: {
+    min: 5 * SECOND,
+    max: 60 * SECOND,
+    alone: 10 * SECOND,
+    public: 30 * SECOND,
+  },
+  seed: { min: 1, max: 64 },
+} as const
 
 export const RULES: Rules = {
-  openingTicks: 10 * SECOND,
+  openingTicks: SETUP_LIMITS.opening.alone,
   standardGap: 20,
   startRadius: 14,
   tileSize: 4,

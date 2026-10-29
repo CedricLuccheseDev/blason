@@ -1,5 +1,11 @@
 import { writeFileSync } from 'node:fs'
-import { RULES, createGame, generateWorld, makeGrid } from '../engine'
+import {
+  RULES,
+  botsSetup,
+  createGame,
+  generateWorld,
+  makeGrid,
+} from '../engine'
 import type { Generator, MapSize, Point, World } from '../engine'
 
 // The maps' board: for each family of lands, the first generator's land and
@@ -70,7 +76,7 @@ function path(points: ReadonlyArray<Point>, close: boolean): string {
 /** A map's figures: its tiles, its land, how much the game keeps, its high mountains and its passes. */
 function figures(world: World) {
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
-  const game = createGame(grid, 20, world.seed)
+  const game = createGame(grid, botsSetup(world))
   // The mountains' tiles: the land there would be, were they land.
   const open = makeGrid(
     {

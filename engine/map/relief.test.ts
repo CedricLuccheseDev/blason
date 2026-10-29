@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { makeGrid } from '../grid'
 import { createGame } from '../land'
 import { RULES } from '../rules'
+import { setupOf } from '../testing'
 import { SEA } from '../types'
 import { generateWorld } from './generate'
 import { pickShape } from './shapes'
@@ -87,7 +88,7 @@ describe('the relief generator', () => {
   it('closes the mountains to the game, as the sea: no tile of them is land, no one holds one', () => {
     for (const { world } of families) {
       const grid = gridOf(world)
-      const game = createGame(grid, 20, world.seed)
+      const game = createGame(grid, setupOf(20, { seed: world.seed }))
       for (const p of world.map.peaks) {
         const tile =
           Math.floor(p.y / grid.size) * grid.width + Math.floor(p.x / grid.size)
@@ -100,7 +101,7 @@ describe('the relief generator', () => {
   it('keeps the land one through the passes, tile by tile, the ranges cut by some', () => {
     for (const { world } of families) {
       const grid = gridOf(world)
-      const game = createGame(grid, 20, world.seed)
+      const game = createGame(grid, setupOf(20, { seed: world.seed }))
       // The game plays the largest piece of the tiles: it is nearly all of them.
       expect(game.grid.area / grid.area).toBeGreaterThan(0.995)
     }

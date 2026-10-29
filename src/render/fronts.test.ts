@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { RULES, createGame } from '../../engine'
+import { RULES, botsSetup, createGame } from '../../engine'
 import { makeFronts } from './fronts'
 import { tileAt } from './marks'
 import type { GameState, Grid, Host } from '../../engine'
@@ -19,7 +19,7 @@ function bay(): GameState {
   })
   const grid: Grid = { width: WIDTH, height: 16, size: 4, land, area: 0 }
   grid.area = land.filter(Boolean).length
-  const state = createGame(grid, 2, 'bay', RULES)
+  const state = createGame(grid, botsSetup({ seed: 'bay', lords: 2 }), RULES)
   const strip = (t: number) => t % WIDTH >= 13 && Math.floor(t / WIDTH) === 12
   land.forEach((dry, t) => {
     if (dry) state.owner[t] = strip(t) ? 0 : 1
