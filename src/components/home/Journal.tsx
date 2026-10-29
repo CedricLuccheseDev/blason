@@ -15,48 +15,53 @@ export type Entry = {
   excerpt: string
 }
 
-/** The posts shown: the last ones, as many as stand beside the card. */
+/** The posts offered: the last ones; beside the card, those that fit whole. */
 const SHOWN = 3
 
 export function Journal({ entries }: Readonly<{ entries: Array<Entry> }>) {
   const t = useMessages().home
+  // Beside the card, the sheet takes the height of the card and its buttons,
+  // never more: its top and its foot on theirs. A post that does not fit
+  // whole wraps into a second column, out of sight.
   return (
-    <Sheet className="flex h-full min-w-0 flex-col gap-2 p-4">
-      <h2>
+    <div className="relative min-w-0">
+      <Sheet className="flex min-w-0 flex-col gap-2 p-4 lg:absolute lg:inset-0">
+        <h2>
+          <Link
+            to="/blog"
+            className="hud-press inline-flex min-h-11 items-center font-caps text-hud-l text-quill hover:text-gilt-deep"
+          >
+            {t.journal}
+          </Link>
+        </h2>
+        <ul className="flex min-h-0 flex-1 flex-col flex-wrap content-start divide-y divide-quill/20 overflow-hidden">
+          {entries.slice(0, SHOWN).map((entry) => (
+            <li key={entry.slug} className="w-full py-2 first:pt-0">
+              <Link
+                to="/blog/$slug"
+                params={{ slug: entry.slug }}
+                className="hud-press group flex flex-col gap-1 font-figures text-quill"
+              >
+                <time dateTime={entry.date} className="text-hud-s">
+                  {entry.date}
+                </time>
+                <span className="text-hud-m leading-snug font-bold group-hover:text-gilt-deep">
+                  {entry.title}
+                </span>
+                <span className="line-clamp-2 text-hud-s leading-snug">
+                  {entry.excerpt}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
         <Link
           to="/blog"
-          className="hud-press inline-flex min-h-11 items-center font-caps text-hud-l text-quill hover:text-gilt-deep"
+          className="hud-note hud-press inline-flex min-h-11 items-center self-end hover:text-gilt-deep"
         >
-          {t.journal}
+          {t.journalAll}
         </Link>
-      </h2>
-      <ul className="flex min-h-0 flex-1 flex-col divide-y divide-quill/20 overflow-hidden">
-        {entries.slice(0, SHOWN).map((entry) => (
-          <li key={entry.slug} className="py-2 first:pt-0">
-            <Link
-              to="/blog/$slug"
-              params={{ slug: entry.slug }}
-              className="hud-press group flex flex-col gap-1 font-figures text-quill"
-            >
-              <time dateTime={entry.date} className="text-hud-s">
-                {entry.date}
-              </time>
-              <span className="text-hud-m leading-snug font-bold group-hover:text-gilt-deep">
-                {entry.title}
-              </span>
-              <span className="line-clamp-2 text-hud-s leading-snug">
-                {entry.excerpt}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Link
-        to="/blog"
-        className="hud-note hud-press inline-flex min-h-11 items-center self-end hover:text-gilt-deep"
-      >
-        {t.journalAll}
-      </Link>
-    </Sheet>
+      </Sheet>
+    </div>
   )
 }
