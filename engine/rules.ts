@@ -38,7 +38,7 @@ export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
  * radius it strikes, in tiles; the ticks before it falls (none: it walks
  * there at the armies' pace).
  */
-export type CoupRule = {
+type CoupRule = {
   price: number
   reach: number | null
   radius: number
