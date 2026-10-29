@@ -89,6 +89,7 @@ ${read('page.css')}
 <dialog id="large"><div class="large"></div><p class="large-name"></p></dialog>
 <script type="application/json" id="data">${json}</script>
 <script>
+${read('frame.js')}
 ${read('page.js')}
 </script>
 `

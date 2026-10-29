@@ -1,47 +1,10 @@
-// The maquette's page (build.mjs inlines it): each frame a document of its
-// own, built from the captures held once in the page, at its real size, so
-// that the game's CSS lays the HUD out as the game does at that size; then
-// scaled down to its place in the row. A frame is built as it comes near
-// the screen; a click opens it large.
+// The maquette's page (build.mjs inlines it after frame.js): each frame a
+// document of its own (frameDocument), built from the captures held once in
+// the page, at its real size, so that the game's CSS lays the HUD out as the
+// game does at that size; then scaled down to its place in the row. A frame
+// is built as it comes near the screen; a click opens it large.
 
 const data = JSON.parse(document.getElementById('data').textContent)
-
-/** The frames stand still: each motion of the HUD held where it reads, a pennant shown, a seal at its glow. */
-const STILL = `
-*, *::before, *::after { transition: none !important; }
-.hud-enter, .rise-in, .fade-in { animation: none !important; }
-.hud-life { animation-delay: -2s !important; animation-play-state: paused !important; }
-.hud-glow { animation-delay: -0.7s !important; animation-play-state: paused !important; }
-.hud-bob { animation-play-state: paused !important; }
-`
-
-const quote = (text) =>
-  text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
-const attributes = (all) =>
-  Object.entries(all)
-    .map(([name, value]) => ` ${name}="${quote(value)}"`)
-    .join('')
-
-/** A frame's document: the game's page round its HUD, a proposal's pieces in the place of the game's, the map's image in the map's place. */
-function frameDocument(frame, proposal) {
-  const doc = new DOMParser().parseFromString(frame.hud, 'text/html')
-  for (const [selector, markup] of Object.entries(proposal?.replace ?? {}))
-    for (const piece of doc.body.querySelectorAll(selector))
-      piece.outerHTML = markup
-  const map = doc.body.querySelector('main > [role="img"]')
-  if (map) {
-    const image = doc.createElement('img')
-    image.setAttribute('src', frame.map)
-    image.setAttribute('alt', '')
-    image.setAttribute('style', 'display:block;width:100%;height:100%')
-    map.replaceChildren(image)
-  }
-  const fonts = data.page.fonts
-    .map((href) => `<link rel="stylesheet" href="${quote(href)}">`)
-    .join('')
-  const extra = proposal?.css ? `<style>${proposal.css}</style>` : ''
-  return `<!doctype html><html${attributes(data.page.html)}><head><meta charset="utf-8">${fonts}<style>${data.css}</style><style>${STILL}</style>${extra}</head><body${attributes(data.page.body)}>${doc.body.innerHTML}</body></html>`
-}
 
 const near = new IntersectionObserver(
   (entries) => {
@@ -102,7 +65,8 @@ function frameElement(frame, proposal, name) {
   const caption = document.createElement('figcaption')
   caption.textContent = `${width} × ${height}`
   figure.append(screen, caption)
-  figure.build = () => frameDocument(frame, proposal)
+  figure.build = () =>
+    frameDocument(frame, { page: data.page, css: data.css, proposal })
   figure.addEventListener('click', () =>
     open(figure.build(), width, height, iframe.title),
   )

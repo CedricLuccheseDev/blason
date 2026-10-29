@@ -440,18 +440,26 @@ held still at chosen moments of a real game, at the sizes of screen that
 matter, side by side. It cannot drift from the game, because each of its
 frames is the game. A piece of the HUD is redesigned there first, as
 proposals beside the game's own; the one chosen is then coded. It is made
-in three steps:
+in three steps, and a fourth makes it into boards:
 
 1. `npm run maquette` (`scripts/maquette.ts`) plays a game of bots without
-   a screen and saves its moments (`public/saves/`, the saved games above):
-   the opening, minute 3, an offer of alliance, an alliance to renew, a war
-   up close, the whole land at minute 20.
+   a screen to its end and saves its moments (`public/saves/`, the saved
+   games above): the opening, minute 3, an offer of alliance, an alliance to
+   renew, a war up close, the whole land at minute 20, and the tick the game
+   is won, from the winner's seat and from the seat of the lord who came
+   nearest.
 2. `node design/maquette/capture.mjs [game url]`, the game served, opens
    each save in `/play?save=<name>` in a headless Chrome at each size
    (`moments.mjs`: a desk's screen, a laptop's, a phone), staged as a player
-   would (the pointer on a neighbour's land, a key, a click), waits until
-   the map is drawn, and takes apart the map alone as an image and the HUD's
-   markup as the page rendered it, and once the page's CSS (`captures/`).
+   would (the pointer on a neighbour's land, a right click, a key, a click),
+   waits until the map is drawn, and takes apart the map alone as an image
+   and the HUD's markup as the page rendered it, and once the page's CSS
+   (`captures/`). A moment may be a page of the site instead of a save: the
+   home, its next public game told by the relay served beside it, the game
+   of bots behind it taken as the map; any other canvas of a page (the land
+   of the next game) is kept in its markup as the image it shows. Last, the
+   HUD's pieces drawn by the game's own components (`pieces.tsx`, imported
+   in a page of the game through Vite), for the board of the interface.
    The dev server does not watch `design/`, and the game's CSS is not made
    from it (`vite.config.ts`, the `@source not` of `app.css`): what the
    maquette writes never reloads the pages it is capturing, nor feeds the
@@ -462,7 +470,28 @@ in three steps:
    its place in the row, the map's image underneath and the HUD on top. A
    proposal (`proposals/*.mjs`) puts new markup, written in the game's own
    classes, in the place of a piece of the HUD, and is shown beside the
-   game's on the same moments and sizes.
+   game's on the same moments and sizes. A frame's document is built by
+   `frame.js`, which the boards share.
+4. `npm run planches` (`design/maquette/planches.mjs`) makes the maquette
+   into a studio's boards, eleven pages of 1920 by 1080 in the game's own
+   matter (`board.css`: the parchment, the ink, the gilt rules, IM Fell and
+   Alegreya Sans): a cover, a board for each moment, and one for the HUD's
+   system. `boards.mjs` says what each shows: its title and its line, the
+   moments and their sizes, and its notes in French, each naming a piece of
+   the HUD by its selector in the frame, or a point of the map in the
+   frame's own pixels. `board.js` lays a board out: the desk's screen large,
+   the phone's beside it where it matters, a part of a frame larger where a
+   detail matters, and the notes in a column at the height of what they
+   name, ordered so that no two lines cross, a line going round the lords'
+   list rather than over it, the same number pinned on the phone. The
+   command first takes again what the boards show (`take.mjs`: the saves
+   made again, the game and the relay served on free ports, the boards'
+   moments captured at the boards' sizes, the pieces), then exports each
+   board to PNG into the author's notes (`Maquette/NN-name.png`) and writes
+   the note that shows them (`Maquette.md`); `--no-take` lays them out from
+   the captures there are, `--out <dir>` exports elsewhere, and boards named
+   are made alone. A note whose piece the game no longer draws is reported, and
+   its board made without it: the selectors follow the HUD's markup.
 
 ## The home
 

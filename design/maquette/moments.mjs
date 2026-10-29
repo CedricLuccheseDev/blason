@@ -4,10 +4,14 @@
 // seat and the camera are the save's own; the staging is what a player
 // would do on screen: keys for what he holds in hand (`keys: ['5']`), the
 // pointer at the middle of the screen, where the save puts a neighbour's
-// land (`pointer: true`), a click on a piece of the HUD (`click:` its
-// selector). Two moments may stage one save (`save:` its name, the
-// moment's own if none): the herald's letter opened, say, with
-// `save: 'offer', click: '[aria-label^="Le pli"]'`.
+// land (`pointer: true`), a right click there (`menu: true`), a click on a
+// piece of the HUD (`click:` its selector). Two moments may stage one save
+// (`save:` its name, the moment's own if none): the herald's letter opened,
+// say, with `save: 'offer', click: '[aria-label^="Le pli"]'`. A moment may
+// be a page of the site rather than a save (`path:`), taken once what it
+// waits for is there (`ready:` a selector), and without waiting for its
+// map to hold still past so many ms (`longest:`), the home's game behind
+// never holding still.
 
 /** The sizes every moment is captured at: a desk's screen, a laptop's, a phone upright. */
 export const SIZES = [
@@ -18,6 +22,14 @@ export const SIZES = [
 
 export const MOMENTS = [
   {
+    name: 'home',
+    title: "L'accueil",
+    line: 'La prochaine partie publique en premier et en grand, puis le solo et les parties privées ; derrière, une partie de bots.',
+    path: '/',
+    ready: 'canvas[role="img"].opacity-100',
+    longest: 20_000,
+  },
+  {
     name: 'opening',
     title: "L'ouverture",
     line: 'Les étendards se plantent pendant le compte : toute la terre, rien encore de pris.',
@@ -27,6 +39,14 @@ export const MOMENTS = [
     title: 'Trois minutes',
     line: "Ma terre et celle d'un voisin, le pointeur sur la sienne : l'armée en main, ses hommes et son or.",
     pointer: true,
+  },
+  {
+    name: 'menu',
+    title: 'Le clic droit',
+    line: "Un clic droit sur la terre d'un voisin pose le cartouche : son seigneur et l'alliance à lui offrir.",
+    save: 'minute-3',
+    pointer: true,
+    menu: true,
   },
   {
     name: 'offer',
@@ -47,5 +67,15 @@ export const MOMENTS = [
     name: 'strategic',
     title: 'La carte stratégique',
     line: 'Toute la terre à vingt minutes : de loin, seulement ce qui sert une décision.',
+  },
+  {
+    name: 'end',
+    title: 'La fin de partie, gagnée',
+    line: 'Le pas où la partie est gagnée, vu par son vainqueur.',
+  },
+  {
+    name: 'end-lost',
+    title: 'La fin de partie, perdue',
+    line: 'Le même pas, vu par le seigneur venu le plus près.',
   },
 ]

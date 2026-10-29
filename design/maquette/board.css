@@ -1,0 +1,292 @@
+/* A board of the maquette, as a studio lays one out: a page of 1920 by
+   1080 in the game's own matter (src/styles/app.css), the parchment, the
+   brown ink and the gilt, IM Fell for the words and Alegreya Sans for the
+   figures; its number, its title and its line at the head, the screens
+   large in a thin ink frame, and the notes in a column on the left, each
+   with its gilt number and a fine line to what it names. Every measure is
+   on the board's grid: margins of 64, a column of notes 340 wide and their
+   numbers beside it, the body from 212 to 996 (board.js keeps the same). */
+:root {
+  color-scheme: light;
+  --vellum: #f6eedb;
+  --quill: #2b1e12;
+  --lead: #5e5749;
+  --shade: #d9c49a;
+  --shade-deep: #b89f6e;
+  --gilt: #d9a41e;
+  --gilt-deep: #946512;
+  --fell: 'IM Fell English', Georgia, serif;
+  --caps: 'IM Fell English SC', Georgia, serif;
+  --figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
+  --margin: 64px;
+  --notes: 340px;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+}
+body {
+  position: relative;
+  background: var(--vellum);
+  color: var(--quill);
+  font-family: var(--fell);
+  font-synthesis: none;
+}
+/* The page's own edge, as the map's: an ink line and a gilt one inside it. */
+.edge {
+  position: absolute;
+  inset: 24px;
+  border: 1px solid var(--quill);
+  pointer-events: none;
+}
+.edge::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--gilt);
+}
+
+/* The head: the number in gilt figures, the title, its line. */
+.head {
+  position: absolute;
+  top: 56px;
+  left: var(--margin);
+  right: var(--margin);
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+.number {
+  font-family: var(--figures);
+  font-weight: 800;
+  font-size: 72px;
+  line-height: 0.9;
+  color: var(--gilt-deep);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.titles h1 {
+  margin: 0;
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1;
+}
+.titles p {
+  margin: 10px 0 0;
+  font-style: italic;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--lead);
+  max-width: 1300px;
+}
+/* Under the head, a rule: ink, and gilt under it. */
+.rule {
+  position: absolute;
+  top: 176px;
+  left: var(--margin);
+  right: var(--margin);
+  height: 5px;
+  border-top: 1px solid var(--quill);
+  border-bottom: 2px solid var(--gilt);
+}
+.foot {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 19px;
+  color: var(--lead);
+}
+.foot .mark {
+  font-family: var(--caps);
+  font-size: 22px;
+  color: var(--quill);
+}
+.foot .when {
+  font-style: italic;
+}
+
+/* A screen: the game at its real size in its iframe, scaled to its place,
+   in a thin ink frame, a soft shadow under it. */
+.screen {
+  position: absolute;
+  overflow: hidden;
+  background: var(--shade);
+  outline: 1.5px solid var(--quill);
+  box-shadow:
+    0 2px 4px rgb(43 30 18 / 0.18),
+    0 18px 44px rgb(43 30 18 / 0.22);
+}
+.screen.bare {
+  overflow: visible;
+  background: none;
+  outline: none;
+  box-shadow: none;
+}
+.screen iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  transform-origin: 0 0;
+}
+.size {
+  position: absolute;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--lead);
+}
+
+/* A note: its words in ink, set against the screens, and its gilt number
+   beside them, where its line leaves for what it names. */
+.note {
+  position: absolute;
+  left: var(--margin);
+  width: var(--notes);
+  text-align: right;
+  font-size: 22px;
+  line-height: 1.3;
+}
+.marker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--quill);
+  background: var(--gilt);
+  font-family: var(--figures);
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--quill);
+  font-variant-numeric: lining-nums tabular-nums;
+  box-shadow: 0 1px 2px rgb(43 30 18 / 0.35);
+}
+.note .marker {
+  top: -1px;
+  right: -46px;
+}
+/* On the phone, the same number laid on the same piece, smaller. */
+.marker.pin {
+  width: 26px;
+  height: 26px;
+  font-size: 15px;
+  transform: translate(-50%, -50%);
+}
+/* A figure among the words, in the figures' hand. */
+.figure {
+  font-family: var(--figures);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.92em;
+  font-variant-numeric: lining-nums;
+}
+.leaders {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.leaders .halo {
+  fill: none;
+  stroke: var(--vellum);
+  stroke-opacity: 0.85;
+  stroke-width: 4.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.leaders .line {
+  fill: none;
+  stroke: var(--quill);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.leaders .end {
+  fill: var(--quill);
+  stroke: var(--vellum);
+  stroke-width: 2.5;
+}
+
+/* The cover: the land as key art, its name and its line on the parchment. */
+.cover .art {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+}
+.cover .veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--vellum) 0%,
+    var(--vellum) 27%,
+    rgb(246 238 219 / 0.72) 40%,
+    rgb(246 238 219 / 0) 54%
+  );
+}
+.cover .name {
+  position: absolute;
+  left: 120px;
+  top: 340px;
+  width: 760px;
+}
+.cover .name h1 {
+  margin: 0;
+  font-family: var(--caps);
+  font-weight: 400;
+  font-size: 150px;
+  line-height: 0.9;
+}
+.cover .name .ornament {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 26px 0 22px;
+  width: 520px;
+}
+.cover .name .ornament::before,
+.cover .name .ornament::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: var(--gilt);
+}
+.cover .name .ornament span {
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg);
+  border: 1.5px solid var(--quill);
+  background: var(--gilt);
+}
+.cover .name p {
+  margin: 0;
+  font-style: italic;
+  font-size: 36px;
+  line-height: 1.25;
+}
+.cover .what {
+  position: absolute;
+  left: 120px;
+  bottom: 96px;
+  font-size: 24px;
+  line-height: 1.35;
+  color: var(--lead);
+  width: 500px;
+}
+.cover .what strong {
+  display: block;
+  font-family: var(--caps);
+  font-weight: 400;
+  font-size: 28px;
+  color: var(--quill);
+}
