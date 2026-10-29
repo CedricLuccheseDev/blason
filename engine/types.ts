@@ -128,6 +128,8 @@ export type GameState = {
   caravans: Array<Caravan>
   strikes: Array<Strike>
   scars: Array<Scar>
+  /** Each seat's team, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */
+  teams: Array<number>
   winner: number
 }
 

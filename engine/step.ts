@@ -1,7 +1,13 @@
 import { TICKS_PER_SECOND } from './units'
 import { fingerprint } from './numbers'
 import { moveCaravans, sendCaravans } from './caravans'
-import { ally, breakAlliance, expireDiplomacy, offer } from './diplomacy'
+import {
+  ally,
+  breakAlliance,
+  expireDiplomacy,
+  offer,
+  sideOf,
+} from './diplomacy'
 import { grow } from './land'
 import { grantStarts, pickStart } from './opening'
 import { COUPS, WORKS } from './rules'
@@ -40,6 +46,10 @@ export function nextDrop(state: GameState): number | null {
 }
 
 /** A lord with no land left is out; a lord wins with his share of the land, or as the last one standing. */
+/** Whether a lord's side won: himself, or his team. */
+export const wonBy = (state: GameState, lord: number): boolean =>
+  state.winner !== NO_ONE && sideOf(state, lord) === sideOf(state, state.winner)
+
 function judge(state: GameState): void {
   state.players.forEach((lord, id) => {
     if (!lord.alive || lord.tiles > 0) return
@@ -48,15 +58,28 @@ function judge(state: GameState): void {
     state.caravans = state.caravans.filter((c) => c.owner !== id)
     state.alliances = state.alliances.filter((x) => x.a !== id && x.b !== id)
   })
-  const standing = state.players.flatMap((p, id) => (p.alive ? [id] : []))
+  // A side is a team, its members' land together, or a lord alone; the one
+  // left standing, or holding the share, wins, and its lord with the most
+  // land is named its winner.
+  const sides = new Map<string, Array<number>>()
+  state.players.forEach((p, id) => {
+    if (!p.alive) return
+    const side = sideOf(state, id)
+    sides.set(side, [...(sides.get(side) ?? []), id])
+  })
+  const land = (lords: Array<number>) =>
+    lords.reduce((sum, id) => sum + state.players[id].tiles, 0)
   const share = victoryShare(state)
-  const winner =
+  const standing = [...sides.values()]
+  const won =
     standing.length === 1
       ? standing[0]
-      : standing.find(
-          (id) => state.players[id].tiles * 1000 >= share * state.grid.area,
-        )
-  if (winner !== undefined) state.winner = winner
+      : standing.find((lords) => land(lords) * 1000 >= share * state.grid.area)
+  if (!won) return
+  state.winner = won.reduce(
+    (a, b) => (state.players[b].tiles > state.players[a].tiles ? b : a),
+    won[0],
+  )
 }
 
 function isSeat(state: GameState, seat: number): boolean {

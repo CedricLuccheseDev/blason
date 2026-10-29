@@ -150,6 +150,12 @@ herald's letter of an offer made to you, the seal of an alliance to renew:
   against each other go home.
 - Breaking an alliance is immediate and seen by all: the breaker bears the
   **traitor's mark** for 30 seconds, his land holding half as well.
+- **Teams**, in a game the host sets so: teammates are allies for good,
+  whom no order binds nor breaks, so no traitor among them; they never
+  strike each other and their armies cross each other's land. A team wins
+  together, when its members' land added up holds the share that wins (or
+  it is the last side standing); its member with the most land is named the
+  winner. Without teams every lord plays for himself.
 - An **offering** gives another lord a quarter of one's gold. It is
   remembered 2 minutes: a bot that received it leaves the giver in peace the
   while (it opens no war on him, though it still answers an army of his), and

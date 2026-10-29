@@ -40,6 +40,8 @@ export function createGame(
   players: number,
   seed: string,
   rules: Rules = RULES,
+  /** Each seat's team, or none: every lord for himself. */
+  teams: Array<number> = [],
 ): GameState {
   // Land no walk reaches, an islet cut off by the sea, is no part of the
   // game: no army could ever take it, so it does not count in the share
@@ -69,6 +71,7 @@ export function createGame(
     caravans: [],
     strikes: [],
     scars: [],
+    teams: Array.from({ length: players }, (_, seat) => teams[seat] ?? -1),
     winner: NO_ONE,
   }
 }

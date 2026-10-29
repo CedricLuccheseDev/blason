@@ -34,7 +34,7 @@ export function Moment({
   // Watching the end hides the fall, never the winner.
   if (!winner && (dismissed || !fallen)) return null
   let title = winner ? `${m.game.colors[winner]} ${m.game.winner}` : ''
-  if (me && winner === me.key) title = m.game.victory
+  if (summary.won) title = m.game.victory
   else if (fallen) title = m.game.fallen
   return (
     <Sheet className="flex flex-col items-center gap-3 px-6 py-4">

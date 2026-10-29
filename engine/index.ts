@@ -27,7 +27,7 @@ export type {
 } from './types'
 export { capOf, createGame, sicknessOf, standing, worksOf } from './land'
 export { barredBy, canStart, hasPicked } from './opening'
-export { nextDrop, stateHash, step, victoryShare } from './step'
+export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.
 export { entryFor, paceOf } from './war'

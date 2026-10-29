@@ -17,6 +17,7 @@ import {
   priceOf,
   sicknessOf,
   victoryShare,
+  wonBy,
   worksOf,
 } from '../../engine'
 import { PLAYERS } from './palette'
@@ -38,6 +39,8 @@ export type Summary = {
   /** The one lord ahead of all others; none while the first are tied. */
   leader: Seat | null
   winner: Heraldry | null
+  /** Whether the player's side won: himself, or his team. */
+  won: boolean
   me:
     | (Seat & {
         /** His peasants and what his land and villages feed, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
@@ -182,6 +185,7 @@ export function summarize(
         ? seat(held.indexOf(most))
         : null,
     winner: state.winner === NO_ONE ? null : PLAYERS[state.winner].key,
+    won: me >= 0 && wonBy(state, me),
     me: lord && {
       ...seat(me),
       peasants: Math.floor(lord.peasants / UNIT),

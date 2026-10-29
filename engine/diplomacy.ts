@@ -7,14 +7,27 @@ import type { Alliance, GameState } from './types'
 // the men go home. An alliance runs out after a few minutes, which makes no
 // traitor; broken, it marks its breaker a traitor a while, his land holding
 // half as well, seen by all. An offering gives another lord a share of one's
-// gold, remembered a while (the bots leave the giver in peace for it).
+// gold, remembered a while (the bots leave the giver in peace for it). In a
+// game of teams, teammates are allies for good: no order makes or breaks
+// what binds them, and they win together.
+
+/** Whether two lords play in one team. */
+export function teammates(state: GameState, a: number, b: number): boolean {
+  const team = state.teams[a] ?? -1
+  return a !== b && team >= 0 && team === state.teams[b]
+}
+
+/** The side a lord wins with: his team, or himself alone. */
+export const sideOf = (state: GameState, lord: number): string =>
+  (state.teams[lord] ?? -1) >= 0 ? `team ${state.teams[lord]}` : `lord ${lord}`
 
 export function isAllied(state: GameState, a: number, b: number): boolean {
   return (
     a !== b &&
-    state.alliances.some(
-      (x) => (x.a === a && x.b === b) || (x.a === b && x.b === a),
-    )
+    (teammates(state, a, b) ||
+      state.alliances.some(
+        (x) => (x.a === a && x.b === b) || (x.a === b && x.b === a),
+      ))
   )
 }
 
@@ -69,6 +82,7 @@ function seal(state: GameState, a: number, b: number) {
 /** One order for everything: offer, accept an offer received, or renew. */
 export function ally(state: GameState, player: number, target: number) {
   if (target === player || !state.players[target].alive) return
+  if (teammates(state, player, target)) return
   const existing = allianceOf(state, player, target)
   if (existing) {
     renew(state, existing, player)
