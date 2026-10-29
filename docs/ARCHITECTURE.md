@@ -290,14 +290,15 @@ The HUD is React, laid over the map. It is built on a small design system,
 `src/components/hud/`, so that every piece shares the same measures:
 
 - **tokens** (`tokens.ts`, and `src/styles/app.css` for the type and the
-  shadow): four type sizes, 13, 16, 20 and 28 pixels, through four roles
-  (`.hud-word`, `.hud-name`, `.hud-note`, `.hud-figure`), and spacing only on
-  the steps 4, 8, 12, 16 and 24 pixels;
+  shadow): four type sizes, 15, 18, 22 and 28 pixels, none smaller so that
+  every word reads at a glance, through four roles (`.hud-word`, `.hud-name`,
+  `.hud-note`, a hint in italics at full ink, `.hud-figure`), and spacing
+  only on the steps 4, 8, 12, 16 and 24 pixels;
 - **one scale**, `--hud` in `app.css`: 1 on a phone or a small screen, 1.2 on
   a screen at least 1280 by 640. The type, the spacing inside `.hud` (the
   game's screen) and the drawn objects all grow by it together, so that the
   measures above are written once, as drawn, and nothing is resized piece by
-  piece (on a desk: type 15.6, 19.2, 24 and 33.6, steps 4.8 to 28.8, the
+  piece (on a desk: type 18, 21.6, 26.4 and 33.6, steps 4.8 to 28.8, the
   button 53);
 - **one material**, the sheet of parchment (`Sheet.tsx`);
 - **one button**, 44 pixels tall at scale 1 (`Act.tsx`);

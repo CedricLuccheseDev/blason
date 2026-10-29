@@ -41,13 +41,14 @@
   --font-caps: 'IM Fell English SC', Georgia, serif;
   --font-figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
   /* The HUD's measures (src/components/hud/tokens.ts): four sizes of type
-     and nothing between them, 13, 16, 20 and 28 as drawn, grown by the
-     HUD's scale (--hud, below); one shadow for whatever lies on the map. */
-  --text-hud-s: calc(13px * var(--hud));
+     and nothing between them, 15, 18, 22 and 28 as drawn, none smaller so
+     that every word reads at a glance, grown by the HUD's scale (--hud,
+     below); one shadow for whatever lies on the map. */
+  --text-hud-s: calc(15px * var(--hud));
   --text-hud-s--line-height: 1.2;
-  --text-hud-m: calc(16px * var(--hud));
+  --text-hud-m: calc(18px * var(--hud));
   --text-hud-m--line-height: 1.2;
-  --text-hud-l: calc(20px * var(--hud));
+  --text-hud-l: calc(22px * var(--hud));
   --text-hud-l--line-height: 1.15;
   --text-hud-xl: calc(28px * var(--hud));
   --text-hud-xl--line-height: 1;
@@ -233,8 +234,9 @@
   .hud-name {
     @apply font-fell text-hud-l text-quill italic;
   }
+  /* A hint is told in italics, at full ink like the rest: never fainter. */
   .hud-note {
-    @apply font-fell text-hud-s text-quill/70 italic;
+    @apply font-fell text-hud-s text-quill italic;
   }
   /* The HUD's motion roles: what is touched lifts under the pointer and
      sinks when pressed; a sheet that appears rises a little as it comes. */

@@ -82,7 +82,7 @@ export function Lords({
               key={lord.seat}
               className={`flex items-center gap-2 border-l-[3px] px-1 transition-colors duration-(--duration-hud-press) ease-hud ${wash}`}
             >
-              <span className="hud-figure text-hud-s w-4 text-right opacity-60">
+              <span className="hud-figure text-hud-s w-5 shrink-0 text-right opacity-60">
                 {rank}
               </span>
               <Shield color={hex(lord.color)} size="s" />
@@ -101,10 +101,10 @@ export function Lords({
                   />
                 ))}
               </span>
-              <span className="hud-figure text-hud-s w-8 text-right">
+              <span className="hud-figure text-hud-s w-10 shrink-0 text-right">
                 {m.game.percent(lord.share)}
               </span>
-              <span className="hud-figure text-hud-s w-12 text-right opacity-70">
+              <span className="hud-figure text-hud-s w-12 shrink-0 text-right opacity-70">
                 {count(lord.men)}
               </span>
             </div>

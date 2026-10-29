@@ -6,9 +6,9 @@ import { useMessages } from '~/i18n'
 
 const PORTFOLIO_URL = 'https://clhub.fr'
 
-/** A link at the foot: discreet, tall enough for a finger. */
+/** A link at the foot: discreet, tall enough for a finger, gilt under the pointer as the journal's. */
 const FOOT =
-  'hud-note hud-press inline-flex min-h-11 items-center hover:text-quill'
+  'hud-note hud-press inline-flex min-h-11 items-center hover:text-gilt-deep'
 
 export function Foot() {
   const m = useMessages()

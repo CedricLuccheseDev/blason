@@ -77,7 +77,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   les constructions à trois niveaux (`art/works.ts`) et leur vie (`layers/life.ts`) ; `camera.ts` la caméra du joueur,
   `director.ts` celle du spectateur ; `summary.ts` ce que lit le HUD, une fois par seconde.
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
-  à elle : quatre tailles (13, 16, 20, 28) par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note`, `.hud-figure`),
+  à elle : quatre tailles (15, 18, 22, 28, rien sous 15, acté le 29/10 : « La police texte toute petite là elle est
+  dure à lire ») par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note` en italique à pleine encre, `.hud-figure`),
   l'espace sur les pas 4, 8, 12, 16 et 24 ; une échelle, `--hud` (`app.css`), 1 sur téléphone et petit écran,
   1,2 à partir de 1280 × 640 : le texte, l'espace (dans `.hud`) et les dessins grandissent ensemble, les mesures
   s'écrivent une fois, telles que dessinées ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px

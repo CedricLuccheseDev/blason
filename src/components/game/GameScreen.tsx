@@ -119,7 +119,7 @@ export function GameScreen({
         <>
           <Heralds game={game} summary={summary} />
           <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_auto_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_1fr] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
-            <div className="relative flex w-72 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
+            <div className="relative flex w-80 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
               <Lords summary={summary} aimed={aim?.lord ?? null} />
             </div>
             <div className="flex flex-col items-center gap-2">
