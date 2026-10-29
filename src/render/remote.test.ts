@@ -1,63 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import {
-  NO_ONE,
-  RULES,
-  SETUP_LIMITS,
-  botsSetup,
-  canStart,
-  generateWorld,
-  makeGrid,
-  publicSetup,
-  stateHash,
-} from '../../engine'
-import { startRemoteSession } from './remote'
-import type { GameSetup, Order } from '../../engine'
-import type { FromRelay, Turn } from '../../net/protocol'
-import type { Link } from './link'
-
-/** A line to no relay: the turns are handed by the test, the words sent are kept. */
-function fakeLink() {
-  const listeners = new Set<(message: FromRelay) => void>()
-  const sent: Array<unknown> = []
-  const link: Link = {
-    send: (message) => sent.push(message),
-    listen: (hear) => {
-      listeners.add(hear)
-      return () => listeners.delete(hear)
-    },
-    close: () => undefined,
-  }
-  const hand = (message: FromRelay) => {
-    for (const hear of listeners) hear(message)
-  }
-  return { link, hand, sent }
-}
-
-const worlds = new Map<string, ReturnType<typeof generateWorld>>()
-
-/** A browser playing the game online from a seat, on a line of its own; the land made once for every browser; a bot in every seat unless the setup says otherwise. */
-function browser(
-  seed: string,
-  seat: number,
-  opening: number,
-  setup: GameSetup = botsSetup({ seed, opening }),
-) {
-  const world = worlds.get(seed) ?? generateWorld(seed)
-  worlds.set(seed, world)
-  const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
-  const line = fakeLink()
-  const session = startRemoteSession(grid, { link: line.link, seat, setup })
-  return { ...line, session }
-}
-
-const turn = (n: number, more: Partial<Turn> = {}): Turn => ({
-  t: 'turn',
-  n,
-  orders: [],
-  joined: [],
-  left: [],
-  ...more,
-})
+import { RULES, SETUP_LIMITS, canStart, stateHash } from '../../engine'
+import { browser, turn } from './testing'
+import type { Order } from '../../engine'
+import type { Turn } from '../../net/protocol'
 
 describe('a game online', () => {
   it('is the same game on two browsers given the same turns, bots and all', () => {
@@ -142,61 +87,6 @@ describe('a game online', () => {
     expect(out.has(0)).toBe(false)
     expect(out.has(1)).toBe(false)
     expect(out.size).toBeGreaterThan(10)
-  })
-
-  it('plays the public game with persons alone: the empty seats no lords, a leaver’s lord idle, the same on a browser come in late', () => {
-    // No bot: a person at seat 0 from turn 10, another at seat 1 from turn
-    // 100, whose browser comes in then; the first leaves past the opening.
-    const seed = 'online-public'
-    const setup = publicSetup(seed)
-    const { opening } = setup
-    const joins = new Map([
-      [10, [0]],
-      [100, [1]],
-    ])
-    const plants = new Map([
-      [20, 0],
-      [110, 1],
-    ])
-    /** A person plants his standard on the first tile he may. */
-    const plant = (player: number): Array<Order> => {
-      const { state } = a.session
-      const tile = state.grid.land.findIndex(
-        (on, t) => on && canStart(state, player, t),
-      )
-      return [{ player, type: 'pickStart', tile }]
-    }
-    const a = browser(seed, 0, opening, setup)
-    const played: Array<Turn> = []
-    let b: ReturnType<typeof browser> | null = null
-    for (let n = 0; n < opening + 100; n++) {
-      const planter = plants.get(n)
-      const told = turn(n, {
-        orders: planter === undefined ? [] : plant(planter),
-        joined: joins.get(n) ?? [],
-        left: n === opening + 20 ? [0] : [],
-      })
-      played.push(told)
-      a.hand(told)
-      a.session.advance(100)
-      if (n === 99) {
-        b = browser(seed, 1, opening, setup)
-        for (const past of played) b.hand(past)
-      } else b?.hand(told)
-      b?.session.advance(100, undefined, 20)
-    }
-    if (!b) throw new Error('no newcomer')
-    const { state } = b.session
-    expect(state.tick).toBe(opening + 100)
-    expect(stateHash(state)).toBe(stateHash(a.session.state))
-    // Two lords, each on his land; the eighteen seats no one took, none.
-    const lords = state.players.flatMap((p, id) => (p.alive ? [id] : []))
-    expect(lords).toEqual([0, 1])
-    expect(state.players.slice(2).every((p) => p.tiles === 0)).toBe(true)
-    expect(state.winner).toBe(NO_ONE)
-    // The leaver's lord stays, idle: his land, and no army of his ever out.
-    expect(state.players[0].tiles).toBeGreaterThan(0)
-    expect(state.hosts.some((h) => h.owner === 0)).toBe(false)
   })
 
   it('catches up on turns piled up a few at a time, never all in one frame', () => {

@@ -1,23 +1,35 @@
 import { randomBytes } from 'node:crypto'
-import { SETUP_LIMITS, botsSetup } from '../engine'
+import { SETUP_LIMITS, botsSetup, publicSetup } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import { fingerprints, isMove, tell } from './checks'
-import type { Fingerprints } from './checks'
-import type { FromRelay, Lobby, ToRelay, Turn, Upcoming } from '../net/protocol'
-import type { GameSetup, Order } from '../engine'
+import {
+  beginning,
+  broadcast,
+  makeRoom,
+  nextTurn,
+  order,
+  seated,
+  started,
+} from './room'
+import type { Player, Room } from './room'
+import type { Lobby, ToRelay, Upcoming } from '../net/protocol'
 
 // The games, relayed turn by turn (protocol.ts). One public game is always
 // in its opening, as on OpenFront, with no room to wait in: it begins as it
-// opens, its land drawn and a bot in every seat, its turns flowing from the
-// first; whoever comes sits at once on a bot's seat, given the turns so far
-// to catch up, and plants his standard. No one comes in during the opening's
-// last seconds (LAST_CALL), so that the last to come still has the time to
-// plant: then the game goes on with whoever came, bots in the empty seats,
-// and the next opens; if no one came, it is dropped and the next takes its
-// place. A private room, joined by its code, gathers its players first and
-// begins on its host's word, its players seated from the first turn. A
-// player who leaves a game gives his seat back to a bot, on every browser at
-// the same turn; before a private game begins, he frees it.
+// opens, its land drawn and no bot in it (« en ligne il faut 0 bot »), every
+// seat empty, its turns flowing from the first; whoever comes sits at once
+// on the first free seat, given the turns so far to catch up, and plants his
+// standard. No one comes in during the opening's last seconds (LAST_CALL),
+// so that the last to come still has the time to plant: then the game goes
+// on with whoever came, the seats no one took empty, and the next opens; if
+// no one came, it is dropped and the next takes its place; if one alone
+// came, no one wins alone: the opening begins again on the same land, his
+// standard still planted (again), and the home says a lord is waiting. A
+// private room, joined by its code, gathers its players first and begins on
+// its host's word, its players seated from the first turn, bots in the other
+// seats. A player who leaves a game leaves his seat to its bot, if the setup
+// gives it one, on every browser at the same turn, and his lord idle if not;
+// before a private game begins, he frees it.
 
 /** Turns before the opening ends when no one may come in any more: the time for the last to come to plant his standard. */
 const LAST_CALL = 50
@@ -26,27 +38,7 @@ const JOIN_TURNS = SETUP_LIMITS.opening.public - LAST_CALL
 /** Ms a public game may be joined for: then the next opens. */
 export const JOIN_MS = JOIN_TURNS * TURN_MS
 
-export type Player = {
-  name: string
-  send: (message: FromRelay) => void
-}
-
-type Room = {
-  code: string
-  /** What the game is made of, sent whole to each player as it begins for him: the relay reads nothing of it. */
-  setup: GameSetup
-  /** By seat, the persons; a seat without one is a bot's. */
-  players: Array<Player | null>
-  turn: number
-  /** What the next turn will carry. */
-  pending: Array<Order>
-  joined: Array<number>
-  left: Array<number>
-  /** The turns played, kept while players may come in, to catch them up; none once no one may. */
-  played: Array<Turn> | null
-  prints: Fingerprints
-  timer: ReturnType<typeof setInterval> | null
-}
+export type { Player } from './room'
 
 /** The private rooms by their code. */
 const privates = new Map<string, Room>()
@@ -59,37 +51,18 @@ function freeCode(): string {
   return privates.has(code) ? freeCode() : code
 }
 
-function makeRoom(code: string): Room {
-  return {
-    code,
-    // A bot in every seat until a person takes it, the public opening.
-    setup: botsSetup({
-      seed: `online-${randomBytes(6).toString('hex')}`,
-      opening: SETUP_LIMITS.opening.public,
-    }),
-    players: [],
-    turn: 0,
-    pending: [],
-    joined: [],
-    left: [],
-    played: null,
-    prints: fingerprints(),
-    timer: null,
-  }
-}
+const freshSeed = () => `online-${randomBytes(6).toString('hex')}`
 
 /** The public game in its opening; when none is, one opens and begins, so that there always is one to see or to join. */
 function publicGame(): Room {
   if (open) return open
-  const room = makeRoom('PUBLIC')
+  const room = makeRoom('PUBLIC', publicSetup(freshSeed()))
+  room.players = Array.from({ length: SEATS }, () => null)
   room.played = []
   open = room
   run(room)
   return room
 }
-
-const started = (room: Room) => room.timer !== null
-const seated = (room: Room) => room.players.filter(Boolean).length
 
 /** The public game in its opening, as anyone may see it without joining it. */
 export function upcoming(): Upcoming {
@@ -100,6 +73,7 @@ export function upcoming(): Upcoming {
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
     taken: seated(room),
     seats: SEATS,
+    waiting: room.players.filter((p) => p && room.waited.has(p)).length,
   }
 }
 
@@ -110,42 +84,47 @@ function tellLobby(room: Room) {
   room.players.forEach((p, seat) => p?.send({ t: 'lobby', seat, lobby }))
 }
 
-function broadcast(room: Room, message: FromRelay) {
-  for (const p of room.players) p?.send(message)
-}
-
-/** The game as a player begins it, from his seat. */
-function beginning(room: Room, seat: number): FromRelay {
-  return { t: 'begin', seat, setup: room.setup }
-}
-
 /** The game's turns, one every 100 ms from the first. */
 function run(room: Room) {
   room.timer = setInterval(() => play(room), TURN_MS)
 }
 
 function play(room: Room) {
-  const turn: Turn = {
-    t: 'turn',
-    n: room.turn,
-    orders: room.pending,
-    joined: room.joined,
-    left: room.left,
-  }
-  room.turn += 1
-  room.pending = []
-  room.joined = []
-  room.left = []
-  room.played?.push(turn)
-  broadcast(room, turn)
+  broadcast(room, nextTurn(room))
   if (room === open && room.turn >= JOIN_TURNS) closeDoors(room)
 }
 
-/** No one comes into the public game any more: it goes on with whoever came, or is dropped if no one did; the next opens at the next ask. */
+/** No one comes into the public game any more: it goes on with whoever came, or is dropped if no one did, the next opening at the next ask; one alone, it begins again. */
 function closeDoors(room: Room) {
+  const persons = seated(room)
+  if (persons === 1) return again(room)
   if (open === room) open = null
   room.played = null
-  if (seated(room) === 0) close(room)
+  if (persons === 0) close(room)
+}
+
+/**
+ * One alone when the doors close: no one wins alone, the opening begins
+ * again, on the same land, as a new game. He is told it begins (his browser
+ * makes it again from its setup), his seat his from its first turn, which
+ * carries his last standard again, so that it stands where he planted it;
+ * whoever comes plays the same turns from the first, so every browser has
+ * the same game. A leaver's lord is no more: his seat is empty again.
+ */
+function again(room: Room) {
+  const seat = room.players.findIndex(Boolean)
+  const player = room.players[seat]
+  if (!player) return
+  const standard = room.planted.get(seat)
+  room.turn = 0
+  room.pending = standard ? [standard] : []
+  room.joined = [seat]
+  room.left = []
+  room.played = []
+  room.prints = fingerprints()
+  room.planted = new Map(standard ? [[seat, standard]] : [])
+  room.waited = new Set([player])
+  player.send(beginning(room, seat))
 }
 
 function close(room: Room) {
@@ -161,12 +140,12 @@ function drop(list: Array<number>, value: number): boolean {
   return i >= 0
 }
 
-/** A player comes into the public game in its opening: the first free seat, a bot's until the next turn; the game so far, to catch up. */
+/** A player comes into the public game in its opening: the first free seat, empty until the next turn; the game so far, to catch up. */
 function sit(player: Player, room: Room): Room {
   const free = room.players.indexOf(null)
   const seat = free >= 0 ? free : room.players.length
   room.players[seat] = player
-  // A seat left this very turn stays a person's: its bot never comes back.
+  // A seat left this very turn stays a person's, on every browser.
   if (!drop(room.left, seat)) room.joined.push(seat)
   player.send(beginning(room, seat))
   for (const turn of room.played ?? []) player.send(turn)
@@ -177,8 +156,13 @@ function sit(player: Player, room: Room): Room {
 /** A player joins the public game in its opening (null), a private room by its code, or a new private room ('new'). */
 export function join(player: Player, code: string | null): Room | null {
   if (code === null) return sit(player, publicGame())
-  const room =
-    code === 'new' ? makeRoom(freeCode()) : privates.get(code.toUpperCase())
+  // A bot in every seat no player takes, as before the host's book sets it.
+  const made = () =>
+    makeRoom(
+      freeCode(),
+      botsSetup({ seed: freshSeed(), opening: SETUP_LIMITS.opening.public }),
+    )
+  const room = code === 'new' ? made() : privates.get(code.toUpperCase())
   if (!room) {
     player.send({ t: 'error', reason: 'unknown' })
     return null
@@ -214,7 +198,7 @@ export function hear(room: Room, player: Player, message: ToRelay) {
   if (seat < 0) return
   if (message.t === 'start' && seat === 0) begin(room)
   else if (message.t === 'order' && started(room) && isMove(message.move))
-    room.pending.push({ ...message.move, player: seat })
+    order(room, { ...message.move, player: seat })
   else if (
     message.t === 'hash' &&
     tell(room.prints, seat, message.turn, message.hash)
@@ -222,7 +206,7 @@ export function hear(room: Room, player: Player, message: ToRelay) {
     broadcast(room, { t: 'desync', turn: message.turn })
 }
 
-/** A player gone: before a private game his seat is freed; during a game, a bot takes it again. */
+/** A player gone: before a private game his seat is freed; during a game, its bot takes it again, or his lord stays idle. */
 export function leave(room: Room, player: Player) {
   const seat = room.players.indexOf(player)
   if (seat < 0) return

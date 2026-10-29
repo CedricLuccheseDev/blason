@@ -52,6 +52,8 @@ export type Upcoming = {
   /** Seats taken by persons, of `seats`. */
   taken: number
   seats: number
+  /** Persons who sat through an opening alone and wait in this one for a lord to face. */
+  waiting: number
 }
 
 /** One turn: its number (the tick it is played at), its orders, the seats a person took (their bots stopped from this turn on, an empty one his lord's) and those left (the setup's bot again, or none: the lord idle). */
@@ -88,7 +90,7 @@ export function parse<T extends { t: string }>(data: unknown): T | null {
 /** The public game in its opening as the relay answers it (GET /public), or null if it is not one. */
 export function readUpcoming(value: unknown): Upcoming | null {
   if (typeof value !== 'object' || value === null) return null
-  const { seed, size, closesIn, taken, seats } = value as Record<
+  const { seed, size, closesIn, taken, seats, waiting } = value as Record<
     string,
     unknown
   >
@@ -100,6 +102,14 @@ export function readUpcoming(value: unknown): Upcoming | null {
     typeof closesIn === 'number' &&
     typeof taken === 'number' &&
     typeof seats === 'number'
-    ? { seed, size: known, closesIn, taken, seats }
+    ? {
+        seed,
+        size: known,
+        closesIn,
+        taken,
+        seats,
+        // A relay older than the word says nothing of it: no one waits.
+        waiting: typeof waiting === 'number' ? waiting : 0,
+      }
     : null
 }

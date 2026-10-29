@@ -50,6 +50,31 @@ whole, out of the sea's way, and the farthest from the others' standards.
 While the count runs, no land is drawn on the map: only the bare land and
 the standards. Every lord starts with 50 gold.
 
+## The public game
+
+The game online that anyone joins from the home (`server/rooms.ts`,
+`publicSetup` in `engine/setup.ts`), as Cédric set it (« en ligne il faut 0
+bot », « le matchmaking classique il ne doit pas ajouter de bot »):
+
+- **No bot**: up to 20 persons, every lord for himself, on a standard land
+  drawn at its opening and shown on the home's card, with an opening of 30
+  seconds. Whoever plays comes straight into its opening, on the first free
+  seat, to plant his standard; no one comes in during its last 5 seconds,
+  nor once twenty have come.
+- A seat no person takes stays **empty**: no lord there, given no standard
+  and no land, counted for nothing in the race (`engine/opening.ts`).
+- **No one wins alone**: one person alone when the doors close sees the
+  opening begin again on the same land, his standard still planted, and the
+  home's card says a lord is waiting. No one there, the game is dropped and
+  a new land takes its place.
+- A player who **leaves** leaves his lord **idle**: his land is there to be
+  taken, his peasants defend it, and no bot takes it over.
+- It is won as any game (see Winning).
+
+A private room, joined by its code, still seats bots of the fair level in
+the seats its players leave free, until its host may set them; a player who
+leaves it gives his seat back to its bot.
+
 ## Peasants and gold
 
 - The **land** feeds the **peasants**, more as it grows but fewer by the

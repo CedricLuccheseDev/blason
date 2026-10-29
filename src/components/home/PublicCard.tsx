@@ -16,8 +16,10 @@ import { useMessages } from '~/i18n'
 // the land plays as well. There is no room to wait in: the
 // relay keeps one public game in its opening (server/rooms.ts), the home asks
 // it about it while shown (useUpcoming.ts), and Play goes straight into that
-// opening, to plant a standard. When no one may come in any more, the next
-// is shown, its land fading in. What failed says why, and Play tries again.
+// opening, to plant a standard. A game has no bot: one who came alone sees
+// its opening begin again, and the card says a lord is waiting. When no one
+// may come in any more, the next is shown, its land fading in. What failed
+// says why, and Play tries again.
 
 /** A cartouche laid on the land, at one of its corners; a click goes through it to the land. */
 function Cartouche({
@@ -78,7 +80,11 @@ export function PublicCard({
             <span className="font-caps text-hud-l leading-none text-quill">
               {t.public.title}
             </span>
-            {game && (
+            {/* One alone in the last opening waits in this one: said even on a phone, it is why to play now. */}
+            {game && game.waiting > 0 && (
+              <span className="hud-note">{t.public.waiting}</span>
+            )}
+            {game && game.waiting === 0 && (
               <span className="hud-note max-sm:hidden">{t.public.live}</span>
             )}
           </h2>

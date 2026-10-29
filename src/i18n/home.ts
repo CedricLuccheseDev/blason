@@ -10,6 +10,7 @@ export const homeEn = {
   public: {
     title: 'Public game',
     live: 'The lords are planting their standards',
+    waiting: 'A lord is waiting for you',
     land: 'The land of the game being planted',
     lost: 'Online play is out of reach for now.',
     play: 'Play',
@@ -74,6 +75,7 @@ export const homeFr: HomeMessages = {
   public: {
     title: 'Partie publique',
     live: 'Les seigneurs plantent leurs étendards',
+    waiting: 'Un seigneur t’attend',
     land: 'La terre de la partie en cours de pose',
     lost: 'Le jeu en ligne est hors d’atteinte pour l’instant.',
     play: 'Jouer',

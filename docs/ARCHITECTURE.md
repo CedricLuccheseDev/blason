@@ -596,26 +596,39 @@ simulation.
   Every seat begins as the setup says, a bot's or empty.
 - `server/` is the relay, a small Node WebSocket server of its own
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
-  (`server/rooms.ts`) is made of its setup (`room.setup`), its land drawn
-  as it opens from a seed at the standard size, and seats up to twenty
-  persons, every lord, the seats no one took being bots. As on OpenFront there is no room to wait in: one public game
+  (`server/rooms.ts`, one game's seats and turns in `server/room.ts`) is
+  made of its setup (`room.setup`), its land drawn as it opens from a seed
+  at the standard size, and seats up to twenty persons: the public game's
+  setup has no bot (`publicSetup`), the seats no one took staying empty; a
+  private room's has a bot in every seat (`botsSetup`) until the host's book
+  sets them. As on OpenFront there is no room to wait in: one public game
   is always in its opening, which lasts 30 seconds online
   (`SETUP_LIMITS.opening.public`, in the setup sent with the game, so that
-  every browser has the same). It begins as it opens, bots in every seat, its turns flowing from
-  the first and kept while players may come in; whoever joins sits at once
+  every browser has the same). It begins as it opens, every seat empty, its
+  turns flowing from the first and kept while players may come in; whoever joins sits at once
   on the first free seat, given the land, the opening and every turn played
   so far, and his seat is a person's from the next turn, on every browser.
   No one comes in during the opening's last 5 seconds, so that the last to
   come may still plant his standard, nor once twenty have come: then the
   game goes on with whoever came, and the next opens; if no one came, it is
-  dropped and a new land takes its place (`server/rooms.test.ts` runs that
-  cycle on a clock of its own). Anyone may see it without joining it: the
-  relay answers `GET /public` with its seed and size, the ms left to join it
-  and the seats taken, never cached and open to any page (CORS), for it
+  dropped and a new land takes its place; if one alone came, no one wins
+  alone: the opening begins again on the same land, as a new game. The relay
+  tells him `begin` once more, the same setup and seat, and plays it from
+  its first turn, his seat his and his last standard order in it again
+  (the relay keeps each seat's last `pickStart`, and the browser sends only
+  standards that may stand); his browser makes the game anew in place from
+  the setup (`remote.ts`), so that the game is still the setup and the turns
+  since the last `begin`, the same on every browser, a newcomer's too
+  (`src/render/public.test.ts`). `server/rooms.test.ts` runs that cycle on a
+  clock of its own. Anyone may see it without joining it: the
+  relay answers `GET /public` with its seed and size, the ms left to join it,
+  the seats taken and the persons waiting in it, come alone to the last
+  opening (`waiting`, which the home's card says in a short line), never cached and open to any page (CORS), for it
   tells nothing that joining would not. A private room gathers its players
   first and begins on its host's word, its players seated from the first
   turn, with the same opening. A player who leaves a game gives his seat
-  back to a bot, on every browser at the same turn. Every 50 turns each
+  back to its bot in the setup, on every browser at the same turn, and with
+  none, as in the public game, leaves his lord idle. Every 50 turns each
   browser tells the fingerprint of its state, and the relay names the first
   turn where two differ (`server/checks.ts`).
 - In the browser, `link.ts` is the line to the relay, and its address for

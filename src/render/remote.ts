@@ -22,7 +22,11 @@ import type { Turn } from '../../net/protocol'
 // idle, his peasants holding his land. Who comes in during the opening is
 // handed every turn played so far and plays them as they come, a few a
 // frame, to catch up. Every so many turns, the fingerprint of my state goes
-// back to the relay, which names a turn where two browsers parted.
+// back to the relay, which names a turn where two browsers parted. A public
+// game with one alone in it when its doors close begins again
+// (server/rooms.ts): the relay says it begins once more, and the game is
+// made anew from its setup, on the same land, its turns played from the
+// first, the same as any browser that comes in then.
 
 export function startRemoteSession(grid: Grid, online: Online): Session {
   const { setup, seat, link } = online
@@ -33,10 +37,18 @@ export function startRemoteSession(grid: Grid, online: Online): Session {
     const level = setup.seats[id]?.bot
     return level ? createBot(id, setup.seed, level) : null
   }
-  const bots = setup.seats.map((_, id) => botOf(id))
-  const turns: Array<Turn> = []
+  const seatBots = () => setup.seats.map((_, id) => botOf(id))
+  let bots = seatBots()
+  /** The game begun again, alone in its opening: made anew in place, for whoever holds it, its turns played again from the first. */
+  const again = () => {
+    Object.assign(state, createGame(grid, setup))
+    bots = seatBots()
+  }
+  // The turns, and a word that the game begins again, in the order they come.
+  const turns: Array<Turn | 'again'> = []
   link.listen((message) => {
     if (message.t === 'turn') turns.push(message)
+    else if (message.t === 'begin') turns.push('again')
   })
   let since = 0
   return {
@@ -50,6 +62,10 @@ export function startRemoteSession(grid: Grid, online: Online): Session {
       // pause, so many at most: the rest at the next call.
       let played = 0
       for (let turn = turns.shift(); turn; turn = turns.shift()) {
+        if (turn === 'again') {
+          again()
+          continue
+        }
         if (state.winner !== NO_ONE) break
         played++
         for (const id of turn.joined) {

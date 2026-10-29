@@ -152,11 +152,16 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   « Seigneur » en attendant les profils), le pied du site au milieu, toujours au bas de l'écran ; sur téléphone et
   sur un écran étroit, tout empilé, le Journal sous les boutons. Tout est fait des pièces du HUD.
   **Pas de salon d'attente** (acté le 29/10, « comme dans openfront ne fait pas de lobby en attente ») : le relais
-  tient toujours une partie publique dans son ouverture, de 30 secondes en ligne, lancée dès qu'elle s'ouvre avec
-  des bots à tous les sièges ; « Jouer » y entre aussitôt sur un siège de bot, avec les tours déjà joués à
-  rattraper, pour planter son étendard. Plus personne n'entre dans les 5 dernières secondes : la partie continue
-  avec ceux qui sont venus et la suivante s'ouvre ; vide, elle est abandonnée et une nouvelle terre la remplace
-  (`server/rooms.ts`) ; l'accueil la lui demande (`GET /public`) toutes les secondes et demie tant que la page est
+  tient toujours une partie publique dans son ouverture, de 30 secondes en ligne, lancée dès qu'elle s'ouvre,
+  **sans aucun bot** (acté le 29/10, « en ligne il faut 0 bot », « le matchmaking classique il ne doit pas ajouter
+  de bot ») : jusqu'à vingt personnes, chacun pour soi, sur une terre standard ; « Jouer » y entre aussitôt sur le
+  premier siège libre, avec les tours déjà joués à rattraper, pour planter son étendard ; un siège que personne ne
+  prend reste vide, sans seigneur, ni étendard ni terre. Plus personne n'entre dans les 5 dernières secondes : la
+  partie continue avec ceux qui sont venus et la suivante s'ouvre ; vide, elle est abandonnée et une nouvelle terre
+  la remplace ; seul, personne ne gagne : l'ouverture recommence sur la même terre, son étendard toujours planté
+  (le relais lui redit `begin` et rejoue son dernier ordre d'étendard au premier tour), et la carte de l'accueil
+  dit qu'un seigneur attend (`waiting`). Celui qui part laisse son seigneur à l'abandon : sa terre à prendre, ses
+  paysans la défendent, aucun bot ne la reprend (`server/rooms.ts`, `server/room.ts`) ; l'accueil la lui demande (`GET /public`) toutes les secondes et demie tant que la page est
   visible (`useUpcoming.ts`). `src/components/home/` (`Home.tsx`, `PublicCard.tsx` et sa terre `LandPlate.tsx`,
   `SoloSettings.tsx`, `PrivateRoom.tsx`, `useRoom.ts` la ligne vers le relais, `useUpcoming.ts`). La terre de la
   prochaine partie solo s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à

@@ -1,5 +1,5 @@
 import { Application } from 'pixi.js'
-import { NO_ONE } from '../../engine'
+import { NO_ONE, canStart } from '../../engine'
 import { makeAiming } from './aiming'
 import { makePin } from './pin'
 import { makeCamera } from './camera'
@@ -109,9 +109,12 @@ export async function mountGame(
   )
   function click(tile: number) {
     if (tile < 0 || me < 0 || pin.dismisses()) return
-    if (state.tick < state.rules.openingTicks)
-      session.send({ player: me, type: 'pickStart', tile })
-    else {
+    if (state.tick < state.rules.openingTicks) {
+      // Only a standard that may stand there is sent: the last one sent is
+      // the one a lone player keeps when the opening begins again online.
+      if (canStart(state, me, tile))
+        session.send({ player: me, type: 'pickStart', tile })
+    } else {
       const held = hand.holding()
       session.send(hand.order(me, tile))
       if (held) refresh()

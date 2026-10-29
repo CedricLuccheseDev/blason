@@ -1,26 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SETUP_LIMITS, readSetup } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
-import type { FromRelay, Turn } from '../net/protocol'
+import { begun, player, turns } from './testing'
 import type * as Rooms from './rooms'
 
 // The public game's cycle, on a clock of the test's: one is always in its
-// opening, its land drawn and its turns flowing from the first, bots in
-// every seat; whoever comes sits at once, given the turns so far; when no one
-// may come in any more, it goes on with whoever came and the next opens, or,
-// empty, is dropped for the next.
+// opening, its land drawn and its turns flowing from the first, no bot in
+// it; whoever comes sits at once, given the turns so far; when no one may
+// come in any more, it goes on with whoever came and the next opens, or,
+// empty, is dropped for the next, or, one alone in it, begins again.
 
 let rooms: typeof Rooms
-
-/** A player who keeps every word of the relay. */
-function player(name = '') {
-  const heard: Array<FromRelay> = []
-  return { name, send: (message: FromRelay) => heard.push(message), heard }
-}
-
-const begun = (heard: Array<FromRelay>) => heard.find((m) => m.t === 'begin')
-const turns = (heard: Array<FromRelay>) =>
-  heard.filter((m): m is Turn => m.t === 'turn')
 
 beforeEach(async () => {
   vi.useFakeTimers()
@@ -80,8 +70,10 @@ describe('the public game', () => {
       land: { kind: 'drawn', size: 'standard' },
       opening: SETUP_LIMITS.opening.public,
     })
+    // No bot: every seat empty until a person takes it.
     expect(told.setup.seats).toHaveLength(SEATS)
-    // The forty turns played, from the first, every seat a bot's.
+    expect(told.setup.seats.every((seat) => seat.bot === null)).toBe(true)
+    // The forty turns played, from the first, every seat empty.
     const past = turns(one.heard)
     expect(past.map((t) => t.n)).toEqual(
       Array.from({ length: 40 }, (_, n) => n),
@@ -104,6 +96,8 @@ describe('the public game', () => {
     const { seed } = rooms.upcoming()
     const one = player('one')
     const room = rooms.join(one, null)
+    const other = player('other')
+    rooms.join(other, null)
     vi.advanceTimersByTime(rooms.JOIN_MS)
     const next = rooms.upcoming()
     expect(next.seed).not.toBe(seed)
@@ -124,13 +118,14 @@ describe('the public game', () => {
       setup: { seed: shown.seed },
     })
     // Its last player gone, the game stops.
+    if (room) rooms.leave(room, other)
     if (room) rooms.leave(room, one)
     const heard = one.heard.length
     vi.advanceTimersByTime(10 * TURN_MS)
     expect(one.heard).toHaveLength(heard)
   })
 
-  it('gives a seat left in the opening back to a bot, and to whoever comes next', () => {
+  it('gives a seat left in the opening to whoever comes next', () => {
     const one = player('one')
     const room = rooms.join(one, null)
     vi.advanceTimersByTime(TURN_MS)
@@ -193,6 +188,10 @@ describe('a private room', () => {
       setup: { opening: SETUP_LIMITS.opening.public },
     })
     expect(begun(friend.heard)).toMatchObject({ seat: 1 })
+    // Bots in the seats no player took, as before the host's book.
+    const setup = begun(host.heard)
+    if (setup?.t !== 'begin') throw new Error('no begin')
+    expect(setup.setup.seats.every((seat) => seat.bot !== null)).toBe(true)
     vi.advanceTimersByTime(TURN_MS)
     expect(friend.heard.at(-1)).toMatchObject({ n: 0, joined: [0, 1] })
     // Begun, it takes no one more.
