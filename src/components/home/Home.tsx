@@ -1,31 +1,32 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Backdrop } from './Backdrop'
 import { Dialog } from './Dialog'
 import { Foot } from './Foot'
 import { whenIdle } from './idle'
 import { Journal } from './Journal'
 import { Lord, Title } from './Masthead'
+import { Frame, Rose } from './Ornaments'
 import { PrivateRoom } from './PrivateRoom'
 import { PublicCard } from './PublicCard'
 import { SoloSettings } from './SoloSettings'
 import { atPrivate, atPublic, useRoom } from './useRoom'
-import { useSpectator } from './useSpectator'
 import type { Entry } from './Journal'
 import { Act } from '~/components/hud/Act'
 import { useMessages } from '~/i18n'
 import { relayUrl } from '~/render/link'
 import { holdOnline } from '~/render/online'
 
-// The home, as OpenFront's: one column on a quiet ground, the next public
-// game first and biggest, its land drawn, then the solo game and the private
-// rooms, each set on a sheet of its own; beside it the player at its head,
-// then the journal. The bots' game plays softly behind, and may be watched
-// full screen. On a phone, one column, the public game first.
+// The home, as OpenFront's, on the game's page without its map: its frame
+// and a faint compass rose. One calm column: the name of the game and its
+// line; the public game being planted, its land the biggest thing there, and
+// Play across it; then three short buttons, the solo game and the private
+// rooms, each set on a sheet of its own. At the foot, quiet, the player on
+// the left, the journal's last line on the right, the rest of the site
+// between; on a phone, all of it stacked.
 
 type Open = 'solo' | 'create' | 'join' | null
 
-/** While the home is read, the next game's land is made: a game started lands straight in its opening. */
+/** While the home is read, the next solo game's land is made: a game started lands straight in its opening. */
 function useGameAhead() {
   useEffect(() => {
     const prepare = () =>
@@ -38,11 +39,9 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
   const t = useMessages().home
   const navigate = useNavigate()
   const [open, setOpen] = useState<Open>(null)
-  const [watching, setWatching] = useState(false)
   // Online is offered where a relay is: its address is built into the page
   // as into the server, so the page drawn there already says it.
   const online = relayUrl() !== null
-  const spectator = useSpectator()
   const [room, rooms] = useRoom((game) => {
     holdOnline(game)
     void navigate({ to: '/play', search: { online: true } })
@@ -52,7 +51,7 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
   useEffect(() => holdOnline(null), [])
 
   const show = (what: Open) => {
-    // A private room is a room of its own: the public seat is given up.
+    // A private room is a room of its own: the public game is not entered.
     if ((what === 'create' || what === 'join') && atPublic(room)) rooms.leave()
     setOpen(what)
   }
@@ -61,64 +60,36 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
     setOpen(null)
   }
 
-  // Escape leaves the game watched (a sheet open closes itself).
-  const escape = useRef(() => {})
-  escape.current = () => setWatching(false)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') escape.current()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
-
-  const hidden = watching ? 'invisible opacity-0' : 'visible opacity-100'
   return (
-    <main className="hud relative min-h-dvh w-full bg-vellum select-none">
-      <Backdrop host={spectator.host} clear={watching} />
-      <div
-        className={`relative mx-auto grid max-w-[64rem] gap-6 px-4 py-6 transition-[opacity,visibility] duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none lg:grid-cols-[minmax(0,30rem)_18rem] lg:justify-center lg:pt-12 ${hidden}`}
-      >
-        <nav aria-label={t.menu} className="flex flex-col gap-4">
-          <Title />
+    <main className="hud relative flex min-h-dvh w-full flex-col bg-vellum select-none">
+      <Frame />
+      <Rose className="absolute top-8 right-8 size-28 opacity-25 max-sm:top-6 max-sm:right-6 max-sm:size-14" />
+      <div className="relative mx-auto flex w-full max-w-[46rem] flex-1 flex-col justify-center gap-6 px-6 pt-10 pb-4 short:pt-6">
+        <Title />
+        <nav aria-label={t.menu} className="flex flex-col gap-3">
           <PublicCard room={room} rooms={rooms} online={online} />
-          <div className="grid gap-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             <Act tone="plain" onClick={() => show('solo')}>
-              <span className="text-hud-l">{t.solo.open}</span>
-              <span className="hud-note">{t.solo.line}</span>
+              {t.solo.open}
             </Act>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Act tone="plain" asleep={!online} onClick={() => show('create')}>
-                {t.create}
-              </Act>
-              <Act tone="plain" asleep={!online} onClick={() => show('join')}>
-                {t.joinPrivate}
-              </Act>
-            </div>
+            <Act tone="plain" asleep={!online} onClick={() => show('create')}>
+              {t.create}
+            </Act>
+            <Act tone="plain" asleep={!online} onClick={() => show('join')}>
+              {t.joinPrivate}
+            </Act>
           </div>
         </nav>
-        <aside className="flex flex-col gap-4 lg:pt-24">
-          <Lord />
+      </div>
+      <div className="relative flex flex-wrap items-center justify-between gap-x-6 px-8 pb-6 lg:grid lg:grid-cols-[1fr_auto_1fr] max-sm:px-6">
+        <Lord />
+        <div className="flex min-w-0 justify-end max-sm:basis-full max-sm:justify-start lg:order-3">
           <Journal entries={entries} />
-          {spectator.shown && (
-            <div className="grid">
-              <Act tone="plain" onClick={() => setWatching(true)}>
-                {t.watch}
-              </Act>
-            </div>
-          )}
-        </aside>
-        <div className="lg:col-span-2">
+        </div>
+        <div className="max-lg:basis-full lg:order-2">
           <Foot />
         </div>
       </div>
-      {watching && (
-        <div className="fixed top-4 left-4">
-          <Act tone="plain" onClick={() => setWatching(false)}>
-            {t.back}
-          </Act>
-        </div>
-      )}
       <Dialog open={open === 'solo'} title={t.solo.title} onClose={close}>
         <SoloSettings />
       </Dialog>

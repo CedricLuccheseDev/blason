@@ -50,9 +50,9 @@ npm install
 npm run dev
 ```
 
-Then open the address `npm run dev` prints: the home offers the next public
-game, a solo game against nineteen bots, and private rooms, a game of bots
-playing behind. Online play needs the relay beside it (`npm run relay`).
+Then open the address `npm run dev` prints: the home offers the public game
+in its opening, a solo game against nineteen bots, and private rooms. Online
+play needs the relay beside it (`npm run relay`).
 
 ## Commands
 
@@ -80,8 +80,8 @@ playing behind. Online play needs the relay beside it (`npm run relay`).
 - `src/render/`: the map on screen (PixiJS) and the player's gestures
 - `src/components/hud/`: the HUD's design system
 - `src/components/game/`: the game's HUD, built on it
-- `src/components/home/`: the home: the next public game, the solo game, the
-  private rooms, the journal, the bots' game behind
+- `src/components/home/`: the home: the public game in its opening, the solo
+  game, the private rooms, the journal
 - `src/i18n/`: French and English
 - `src/content/`: the journal's posts
 - `scripts/`: the arena and the style checks

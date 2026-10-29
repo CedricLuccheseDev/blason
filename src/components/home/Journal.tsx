@@ -1,44 +1,35 @@
 import { Link } from '@tanstack/react-router'
-import { Sheet } from '~/components/hud/Sheet'
 import { useMessages } from '~/i18n'
 
-// The journal beside the menu, as OpenFront's news: the newest posts of the
-// blog, their date and their title, each leading to its post, and the way
-// to the whole journal.
+// The journal at the home's foot, as OpenFront's news but quiet: its name,
+// leading to the whole journal, and the last post's line, its date and its
+// title, leading to it.
 
 export type Entry = { slug: string; title: string; date: string }
 
-const SHOWN = 4
-
-/** A line of the journal, gilt when it is pointed at. */
-const LINE =
-  'hud-press flex min-h-11 flex-col justify-center font-fell text-hud-m text-quill hover:text-gilt-deep'
+/** A link of the line: tall enough for a finger, gilt when it is pointed at. */
+const LINK =
+  'hud-press flex min-h-11 min-w-0 items-center gap-2 font-fell text-hud-m text-quill hover:text-gilt-deep'
 
 export function Journal({ entries }: Readonly<{ entries: Array<Entry> }>) {
   const t = useMessages().home
+  const last = entries.at(0)
   return (
-    <Sheet className="flex flex-col gap-2 p-4">
-      <h2 className="font-caps text-hud-l leading-none text-quill">
+    <div className="flex min-w-0 items-center gap-3">
+      <Link to="/blog" className={`${LINK} shrink-0 font-caps`}>
         {t.journal}
-      </h2>
-      <ul className="flex flex-col">
-        {entries.slice(0, SHOWN).map((e) => (
-          <li key={e.slug}>
-            <Link to="/blog/$slug" params={{ slug: e.slug }} className={LINE}>
-              <time
-                dateTime={e.date}
-                className="hud-figure text-hud-s opacity-70"
-              >
-                {e.date}
-              </time>
-              <span className="leading-tight">{e.title}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Link to="/blog" className={`${LINE} italic`}>
-        {t.allJournal}
       </Link>
-    </Sheet>
+      {last && (
+        <Link to="/blog/$slug" params={{ slug: last.slug }} className={LINK}>
+          <time
+            dateTime={last.date}
+            className="hud-figure shrink-0 text-hud-s opacity-70 max-sm:hidden"
+          >
+            {last.date}
+          </time>
+          <span className="truncate">{last.title}</span>
+        </Link>
+      )}
+    </div>
   )
 }

@@ -151,7 +151,7 @@ feeds them, and the gold; other figures for the peasants are tried with
 orders. It decides nothing about the rules.
 
 - `client.ts` mounts a game in a page element: the land (`ahead.ts` makes the
-  next one while the home is read, and keeps the next public game's, which
+  next one while the home is read, and keeps the public game's, which
   `sketch.ts` draws small on the home's card, for that game when it
   begins), the session, the scene, the camera, the input, and the handle the
   React screen drives. What the player holds in
@@ -308,8 +308,7 @@ orders. It decides nothing about the rules.
 - `camera.ts` is the player's camera, out to twice farther than the whole land,
   where the figures and the standards shrink with it, a name never under 16
   pixels, and the standards' small writing fades; `director.ts` is the
-  spectator's, which goes to the fiercest fight on its own (the game on the
-  home's board).
+  spectator's, which goes to the fiercest fight on its own (`spectate`).
 - `heralds.ts` says where the HUD lays its pieces on the map (the seal of each
   of the player's alliances in its last moments, beside his ally's name, past
   the figure under it and its marks, `besideOf` in `places.ts`, the ally's
@@ -424,42 +423,42 @@ in three steps:
 
 ## The home
 
-The home is built as OpenFront's, in the game's own materials: one column
-on a quiet ground, the next public game first and biggest, then the solo
-game and the private rooms, each set on a sheet of its own (the browser's
-modal `<dialog>`); beside it, the player at its head (his shield and "Lord"
-until profiles come), then the journal, reading the blog's posts. Every
-piece is the HUD's (`Sheet`, `Act`, `Figure`, `Shield`), so the home costs
-no CSS of its own.
+The home is built as OpenFront's, in the game's own materials, on the
+game's page without its map: the parchment, the frame the map lies in, and
+a faint compass rose in its corner (`Ornaments.tsx`). One calm column: the
+name of the game and its line; the public game in its opening, the biggest
+thing there; then three short buttons, the solo game, a private room made
+and a private room joined by its code, each opening a sheet of its own (the
+browser's modal `<dialog>`). At the foot of the page, never in its middle,
+quiet: the player on the left (his shield and "Lord" until profiles come),
+the journal's last post on the right, the rest of the site between; on a
+phone, everything stacked. Every piece is the HUD's (`Sheet`, `Act`,
+`Figure`, `Shield`), so the home costs no CSS of its own.
 
-The next public game is a large card, as OpenFront's, whose body is that
-game's land: the very land it will be played on, made from the relay's seed
-when the browser has a moment and drawn small on a canvas (`sketch.ts`), as
-the map shows it from afar at the opening, the sea's wash and its shore
-lines, the land's parchment, its woods, hills and mountains a shade darker,
-the coast in ink. Its title and its clock lie on it as a map's cartouches;
-under it the seats taken out of eight, and one click to sit. When the relay
-opens another, the land fades for the new one; the land made is kept, so
-that the game, when it begins, is not made again.
+The public game is a large card, as OpenFront's, whose body is the land of
+the game being planted now: the very land it is played on, made from the
+relay's seed when the browser has a moment and drawn small on a canvas
+(`sketch.ts`), as the map shows it from afar at the opening, the sea's wash
+and its shore lines, the land's parchment, its woods, hills and mountains a
+shade darker, the coast in ink. Its title, the time left to join it and the
+seats taken lie on it as a map's cartouches, and across it Play goes
+straight into its opening, to plant a standard: there is no room to wait in
+(Multiplayer, below). When no one may come in any more, the relay shows the
+next, and the land fades for the new one; the land made is kept, so that
+the game, when joined, is not made again.
 
-Behind the column, the bots' game: the spectator's game of twenty bots
-(`client.ts` with the director) drawn by PixiJS straight into the page's
-background under a veil of parchment, at no more than 1.5 pixels per CSS
-pixel and 30 frames a second. It starts once the menu is painted and the
-browser is idle, and only where WebGL is; elsewhere the parchment stays. The
-veil lifts to watch it full screen. Nothing else on the home runs a loop:
-the public game's clock ticks once a second (`Countdown.tsx`), and the relay
-is asked about that game every second and a half, only while the page is
-shown (`useUpcoming.ts`).
+Nothing on the home runs a loop: the public game's clock ticks once a
+second (`Countdown.tsx`), and the relay is asked about that game every
+second and a half, only while the page is shown (`useUpcoming.ts`).
 
-`src/components/home/`: `Home.tsx` lays it out; `PublicCard.tsx` the next
-public game, its land on `LandPlate.tsx` and its clock `Countdown.tsx`,
+`src/components/home/`: `Home.tsx` lays it out; `PublicCard.tsx` the public
+game, its land on `LandPlate.tsx` and its clock `Countdown.tsx`,
 `SoloSettings.tsx` (the land's size and the bots' level, then
 `/play?level=…&size=…`), `PrivateRoom.tsx` (a room made and its code to
 share, or a code typed to join, and the host's start), `Seats.tsx`,
-`Journal.tsx`, `Masthead.tsx`, `Foot.tsx`; the rooms of the relay
-(`useRoom.ts`) and its next public game (`useUpcoming.ts`), the background
-game (`useSpectator.ts`, `Backdrop.tsx`).
+`Journal.tsx`, `Masthead.tsx`, `Ornaments.tsx`, `Foot.tsx`; the line to the
+relay for a game or a room (`useRoom.ts`) and its public game
+(`useUpcoming.ts`).
 
 ## Multiplayer
 

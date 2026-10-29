@@ -6,9 +6,6 @@ export const homeEn = {
   tagline: 'Twenty lords, one land drawn anew each game.',
   menu: 'Menu',
   lord: 'Lord',
-  lordLater: 'profiles will come later',
-  watch: 'Watch the game',
-  back: 'Back to the menu',
   close: 'Close',
   levels: { easy: 'Easy', normal: 'Fair', hard: 'Hard' },
   public: {
@@ -22,7 +19,6 @@ export const homeEn = {
   },
   solo: {
     open: 'Solo',
-    line: 'Against nineteen bots',
     title: 'Solo game',
     size: 'The land',
     sizes: { standard: 'Standard', large: 'Large', huge: 'Huge' },
@@ -40,10 +36,9 @@ export const homeEn = {
     start: 'Start the game',
     making: 'The game is being made…',
   },
-  create: 'Create a private game',
-  joinPrivate: 'Join a private game',
+  create: 'Create a game',
+  joinPrivate: 'Join with a code',
   journal: 'Journal',
-  allJournal: 'The whole journal',
   room: {
     unavailable: 'Online play is not available here.',
     joining: 'Taking a seat…',
@@ -75,9 +70,6 @@ export const homeFr: HomeMessages = {
   tagline: 'Vingt seigneurs, une terre redessinée à chaque partie.',
   menu: 'Menu',
   lord: 'Seigneur',
-  lordLater: 'les profils viendront',
-  watch: 'Regarder la partie',
-  back: 'Retour au menu',
   close: 'Fermer',
   levels: { easy: 'Faciles', normal: 'Moyens', hard: 'Difficiles' },
   public: {
@@ -91,7 +83,6 @@ export const homeFr: HomeMessages = {
   },
   solo: {
     open: 'Solo',
-    line: 'Contre dix-neuf bots',
     title: 'Partie solo',
     size: 'La terre',
     sizes: { standard: 'Standard', large: 'Grande', huge: 'Immense' },
@@ -109,10 +100,9 @@ export const homeFr: HomeMessages = {
     start: 'Lancer la partie',
     making: 'La partie se prépare…',
   },
-  create: 'Créer une partie privée',
-  joinPrivate: 'Rejoindre une partie privée',
+  create: 'Créer une partie',
+  joinPrivate: 'Rejoindre avec un code',
   journal: 'Le Journal',
-  allJournal: 'Tout le journal',
   room: {
     unavailable: 'Le jeu en ligne n’est pas disponible ici.',
     joining: 'On prend place…',

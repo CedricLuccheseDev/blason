@@ -67,7 +67,9 @@ export function PublicCard({
             <span className="font-caps text-hud-l leading-none text-quill">
               {t.public.title}
             </span>
-            <span className="hud-note max-sm:hidden">{t.public.live}</span>
+            {game && (
+              <span className="hud-note max-sm:hidden">{t.public.live}</span>
+            )}
           </h2>
         </Cartouche>
         {game && (

@@ -87,6 +87,9 @@ function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
   g.lineWidth = INK * px
   g.strokeStyle = css(TONE.ink)
   g.stroke(coast)
+  // The map's edge, as its frame's inner rule: on a card wider than the
+  // land, a land that runs to it is cut there, not in the open sea.
+  g.strokeRect(0, 0, world.width, world.height)
 }
 
 /**

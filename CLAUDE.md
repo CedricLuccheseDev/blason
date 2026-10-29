@@ -9,7 +9,7 @@ navigateur.
 fun. Et agréable visuellement ». Chaque règle et chaque écran se jugent à cette aune.
 
 Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est fait comme celui d'OpenFront,
-la prochaine partie publique, le solo et les parties privées, une partie de bots derrière. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
+la partie publique en cours de pose où « Jouer » entre aussitôt, le solo et les parties privées. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
 état est à l'étiquette git `fiefs-final`). Le dépôt est fait pour devenir public, comme celui d'OpenFront : code
 rangé, documenté en anglais (`README.md`, `docs/`, `CONTRIBUTING.md`), sous licence AGPL-3.0.
 
@@ -131,24 +131,27 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   donnerait (`LordMenu.tsx`, ses lignes `lordMenu.ts`) ; Échap, un clic ailleurs ou la souris partie loin le
   ferment, sans qu'aucune armée parte de ce clic (`render/pin.ts`)), et ses dessins SVG (`svg/`).
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
-  système comme openfront en adapté pour nous pour la home » ; la table en 3D est retirée, « c'était de trop ») : une
-  colonne sur un fond calme, la prochaine partie publique en premier et en grand, puis Solo (la taille de la terre et
-  le niveau des bots, sur un feuillet), Créer et Rejoindre une partie privée côte à côte (le code à cinq signes,
-  l'hôte lance) ; à côté, le joueur en tête (son écu et « Seigneur » en attendant les profils), puis le Journal. La
-  partie publique est une grosse carte comme celle d'OpenFront (acté le 29/10, « une grosse carte avec la partie
-  dedans pour rejoindre la game qui va se lancer ») : son corps est sa terre, celle même où elle se jouera, tirée de
-  sa graine quand le navigateur a un moment et dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par
-  `ahead.ts`), son titre et son compte à rebours posés dessus en cartouches, ses places sur huit dessous et
-  Rejoindre en un clic. Le relais en tient toujours une ouverte, comme les lobbies d'OpenFront (« un lobby qui tourne
-  toutes les minutes ») : elle part au bout de sa minute avec ceux qui s'y sont assis, ou dès qu'elle est pleine ;
-  vide, une autre la remplace, nouvelle terre et nouvelle minute (`server/rooms.ts`) ; l'accueil la lui demande
-  (`GET /public`) toutes les secondes et demie tant que la page est visible (`useUpcoming.ts`). Tout est fait des
-  pièces du HUD. Derrière, la partie des bots filmée par le réalisateur, sous un voile de parchemin, en basse
-  résolution, lancée une fois le menu peint et seulement s'il y a WebGL ; « Regarder la partie » lève le voile.
-  `src/components/home/` (`Home.tsx`, `PublicCard.tsx` et sa terre `LandPlate.tsx`, `SoloSettings.tsx`,
-  `PrivateRoom.tsx`, `useRoom.ts` les salles du relais, `useUpcoming.ts`, `useSpectator.ts`). La terre de la
-  prochaine partie s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à `/play?online`
-  (`src/render/online.ts`).
+  système comme openfront en adapté pour nous pour la home »), allégé le 29/10 (« la partie en arrière-plan est de
+  trop je pense, et le layout peut être mieux fait ») : plus de partie de bots derrière, la page du jeu seule, son
+  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`). Une colonne calme : le nom du jeu
+  et sa ligne ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
+  la partie en cours de pose, celle même où elle se joue, tirée de sa graine quand le navigateur a un moment et
+  dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par `ahead.ts`), son titre, le temps qui reste
+  pour la rejoindre et ses places posés dessus en cartouches, et « Jouer » sur toute sa largeur ; puis trois boutons
+  courts égaux, « Solo » (la taille de la terre et le niveau des bots, sur un feuillet), « Créer une partie » et
+  « Rejoindre avec un code » (les parties privées, le code à cinq signes, l'hôte lance). En bas, discrets, le joueur
+  à gauche (son écu et « Seigneur » en attendant les profils), la dernière ligne du Journal à droite, le pied du
+  site entre les deux, toujours au bas de l'écran ; sur téléphone, tout empilé. Tout est fait des pièces du HUD.
+  **Pas de salon d'attente** (acté le 29/10, « comme dans openfront ne fait pas de lobby en attente ») : le relais
+  tient toujours une partie publique dans son ouverture, de 30 secondes en ligne, lancée dès qu'elle s'ouvre avec
+  des bots à tous les sièges ; « Jouer » y entre aussitôt sur un siège de bot, avec les tours déjà joués à
+  rattraper, pour planter son étendard. Plus personne n'entre dans les 5 dernières secondes : la partie continue
+  avec ceux qui sont venus et la suivante s'ouvre ; vide, elle est abandonnée et une nouvelle terre la remplace
+  (`server/rooms.ts`) ; l'accueil la lui demande (`GET /public`) toutes les secondes et demie tant que la page est
+  visible (`useUpcoming.ts`). `src/components/home/` (`Home.tsx`, `PublicCard.tsx` et sa terre `LandPlate.tsx`,
+  `SoloSettings.tsx`, `PrivateRoom.tsx`, `useRoom.ts` la ligne vers le relais, `useUpcoming.ts`). La terre de la
+  prochaine partie solo s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à
+  `/play?online` (`src/render/online.ts`, `remote.ts` qui la joue au rythme des tours du relais).
 - `src/i18n/` : les mots, en français et en anglais, par section (`home`, `game`, `race`, `menu`, `errors`).
 - `design/mockups/` : les sources des planches, tirées d'une partie du jeu (`cells.ts`) ; leurs pièces suivent les
   jetons du HUD (`kit.py`).
@@ -160,7 +163,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   jeu ; `build.mjs` les remonte dans `maquette.html`, chaque cadre le jeu au pixel près, et à côté les propositions
   (`proposals/`), écrites dans les classes du jeu : celle qu'on retient est déjà son code.
 - Pas de Convex pour l'instant (projet créé en `--no-backend`) : il viendra pour les comptes et les classements. Le
-  serveur de jeu sera sa propre brique, un relais en lockstep comme celui d'OpenFront (le Concept, « Les briques »).
+  serveur de jeu est sa propre brique, un relais en lockstep comme celui d'OpenFront (`server/`, le Concept, « Les
+  briques »).
 
 ## Surface de jeu
 
