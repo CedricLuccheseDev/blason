@@ -106,6 +106,7 @@ export const en = {
     },
     offering: 'Offering',
     hint: 'right click: alliance, offering',
+    options: 'Alliance, offering',
     hintTouch: 'long press: alliance, offering',
   },
   lord: {

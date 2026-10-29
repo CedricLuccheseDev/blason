@@ -104,6 +104,7 @@ export const fr: Messages = {
     },
     offering: 'Offrande',
     hint: 'clic droit : alliance, offrande',
+    options: 'Alliance, offrande',
     hintTouch: 'appui long : alliance, offrande',
   },
   lord: {

@@ -1,6 +1,6 @@
 import { CoupEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
+import { Rule, Sheet } from '../hud/Sheet'
 import { useBeside } from '../hud/useBeside'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
@@ -8,6 +8,36 @@ import { ARMY_MARKS, ARMY_WAX, COUP_MARKS } from './Bar'
 import type { RefObject } from 'react'
 import type { Aim, Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
+
+/** A mouse, the button a click is made with in gold: what the cartouche's half answers to (« au lieu d'écrire clic droit, clic gauche, mets des icônes de souris »). */
+function Mouse({ button }: Readonly<{ button: 'left' | 'right' }>) {
+  const lit =
+    button === 'left'
+      ? 'M12 3 V11 H5.5 V9 Q5.5 3 12 3 Z'
+      : 'M12 3 V11 H18.5 V9 Q18.5 3 12 3 Z'
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-7 shrink-0">
+      <path
+        d="M5.5 9 Q5.5 3 12 3 Q18.5 3 18.5 9 V15 Q18.5 21 12 21 Q5.5 21 5.5 15 Z"
+        fill="var(--color-vellum)"
+        stroke="var(--color-quill)"
+        strokeWidth="1.5"
+      />
+      <path
+        d={lit}
+        fill="var(--color-gilt)"
+        stroke="var(--color-quill)"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M12 3 V11 M5.5 11 H18.5"
+        stroke="var(--color-quill)"
+        strokeWidth="1.2"
+        fill="none"
+      />
+    </svg>
+  )
+}
 
 /**
  * The left of the cartouche: the army in hand, its men, and for mercenaries
@@ -19,29 +49,28 @@ function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
   const { me } = summary
   const army = summary.armies.find((a) => a.army === summary.army)
   if (!me || !army) return null
-  let note = <span className="hud-note">{m.game.click}</span>
+  let note = null
   if (army.free === 0)
     note = <span className="hud-note text-gules">{m.game.noLevy[army.at]}</span>
   else if (army.men === 0)
     note = <span className="hud-note text-gules">{m.game.noMen[army.at]}</span>
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
+        <Mouse button="left" />
         <SealEmblem
           icon={ARMY_MARKS[army.army]}
           color={ARMY_WAX[army.army] ?? hex(me.color)}
-          size="s"
+          size="xs"
         />
-        <span className="hud-word text-hud-l whitespace-nowrap">
+        <span className="hud-word whitespace-nowrap">
           {m.game.armies[army.army]}
         </span>
-      </div>
-      <div className="flex items-center gap-3">
-        <Figure icon="soldier" size="l">
+        <Figure icon="soldier" size="m">
           {count(army.men)}
         </Figure>
         {army.gold !== null && (
-          <Figure icon="coins" size="l">
+          <Figure icon="coins" size="m">
             {count(army.gold)}
           </Figure>
         )}
@@ -58,7 +87,7 @@ function CoupHalf({
 }: Readonly<{ coup: NonNullable<Aim['coup']>; summary: Summary }>) {
   const m = useMessages()
   const price = summary.coups.find((c) => c.coup === coup.coup)?.price ?? 0
-  let note = <span className="hud-note">{m.game.launch}</span>
+  let note = null
   if (!coup.allowed)
     note = (
       <span className="hud-note text-gules">{m.game.beyond[coup.coup]}</span>
@@ -66,36 +95,42 @@ function CoupHalf({
   else if (!coup.can)
     note = <span className="hud-note text-gules">{m.game.noGold}</span>
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <CoupEmblem icon={COUP_MARKS[coup.coup]} size="s" />
-        <span className="hud-word text-hud-l whitespace-nowrap">
+        <Mouse button="left" />
+        <CoupEmblem icon={COUP_MARKS[coup.coup]} size="xs" />
+        <span className="hud-word whitespace-nowrap">
           {m.game.coups[coup.coup]}
         </span>
+        <Figure icon="coins" size="m" tone={coup.can ? 'ink' : 'gules'}>
+          {count(price)}
+        </Figure>
       </div>
-      <Figure icon="coins" size="l" tone={coup.can ? 'ink' : 'gules'}>
-        {count(price)}
-      </Figure>
       {note}
     </div>
   )
 }
 
-/** Over another lord's land: what a right click opens there (a long press on a phone), his menu. */
+/** Over another lord's land, greyed until it is pressed: what a right click opens there, his menu (a long press on a phone). */
 function MenuHint() {
   const m = useMessages()
   const compact = useCompact()
+  if (compact) return <span className="hud-note">{m.menu.hintTouch}</span>
   return (
-    <span className="hud-note">{compact ? m.menu.hintTouch : m.menu.hint}</span>
+    <div className="flex items-center gap-2 opacity-50">
+      <Mouse button="right" />
+      <span className="hud-word whitespace-nowrap">{m.menu.options}</span>
+    </div>
   )
 }
 
 /**
  * Beside the pointer over another's land, on the side away from where the
  * army would enter, so the land aimed at and the line to it stay in view: a
- * sheet with what a left click sends, the army in hand and its men, and
- * under it, over another lord's land, that a right click opens his menu
- * (LordMenu.tsx). Over an ally's land or a lord's beyond reach, that alone.
+ * small sheet on one line, on its left a mouse its left button lit, what a
+ * click sends, the army in hand and its men; on its right, over another
+ * lord's land, greyed, a mouse its right button lit and what it opens there,
+ * his menu (LordMenu.tsx). Over an ally's land or a lord's beyond reach, that alone.
  * With a coup in hand, the coup alone, on the side away from where it would
  * leave from. In the opening, over a spot where the standard may not stand,
  * why, in gules. Near an edge of the screen or over the bar's row, it goes
@@ -122,13 +157,18 @@ export function Cursor({
       className="pointer-events-none absolute w-max"
       style={place(aim.x, aim.y, entry.x <= aim.x, entry.y <= aim.y)}
     >
-      <Sheet className="flex flex-col gap-2 p-3">
+      <Sheet className="flex items-center gap-3 px-3 py-2">
         {aim.barred && (
           <span className="hud-note text-gules">{m.game.tooNear}</span>
         )}
         {aim.coup && <CoupHalf coup={aim.coup} summary={summary} />}
         {strikes && <ArmyHalf summary={summary} />}
-        {aim.lord !== null && !aim.coup && <MenuHint />}
+        {aim.lord !== null && !aim.coup && (
+          <>
+            {strikes && <Rule />}
+            <MenuHint />
+          </>
+        )}
       </Sheet>
     </div>
   )
