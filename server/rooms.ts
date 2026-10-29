@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto'
-import { SETUP_LIMITS } from '../engine'
+import { SETUP_LIMITS, botsSetup } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import { fingerprints, isMove, tell } from './checks'
 import type { Fingerprints } from './checks'
 import type { FromRelay, Lobby, ToRelay, Turn, Upcoming } from '../net/protocol'
-import type { MapSize, Order } from '../engine'
+import type { GameSetup, Order } from '../engine'
 
 // The games, relayed turn by turn (protocol.ts). One public game is always
 // in its opening, as on OpenFront, with no room to wait in: it begins as it
@@ -25,8 +25,6 @@ const LAST_CALL = 50
 const JOIN_TURNS = SETUP_LIMITS.opening.public - LAST_CALL
 /** Ms a public game may be joined for: then the next opens. */
 export const JOIN_MS = JOIN_TURNS * TURN_MS
-/** The land of a game online. */
-const SIZE: MapSize = 'standard'
 
 export type Player = {
   name: string
@@ -35,8 +33,8 @@ export type Player = {
 
 type Room = {
   code: string
-  seed: string
-  size: MapSize
+  /** What the game is made of, sent whole to each player as it begins for him: the relay reads nothing of it. */
+  setup: GameSetup
   /** By seat, the persons; a seat without one is a bot's. */
   players: Array<Player | null>
   turn: number
@@ -64,8 +62,11 @@ function freeCode(): string {
 function makeRoom(code: string): Room {
   return {
     code,
-    seed: `online-${randomBytes(6).toString('hex')}`,
-    size: SIZE,
+    // A bot in every seat until a person takes it, the public opening.
+    setup: botsSetup({
+      seed: `online-${randomBytes(6).toString('hex')}`,
+      opening: SETUP_LIMITS.opening.public,
+    }),
     players: [],
     turn: 0,
     pending: [],
@@ -94,8 +95,8 @@ const seated = (room: Room) => room.players.filter(Boolean).length
 export function upcoming(): Upcoming {
   const room = publicGame()
   return {
-    seed: room.seed,
-    size: room.size,
+    seed: room.setup.seed,
+    size: room.setup.land.size,
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
     taken: seated(room),
     seats: SEATS,
@@ -115,15 +116,7 @@ function broadcast(room: Room, message: FromRelay) {
 
 /** The game as a player begins it, from his seat. */
 function beginning(room: Room, seat: number): FromRelay {
-  const { seed, size } = room
-  return {
-    t: 'begin',
-    seat,
-    seed,
-    size,
-    level: 'normal',
-    opening: SETUP_LIMITS.opening.public,
-  }
+  return { t: 'begin', seat, setup: room.setup }
 }
 
 /** The game's turns, one every 100 ms from the first. */

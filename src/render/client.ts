@@ -72,7 +72,10 @@ export async function mountGame(
   const app = new Application()
   const { save } = hooks
   // Online, the relay says the land; a save says its own.
-  const asked = hooks.online ?? save ?? { seed, size: hooks.size }
+  const online = hooks.online?.setup
+  const asked = online
+    ? { seed: online.seed, size: online.land.size }
+    : (save ?? { seed, size: hooks.size })
   const { land, grid } = takeLand(asked.seed, asked.size)
   await app.init({
     preference: 'webgl',

@@ -59,8 +59,8 @@ machine computes the same game, tick for tick.
   a test tries others, the setup's opening laid over them. Presets make the
   setups played today: a game alone (`aloneSetup`, the player at the first
   seat, a bot of the level chosen at every other), a game of bots
-  (`botsSetup`, the scripts', the tests' and, until the relay sends its
-  setup, a game online's), the public game (`publicSetup`, no bot, every
+  (`botsSetup`, the scripts', the tests' and, for now, every game online's),
+  the public game (`publicSetup`, no bot, every
   seat empty until a person takes it); `readSetup` checks one come down the
   wire, bounded by `SETUP_LIMITS` (`rules.ts`); `landOf` draws its land and
   its tiles. The state keeps the setup, never changed, and lays its seed, its
@@ -580,20 +580,21 @@ simulation.
 - `net/protocol.ts`, shared by the browser and the server, says the
   messages: join the public game, a private room by its code, or a new
   private room; start, an order, a fingerprint; and back a private room's
-  lobby (who sits, its code), the beginning (my seat, the land's seed and
-  size, the bots' level, the opening's length), each numbered turn, a
+  lobby (who sits, its code), the beginning (my seat and the game's setup,
+  whole, which the relay makes and never reads again, and the browser checks
+  with `readSetup`), each numbered turn, a
   desync. A turn holds the orders received since the last, each signed with
   its sender's seat, and the seats that became a person's (`joined`: their
   bots stop at that turn) or a bot's again (`left`). Every seat begins a
   bot's.
 - `server/` is the relay, a small Node WebSocket server of its own
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
-  (`server/rooms.ts`) draws its land as it opens, a seed and a size
-  (standard), and seats up to twenty persons, every lord, the seats no one
-  took being bots. As on OpenFront there is no room to wait in: one public game
+  (`server/rooms.ts`) is made of its setup (`room.setup`), its land drawn
+  as it opens from a seed at the standard size, and seats up to twenty
+  persons, every lord, the seats no one took being bots. As on OpenFront there is no room to wait in: one public game
   is always in its opening, which lasts 30 seconds online
-  (`SETUP_LIMITS.opening.public`, sent with the game, so that every browser
-  has the same). It begins as it opens, bots in every seat, its turns flowing from
+  (`SETUP_LIMITS.opening.public`, in the setup sent with the game, so that
+  every browser has the same). It begins as it opens, bots in every seat, its turns flowing from
   the first and kept while players may come in; whoever joins sits at once
   on the first free seat, given the land, the opening and every turn played
   so far, and his seat is a person's from the next turn, on every browser.
@@ -615,8 +616,9 @@ simulation.
   shown, as OpenFront asks for its lobbies (`useUpcoming.ts`); the home
   takes the player into it, or into a private room shown live
   (`useRoom.ts`); when the relay says the game begins, the open line is left
-  in `online.ts` and `/play?online` mounts the game on the land the relay
-  drew, with `remote.ts`'s session, stepped by the relay's turns, instead of
+  in `online.ts` with the setup it sent (`Online { link, seat, setup }`) and
+  `/play?online` mounts the game on its land, with `remote.ts`'s session,
+  which makes the game and its seats' bots from that setup alone, stepped by the relay's turns, instead of
   the local one. Who comes in during the opening plays the turns so far as
   they come, twenty a frame, and is in the opening within a second.
 - Each browser applies the turns to its own copy of the game, bots included:

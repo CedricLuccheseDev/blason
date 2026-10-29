@@ -42,7 +42,7 @@ function Play() {
     return <GameScreen me={0} level={level ?? 'normal'} size={size} />
   const game = heldOnline()
   if (!game) return <Navigate to="/" />
-  return <GameScreen me={game.seat} level={game.level} online={game} />
+  return <GameScreen me={game.seat} online={game} />
 }
 
 /** A saved game, fetched, then held still at its tick, seen from its seat; back home if there is none of that name. */

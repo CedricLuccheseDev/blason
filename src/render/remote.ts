@@ -1,13 +1,11 @@
 import {
   NO_ONE,
-  botsSetup,
   createBot,
   createGame,
   stateHash,
   step,
 } from '../../engine'
 import { HASH_EVERY, TURN_MS } from '../../net/protocol'
-import { PLAYERS } from './palette'
 import type { Online } from './online'
 import type { Session } from './session'
 import type { Grid } from '../../engine'
@@ -24,13 +22,15 @@ import type { Turn } from '../../net/protocol'
 // turn where two browsers parted.
 
 export function startRemoteSession(grid: Grid, online: Online): Session {
-  const { seed, level, seat, link } = online
-  // The land, the bots' level and the opening travel with the game: the
-  // same on every browser.
-  const state = createGame(grid, botsSetup(online))
-  const bots: Array<ReturnType<typeof createBot> | null> = PLAYERS.map(
-    (_, id) => createBot(id, seed, level),
-  )
+  const { setup, seat, link } = online
+  // The game travels whole from the relay: the same on every browser.
+  const state = createGame(grid, setup)
+  /** A seat's bot, as its setup gives it. */
+  const botOf = (id: number) => {
+    const level = setup.seats[id]?.bot
+    return level ? createBot(id, setup.seed, level) : null
+  }
+  const bots = setup.seats.map((_, id) => botOf(id))
   const turns: Array<Turn> = []
   link.listen((message) => {
     if (message.t === 'turn') turns.push(message)
@@ -50,7 +50,7 @@ export function startRemoteSession(grid: Grid, online: Online): Session {
         if (state.winner !== NO_ONE) break
         played++
         for (const id of turn.joined) bots[id] = null
-        for (const id of turn.left) bots[id] = createBot(id, seed, level)
+        for (const id of turn.left) bots[id] = botOf(id)
         const orders = [
           ...turn.orders,
           ...state.players.flatMap((p, id) => {

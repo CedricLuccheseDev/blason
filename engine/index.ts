@@ -14,7 +14,7 @@ export { apart, around, makeGrid } from './grid'
 
 // A game: what it is made of, its rules, its state, the orders and the step
 // that applies them.
-export { aloneSetup, botsSetup, landOf } from './setup'
+export { aloneSetup, botsSetup, landOf, readSetup } from './setup'
 export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'
 export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'

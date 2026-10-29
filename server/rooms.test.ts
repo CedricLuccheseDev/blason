@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SETUP_LIMITS } from '../engine'
+import { SETUP_LIMITS, readSetup } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import type { FromRelay, Turn } from '../net/protocol'
 import type * as Rooms from './rooms'
@@ -70,14 +70,17 @@ describe('the public game', () => {
     vi.advanceTimersByTime(4_000)
     const one = player('one')
     rooms.join(one, null)
-    expect(one.heard[0]).toEqual({
-      t: 'begin',
-      seat: 0,
+    // The game whole: its land, its opening, its seats, read as any browser reads it.
+    const told = one.heard[0]
+    if (told.t !== 'begin') throw new Error('no begin')
+    expect(told.seat).toBe(0)
+    expect(readSetup(told.setup)).toEqual(told.setup)
+    expect(told.setup).toMatchObject({
       seed,
-      size: 'standard',
-      level: 'normal',
+      land: { kind: 'drawn', size: 'standard' },
       opening: SETUP_LIMITS.opening.public,
     })
+    expect(told.setup.seats).toHaveLength(SEATS)
     // The forty turns played, from the first, every seat a bot's.
     const past = turns(one.heard)
     expect(past.map((t) => t.n)).toEqual(
@@ -90,7 +93,7 @@ describe('the public game', () => {
     expect(one.heard.at(-1)).toMatchObject({ t: 'turn', n: 40, joined: [0] })
     const two = player('two')
     rooms.join(two, null)
-    expect(begun(two.heard)).toMatchObject({ seat: 1, seed })
+    expect(begun(two.heard)).toMatchObject({ seat: 1, setup: { seed } })
     expect(turns(two.heard)).toHaveLength(41)
     vi.advanceTimersByTime(TURN_MS)
     for (const p of [one, two])
@@ -116,7 +119,10 @@ describe('the public game', () => {
     expect(shown.seed).not.toBe(seed)
     const two = player('two')
     rooms.join(two, null)
-    expect(begun(two.heard)).toMatchObject({ seat: 0, seed: shown.seed })
+    expect(begun(two.heard)).toMatchObject({
+      seat: 0,
+      setup: { seed: shown.seed },
+    })
     // Its last player gone, the game stops.
     if (room) rooms.leave(room, one)
     const heard = one.heard.length
@@ -158,7 +164,7 @@ describe('the public game', () => {
     const all = Array.from({ length: SEATS }, (_, i) => player(`p${i}`))
     for (const p of all) rooms.join(p, null)
     expect(all.map((p) => begun(p.heard))).toMatchObject(
-      all.map((_, seat) => ({ seat, seed })),
+      all.map((_, seat) => ({ seat, setup: { seed } })),
     )
     const next = rooms.upcoming()
     expect(next.seed).not.toBe(seed)
@@ -184,7 +190,7 @@ describe('a private room', () => {
     rooms.hear(room, host, { t: 'start' })
     expect(begun(host.heard)).toMatchObject({
       seat: 0,
-      opening: SETUP_LIMITS.opening.public,
+      setup: { opening: SETUP_LIMITS.opening.public },
     })
     expect(begun(friend.heard)).toMatchObject({ seat: 1 })
     vi.advanceTimersByTime(TURN_MS)

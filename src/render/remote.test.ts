@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   RULES,
   SETUP_LIMITS,
+  botsSetup,
   canStart,
   generateWorld,
   makeGrid,
@@ -38,14 +39,9 @@ function browser(seed: string, seat: number, opening: number) {
   worlds.set(seed, world)
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
   const line = fakeLink()
-  const session = startRemoteSession(grid, {
-    link: line.link,
-    seat,
-    seed,
-    size: 'standard',
-    level: 'normal',
-    opening,
-  })
+  // The relay's setup, as it sends it: a bot in every seat.
+  const setup = botsSetup({ seed, opening })
+  const session = startRemoteSession(grid, { link: line.link, seat, setup })
   return { ...line, session }
 }
 

@@ -1,5 +1,5 @@
 import { MAP_SIZES } from '../engine'
-import type { Level, MapSize, Order } from '../engine'
+import type { GameSetup, MapSize, Order } from '../engine'
 
 // The words between the players and the relay (docs/ARCHITECTURE.md): the
 // relay computes nothing, as OpenFront's. It runs each game as a list of
@@ -66,15 +66,8 @@ export type Turn = {
 export type FromRelay =
   /** The private room as it stands, and my seat in it. */
   | { t: 'lobby'; seat: number; lobby: Lobby }
-  /** The game, played from my seat: its land, the bots' level, its opening's length in ticks. Its turns follow, from the first. */
-  | {
-      t: 'begin'
-      seat: number
-      seed: string
-      size: MapSize
-      level: Level
-      opening: number
-    }
+  /** The game, played from my seat: what it is made of, whole, as every browser makes it (the browser reads it with readSetup). Its turns follow, from the first. */
+  | { t: 'begin'; seat: number; setup: GameSetup }
   | Turn
   /** The players' states parted at this turn: a bug, not a cheat to punish. */
   | { t: 'desync'; turn: number }

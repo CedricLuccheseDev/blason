@@ -45,7 +45,8 @@ export function GameScreen({
   size = 'standard',
 }: Readonly<{
   me: number
-  level: Level
+  /** The bots' level of a game alone; a game online's setup gives its own. */
+  level?: Level
   online?: Online
   /** A saved game, held still at its tick (render/save.ts). */
   save?: Save

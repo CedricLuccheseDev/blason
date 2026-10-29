@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { readSetup } from '../../../engine'
 import type { Link } from '~/render/link'
 import type { Online } from '~/render/online'
 import type { FromRelay, Lobby } from '../../../net/protocol'
@@ -75,8 +76,12 @@ export function useRoom(
             // From here the turns wait for the game: no one here listens any more.
             stop()
             line.current = null
-            const { seat, seed, size, level, opening } = message
-            begun.current({ link, seat, seed, size, level, opening })
+            // A setup this browser cannot read is a relay of another version.
+            const setup = readSetup(message.setup)
+            if (!setup) {
+              link.close()
+              setRoom({ status: 'error', code, reason: 'lost' })
+            } else begun.current({ link, seat: message.seat, setup })
           }
         })
         link.send({ t: 'join', room: code, name: '' })

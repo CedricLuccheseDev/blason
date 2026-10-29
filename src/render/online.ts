@@ -1,5 +1,5 @@
 import type { Link } from './link'
-import type { Level, MapSize } from '../../engine'
+import type { GameSetup } from '../../engine'
 
 // A game online, from the home where it began to the screen where it is
 // played: the home hears the relay say `begin` and leaves the line here,
@@ -11,11 +11,8 @@ export type Online = {
   link: Link
   /** My seat: a bot's until the turn the relay says I took it. */
   seat: number
-  seed: string
-  size: MapSize
-  level: Level
-  /** The opening's length, in ticks: the relay's, the same on every browser. */
-  opening: number
+  /** What the game is made of, as the relay sent it: the same on every browser. */
+  setup: GameSetup
 }
 
 let held: Online | null = null
