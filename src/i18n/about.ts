@@ -45,7 +45,7 @@ export const aboutEn: About = {
       heading: 'A land grown from a seed',
       diagram: 'seed',
       body: [
-        'Each game starts from a seed, a short word drawn at random. From it the generator scatters some two thousand points, cuts the frame into cells around them, raises a land in the middle of the sea, draws its coast, a few lakes and rivers. The same seed always draws the same land, on every machine: to share a land, one only has to share its seed.',
+        'Each game starts from a seed, a short word drawn at random. From it the generator scatters some two thousand points, cuts the frame into cells around them, raises a land in the middle of the sea as a relief, its high ground becoming ranges of high mountains cut by passes, which no army or caravan crosses, then draws its coast, a few lakes and the rivers coming down from the heights. The same seed always draws the same land, on every machine: to share a land, one only has to share its seed.',
         'The land is then cut into a fine grid of tiles, four map units a side. During the first ten seconds each lord plants his standard wherever he wants on it, and may move it, never within twenty tiles of another lord’s; when the count ends, the land within fourteen tiles of it is his, as far as he walks from it, never across the sea.',
       ],
     },
@@ -54,7 +54,7 @@ export const aboutEn: About = {
       diagram: 'step',
       body: [
         'A game is a state (who holds each tile, the peasants and the gold of each lord, the armies on the march, the alliances, the caravans) and a step that moves it on, ten times a second. Everything a player can do is an order: attack, build, launch a coup, offer or break an alliance. The bots send the same orders as you, through the same checks: the rules cannot tell a bot from a person.',
-        'Each step applies the valid orders, then the rules of a tick, always in the same order: the peasants grow (and those the villages cannot feed fall sick), the armies advance tile by tile, the coups on their way fall, the markets send their caravans along the trade network, the caravans move, alliances run out, and the game is judged. Every figure is a whole number and every draw of chance comes from the seed: given the same orders, every machine computes the same game, tick for tick. That is what will let several players share a game with a server that only passes the orders along.',
+        'Each step applies the valid orders, then the rules of a tick, always in the same order: the peasants grow (and those the villages cannot feed fall sick), the armies advance tile by tile (in the order of their distance to the click, bent by a fixed roughness of the land drawn from the seed, so that two fronts meet in a ragged line), the coups on their way fall, the markets send their caravans along the trade network, the caravans move, alliances run out, and the game is judged. Every figure is a whole number and every draw of chance comes from the seed: given the same orders, every machine computes the same game, tick for tick. That is what lets several players share a game with a server that only passes the orders along.',
       ],
     },
     {
@@ -68,7 +68,7 @@ export const aboutEn: About = {
     {
       heading: 'What is not there yet',
       body: [
-        'Blason is played against nineteen bots, easy, fair or hard as you choose at the home, or online with up to eight players, the empty seats going to bots: in the public room, opened anew every minute, which starts when its minute is up with whoever sits, or in a private room joined by its code. Each browser runs its own copy of the game, and a small server, the relay, gathers everyone’s orders every tenth of a second and sends them to all. There are no accounts yet, so no profiles nor rankings, no advertising and no audience measurement.',
+        'Blason is played in the public game, online with up to twenty players and no bot: Play enters the one whose opening is under way, where each plants his standard, and it goes on with whoever came; or in a game you create, its book open on its land, its bots (easy, fair or hard), its teams and its opening, alone or with friends who join by its code and read the book in the game until you launch it. Each browser runs its own copy of the game, and a small server, the relay, gathers everyone’s orders every tenth of a second and sends them to all. There are no accounts yet, so no profiles nor rankings, no advertising and no audience measurement.',
         'The code is free software under the AGPL-3.0 licence: it can be read, studied and improved, and whoever runs a modified version on a server must publish it.',
       ],
     },
@@ -76,7 +76,7 @@ export const aboutEn: About = {
   t: {
     seed: 'seed',
     cells: 'cells',
-    coast: 'coast, lakes, rivers',
+    coast: 'relief, coast, rivers',
     tiles: 'tiles',
     standards: 'standards',
     orders: 'orders',
@@ -103,7 +103,7 @@ export const aboutFr: About = {
       heading: 'Une terre tirée d’une graine',
       diagram: 'seed',
       body: [
-        'Chaque partie part d’une graine, un mot court tiré au hasard. Le générateur en tire quelque deux mille points, découpe le cadre en cellules autour d’eux, élève une terre au milieu de la mer, trace sa côte, quelques lacs et rivières. La même graine dessine toujours la même terre, sur toutes les machines : pour partager une terre, il suffit de partager sa graine.',
+        'Chaque partie part d’une graine, un mot court tiré au hasard. Le générateur en tire quelque deux mille points, découpe le cadre en cellules autour d’eux, élève une terre au milieu de la mer comme un relief, ses hauteurs devenant des chaînes de hautes montagnes coupées de cols, qu’aucune armée ni caravane ne traverse, puis trace sa côte, quelques lacs et les rivières qui descendent des hauteurs. La même graine dessine toujours la même terre, sur toutes les machines : pour partager une terre, il suffit de partager sa graine.',
         'La terre est ensuite découpée en un fin quadrillage de tuiles, de quatre unités de côté. Pendant les dix premières secondes, chaque seigneur y plante son étendard où il veut, et peut le déplacer, jamais à moins de vingt tuiles de celui d’un autre ; à la fin du compte, la terre à quatorze tuiles alentour est à lui, aussi loin qu’il y marche, jamais par-delà la mer.',
       ],
     },
@@ -112,7 +112,7 @@ export const aboutFr: About = {
       diagram: 'step',
       body: [
         'Une partie, c’est un état (qui tient chaque tuile, les paysans et l’or de chaque seigneur, les armées en marche, les alliances, les caravanes) et un pas qui le fait avancer, dix fois par seconde. Tout ce qu’un joueur peut faire est un ordre : attaquer, bâtir, lancer un coup d’éclat, proposer ou rompre une alliance. Les bots envoient les mêmes ordres que vous, par les mêmes contrôles : les règles ne distinguent pas un bot d’une personne.',
-        'Chaque pas applique les ordres valides, puis les règles d’un pas, toujours dans le même ordre : les paysans croissent (et ceux que les villages ne nourrissent pas tombent malades), les armées avancent tuile par tuile, les coups d’éclat en chemin tombent, les marchés envoient leurs caravanes sur le réseau des routes, les caravanes cheminent, les alliances expirent, et la partie est jugée. Chaque chiffre est un nombre entier et chaque tirage du hasard vient de la graine : avec les mêmes ordres, toutes les machines calculent la même partie, pas pour pas. C’est ce qui permettra à plusieurs joueurs de partager une partie avec un serveur qui ne fait que passer les ordres.',
+        'Chaque pas applique les ordres valides, puis les règles d’un pas, toujours dans le même ordre : les paysans croissent (et ceux que les villages ne nourrissent pas tombent malades), les armées avancent tuile par tuile (dans l’ordre de leur distance au clic, courbé par une rugosité fixe de la terre tirée de la graine, pour que deux fronts se rencontrent en une ligne dentelée), les coups d’éclat en chemin tombent, les marchés envoient leurs caravanes sur le réseau des routes, les caravanes cheminent, les alliances expirent, et la partie est jugée. Chaque chiffre est un nombre entier et chaque tirage du hasard vient de la graine : avec les mêmes ordres, toutes les machines calculent la même partie, pas pour pas. C’est ce qui permet à plusieurs joueurs de partager une partie avec un serveur qui ne fait que passer les ordres.',
       ],
     },
     {
@@ -126,7 +126,7 @@ export const aboutFr: About = {
     {
       heading: 'Ce qui n’y est pas encore',
       body: [
-        'Blason se joue contre dix-neuf bots, faciles, moyens ou difficiles au choix de l’accueil, ou en ligne jusqu’à huit joueurs, les places vides allant aux bots : dans la salle publique, rouverte chaque minute, qui part au bout de sa minute avec ceux qui s’y sont assis, ou dans une salle privée qu’on rejoint par son code. Chaque navigateur fait tourner sa propre copie de la partie, et un petit serveur, le relais, réunit les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a pas encore de compte, donc ni profil ni classement, ni publicité, ni mesure d’audience.',
+        'Blason se joue dans la partie publique, en ligne jusqu’à vingt joueurs et sans bot : Jouer entre dans celle dont la pose est en cours, où chacun plante son étendard, et elle continue avec ceux qui sont venus ; ou dans une partie que vous créez, son livre ouvert sur sa terre, ses bots (faciles, moyens ou difficiles), ses équipes et sa pose, seul ou avec des amis qui la rejoignent par son code et lisent le livre dans le jeu jusqu’à ce que vous la lanciez. Chaque navigateur fait tourner sa propre copie de la partie, et un petit serveur, le relais, réunit les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a pas encore de compte, donc ni profil ni classement, ni publicité, ni mesure d’audience.',
         'Le code est un logiciel libre, sous licence AGPL-3.0 : on peut le lire, l’étudier et l’améliorer, et quiconque en fait tourner une version modifiée sur un serveur doit la publier.',
       ],
     },
@@ -134,7 +134,7 @@ export const aboutFr: About = {
   t: {
     seed: 'graine',
     cells: 'cellules',
-    coast: 'côte, lacs, rivières',
+    coast: 'relief, côte, rivières',
     tiles: 'tuiles',
     standards: 'étendards',
     orders: 'ordres',
