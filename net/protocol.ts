@@ -1,4 +1,4 @@
-import type { Level, Order } from '../engine'
+import type { Level, MapSize, Order } from '../engine'
 
 // The words between the players and the relay (docs/ARCHITECTURE.md): the
 // relay computes nothing, as OpenFront's. It gathers the players of a room,
@@ -35,6 +35,9 @@ export type Lobby = {
   room: string
   /** Private rooms are joined by their code; the public one by anyone. */
   open: boolean
+  /** The game's land, drawn as the room opened. */
+  seed: string
+  size: MapSize
   names: Array<string>
   /** The seat that may start the game. */
   host: number
@@ -42,11 +45,28 @@ export type Lobby = {
   startsIn: number | null
 }
 
+/** The next public game, as anyone may see it without sitting at it. */
+export type Upcoming = {
+  seed: string
+  size: MapSize
+  /** Ms before it starts, or gives way to another if no one sits. */
+  startsIn: number
+  /** Seats taken, of `seats`. */
+  taken: number
+  seats: number
+}
+
 export type FromRelay =
   /** The room as it stands, and my seat in it. */
   | { t: 'lobby'; seat: number; lobby: Lobby }
-  /** The game begins: its seed, the bots' level, the players by seat (the rest bots). */
-  | { t: 'begin'; seed: string; level: Level; names: Array<string> }
+  /** The game begins: its land, the bots' level, the players by seat (the rest bots). */
+  | {
+      t: 'begin'
+      seed: string
+      size: MapSize
+      level: Level
+      names: Array<string>
+    }
   /** One turn: its number, the orders in it, the seats that left (bots from this turn on). */
   | { t: 'turn'; n: number; orders: Array<Order>; left: Array<number> }
   /** The players' states parted at this turn: a bug, not a cheat to punish. */

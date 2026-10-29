@@ -68,7 +68,7 @@ export const aboutEn: About = {
     {
       heading: 'What is not there yet',
       body: [
-        'Blason is played against nineteen bots, easy, fair or hard as you choose at the home, or online with up to eight players, the empty seats going to bots: in the public room, which starts half a minute after its first player sits, or in a private room joined by its code. Each browser runs its own copy of the game, and a small server, the relay, gathers everyone’s orders every tenth of a second and sends them to all. There are no accounts yet, so no profiles nor rankings, no advertising and no audience measurement.',
+        'Blason is played against nineteen bots, easy, fair or hard as you choose at the home, or online with up to eight players, the empty seats going to bots: in the public room, opened anew every minute, which starts when its minute is up with whoever sits, or in a private room joined by its code. Each browser runs its own copy of the game, and a small server, the relay, gathers everyone’s orders every tenth of a second and sends them to all. There are no accounts yet, so no profiles nor rankings, no advertising and no audience measurement.',
         'The code is free software under the AGPL-3.0 licence: it can be read, studied and improved, and whoever runs a modified version on a server must publish it.',
       ],
     },
@@ -126,7 +126,7 @@ export const aboutFr: About = {
     {
       heading: 'Ce qui n’y est pas encore',
       body: [
-        'Blason se joue contre dix-neuf bots, faciles, moyens ou difficiles au choix de l’accueil, ou en ligne jusqu’à huit joueurs, les places vides allant aux bots : dans la salle publique, qui part une demi-minute après que son premier joueur s’y assoit, ou dans une salle privée qu’on rejoint par son code. Chaque navigateur fait tourner sa propre copie de la partie, et un petit serveur, le relais, réunit les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a pas encore de compte, donc ni profil ni classement, ni publicité, ni mesure d’audience.',
+        'Blason se joue contre dix-neuf bots, faciles, moyens ou difficiles au choix de l’accueil, ou en ligne jusqu’à huit joueurs, les places vides allant aux bots : dans la salle publique, rouverte chaque minute, qui part au bout de sa minute avec ceux qui s’y sont assis, ou dans une salle privée qu’on rejoint par son code. Chaque navigateur fait tourner sa propre copie de la partie, et un petit serveur, le relais, réunit les ordres de tous chaque dixième de seconde pour les renvoyer à chacun. Il n’y a pas encore de compte, donc ni profil ni classement, ni publicité, ni mesure d’audience.',
         'Le code est un logiciel libre, sous licence AGPL-3.0 : on peut le lire, l’étudier et l’améliorer, et quiconque en fait tourner une version modifiée sur un serveur doit la publier.',
       ],
     },

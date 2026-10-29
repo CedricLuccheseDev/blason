@@ -14,7 +14,7 @@ export const homeEn = {
   public: {
     title: 'Next public game',
     line: 'Twenty lords on a standard land; up to eight players, bots in the empty seats.',
-    when: 'It starts shortly after its first player, or once full.',
+    when: 'One opens every minute and starts when its minute is up, or as soon as it is full.',
     join: 'Join',
     leave: 'Leave the room',
     startsIn: 'Starts in',
@@ -82,7 +82,7 @@ export const homeFr: HomeMessages = {
   public: {
     title: 'Prochaine partie publique',
     line: 'Vingt seigneurs sur une terre standard ; jusqu’à huit joueurs, des bots aux places vides.',
-    when: 'Elle part peu après son premier joueur, ou dès qu’elle est pleine.',
+    when: 'Il s’en ouvre une chaque minute ; elle part au bout de sa minute, ou dès qu’elle est pleine.',
     join: 'Rejoindre',
     leave: 'Quitter la salle',
     startsIn: 'Départ dans',

@@ -58,7 +58,7 @@ export async function mountGame(
     names: Array<string>
     /** The bots' level, chosen at the home; normal if none. */
     level?: Level
-    /** The land's size; standard if none, and online. */
+    /** The land's size; standard if none. Online, the relay's. */
     size?: MapSize
     /** Watching alone, the camera directed (director.ts), so many pixels on the left left to a menu. */
     spectate?: () => Room
@@ -67,8 +67,8 @@ export async function mountGame(
   },
 ): Promise<GameHandle> {
   const app = new Application()
-  // Online, the standard land: the relay sends no size yet.
-  const { land, grid } = takeLand(hooks.online?.seed ?? seed, hooks.size)
+  const asked = hooks.online ?? { seed, size: hooks.size }
+  const { land, grid } = takeLand(asked.seed, asked.size)
   await app.init({
     preference: 'webgl',
     resizeTo: element,

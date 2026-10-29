@@ -77,8 +77,15 @@ export function useRoom(
             // From here the turns wait for the game: no one here listens any more.
             stop()
             line.current = null
-            const { seed, level, names } = message
-            begun.current({ link, seat, seed, level, players: names.length })
+            const { seed, size, level, names } = message
+            begun.current({
+              link,
+              seat,
+              seed,
+              size,
+              level,
+              players: names.length,
+            })
           }
         })
         link.send({ t: 'join', room: code, name: '' })

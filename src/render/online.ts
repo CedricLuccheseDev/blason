@@ -1,5 +1,5 @@
 import type { Link } from './link'
-import type { Level } from '../../engine'
+import type { Level, MapSize } from '../../engine'
 
 // A game online, from the room where it began to the screen where it is
 // played: the home hears the relay say `begin` and leaves the line here,
@@ -12,6 +12,7 @@ export type Online = {
   /** My seat: the seats before `players` are players', the rest bots. */
   seat: number
   seed: string
+  size: MapSize
   level: Level
   players: number
 }

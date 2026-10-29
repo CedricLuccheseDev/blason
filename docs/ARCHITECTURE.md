@@ -359,22 +359,29 @@ simulation.
 
 - `net/protocol.ts`, shared by the browser and the server, says the
   messages: join a room (the public one, a private one by its code, or a new
-  private one), start, an order, a fingerprint; and back the lobby, the
-  beginning (the seed, the bots' level, the players by seat), each numbered
-  turn, a desync.
+  private one), start, an order, a fingerprint; and back the lobby (who
+  sits, the game's land, the public room's clock), the beginning (the land's
+  seed and size, the bots' level, the players by seat), each numbered turn,
+  a desync.
 - `server/` is the relay, a small Node WebSocket server of its own
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Its rooms
   (`server/rooms.ts`) gather up to eight players, the rest of the twenty
-  seats being bots; then every 100 milliseconds it sends everyone the turn:
-  the orders received since the last, each signed with its sender's seat.
+  seats being bots, and each draws its game's land as it opens, a seed and a
+  size (standard). One public room is always open, as OpenFront's lobbies: a
+  minute after it opened it starts with whoever sits, or at once when full,
+  and the next opens; if no one sat by then, another takes its place, a new
+  land and a new minute (`server/rooms.test.ts` runs that minute on a clock
+  of its own). A private room starts when its host says so. Then every 100
+  milliseconds the relay sends everyone the turn: the orders received since
+  the last, each signed with its sender's seat.
   A player who leaves during a game gives his seat to a bot, on every browser
   at the same turn. Every 50 turns each browser tells the fingerprint of its
   state, and the relay names the first turn where two differ.
 - In the browser, `link.ts` is the line to the relay; the home sits the
   player at a room and shows it live (`useRoom.ts`); when the relay says
   the game begins, the open line is left in `online.ts` and `/play?online`
-  mounts the game with `remote.ts`'s session, stepped by the relay's turns,
-  instead of the local one.
+  mounts the game on the land the relay drew, with `remote.ts`'s session,
+  stepped by the relay's turns, instead of the local one.
 - Each browser applies the turns to its own copy of the game, bots included:
   a distant player is one more seat the session receives from outside, as a
   bot is. Watching a game, or replaying one, is receiving or replaying the
