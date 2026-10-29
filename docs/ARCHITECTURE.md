@@ -384,6 +384,9 @@ The HUD is React, laid over the map. It is built on a small design system,
   button 53);
 - **one material**, the sheet of parchment (`Sheet.tsx`);
 - **one button**, 44 pixels tall at scale 1 (`Act.tsx`);
+- **one hint**, a small sheet a piece pointed at a moment opens over the
+  whole page, its name and what it does with its figures (`Hint.tsx`; its
+  words in `i18n/hints.ts`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
   shields, wax seals, gilt medallions, the coups' lozenges ringed in gules, keys, and the badges of standing
   (`Emblem.tsx`): an ally the links of a chain in the alliance's green

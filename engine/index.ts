@@ -32,7 +32,14 @@ export type {
   Scar,
   Strike,
 } from './types'
-export { capOf, createGame, sicknessOf, standing, worksOf } from './land'
+export {
+  capOf,
+  createGame,
+  fedByLand,
+  sicknessOf,
+  standing,
+  worksOf,
+} from './land'
 export { barredBy, canStart, hasPicked } from './opening'
 export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 

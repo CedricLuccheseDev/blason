@@ -81,6 +81,11 @@ function Armies({
               key={a.army}
               k={keys ? keyAt(i + 1) : null}
               name={m.game.armies[a.army]}
+              hint={[
+                m.hints.armies[a.army],
+                m.hints.armies.men(count(a.men)),
+                m.hints.armies.oneEach,
+              ]}
               held={held}
               // An army that would take no man: the mercenaries without the gold for one.
               faint={a.men === 0 && !held}
@@ -176,6 +181,7 @@ export function Bar({
                   key={w.work}
                   k={keys ? keyAt(first + i) : null}
                   name={m.game.works[w.work]}
+                  hint={[m.hints.works[w.work], m.hints.works.price]}
                   held={held}
                   faint={!w.can && !held}
                   onClick={() => onWork(held ? null : w.work)}
@@ -204,6 +210,7 @@ export function Bar({
                   key={c.coup}
                   k={keys ? keyAt(first + summary.works.length + i) : null}
                   name={m.game.coups[c.coup]}
+                  hint={[m.hints.coups[c.coup], m.hints.coups.price]}
                   held={held}
                   faint={!c.can && !held}
                   onClick={() => onCoup(held ? null : c.coup)}

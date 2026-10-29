@@ -90,7 +90,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   l'espace sur les pas 4, 8, 12, 16 et 24 ; une échelle, `--hud` (`app.css`), 1 sur téléphone et petit écran,
   1,2 à partir de 1280 × 640 : le texte, l'espace (dans `.hud`) et les dessins grandissent ensemble, les mesures
   s'écrivent une fois, telles que dessinées ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
-  (`Act.tsx`) ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons, touches et insignes de
+  (`Act.tsx`) ; la bulle d'aide au survol de chaque pièce, son nom et ce qu'elle fait avec ses chiffres, posée au-dessus de toute la page (`Hint.tsx`, 29/10 « ajoute des helpers ») ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons, touches et insignes de
   rapport (`Emblem.tsx`, `StandingBadge` : l'allié en vert `pact`, des maillons ; l'ennemi en gueules, une épée ;
   le félon, l'écu brisé sur gueules ; la forme dit avant la couleur, les mêmes qu'à côté des noms sur la carte) ;
   un mouvement unifié, acté le 28/10 (« chaque élément hud interactif soit animé ... des animations unifiés ») :

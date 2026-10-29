@@ -86,7 +86,7 @@ export const standing = (state: GameState, work: GameState['works'][number]) =>
   (work.ready ?? 0) <= state.tick
 
 /** The peasants a lord's land feeds: fewer by the tile as it grows, as the square root of its size. */
-function fedByLand(state: GameState, lord: number): number {
+export function fedByLand(state: GameState, lord: number): number {
   const { land, tiles } = state.rules.peasants
   const held = state.players[lord].tiles
   return isqrt(Math.floor((land * land * UNIT * UNIT * held) / tiles))

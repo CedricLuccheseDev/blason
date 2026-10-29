@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Shield } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
+import { Hint } from '../hud/Hint'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
 import type { Summary } from '~/render/client'
+import { useMessages } from '~/i18n'
 
 /** Seconds the cap stays red after it fell. */
 const SHRUNK = 3
@@ -93,9 +95,16 @@ function Earned({ earned }: Readonly<{ earned: number }>) {
  */
 export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   const { me } = summary
+  const t = useMessages().hints
   const compact = useCompact()
   const shrunk = useShrunk(me?.cap ?? 0)
   if (!me) return null
+  // What the peasants' figures come from: the land's part and the villages',
+  // then how they grow, or why they do not.
+  const fed = t.peasants.fed(count(me.fed), me.villages, count(me.cap - me.fed))
+  let growing = t.peasants.born(count(me.growth), count(me.cap))
+  if (me.growth < 0) growing = t.peasants.sick(count(-me.growth))
+  else if (me.peasants >= me.cap) growing = t.peasants.full
   return (
     <div className="flex items-center gap-2">
       {!compact && (
@@ -112,25 +121,32 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
             : 'grid grid-cols-[auto_auto] items-center gap-x-2 gap-y-1'
         }
       >
-        <Figure icon="soldier" size={compact ? 'm' : 'l'}>
-          {count(me.peasants)}
-          <span
-            className={`text-hud-m transition-colors duration-(--duration-hud-enter) ease-hud ${
-              shrunk ? 'text-gules' : 'opacity-70'
-            }`}
-          >
-            {' '}
-            / {count(me.cap)}
-          </span>
-        </Figure>
+        <Hint title={t.peasants.title} lines={[fed, growing]}>
+          <Figure icon="soldier" size={compact ? 'm' : 'l'}>
+            {count(me.peasants)}
+            <span
+              className={`text-hud-m transition-colors duration-(--duration-hud-enter) ease-hud ${
+                shrunk ? 'text-gules' : 'opacity-70'
+              }`}
+            >
+              {' '}
+              / {count(me.cap)}
+            </span>
+          </Figure>
+        </Hint>
         <Figure size="s" tone={me.growth < 0 ? 'gules' : 'thrive'}>
           {me.growth > 0 && `+${me.growth}/s`}
           {/* Too many for the villages: the sickness takes them. */}
           {me.growth < 0 && `\u2212${-me.growth}/s`}
         </Figure>
-        <Figure icon="coins" size={compact ? 'm' : 'l'}>
-          {count(me.gold)}
-        </Figure>
+        <Hint
+          title={t.gold.title}
+          lines={[t.gold.line, t.gold.earned(count(me.earned))]}
+        >
+          <Figure icon="coins" size={compact ? 'm' : 'l'}>
+            {count(me.gold)}
+          </Figure>
+        </Hint>
         <Earned earned={me.earned} />
       </div>
     </div>

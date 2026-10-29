@@ -1,4 +1,5 @@
 import { KeyCap } from '../hud/Emblem'
+import { Hint } from '../hud/Hint'
 import type { ReactNode } from 'react'
 
 // The pieces the bar is made of (Bar.tsx): one for each army, work or coup,
@@ -11,12 +12,14 @@ const PIECE =
 /**
  * One piece of the bar: its emblem, its key at its top right (none on a
  * phone, which has no keyboard), and under it its figure, if it has one. No
- * word: its name is said under the pointer and to screen readers.
+ * word: its name, and what it does, are said under the pointer in its hint,
+ * and its name to screen readers.
  */
 export function Piece({
   emblem,
   k,
   name,
+  hint,
   figure,
   held,
   faint = false,
@@ -25,6 +28,8 @@ export function Piece({
   emblem: ReactNode
   k: string | null
   name: string
+  /** What it does, a sentence a line, said under the pointer with its name. */
+  hint: ReadonlyArray<string>
   figure?: ReactNode
   held: boolean
   /** At half ink: what cannot be had, the gold short. */
@@ -32,24 +37,25 @@ export function Piece({
   onClick: () => void
 }>) {
   return (
-    <button
-      type="button"
-      aria-pressed={held}
-      aria-label={name}
-      title={name}
-      onClick={onClick}
-      className={`${PIECE} ${faint ? 'opacity-45' : ''}`}
-    >
-      <span className="relative">
-        {emblem}
-        {k !== null && (
-          <span className="absolute -top-1 -right-3">
-            <KeyCap k={k} />
-          </span>
-        )}
-      </span>
-      {figure}
-    </button>
+    <Hint title={name} lines={hint}>
+      <button
+        type="button"
+        aria-pressed={held}
+        aria-label={name}
+        onClick={onClick}
+        className={`${PIECE} ${faint ? 'opacity-45' : ''}`}
+      >
+        <span className="relative">
+          {emblem}
+          {k !== null && (
+            <span className="absolute -top-1 -right-3">
+              <KeyCap k={k} />
+            </span>
+          )}
+        </span>
+        {figure}
+      </button>
+    </Hint>
   )
 }
 

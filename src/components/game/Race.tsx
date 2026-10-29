@@ -1,4 +1,5 @@
 import { Figure, Icon } from '../hud/Figure'
+import { Hint } from '../hud/Hint'
 import { ICON } from '../hud/tokens'
 import { Rule, Sheet } from '../hud/Sheet'
 import { useFit } from '../hud/useFit'
@@ -93,24 +94,30 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
   return (
     <div ref={room} className="flex w-full min-w-0 justify-center">
       <div ref={piece} className="w-max">
-        <Sheet className="flex items-center gap-3 px-3 py-1">
-          <Figure size="m">{minutes(summary.seconds)}</Figure>
-          <Rule />
-          <div className="w-44 max-sm:w-24 short:w-32">
-            <Track summary={summary} />
-          </div>
-          <span
-            className="flex items-center gap-1"
-            title={step ? words : undefined}
-          >
-            {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
-            {step ? (
-              <Figure size="s">{figure}</Figure>
-            ) : (
-              <span className="hud-note whitespace-nowrap">{words}</span>
-            )}
-          </span>
-        </Sheet>
+        <Hint
+          title={m.hints.race.title}
+          lines={[m.hints.race.line(needed), m.hints.race.drops]}
+          under
+        >
+          <Sheet className="flex items-center gap-3 px-3 py-1">
+            <Figure size="m">{minutes(summary.seconds)}</Figure>
+            <Rule />
+            <div className="w-44 max-sm:w-24 short:w-32">
+              <Track summary={summary} />
+            </div>
+            <span
+              className="flex items-center gap-1"
+              title={step ? words : undefined}
+            >
+              {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
+              {step ? (
+                <Figure size="s">{figure}</Figure>
+              ) : (
+                <span className="hud-note whitespace-nowrap">{words}</span>
+              )}
+            </span>
+          </Sheet>
+        </Hint>
       </div>
     </div>
   )

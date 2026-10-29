@@ -8,6 +8,7 @@ import {
   capOf,
   costOf,
   coupPrice,
+  fedByLand,
   freeWorks,
   hasPicked,
   menFor,
@@ -15,6 +16,7 @@ import {
   offeringOf,
   priceOf,
   sicknessOf,
+  standing,
   victoryShare,
   wonBy,
 } from '../../engine'
@@ -43,9 +45,11 @@ export type Summary = {
   won: boolean
   me:
     | (Seat & {
-        /** His peasants and what his land and villages feed, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
+        /** His peasants and what his land and villages feed, his land's part apart and his villages counted, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
         peasants: number
         cap: number
+        fed: number
+        villages: number
         growth: number
         gold: number
         earned: number
@@ -159,6 +163,10 @@ export function summarize(
       ...seat(me),
       peasants: Math.floor(lord.peasants / UNIT),
       cap: Math.floor(cap / UNIT),
+      fed: Math.floor(fedByLand(state, me) / UNIT),
+      villages: state.works.filter(
+        (w) => w.owner === me && w.work === 'village' && standing(state, w),
+      ).length,
       growth:
         lord.peasants >= cap
           ? -Math.ceil((sicknessOf(state, me) * TICKS_PER_SECOND) / UNIT)
