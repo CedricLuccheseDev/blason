@@ -119,15 +119,3 @@ export const atPublic = (room: Room): boolean =>
 export const atPrivate = (room: Room): boolean =>
   (room.status === 'seated' && !room.lobby.open) ||
   ((room.status === 'joining' || room.status === 'error') && room.code !== null)
-
-/** Ms left before the public room starts, now, or none. */
-export function leftOf(room: Room, now: number): number | null {
-  if (room.status !== 'seated' || room.lobby.startsIn === null) return null
-  return Math.max(0, room.lobby.startsIn - (now - room.heardAt))
-}
-
-/** A span of ms as m:ss. */
-export const clock = (ms: number) => {
-  const s = Math.ceil(ms / 1000)
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}

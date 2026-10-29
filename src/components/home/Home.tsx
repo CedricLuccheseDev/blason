@@ -8,7 +8,6 @@ import { Lord, Title } from './Masthead'
 import { PrivateRoom } from './PrivateRoom'
 import { PublicCard } from './PublicCard'
 import { SoloSettings } from './SoloSettings'
-import { useNow } from './useNow'
 import { atPrivate, atPublic, useRoom } from './useRoom'
 import { useSpectator } from './useSpectator'
 import type { Entry } from './Journal'
@@ -50,7 +49,6 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
     holdOnline(game)
     void navigate({ to: '/play', search: { online: true } })
   })
-  const now = useNow(room.status === 'seated')
   useGameAhead()
   // Back home, the last game online is let go of; online is offered where a relay is.
   useEffect(() => {
@@ -91,7 +89,7 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
           <div className="max-sm:order-1">
             <Lord />
           </div>
-          <PublicCard room={room} rooms={rooms} online={online} now={now} />
+          <PublicCard room={room} rooms={rooms} online={online} />
           <div className="grid gap-2">
             <Act tone="plain" onClick={() => show('solo')}>
               <span className="text-hud-l">{t.solo.open}</span>

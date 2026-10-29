@@ -343,14 +343,17 @@ background under a veil of parchment, at no more than 1.5 pixels per CSS
 pixel and 30 frames a second. It starts once the menu is painted and the
 browser is idle, and only where WebGL is; elsewhere the parchment stays. The
 veil lifts to watch it full screen. Nothing else on the home runs a loop:
-the room's clock ticks once a second, and only while a room is sat at.
+the public game's clock ticks once a second (`Countdown.tsx`), and the relay
+is asked about that game every second and a half, only while the page is
+shown (`useUpcoming.ts`).
 
 `src/components/home/`: `Home.tsx` lays it out; `PublicCard.tsx` the next
 public game, `SoloSettings.tsx` (the land's size and the bots' level, then
 `/play?level=…&size=…`), `PrivateRoom.tsx` (a room made and its code to
 share, or a code typed to join, and the host's start), `Seats.tsx`,
 `Journal.tsx`, `Masthead.tsx`, `Foot.tsx`; the rooms of the relay
-(`useRoom.ts`), the background game (`useSpectator.ts`, `Backdrop.tsx`).
+(`useRoom.ts`) and its next public game (`useUpcoming.ts`), the background
+game (`useSpectator.ts`, `Backdrop.tsx`).
 
 ## Multiplayer
 
@@ -371,17 +374,23 @@ simulation.
   minute after it opened it starts with whoever sits, or at once when full,
   and the next opens; if no one sat by then, another takes its place, a new
   land and a new minute (`server/rooms.test.ts` runs that minute on a clock
-  of its own). A private room starts when its host says so. Then every 100
-  milliseconds the relay sends everyone the turn: the orders received since
-  the last, each signed with its sender's seat.
-  A player who leaves during a game gives his seat to a bot, on every browser
+  of its own). Anyone may see it without sitting at it: the relay answers
+  `GET /public` with its seed and size, the ms before it starts and the
+  seats taken, never cached and open to any page (CORS), for it tells
+  nothing that joining would not. A private room starts when its host says
+  so. Then every 100 milliseconds the relay sends everyone the turn: the
+  orders received since the last, each signed with its sender's seat. A
+  player who leaves during a game gives his seat to a bot, on every browser
   at the same turn. Every 50 turns each browser tells the fingerprint of its
   state, and the relay names the first turn where two differ.
-- In the browser, `link.ts` is the line to the relay; the home sits the
-  player at a room and shows it live (`useRoom.ts`); when the relay says
-  the game begins, the open line is left in `online.ts` and `/play?online`
-  mounts the game on the land the relay drew, with `remote.ts`'s session,
-  stepped by the relay's turns, instead of the local one.
+- In the browser, `link.ts` is the line to the relay, and its address for
+  the next public game, which the home asks every second and a half while
+  it is shown, as OpenFront asks for its lobbies (`useUpcoming.ts`); the
+  home sits the player at a room and shows it live (`useRoom.ts`); when the
+  relay says the game begins, the open line is left in `online.ts` and
+  `/play?online` mounts the game on the land the relay drew, with
+  `remote.ts`'s session, stepped by the relay's turns, instead of the local
+  one.
 - Each browser applies the turns to its own copy of the game, bots included:
   a distant player is one more seat the session receives from outside, as a
   bot is. Watching a game, or replaying one, is receiving or replaying the

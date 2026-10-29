@@ -1,3 +1,4 @@
+import { MAP_SIZES } from '../engine'
 import type { Level, MapSize, Order } from '../engine'
 
 // The words between the players and the relay (docs/ARCHITECTURE.md): the
@@ -83,4 +84,23 @@ export function parse<T extends { t: string }>(data: unknown): T | null {
   } catch {
     return null
   }
+}
+
+/** The next public game as the relay answers it (GET /public), or null if it is not one. */
+export function readUpcoming(value: unknown): Upcoming | null {
+  if (typeof value !== 'object' || value === null) return null
+  const { seed, size, startsIn, taken, seats } = value as Record<
+    string,
+    unknown
+  >
+  const known = (Object.keys(MAP_SIZES) as Array<MapSize>).find(
+    (s) => s === size,
+  )
+  return typeof seed === 'string' &&
+    known &&
+    typeof startsIn === 'number' &&
+    typeof taken === 'number' &&
+    typeof seats === 'number'
+    ? { seed, size: known, startsIn, taken, seats }
+    : null
 }
