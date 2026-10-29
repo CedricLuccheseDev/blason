@@ -15,6 +15,7 @@ import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
+import { unmeasured } from './perf'
 import { makeLit } from './layers/lit'
 import { makePacts } from './layers/pacts'
 import { makeEnvoys } from './envoys'
@@ -26,6 +27,7 @@ import { makeVolleys } from './layers/volleys'
 import { makeBorders } from './layers/borders'
 import { makeGround } from './layers/ground'
 import { makeLife } from './layers/life'
+import type { Measure } from './perf'
 import type { GameState, World } from '../../engine'
 import type { Hand } from './hand'
 import type { Application } from 'pixi.js'
@@ -185,34 +187,42 @@ export function makeScene(
       ground.destroy()
     },
     /** `far`: the land's size against the whole land's, under 1 only farther out than it. */
-    draw(hovered: number, hand: Hand, zoom: number, between = 0, far = 1) {
+    draw(
+      hovered: number,
+      hand: Hand,
+      zoom: number,
+      between = 0,
+      far = 1,
+      /** Each layer's time, for the frame's account (perf.ts); none kept by default. */
+      m: Measure = unmeasured,
+    ) {
       const now = performance.now()
-      const retraced = regions.update(now)
+      const retraced = m('regions', () => regions.update(now))
       const traced = retraced !== null
       const seen = view()
-      sea.draw(zoom)
-      ground.relayout(regions.keys(), traced)
-      ground.draw(seen, zoom, now)
-      borders.update(retraced, zoom)
-      lit.draw(zoom, retraced)
-      marks.update(zoom)
-      life.draw(state, seen, zoom, now)
-      allies.draw(state, zoom, traced, now)
-      scars.draw(state, zoom)
-      raids.draw(state, zoom, traced)
-      building.draw(state, zoom)
-      seals.draw(state, zoom)
-      trade.draw(state, zoom, between)
-      armies.draw(state, zoom, seen, between, far)
-      volleys.draw(state, zoom, seen, between)
-      strikes.draw(state, zoom, between)
-      tidings.draw(state, zoom)
-      aim.draw(hovered, hand, zoom)
-      planted.draw(state, zoom, now)
+      m('sea', () => sea.draw(zoom))
+      m('ground', () => ground.relayout(regions.keys(), traced))
+      m('ground', () => ground.draw(seen, zoom, now))
+      m('borders', () => borders.update(retraced, zoom))
+      m('lit', () => lit.draw(zoom, retraced))
+      m('marks', () => marks.update(zoom))
+      m('life', () => life.draw(state, seen, zoom, now))
+      m('allies', () => allies.draw(state, zoom, traced, now))
+      m('scars', () => scars.draw(state, zoom))
+      m('raids', () => raids.draw(state, zoom, traced))
+      m('building', () => building.draw(state, zoom))
+      m('seals', () => seals.draw(state, zoom))
+      m('trade', () => trade.draw(state, zoom, between))
+      m('armies', () => armies.draw(state, zoom, seen, between, far))
+      m('volleys', () => volleys.draw(state, zoom, seen, between))
+      m('strikes', () => strikes.draw(state, zoom, between))
+      m('tidings', () => tidings.draw(state, zoom))
+      m('aim', () => aim.draw(hovered, hand, zoom))
+      m('planted', () => planted.draw(state, zoom, now))
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
-      labels.update(state, zoom, fit * far)
-      badges.update(labels.nameOf, zoom / fit / far)
-      pacts.draw(state, zoom, now / 1000)
+      m('labels', () => labels.update(state, zoom, fit * far))
+      m('badges', () => badges.update(labels.nameOf, zoom / fit / far))
+      m('pacts', () => pacts.draw(state, zoom, now / 1000))
     },
   }
 }

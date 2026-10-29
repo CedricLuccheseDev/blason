@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { Defs } from './svg/kit'
 import { Race } from './Race'
 import { Cursor } from './Cursor'
@@ -9,7 +10,7 @@ import { Bar } from './Bar'
 import { Moment } from './Moment'
 import { Banner } from './Banner'
 import { GameBook } from './GameBook'
-import { BookButton } from './BookParts'
+import { BookButton, HomeButton } from './BookParts'
 import { Failed } from './Failed'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Book, Level, MapSize } from '../../../engine'
@@ -73,6 +74,7 @@ export function GameScreen({
   const [open, setOpen] = useState(hosting !== undefined)
   const waiting = hosting !== undefined && !hosting.launched
   const m = useMessages()
+  const navigate = useNavigate()
   const host = useRef<HTMLDivElement>(null)
   // The bottom row, the bar and the camera: the cartouche keeps above it.
   const floor = useRef<HTMLDivElement>(null)
@@ -185,6 +187,7 @@ export function GameScreen({
               </div>
               <div className="pointer-events-auto flex flex-col gap-2 justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
                 {hosting && <BookButton onOpen={() => setOpen(true)} />}
+                <HomeButton onHome={() => void navigate({ to: '/' })} />
               </div>
             </div>
           </div>

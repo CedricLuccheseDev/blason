@@ -3,6 +3,7 @@
 
 export const bookEn = {
   open: 'The book of the game',
+  home: 'Back to the home',
   yours: 'Your game',
   going: (minutes: number) =>
     `the game going on, for ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,
@@ -39,6 +40,7 @@ export type BookMessages = typeof bookEn
 
 export const bookFr: BookMessages = {
   open: 'Le livre de la partie',
+  home: 'Revenir à l’accueil',
   yours: 'Ta partie',
   going: (minutes: number) =>
     `la partie en cours, depuis ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,

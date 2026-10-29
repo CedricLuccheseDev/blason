@@ -1,13 +1,14 @@
 import { Application } from 'pixi.js'
-import { NO_ONE, canStart, hostSetup } from '../../engine'
+import { NO_ONE, hostSetup } from '../../engine'
 import { makeAiming } from './aiming'
 import { makePin } from './pin'
 import { makeCamera } from './camera'
 import { makeInput } from './input'
 import { makeHand } from './hand'
-import { keyOf } from './keys'
 import { TONE } from './palette'
 import { takeLand } from './ahead'
+import { makeClick, makeKeys } from './clicks'
+import { makePerf } from './perf'
 import { landBox, tileAt } from './marks'
 import { makeScene } from './scene'
 import { openSession } from './sessions'
@@ -109,19 +110,7 @@ export async function mountGame(
     (tile, pinned) => aiming.at(tile, pinned, hand.hand),
     hooks.onAim,
   )
-  function click(tile: number) {
-    if (tile < 0 || me < 0 || pin.dismisses()) return
-    if (state.tick < state.rules.openingTicks) {
-      // Only a standard that may stand there is sent: the last one sent is
-      // the one a lone player keeps when the opening begins again online.
-      if (canStart(state, me, tile))
-        session.send({ player: me, type: 'pickStart', tile })
-    } else {
-      const held = hand.holding()
-      session.send(hand.order(me, tile))
-      if (held) refresh()
-    }
-  }
+  const click = makeClick(state, me, session.send, hand, pin.dismisses, refresh)
   const input =
     me >= 0
       ? makeInput(app.canvas, scene.world, pick, {
@@ -131,11 +120,7 @@ export async function mountGame(
           away: pin.close,
         })
       : null
-  const onKey = (e: KeyboardEvent) => {
-    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
-    if (e.key === 'Escape') pin.close()
-    if (hand.key(keyOf(e))) refresh()
-  }
+  const onKey = makeKeys(pin.close, hand, refresh)
   /** What is in hand changed: the figures and the aim again. */
   const handed = (change: () => void) => {
     change()
@@ -164,14 +149,30 @@ export async function mountGame(
     ? () => undefined
     : governFrames(app, 1000 / 60, hooks.online && play)
   let announced = false
+  const perf = makePerf(
+    app,
+    new URLSearchParams(window.location.search).has('perf'),
+  )
   app.ticker.add((ticker) => {
+    perf.frame()
     // How far the game is into its next tick, for what moves between two.
-    const between = drawn ? play(Math.min(ticker.elapsedMS, 1000), CATCH_UP) : 0
+    const between = drawn
+      ? perf.measure('jeu', () =>
+          play(Math.min(ticker.elapsedMS, 1000), CATCH_UP),
+        )
+      : 0
     drawn = true
     camera.step()
     // Farther than the whole land, the names shrink with it.
     const far = Math.min(1, camera.level())
-    scene.draw(pin.hovered(), hand.hand, camera.zoom(), between, far)
+    scene.draw(
+      pin.hovered(),
+      hand.hand,
+      camera.zoom(),
+      between,
+      far,
+      perf.measure,
+    )
     const now = performance.now() / 1000
     heralds.show([...scene.anchors(), ...notes.anchors(now)])
     // The figures are read once a second, as every figure of the game.
@@ -192,6 +193,7 @@ export async function mountGame(
       notes.tell(fresh, now)
       if (fresh.length > 0) hooks.onNews?.(fresh)
     }
+    perf.mark()
   })
 
   const frame = new ResizeObserver(() => {
@@ -202,6 +204,7 @@ export async function mountGame(
 
   return {
     destroy() {
+      perf.destroy()
       aiming.destroy()
       frame.disconnect()
       governed()
