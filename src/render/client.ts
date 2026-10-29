@@ -33,7 +33,7 @@ import type { Save } from './save'
 // hand (1 to 4: a raid, a host, the whole levy, mercenaries) and sends it in
 // by the border that brings it soonest to the click; with a work in hand (5
 // to 7: a village, a market, a castle), a click on one's own land builds it there;
-// with a coup in hand (8, 9 and 0: a troublemaker, archers, Greek fire), a
+// with a coup in hand (8, 9 and 0: archers, a troublemaker, a trebuchet), a
 // click launches it at the land clicked (hand.ts). A right click on another
 // lord's land opens his menu there: the army in hand to send, the alliance,
 // an offering.

@@ -4,7 +4,7 @@ import type { Graphics } from 'pixi.js'
 import type { GameState, Grid, Strike } from '../../engine'
 
 // The way a coup goes, as drawn: the troublemaker's straight walk, the arc
-// a volley or a pot of fire flies, how far along it is between two ticks,
+// a volley or a trebuchet's stone flies, how far along it is between two ticks,
 // the tiles round where it falls, and the dotted lines that show them.
 
 export type At = { x: number; y: number }

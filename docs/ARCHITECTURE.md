@@ -357,7 +357,7 @@ orders. It decides nothing about the rules.
   (`layers/building.ts`); what the coups leave, the rebels' land hatched and
   their pitchforks, the ashes charred and paling (`layers/scars.ts`); the coups
   on their way, seen by all: the troublemaker walking with his torch, a volley
-  of arrows, a pot of Greek fire trailing smoke, the land they will strike
+  of arrows, a trebuchet's flaming stone trailing smoke, the land they will strike
   ringed in red for their victim (`layers/strikes.ts`, drawn by `art/coups.ts`,
   their ways by `flight.ts`), and how each ends, a rain of arrows, a burst of
   flames, a land rising, a troublemaker struck out (`layers/impacts.ts`); the

@@ -12,7 +12,7 @@ export type Army = 'raid' | 'host' | 'ban' | 'mercenaries'
 export type Work = 'village' | 'market' | 'castle'
 
 /** The coups that may turn a game, each its own deed: take land, kill troops, ruin an economy. */
-export type Coup = 'troublemaker' | 'archers' | 'fire'
+export type Coup = 'archers' | 'troublemaker' | 'trebuchet'
 
 /** The sizes a map may be drawn at. */
 export type MapSize = 'standard' | 'large' | 'huge'
@@ -35,7 +35,11 @@ export const ARMIES: ReadonlyArray<Army> = [
   'mercenaries',
 ]
 export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
-export const COUPS: ReadonlyArray<Coup> = ['troublemaker', 'archers', 'fire']
+export const COUPS: ReadonlyArray<Coup> = [
+  'archers',
+  'troublemaker',
+  'trebuchet',
+]
 
 /**
  * A coup's figures: its first price in gold; how far from its lord's border
@@ -242,7 +246,7 @@ export const RULES: Rules = {
   coups: {
     troublemaker: { price: 300, reach: null, radius: 6, flight: null },
     archers: { price: 200, reach: 5, radius: 4, flight: 2 * SECOND },
-    fire: { price: 1000, reach: null, radius: 12, flight: 8 * SECOND },
+    trebuchet: { price: 1000, reach: null, radius: 12, flight: 8 * SECOND },
   },
   coupDoublings: 3,
   arrowToll: 30,

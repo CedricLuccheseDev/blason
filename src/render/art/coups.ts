@@ -3,7 +3,7 @@ import type { Graphics } from 'pixi.js'
 
 // The coups drawn on the land in ink, as the soldiers are: the
 // troublemaker, a small man in his lord's colour walking with a torch held
-// high; an arrow of a volley; the pot of Greek fire, its neck aflame; a
+// high; an arrow of a volley; a trebuchet's stone, aflame; a
 // tongue of flame, and a rebels' pitchfork with its pennon. Each drawn
 // into a Graphics at a point, `h` map units tall, cleared by its layer.
 
@@ -106,21 +106,22 @@ export function drawArrow(
   g.stroke({ width: long * 0.09, color: TONE.ink, alpha, cap: 'round' })
 }
 
-/** The pot of Greek fire at (x, y), `r` round, its neck aflame. */
-export function drawPot(
+/** A trebuchet's stone at (x, y), `r` round, flames trailing above it. */
+export function drawStone(
   g: Graphics,
   x: number,
   y: number,
   r: number,
   flicker: number,
 ) {
+  drawFlame(g, x, y - r * 0.7, r * 1.5, flicker)
   g.circle(x, y, r)
-    .fill(TONE.char)
+    .fill(TONE.stoneDark)
     .stroke({ width: r * 0.22, color: TONE.ink })
-  g.moveTo(x - r * 0.75, y + r * 0.1)
-    .lineTo(x + r * 0.75, y + r * 0.1)
-    .stroke({ width: r * 0.16, color: TONE.amber })
-  drawFlame(g, x, y - r * 0.85, r * 1.5, flicker)
+  g.moveTo(x - r * 0.45, y - r * 0.2)
+    .lineTo(x + r * 0.1, y + r * 0.15)
+    .lineTo(x + r * 0.35, y - r * 0.35)
+    .stroke({ width: r * 0.14, color: TONE.ink, alpha: 0.6 })
 }
 
 /** A rebels' pitchfork planted at (x, y), `h` tall, a pennon of sanguine at its top. */

@@ -6,7 +6,7 @@ import type { Coup } from '../rules'
 import type { GameState, Order } from '../types'
 
 // The bots' coups, played as a person would: rarely, and only against a lord
-// they are at war with. Arrows on an army biting their land; Greek fire on
+// they are at war with. Arrows on an army biting their land; the trebuchet on
 // an enemy market within reach; the troublemaker on the enemy's work
 // farthest from his armies. Never with gold the next work needs.
 
@@ -37,9 +37,9 @@ function volley(state: GameState, me: number): Array<Order> {
   return []
 }
 
-/** Greek fire on a market of the lords I am at war with, or the troublemaker on one of their works. */
+/** the trebuchet on a market of the lords I am at war with, or the troublemaker on one of their works. */
 function strike(state: GameState, me: number, foes: Set<number>) {
-  for (const coup of ['fire', 'troublemaker'] as const) {
+  for (const coup of ['trebuchet', 'troublemaker'] as const) {
     if (!affords(state, me, coup)) continue
     const marks = state.works.filter(
       (w) =>

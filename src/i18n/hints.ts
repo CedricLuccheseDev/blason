@@ -32,7 +32,7 @@ export const hintsEn = {
   coups: {
     troublemaker: 'Raises an enemy land',
     archers: 'A volley: −30 % of an army',
-    fire: 'Burns the works where it falls',
+    trebuchet: 'Its flaming stone burns the works where it falls',
   },
   race: {
     title: 'The race',
@@ -72,7 +72,7 @@ export const hintsFr: HintsMessages = {
   coups: {
     troublemaker: 'Soulève une terre ennemie',
     archers: 'Une volée : −30 % d’une armée',
-    fire: 'Brûle les constructions',
+    trebuchet: 'Son boulet enflammé brûle les constructions',
   },
   race: {
     title: 'La course',

@@ -22,7 +22,7 @@ export const heraldsEn = {
   coup: {
     troublemaker: (lord: string) => `${lord} sends a troublemaker at you`,
     archers: (lord: string) => `${lord} looses a volley at you`,
-    fire: (lord: string) => `${lord} throws Greek fire at you`,
+    trebuchet: (lord: string) => `${lord}'s trebuchet aims at you`,
   },
   stopped: (lord: string) => `${lord} stopped your troublemaker`,
   roseAgainst: (lord: string) => `${lord} raised your land against you`,
@@ -57,7 +57,7 @@ export const heraldsFr: HeraldsMessages = {
     troublemaker: (lord: string) =>
       `${lord} envoie un causeur de troubles chez toi`,
     archers: (lord: string) => `${lord} tire une volée sur toi`,
-    fire: (lord: string) => `${lord} lance le feu grégeois sur toi`,
+    trebuchet: (lord: string) => `Le trébuchet de ${lord} te vise`,
   },
   stopped: (lord: string) => `${lord} a arrêté ton causeur de troubles`,
   roseAgainst: (lord: string) => `${lord} a soulevé ta terre contre toi`,

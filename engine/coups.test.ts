@@ -40,9 +40,9 @@ describe('the coups', () => {
   it('cost more with each launched, doubled three times at most', () => {
     const state = facing()
     endow(state, 0, 400, 50_000)
-    expect(coupPrice(state, 0, 'fire')).toBe(1000)
-    for (let n = 0; n < 5; n++) run(state, 1, [coup(0, 20, 'fire')])
-    expect(coupPrice(state, 0, 'fire')).toBe(8000)
+    expect(coupPrice(state, 0, 'trebuchet')).toBe(1000)
+    for (let n = 0; n < 5; n++) run(state, 1, [coup(0, 20, 'trebuchet')])
+    expect(coupPrice(state, 0, 'trebuchet')).toBe(8000)
   })
 
   it('archers: a volley near the border kills a share of the enemy armies under it', () => {
@@ -65,10 +65,10 @@ describe('the coups', () => {
     expect(state.players[0].gold).toBe(5000 * UNIT)
   })
 
-  it('Greek fire, thrown anywhere, burns the works round where it falls, and no one may build there a while', () => {
+  it('The trebuchet, thrown anywhere, burns the works round where its stone falls, and no one may build there a while', () => {
     const state = facing()
     state.works.push({ work: 'market', tile: 29, owner: 1 })
-    run(state, 1, [coup(0, 29, 'fire')])
+    run(state, 1, [coup(0, 29, 'trebuchet')])
     run(state, 8 * SECOND)
     expect(state.works.some((w) => w.tile === 29)).toBe(false)
     expect(canBuild(state, 1, 29, 'market')).toBe(false)

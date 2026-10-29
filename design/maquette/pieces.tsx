@@ -182,9 +182,9 @@ const ARMIES = [
 ] as const
 const WORKS = ['village', 'market', 'castle'] as const
 const COUPS = [
-  ['troublemaker', 'torch'],
   ['archers', 'bow'],
-  ['fire', 'firepot'],
+  ['troublemaker', 'torch'],
+  ['trebuchet', 'trebuchet'],
 ] as const
 /** Azur, the first lord's colour: an army in hand is raised in it. */
 const AZURE = '#2f6db5'

@@ -14,7 +14,7 @@ import type { GameState, Strike } from './types'
 // another lord, where the land round him rises and turns free, held by
 // rebels, unless an army of that lord meets him on his way; a volley of
 // arrows kills troops, falling a moment after on the enemy armies near the
-// border; Greek fire, the heavy weapon as OpenFront's bomb, ruins an economy
+// border; the trebuchet, the heavy weapon as OpenFront's bomb, ruins an economy
 // anywhere on the map, falling a long while after on the works round where it
 // is thrown, which burn, and on the land, where no one may build until the
 // ashes cool. Each is dear, dearer with each launched, and seen coming.
@@ -156,7 +156,7 @@ function fall(state: GameState, strike: Strike) {
     return
   }
   const round = new Set(disc(state, target, radius))
-  if (coup === 'fire') {
+  if (coup === 'trebuchet') {
     state.works = state.works.filter(
       (w) => !round.has(w.tile) || !hostile(w.owner),
     )

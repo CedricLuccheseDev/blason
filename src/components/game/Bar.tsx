@@ -32,7 +32,7 @@ export const ARMY_WAX: Partial<Record<Army, string>> = {
 export const COUP_MARKS = {
   troublemaker: 'torch',
   archers: 'bow',
-  fire: 'firepot',
+  trebuchet: 'trebuchet',
 } as const satisfies Record<Coup, string>
 
 /** The bar's forms, from as drawn to the most compact, each tried in turn until one fits its room: one row; one row, its pieces closer; on rows, as on a phone. */

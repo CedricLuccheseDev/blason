@@ -7,7 +7,7 @@ import type { GameState, Strike } from '../../../engine'
 
 // What a coup does as it ends, drawn a few seconds where it ended (layers/
 // strikes.ts): a volley falls as a rain of arrows on the land it strikes,
-// which stay planted there a moment; Greek fire bursts in flames and smoke;
+// which stay planted there a moment; a trebuchet's stone bursts in flames and smoke;
 // the land a troublemaker raises flares in his lord's colour; a
 // troublemaker met by an army is struck out where he stood, his torch
 // dying. The men a volley kills fall with their armies (layers/fallen.ts);
@@ -17,7 +17,7 @@ import type { GameState, Strike } from '../../../engine'
 export type Fallen = { strike: Strike; born: number; fell: boolean; at: At }
 
 /** How long each ending shows, in seconds. */
-const LASTS = { archers: 2.6, fire: 2.2, troublemaker: 1.6, stopped: 2.5 }
+const LASTS = { archers: 2.6, trebuchet: 2.2, troublemaker: 1.6, stopped: 2.5 }
 const RAIN = 24
 const FLAMES = 12
 
@@ -71,7 +71,7 @@ function blaze(
   age: number,
   zoom: number,
 ) {
-  const k = age / LASTS.fire
+  const k = age / LASTS.trebuchet
   g.circle(c.x, c.y, radius * Math.min(1, age / 0.35)).stroke({
     width: 3 / zoom,
     color: TONE.ember,
@@ -146,7 +146,7 @@ export function drawFallen(
   const radius = state.rules.coups[strike.coup].radius * state.grid.size
   if (!ended.fell) stopped(g, ended.at, age, zoom)
   else if (strike.coup === 'archers') rain(g, b, radius, strike, age, zoom)
-  else if (strike.coup === 'fire') blaze(g, b, radius, strike, age, zoom)
+  else if (strike.coup === 'trebuchet') blaze(g, b, radius, strike, age, zoom)
   else rising(g, b, radius, strike, age, zoom)
   return true
 }

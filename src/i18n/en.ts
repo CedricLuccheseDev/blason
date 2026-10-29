@@ -48,7 +48,7 @@ export const en = {
     coups: {
       troublemaker: 'Troublemaker',
       archers: 'Archers',
-      fire: 'Greek fire',
+      trebuchet: 'Trebuchet',
     },
     launch: 'click: launch',
     campaign: 'On campaign',
@@ -56,7 +56,7 @@ export const en = {
     beyond: {
       troublemaker: 'only on another lord’s land',
       archers: 'too far from your border',
-      fire: 'too far from your border',
+      trebuchet: 'too far from your border',
     },
     noGold: 'not enough gold',
     percent: (n: number) => `${n}%`,

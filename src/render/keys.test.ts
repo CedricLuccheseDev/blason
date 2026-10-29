@@ -18,9 +18,9 @@ describe('the keyboard', () => {
     expect(ARMY_KEYS['4']).toBe('mercenaries')
     expect(WORK_KEYS['5']).toBe('village')
     expect(WORK_KEYS['7']).toBe('castle')
-    expect(COUP_KEYS['8']).toBe('troublemaker')
+    expect(COUP_KEYS['8']).toBe('archers')
     // The tenth key is 0, as on the keyboard's top row, whatever it types.
-    expect(COUP_KEYS[keyOf({ key: 'à', code: 'Digit0' })]).toBe('fire')
+    expect(COUP_KEYS[keyOf({ key: 'à', code: 'Digit0' })]).toBe('trebuchet')
     expect(keyAt(10)).toBe('0')
   })
 })

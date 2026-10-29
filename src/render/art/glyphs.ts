@@ -67,14 +67,14 @@ export const GLYPHS = {
     },
     { d: 'M22.6 12 L18.6 9.6 L19.6 12 L18.6 14.4 Z' },
   ],
-  // A round pot of Greek fire, flames out of its neck.
-  firepot: [
-    { d: 'M12 7 Q8.6 4.8 10.6 1.6 Q11.4 3.8 12.8 3 Q15.8 5 12 7 Z' },
-    { d: 'M9.4 6.8 H14.6 V9 H9.4 Z' },
-    {
-      d: 'M9.4 9 Q5.2 10 5.2 14.6 Q5.2 21.6 12 21.6 Q18.8 21.6 18.8 14.6 Q18.8 10 14.6 9 Z',
-    },
-    { d: 'M5.8 14.4 H18.2 M8.6 17.6 Q12 19.2 15.4 17.6', open: true },
+  // A trebuchet: its frame, its arm swung on the pivot, the counterweight at
+  // its short end and the stone in the sling at its long one.
+  trebuchet: [
+    { d: 'M2.6 21.6 H21.4 M5.4 21.6 L12 10.6 L18.6 21.6', open: true },
+    { d: 'M3.4 3.6 L17.4 15.4', open: true },
+    { d: 'M14.8 15.2 H20.4 V20 H14.8 Z' },
+    { d: 'M3.4 3.6 V7.4', open: true },
+    { d: 'M1.8 9 A1.6 1.6 0 1 0 5 9 A1.6 1.6 0 1 0 1.8 9 Z' },
   ],
 } satisfies Record<string, Array<Part>>
 

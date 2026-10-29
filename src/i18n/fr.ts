@@ -49,7 +49,7 @@ export const fr: Messages = {
     coups: {
       troublemaker: 'Causeur de troubles',
       archers: 'Archers',
-      fire: 'Feu grégeois',
+      trebuchet: 'Trébuchet',
     },
     launch: 'clic : lancer',
     campaign: 'En campagne',
@@ -57,7 +57,7 @@ export const fr: Messages = {
     beyond: {
       troublemaker: 'seulement sur la terre d’un autre',
       archers: 'trop loin de ta frontière',
-      fire: 'trop loin de ta frontière',
+      trebuchet: 'trop loin de ta frontière',
     },
     noGold: 'pas assez d’or',
     percent: (n: number) => `${n}\u202f%`,
