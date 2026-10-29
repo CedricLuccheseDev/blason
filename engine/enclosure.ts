@@ -1,15 +1,18 @@
 import { TICKS_PER_SECOND } from './units'
 import { around } from './grid'
 import { isAllied } from './diplomacy'
-import { SEA } from './types'
+import { NEUTRAL, SEA } from './types'
 import { setOwner } from './land'
 import { rebelled } from './scars'
 import type { GameState } from './types'
 
 // Encircled land: a piece of a lord's land, or of the free land, that
 // touches one lord alone all round, no sea and no edge of the map, is his:
-// it passes to him whole, with its works, as on OpenFront. A lord wholly
-// ringed by one other loses everything. Allies never take each other's land
+// it passes to him whole, with its works, as on OpenFront. A piece of free
+// land is his even with the sea round the rest (« quand on entoure même par
+// de la mer des zones grises ça les prend automatiquement, sinon c'est trop
+// chiant d'aller récupérer les micro-parcelles »). A lord wholly ringed by
+// one other loses everything. Allies never take each other's land
 // so, and land held by rebels is never taken so. Read once a second.
 
 /** A piece of land held by one owner, and who borders it: a lord, several, or the open (-2). */
@@ -42,6 +45,8 @@ export function enclose(state: GameState): void {
   state.owner.forEach((owner, start) => {
     if (owner === SEA || seen[start]) return
     const piece = pieceOf(state, start, seen)
+    // The free land's sea is no wall: one lord beside it is enough.
+    if (owner === NEUTRAL) piece.borders.delete(SEA)
     if (piece.borders.size !== 1) return
     // Rebels are never encircled: they must be fought for.
     if (piece.tiles.some((t) => rebelled(state, t))) return

@@ -160,7 +160,9 @@ leaves it gives his seat back to its bot.
 - **Encircled land**: a piece of a lord's land, or of the free land, that
   touches one lord alone all round (no sea, no edge of the map) passes to him
   whole, with its works; a lord wholly ringed by one other loses everything.
-  Allies never take each other's land so (`engine/enclosure.ts`).
+  A piece of free land is his even if the sea or the map's edge closes the
+  rest of the ring: one lord beside it, and no other, is enough. Allies never
+  take each other's land so (`engine/enclosure.ts`).
 
 ## Works
 
