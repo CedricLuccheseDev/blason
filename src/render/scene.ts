@@ -106,7 +106,7 @@ export function makeScene(
   const lit = makeLit(regions.outline)
   const raids = makeRaids(regions.outline)
   const building = makeBuilding(me)
-  const seals = makeLevySeals()
+  const seals = makeLevySeals(me)
   const scars = makeScars()
   const strikes = makeStrikes(me)
   const world = new Container()
