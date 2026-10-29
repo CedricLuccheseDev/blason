@@ -25,18 +25,25 @@ import { MOMENTS, SIZES } from './moments.mjs'
 const HERE = new URL('./', import.meta.url)
 const read = (path) => readFileSync(new URL(path, HERE), 'utf8')
 
+/** The moments to build, all unless MOMENTS names some (MOMENTS=opening,war). */
+const ONLY = process.env.MOMENTS?.split(',')
+
 /** Each moment's frames, from the captures there are. */
 function moments() {
-  return MOMENTS.map(({ name, title, line }) => ({
-    name,
-    title,
-    line,
-    frames: SIZES.flatMap(([width, height]) => {
-      const base = `captures/${name}-${width}x${height}`
-      if (!existsSync(new URL(`${base}.html`, HERE))) return []
-      return [{ width, height, map: `${base}.webp`, hud: read(`${base}.html`) }]
-    }),
-  })).filter((moment) => moment.frames.length > 0)
+  return MOMENTS.filter(({ name }) => !ONLY || ONLY.includes(name))
+    .map(({ name, title, line }) => ({
+      name,
+      title,
+      line,
+      frames: SIZES.flatMap(([width, height]) => {
+        const base = `captures/${name}-${width}x${height}`
+        if (!existsSync(new URL(`${base}.html`, HERE))) return []
+        return [
+          { width, height, map: `${base}.webp`, hud: read(`${base}.html`) },
+        ]
+      }),
+    }))
+    .filter((moment) => moment.frames.length > 0)
 }
 
 async function proposals() {
@@ -64,20 +71,16 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c')
 const fonts =
   'https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500;700;800&family=IM+Fell+English:ital@0;1&display=swap'
 
-const html = `<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blason, la maquette</title>
+// Written as a page's content, as the artifacts it is published to wrap it
+// in their own document (their head carries the charset and the viewport).
+const html = `<title>Maquette de Blason</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="${fonts}">
 <style>
 ${read('page.css')}
 </style>
-</head>
-<body>
 <header>
   <h1>Blason, la maquette</h1>
   <p>Chaque cadre est le jeu lui-même : la carte et le HUD d'une vraie partie, figée à un moment, à chaque taille d'écran. Un clic l'ouvre en grand.</p>
@@ -88,8 +91,6 @@ ${read('page.css')}
 <script>
 ${read('page.js')}
 </script>
-</body>
-</html>
 `
 writeFileSync(new URL('maquette.html', HERE), html)
 const frames = data.moments.reduce((n, m) => n + m.frames.length, 0)

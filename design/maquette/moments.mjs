@@ -36,7 +36,7 @@ export const MOMENTS = [
   {
     name: 'renew',
     title: 'Une alliance à renouveler',
-    line: 'Ses dernières secondes : le sceau, au milieu du ruban, attend un clic.',
+    line: "Ses dernières secondes : le sceau, à côté du nom de l'allié, attend un clic.",
   },
   {
     name: 'war',

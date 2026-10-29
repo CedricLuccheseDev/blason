@@ -18,12 +18,12 @@ and `kit.py`) live at the git tag `fiefs-final`.
   neighbour, my market sending its caravan, a neighbour offering his
   alliance, a traitor breaking with his ally; later, the three armies on the
   same click, a castle in hand) and writes the map's frames (`cells/*.svg`,
-  drawn as `src/proto/regions.ts` draws the land: free domains and their pale
+  drawn as `src/render/regions.ts` draws the land: free domains and their pale
   borders, the land a castle holds in stone, the green border with an ally)
   and what the boards lay over them (`cells/data.json`): the fights, the
   pills, the names and their badges, the caravans, the HUD as the game's own
-  summary reads it (`src/proto/summary.ts`). The home's frame is drawn for
-  no one, as its spectator sees the game, and framed as `src/proto/director.ts`
+  summary reads it (`src/render/summary.ts`). The home's frame is drawn for
+  no one, as its spectator sees the game, and framed as `src/render/director.ts`
   frames the fiercest fight, right of the menu.
 - `render.html` shows one frame on the parchment page (`?d=cells&f=<frame>`);
   a screenshot of it at 1440×900 is a board's background (`bg2/f-*.png`).
@@ -35,7 +35,7 @@ and `kit.py`) live at the git tag `fiefs-final`.
   and `hud.py` (what the map shows over its frame: the fights, the pills, the
   aim, the standard, the works; and the HUD's pieces, built on that system and
   laid out as
-  `src/components/proto/` lays them on a 1440×900 screen: the purse, the
+  `src/components/game/` lays them on a 1440×900 screen: the purse, the
   allies, the race, the opening and the end, the letters, the bar, the
   cartouche) draw everything laid over the map.
 - `boards.py` writes each board (`out/<Board>.dc.html`), its background

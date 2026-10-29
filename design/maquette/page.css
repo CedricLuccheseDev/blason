@@ -24,7 +24,8 @@ header,
 main {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
 }
 header {
   padding-top: 40px;
@@ -108,7 +109,8 @@ figcaption {
 @media (max-width: 720px) {
   header,
   main {
-    padding: 0 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
   header {
     padding-top: 24px;
