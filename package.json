@@ -22,6 +22,7 @@
     "norm": "node scripts/norm-check.mjs $(git ls-files 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css')",
     "arena": "tsx scripts/arena.ts",
     "maquette": "tsx scripts/maquette.ts",
+    "planches": "node design/maquette/planches.mjs",
     "census": "tsx scripts/census.ts",
     "relay": "tsx server/relay.ts"
   },

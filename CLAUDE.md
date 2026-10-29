@@ -146,7 +146,12 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   (`public/saves/`, que `/play?save=<nom>` montre figés, `src/render/save.ts`) ; `capture.mjs` les ouvre dans Chrome à
   chaque taille d'écran (`moments.mjs`) et prend à part la carte (une image) et le HUD (son balisage), avec la CSS du
   jeu ; `build.mjs` les remonte dans `maquette.html`, chaque cadre le jeu au pixel près, et à côté les propositions
-  (`proposals/`), écrites dans les classes du jeu : celle qu'on retient est déjà son code.
+  (`proposals/`), écrites dans les classes du jeu : celle qu'on retient est déjà son code. `npm run planches`
+  (`planches.mjs`, demandé le 29/10, « une belle maquette du jeu pro ») en fait les planches d'un studio, onze pages
+  de 1920 × 1080 dans la matière du jeu : chaque moment en grand, le téléphone à côté, des notes en français tirées
+  jusqu'aux pièces qu'elles nomment (`boards.mjs`, `board.js`), et le système d'interface dessiné par les composants
+  du jeu (`pieces.tsx`) ; la commande reprend tout du jeu (`take.mjs`) et les exporte dans le vault
+  (`Maquette/`, `Maquette.md`), si bien qu'elles suivent le jeu après chaque changement.
 - Pas de Convex pour l'instant (projet créé en `--no-backend`) : il viendra pour les comptes et les classements. Le
   serveur de jeu sera sa propre brique, un relais en lockstep comme celui d'OpenFront (le Concept, « Les briques »).
 
