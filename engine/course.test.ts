@@ -68,17 +68,16 @@ describe('the entry that brings it soonest', () => {
     }
   })
 
-  it('shows where it would enter with every village’s army out, but sends none', () => {
+  it('shows the way it would go with every village’s army out, but sends none', () => {
     const state = wrapped()
     const click = 5 * 32 + 20
+    const free = courseFor(state, 0, click, 'host')
     run(state, 1, [attack(0, 30 * 32 + 15, 'raid')])
     expect(state.hosts).toHaveLength(1)
-    // No village free: the border tile nearest the click, and no road.
-    expect(courseFor(state, 0, click, 'host')).toEqual({
-      entry: 5 * 32 + 21,
-      from: -1,
-      road: [],
-    })
+    // No village free: the course it would take from them, by the near
+    // side as with one free (« il me propose encore d'aller de l'autre
+    // côté »), and no village to leave from.
+    expect(courseFor(state, 0, click, 'host')).toEqual({ ...free, from: -1 })
     run(state, 1, [attack(0, click, 'host')])
     expect(state.hosts).toHaveLength(1)
   })

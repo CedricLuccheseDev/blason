@@ -4,7 +4,8 @@ import { apart, eachAround } from './grid'
 import { isAllied } from './diplomacy'
 import { NEUTRAL } from './types'
 import { freeWorks, marchOut, menFor, paceOf, walkers } from './muster'
-import type { Army } from './rules'
+import { standing } from './land'
+import type { Army, Work } from './rules'
 import type { GameState } from './types'
 
 // An army's course: the border tile it enters by, the village (or market) it
@@ -41,6 +42,12 @@ function crossTime(state: GameState, army: Army, wide: number, far: number) {
   const { paceTiles, armySpeed } = state.rules
   return Math.floor((taken * 1000) / (paceTiles * armySpeed[army]))
 }
+
+/** The lord's works of a kind standing, an army out or not. */
+const builtWorks = (state: GameState, lord: number, work: Work) =>
+  state.works
+    .filter((w) => w.owner === lord && w.work === work && standing(state, w))
+    .map((w) => w.tile)
 
 /** Where and how an army would go: the border tile it enters by, the village (or market) it is raised at, and its road there; with none free to reach the front, no village (-1) and no road. */
 export type Course = { entry: number; from: number; road: Array<number> }
@@ -81,8 +88,10 @@ function nearestOf(gaps: Map<number, number>) {
  * by the border tile that brings it soonest to the tile, its march from the
  * lord's nearest free village (or market) at its pace, then its bulge's way
  * to the tile; ties to the nearest the tile, then the first. With no village
- * free to reach it, by the border tile nearest the tile. None on one's own
- * land, an ally's, the sea, or a land beyond reach.
+ * free, the course it would take from all of them (« il me propose encore
+ * d'aller de l'autre côté », the nearest border tile once shown instead), its
+ * village none (-1): no army leaves. None on one's own land, an ally's, the
+ * sea, or a land beyond reach.
  */
 export function courseFor(
   state: GameState,
@@ -114,7 +123,9 @@ export function courseFor(
         (gap < best.gap || (gap === best.gap && t < best.entry)))
     if (sooner) Object.assign(best, { time, gap, entry: t, end: walked })
   }
-  const sites = freeWorks(state, player, tile, state.rules.raisedAt[army])
+  const work = state.rules.raisedAt[army]
+  const free = freeWorks(state, player, tile, work)
+  const sites = free.length > 0 ? free : builtWorks(state, player, work)
   const roadTo = marchOut(state, player, sites, (at, steps) => {
     walked = at
     march = marchTime(state, army, steps)
@@ -125,7 +136,7 @@ export function courseFor(
   })
   if (best.entry < 0) return { entry: nearest, from: -1, road: [] }
   const road = roadTo(best.end)
-  return { entry: best.entry, from: road[0], road }
+  return { entry: best.entry, from: free.length > 0 ? road[0] : -1, road }
 }
 
 /** Where an army of the kind against the tile's lord, or the free land, enters (courseFor), or -1. */
