@@ -6,14 +6,14 @@ import { useMessages } from '~/i18n'
 import { PLAYERS } from '~/render/palette'
 
 // A room's seats, as the public game and a private room show them: a shield
-// for each, those taken in their lord's colour; and what a room that is not
-// (or no longer) sat in says.
+// for each one taken, in its lord's colour, and their count; and what a room
+// that is not (or no longer) sat in says.
 
 /** A seat's colour, as CSS. */
 const seatColour = (seat: number) =>
   `#${PLAYERS[seat % PLAYERS.length].color.toString(16).padStart(6, '0')}`
 
-/** The seats of a game, those taken in their lord's colour, and their count; brief, the count alone on a phone. */
+/** The seats taken in a game, each a shield in its lord's colour, and their count; brief, the count alone on a phone. */
 export function Seats({
   taken,
   brief = false,
@@ -25,13 +25,8 @@ export function Seats({
         className={`flex gap-1 ${brief ? 'max-sm:hidden' : ''}`}
         aria-hidden="true"
       >
-        {Array.from({ length: SEATS }, (_, i) => (
-          <Shield
-            key={i}
-            size="s"
-            color={seatColour(i)}
-            level={i < taken ? undefined : 0}
-          />
+        {Array.from({ length: taken }, (_, i) => (
+          <Shield key={i} size="s" color={seatColour(i)} />
         ))}
       </span>
       <span className="flex items-baseline gap-2">
