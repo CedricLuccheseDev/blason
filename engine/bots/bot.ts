@@ -17,7 +17,8 @@ import type { GameState, Order } from '../types'
 // player sees it and click as one would. They take the free domains first,
 // striking at their villages; they answer an army striking them by striking its
 // lord there, so the two meet; they wage one war at a time, on the
-// neighbour whose land is held thinnest, and rest between two attacks; they
+// neighbour whose land is held thinnest and not already hunted by others
+// (war.ts), and rest between two attacks; they
 // build with the gold left over; now and then a coup (coups.ts). Each has its own boldness and patience,
 // drawn from the seed, and the level chosen for the game (levels.ts).
 
@@ -177,7 +178,7 @@ export function createBot(
     const free = fronts.get(NEUTRAL)
     const orders = free
       ? expand(state, me, free)
-      : war(state, me, fronts, boldness, skill.slips)
+      : war(state, me, fronts, boldness, skill.slips, skill.hunters)
     if (orders.length)
       rest =
         state.tick +

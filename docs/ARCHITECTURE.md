@@ -131,7 +131,10 @@ person. Bots are pure and deterministic like the rest of the engine, so in
 multiplayer they will run on every client without a server. Their level
 (`engine/bots/levels.ts`: easy, normal, hard), chosen at the home, never lets
 them cheat: it sets how often a bot thinks, how soon it notices an attack, how
-long it rests, how full it waits to be and how often it slips. The arena takes
+long it rests, how full it waits to be, how often it slips, and how many lords
+may hunt the same one: a bot leaves alone a lord already struck by another
+(two at the hard level), its answers to an attack apart, so that no one, bot
+or player, is set upon from every side at once. The arena takes
 it too: `npm run arena -- [games] [players] [easy|normal|hard] [standard|large|huge]`,
 and times there the land's making and each tick, and weighs the memory a game
 holds.
