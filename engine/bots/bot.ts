@@ -101,7 +101,15 @@ function placeFor(
   return best
 }
 
-/** With the gold left over, now and then a work: a castle when an enemy borders, else a village or a market. */
+/** A bot builds as a player would, at the measure of its land: beyond its first two works, one for so many tiles it holds, those it took with the land counted. */
+const ROOM = 300
+
+/** Whether its works already fill its land, at a bot's measure. */
+const crowded = (state: GameState, me: number) =>
+  state.works.filter((w) => w.owner === me).length >=
+  2 + Math.floor(state.players[me].tiles / ROOM)
+
+/** With the gold left over, now and then a work, while its land has room for one: a castle when an enemy borders, else a village or a market. */
 function construct(
   state: GameState,
   me: number,
@@ -115,6 +123,7 @@ function construct(
   )
   let work: Work = missing ?? 'village'
   if (!missing) {
+    if (crowded(state, me)) return []
     if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
     const roll = drawInt(state.seed, 100, 'work', me, state.tick)
     if (roll >= 45) work = 'market'
