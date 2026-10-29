@@ -1,6 +1,7 @@
 import { UNIT } from './units'
 import { apart, around } from './grid'
 import { capOf, standing } from './land'
+import { isAllied } from './diplomacy'
 import { hired } from './armies'
 import type { Army, Work } from './rules'
 import type { GameState, Host } from './types'
@@ -8,8 +9,8 @@ import type { GameState, Host } from './types'
 // Raising an army: each village levies one army at a time from its people,
 // so a lord has as many armies out as he has villages; each market hires one
 // company of mercenaries at a time. An attack is sent from the free village
-// (or market) nearest the front and marches there over its lord's own land,
-// seen by all, so that its target has the time to answer.
+// (or market) nearest the front and marches there over its lord's own land
+// and his allies', seen by all, so that its target has the time to answer.
 
 /** What a man of an army costs, in thousandths of gold: a mercenary his hire, a peasant raised the levy's price, nothing today. */
 const priceOf = (state: GameState, army: Army) =>
@@ -53,7 +54,11 @@ export function freeWorks(
     )
 }
 
-/** The road from a village to one of the lord's tiles touching the entry, over his own land; none if it is cut off. */
+/** Whether an army of the lord may walk a tile: his own land, or an ally's. */
+export const passable = (state: GameState, lord: number, tile: number) =>
+  state.owner[tile] === lord || isAllied(state, lord, state.owner[tile])
+
+/** The road from a village to a tile touching the entry, over the lord's own land and his allies'; none if it is cut off. */
 export function roadTo(
   state: GameState,
   lord: number,
@@ -61,7 +66,7 @@ export function roadTo(
   entry: number,
 ): Array<number> | null {
   const goals = new Set(
-    around(state.grid, entry).filter((t) => state.owner[t] === lord),
+    around(state.grid, entry).filter((t) => passable(state, lord, t)),
   )
   if (goals.size === 0 || state.owner[from] !== lord) return null
   const before = new Map<number, number>([[from, -1]])
@@ -74,7 +79,7 @@ export function roadTo(
       return road.reverse()
     }
     for (const n of around(state.grid, t)) {
-      if (before.has(n) || state.owner[n] !== lord) continue
+      if (before.has(n) || !passable(state, lord, n)) continue
       before.set(n, t)
       queue.push(n)
     }

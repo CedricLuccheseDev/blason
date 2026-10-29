@@ -80,8 +80,10 @@ the standards. Every lord starts with 50 gold.
   They march and fight as the host does. (Not yet in the bar: they come with
   its redesign; the bots hire them when they have the gold for a full
   company.)
-- The army first **marches** to the front over its lord's own land, 6 tiles a
-  second, seen by all. Then it enters by the border tile nearest the click and
+- The army first **marches** to the front over its lord's own land and his
+  allies', 6 tiles a second, seen by all: a lord met only beyond an ally's
+  land may be struck through it, and an alliance broken on the road sends the
+  army home. Then it enters by the border tile nearest the click and
   pushes on towards it, in a **band** as wide as its men (6 tiles each side of
   its line, plus the square root of its men: 16 for 100 men), past the click
   while it has men, at most 3 tiles a tick, whatever its size: more men go

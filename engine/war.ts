@@ -7,13 +7,14 @@ import { NEUTRAL } from './types'
 import { pop, push } from './heap'
 import { walled } from './battle'
 import { disband, hired } from './armies'
-import { costOf, freeWorks, marching, menFor, roadTo } from './muster'
+import { costOf, freeWorks, marching, menFor, passable, roadTo } from './muster'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
 
 // The war. A click raises an army out of the lord's peasants at his free
 // village nearest the front, or hires mercenaries for gold at his free
-// market nearest it (muster.ts); it marches there over his land,
+// market nearest it (muster.ts); it marches there over his land and his
+// allies' (so that a lord met only beyond an ally may be struck),
 // seen by all, then enters by the border tile nearest the click and spreads
 // from there as a bulge moving towards it, a tile a tick whatever its size:
 // more men take it further, never faster. Each tile is held by its share of
@@ -62,16 +63,16 @@ function inBand(state: GameState, host: Host, tile: number): boolean {
   return across * across <= host.wide * host.wide * length
 }
 
-/** Whether a tile borders the lord's land. */
+/** Whether a tile borders land the lord's armies walk: his own, or an ally's, through which they go to strike beyond it. */
 function touches(state: GameState, player: number, tile: number) {
-  return around(state.grid, tile).some((t) => state.owner[t] === player)
+  return around(state.grid, tile).some((t) => passable(state, player, t))
 }
 
 /** Whether a tile is the army's to strike: its target's, or free. */
 const struck = (state: GameState, target: number, tile: number) =>
   state.owner[tile] === target
 
-/** Where an army against the tile's lord, or the free land, enters: its tile bordering mine nearest the tile, or -1. */
+/** Where an army against the tile's lord, or the free land, enters: its tile bordering mine or an ally's nearest the tile, or -1. */
 export function entryFor(state: GameState, player: number, tile: number) {
   const target = state.owner[tile]
   if (target === player || target < NEUTRAL) return -1
@@ -210,7 +211,8 @@ function walk(state: GameState, host: Host) {
   for (let i = Math.floor(host.along / 1000) + 1; i <= next; i++) {
     const tile = host.road[i]
     const owner = state.owner[tile]
-    if (owner === host.owner) continue
+    // Its own land and its allies' it walks; an ally turned away on the road sends it home.
+    if (passable(state, host.owner, tile)) continue
     if (owner === host.target) {
       host.road = host.road.slice(0, i)
       host.along = (host.road.length - 1) * 1000
