@@ -12,7 +12,7 @@ import type { Alliance, GameState } from './types'
 // what binds them, and they win together.
 
 /** Whether two lords play in one team. */
-export function teammates(state: GameState, a: number, b: number): boolean {
+function teammates(state: GameState, a: number, b: number): boolean {
   const team = state.teams[a] ?? -1
   return a !== b && team >= 0 && team === state.teams[b]
 }
