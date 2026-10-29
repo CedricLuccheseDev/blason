@@ -75,6 +75,20 @@ export function around(grid: Grid, tile: number): Array<number> {
   return found
 }
 
+/** Each tile beside one, in the order of `around`, with no list made: for the searches that walk many tiles. */
+export function eachAround(
+  grid: Grid,
+  tile: number,
+  visit: (next: number) => void,
+): void {
+  const { width, height } = grid
+  const x = tile % width
+  if (x > 0) visit(tile - 1)
+  if (x < width - 1) visit(tile + 1)
+  if (tile >= width) visit(tile - width)
+  if (tile < (height - 1) * width) visit(tile + width)
+}
+
 /** The square of the distance between two tiles, in tiles. */
 export function apart(grid: Grid, a: number, b: number): number {
   const dx = (a % grid.width) - (b % grid.width)

@@ -61,7 +61,7 @@ export async function llmsTxt() {
     ...blog,
     '## The game',
     '',
-    '- Three armies raised from the peasants: the raid (10 %), the host (25 %), the levy (50 %). An army leaves the free village nearest the front, marches there, enters by the border nearest the click and spreads at most three tiles a tick; each tile costs the men who hold it. Two armies fight only where one is taking the land of the other\u2019s lord.',
+    '- Three armies raised from the peasants: the raid (10 %), the host (25 %), the levy (50 %). An army leaves a free village, marches over its lord\u2019s land, enters by the border that brings it soonest to the click (the march and the way across counted) and spreads at most three tiles a tick; each tile costs the men who hold it. Two armies fight only where one is taking the land of the other\u2019s lord.',
     '- Three works: villages feed the peasants and levy the armies, one at a time each; markets send the caravans that bring the gold; castles make their land fight one for one. The first village and market are free; a work takes time to build.',
     '- Land encircled by one lord alone passes to him.',
     '- Alliances last five minutes; breaking one marks the breaker a traitor for thirty seconds.',

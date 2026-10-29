@@ -1,7 +1,7 @@
 import { UNIT, barredBy, coupPrice, entryFor, launchSite } from '../../engine'
 import { siteOf } from './marks'
 import type { Container } from 'pixi.js'
-import type { Coup, GameState } from '../../engine'
+import type { Army, Coup, GameState } from '../../engine'
 import type { Hand } from './hand'
 
 // What the pointer aims at: another's land or free land a click would
@@ -76,8 +76,8 @@ export function makeAiming(
   }
 
   /** Where the army in hand would strike a tile, and whose it is; none on my land, or where it may not go and no lord holds it. */
-  function strikeAt(tile: number, pin: boolean): Aim | null {
-    const gate = entryFor(state, me, tile)
+  function strikeAt(tile: number, pin: boolean, army: Army): Aim | null {
+    const gate = entryFor(state, me, tile, army)
     const owner = state.owner[tile]
     const lord = owner >= 0 && owner !== me ? owner : null
     // Another lord's land with nothing to strike, an ally's or one beyond
@@ -101,12 +101,12 @@ export function makeAiming(
         return pin ? null : plantAt(tile)
       // A right click opens a lord's menu, on his land alone, whatever is in hand.
       if (pin) {
-        const aim = strikeAt(tile, true)
+        const aim = strikeAt(tile, true, hand.army)
         return aim && aim.lord !== null ? aim : null
       }
       if (hand.work) return null
       if (hand.coup) return coupAt(tile, hand.coup)
-      return strikeAt(tile, false)
+      return strikeAt(tile, false, hand.army)
     },
     destroy() {
       canvas.removeEventListener('pointermove', onPointer)

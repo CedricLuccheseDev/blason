@@ -1,22 +1,23 @@
 import { UNIT } from './units'
 import { isqrt } from './numbers'
-import { apart, around } from './grid'
-import { isAllied } from './diplomacy'
+import { around } from './grid'
 import { holdOf, setOwner } from './land'
 import { NEUTRAL } from './types'
 import { pop, push } from './heap'
 import { walled } from './battle'
 import { disband, hired } from './armies'
-import { costOf, freeWorks, marching, menFor, passable, roadTo } from './muster'
+import { costOf, marching, menFor, paceOf, passable } from './muster'
+import { courseFor, wideOf } from './course'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
 
-// The war. A click raises an army out of the lord's peasants at his free
-// village nearest the front, or hires mercenaries for gold at his free
-// market nearest it (muster.ts); it marches there over his land and his
-// allies' (so that a lord met only beyond an ally may be struck),
-// seen by all, then enters by the border tile nearest the click and spreads
-// from there as a bulge moving towards it, a tile a tick whatever its size:
+// The war. A click raises an army out of the lord's peasants at one of his
+// free villages, or hires mercenaries for gold at one of his free markets
+// (muster.ts); it marches over his land and his allies' (so that a lord met
+// only beyond an ally may be struck), seen by all, to the border tile that
+// brings it soonest to the click, the march and the way through the enemy's
+// land counted (course.ts), then enters there and spreads as a bulge moving
+// towards the click, a few tiles a tick whatever its size:
 // more men take it further, never faster. Each tile is held by its share of
 // its lord's peasants, or its militia when free, and costs the attacker as
 // the combat table says: a soldier is worth two peasants, one under a castle.
@@ -72,25 +73,7 @@ function touches(state: GameState, player: number, tile: number) {
 const struck = (state: GameState, target: number, tile: number) =>
   state.owner[tile] === target
 
-/** Where an army against the tile's lord, or the free land, enters: its tile bordering mine or an ally's nearest the tile, or -1. */
-export function entryFor(state: GameState, player: number, tile: number) {
-  const target = state.owner[tile]
-  if (target === player || target < NEUTRAL) return -1
-  if (target >= 0 && isAllied(state, player, target)) return -1
-  let best = -1
-  let gap = Infinity
-  state.owner.forEach((_, t) => {
-    if (!struck(state, target, t) || !touches(state, player, t)) return
-    const d = apart(state.grid, t, tile)
-    if (d < gap) {
-      gap = d
-      best = t
-    }
-  })
-  return best
-}
-
-/** A click: an army raised at the lord's free village nearest the front, or mercenaries hired at his free market, marching there to strike the clicked tile's lord or free domain. */
+/** A click: an army raised at one of the lord's free villages, or mercenaries hired at one of his free markets, marching by the course that brings it soonest to strike the clicked tile's lord or free domain. */
 export function attack(
   state: GameState,
   player: number,
@@ -98,29 +81,18 @@ export function attack(
   army: Army,
 ): void {
   if (!state.players[player].alive) return
-  const entry = entryFor(state, player, tile)
-  if (entry < 0) return
+  const course = courseFor(state, player, tile, army)
+  if (!course) return
   const men = menFor(state, player, army)
-  if (men < UNIT) return
-  let from = -1
-  let road: Array<number> | null = null
-  const at = state.rules.raisedAt[army]
-  for (const site of freeWorks(state, player, entry, at)) {
-    road = roadTo(state, player, site, entry)
-    if (road) {
-      from = site
-      break
-    }
-  }
-  if (!road) return
+  if (men < UNIT || course.from < 0) return
   const lord = state.players[player]
   if (!hired(state, army)) lord.peasants -= men
   lord.gold -= costOf(state, men, army)
-  const target = state.owner[tile]
+  const { entry, from, road } = course
   state.hosts.push({
     owner: player,
     army,
-    target,
+    target: state.owner[tile],
     men,
     aim: tile,
     entry,
@@ -132,7 +104,7 @@ export function attack(
     along: 0,
     fighting: false,
     closing: -1,
-    wide: state.rules.bandTiles + isqrt(Math.floor(men / UNIT)),
+    wide: wideOf(state, men),
   })
 }
 
@@ -166,13 +138,6 @@ function fight(state: GameState, host: Host, tile: number): boolean {
   }
   host.men -= paid
   return paid === cost
-}
-
-/** How far an army goes on the march a tick, in thousandths of a tile: the armies' pace, faster for a raid, slower for the levy. */
-export function paceOf(state: GameState, host: Host): number {
-  return Math.floor(
-    (state.rules.marchPace * state.rules.armySpeed[host.army]) / 100,
-  )
 }
 
 /** The tiles an army may take this tick: the front's pace at its army's speed, the fraction carried tick to tick. */
