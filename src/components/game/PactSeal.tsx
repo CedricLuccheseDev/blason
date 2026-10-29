@@ -21,23 +21,20 @@ const RING = 7
  * renewed, laid beside my ally's name: parted in my colour and my ally's,
  * a half still paper for a lord who has not pressed it, a click pressing
  * mine; it glows while it waits for mine, and its ring of gold is the time
- * left. Beside it, when there is room, that time and whose turn it is;
- * under it, the time alone. At the edge of the screen, an arrow out of its
- * ring towards where it belongs.
+ * left, written under it. What to do, in words, under the pointer: written
+ * on the map they would lie over the names round it. At the edge of the
+ * screen, an arrow out of its ring towards where it belongs.
  */
 export function PactSeal({
   ally,
   mine,
   toward,
-  beside,
   compact,
   onRenew,
 }: Readonly<{
   ally: Ally
   mine: number
   toward: number | null
-  /** Room for the words beside the seal; else the time alone, under it. */
-  beside: boolean
   compact: boolean
   onRenew: (seat: number) => void
 }>) {
@@ -82,11 +79,9 @@ export function PactSeal({
       )}
     </svg>
   )
-  let note = m.heralds.press
-  if (ally.pressed) note = m.heralds.waiting(name)
-  else if (ally.theirs) note = m.heralds.yourTurn(name)
+  const note = ally.theirs ? m.heralds.yourTurn(name) : m.heralds.press
   return (
-    <div className={`flex items-center gap-1 ${beside ? '' : 'flex-col'}`}>
+    <div className="flex flex-col items-center gap-1">
       {ally.pressed ? (
         <div role="img" aria-label={m.heralds.pact(name, minutes(ally.left))}>
           {seal}
@@ -97,17 +92,16 @@ export function PactSeal({
           type="button"
           onClick={() => onRenew(ally.seat)}
           aria-label={m.heralds.renew(name)}
-          title={m.heralds.renew(name)}
+          title={note}
           className="hud-press hud-glow pointer-events-auto cursor-pointer rounded-full"
         >
           {seal}
         </button>
       )}
-      <Sheet className="flex items-center gap-2 px-2 py-1 whitespace-nowrap">
+      <Sheet className="px-2 py-1 whitespace-nowrap">
         <Figure size="s" tone="ink">
           {minutes(ally.left)}
         </Figure>
-        {beside && <span className="hud-note">{note}</span>}
       </Sheet>
     </div>
   )
