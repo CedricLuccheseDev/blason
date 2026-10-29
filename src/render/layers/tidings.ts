@@ -6,8 +6,9 @@ import type { Caravan, GameState } from '../../../engine'
 
 // What the player's works bring, written where they bring it: a "+" of gold
 // rises from a market when a caravan arrives there, a "+" of peasants from
-// each village every second while they are born; while there are more than
-// the villages feed, a red "−" of the sick instead, and a red cross on each
+// the villages every few seconds while they are born, those of the whole
+// land shared among them; while there are more than the land and villages
+// feed, a red "−" of the sick instead, and a red cross on each
 // village, as on a plague house. A work of his taken by
 // another is struck out where it stood: red rings spread from it and a red
 // seal crossed through beats there for a few seconds, so that a village or a
@@ -94,10 +95,10 @@ export function makeTidings(me: number) {
       for (const v of villages) say(state, v.tile, `\u2212${each}`, SICK)
       return
     }
-    if (lord.peasants >= capOf(state, me)) return
-    const each = Math.floor(
-      (rules.peasants.village * VILLAGE_EVERY) / rules.fillSeconds,
-    )
+    const cap = capOf(state, me)
+    if (lord.peasants >= cap) return
+    const born = (cap * VILLAGE_EVERY) / rules.fillSeconds / UNIT
+    const each = Math.max(1, Math.floor(born / villages.length))
     for (const v of villages) say(state, v.tile, `+${each}`, PEASANTS)
   }
 

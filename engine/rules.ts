@@ -52,11 +52,16 @@ export type Rules = {
   tileSize: number
   /** A lord's gold at the start, in gold. */
   startGold: number
-  /** The peasants each village feeds, in men: no village, no peasants; the land alone feeds none. */
-  peasants: { village: number }
+  /**
+   * The peasants a lord's land and villages feed, in men: his land `land` of
+   * them on `tiles` of it, more as it grows but fewer by the tile, as the
+   * square root of its size (four times the land, twice the peasants); each
+   * village built `village` more.
+   */
+  peasants: { land: number; tiles: number; village: number }
   /** An empty gauge fills to its cap in so many seconds; none is born above it. */
   fillSeconds: number
-  /** Of the peasants over what the villages feed, so many in a hundred die of sickness a second. */
+  /** Of the peasants over what the land and villages feed, so many in a hundred die of sickness a second. */
   sickness: number
   /** What a man raised costs, in thousandths of gold: 0 is OpenFront's free attack. */
   menPrice: number
@@ -140,7 +145,7 @@ export const RULES: Rules = {
   openingTicks: 10 * SECOND,
   tileSize: 4,
   startGold: 50,
-  peasants: { village: 100 },
+  peasants: { land: 60, tiles: 600, village: 40 },
   fillSeconds: 60,
   sickness: 10,
   menPrice: 0,

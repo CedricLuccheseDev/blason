@@ -39,7 +39,7 @@ export type Summary = {
   winner: Heraldry | null
   me:
     | (Seat & {
-        /** His peasants and what his villages feed, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
+        /** His peasants and what his land and villages feed, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
         peasants: number
         cap: number
         growth: number

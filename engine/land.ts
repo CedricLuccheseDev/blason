@@ -1,5 +1,5 @@
 import { TICKS_PER_SECOND, UNIT } from './units'
-import { drawInt } from './numbers'
+import { drawInt, isqrt } from './numbers'
 import { apart, around } from './grid'
 import { RULES } from './rules'
 import { isFelon } from './diplomacy'
@@ -96,12 +96,19 @@ export function worksOf(state: GameState, lord: number, work: string) {
 export const standing = (state: GameState, work: GameState['works'][number]) =>
   (work.ready ?? 0) <= state.tick
 
-/** The peasants a lord's villages feed, those built: so many each; the land alone feeds none. */
+/** The peasants a lord's land feeds: fewer by the tile as it grows, as the square root of its size. */
+function fedByLand(state: GameState, lord: number): number {
+  const { land, tiles } = state.rules.peasants
+  const held = state.players[lord].tiles
+  return isqrt(Math.floor((land * land * UNIT * UNIT * held) / tiles))
+}
+
+/** The peasants a lord's land and villages feed: his land, then so many more for each village built. */
 export function capOf(state: GameState, lord: number): number {
   const villages = state.works.filter(
     (w) => w.owner === lord && w.work === 'village' && standing(state, w),
   ).length
-  return state.rules.peasants.village * villages * UNIT
+  return fedByLand(state, lord) + state.rules.peasants.village * villages * UNIT
 }
 
 /** The men holding each of a lord's tiles: his peasants spread over his land. */
@@ -110,7 +117,7 @@ export function density(state: GameState, lord: number): number {
   return Math.floor(peasants / Math.max(1, tiles))
 }
 
-/** The peasants a lord loses a tick to sickness: so much of those over what his villages feed, one at least while any are. */
+/** The peasants a lord loses a tick to sickness: so much of those over what his land and villages feed, one at least while any are. */
 export function sicknessOf(state: GameState, lord: number): number {
   const over = state.players[lord].peasants - capOf(state, lord)
   if (over <= 0 || state.rules.sickness === 0) return 0
@@ -119,9 +126,9 @@ export function sicknessOf(state: GameState, lord: number): number {
 }
 
 /**
- * Each tick, peasants born up to what a lord's villages feed; those over it,
- * a village lost or an army come home, fall sick and die away. Gold comes
- * only by the merchants (caravans.ts).
+ * Each tick, peasants born up to what a lord's land and villages feed; those
+ * over it, land or a village lost, an army come home, fall sick and die
+ * away. Gold comes only by the merchants (caravans.ts).
  */
 export function grow(state: GameState): void {
   state.players.forEach((lord, id) => {

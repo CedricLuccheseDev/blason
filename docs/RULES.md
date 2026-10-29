@@ -42,11 +42,14 @@ Every lord starts with 50 gold.
 
 ## Peasants and gold
 
-- Every resource comes from a work: without one, none. Each **village**
-  feeds 100 **peasants**; the land alone feeds none. An empty gauge fills in
-  60 seconds, and no one is born above the cap.
-- **Sickness**: peasants over the cap (a village lost, an army come home)
-  fall sick, and a tenth of those over it die each second, until the cap.
+- The **land** feeds the **peasants**, more as it grows but fewer by the
+  tile: 60 on 600 tiles (about a start's land), as the square root of its
+  size, so that four times the land feeds twice the peasants; each
+  **village** feeds 40 more. A start, its land and its village, feeds 100. An
+  empty gauge fills in 60 seconds, and no one is born above the cap.
+- **Sickness**: peasants over the cap (land or a village lost, an army come
+  home) fall sick, and a tenth of those over it die each second, until the
+  cap.
 - The peasants hold the land, spread over it: a tile is held by its lord's
   peasants divided among his tiles.
 - **Gold** comes from the merchants alone: each **market** sends caravans,
@@ -105,7 +108,7 @@ Three works, placed anywhere on one's own land (keys 4 to 6), at least 4
 tiles from any other work so that none lies on another; castles stand at
 least 10 tiles from one another (`engine/works.ts`):
 
-- the **village** feeds 100 peasants and levies the armies, one at a time;
+- the **village** feeds 40 more peasants and levies the armies, one at a time;
 - the **market** sends the caravans that bring the gold;
 - the **castle**: the land within 12 tiles of it fights as the combat table
   says, one for one; it sends no army.

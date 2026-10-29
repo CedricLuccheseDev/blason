@@ -3,7 +3,7 @@ import { TICKS_PER_SECOND, UNIT } from './units'
 import { generateWorld } from './map/generate'
 import { createBot } from './bots/bot'
 import { makeGrid } from './grid'
-import { createGame, holdOf } from './land'
+import { capOf, createGame, holdOf } from './land'
 import { RULES } from './rules'
 import { stateHash, step } from './step'
 import {
@@ -144,13 +144,13 @@ describe('an army, tile by tile', () => {
 })
 
 describe('the sickness', () => {
-  it('takes a tenth a second of the peasants over what the villages feed, and none under it', () => {
+  it('takes a tenth a second of the peasants over what the land and villages feed, and none under it', () => {
     const state = playing(field(6))
     state.rules = { ...state.rules, sickness: RULES.sickness }
     hold(state, 0, [0, 1])
     muster(state, 0, 0)
     hold(state, 1, [5])
-    const cap = state.rules.peasants.village * UNIT
+    const cap = capOf(state, 0)
     state.players[0].peasants = cap + 100 * UNIT
     run(state, SECOND)
     const left = state.players[0].peasants - cap
