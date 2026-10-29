@@ -131,10 +131,18 @@ export function Line({
   )
 }
 
-/** A dark veil over the whole screen, HUD and all, a sheet held in its middle: the book, a dialog. */
-export function Veil({ children }: Readonly<{ children: ReactNode }>) {
+/** A dark veil over the whole screen, HUD and all, a sheet held in its middle: the book, a dialog; a click on the veil round the sheet puts it down, if it may be (« les modals quand on clique dehors ça ferme les modals »). */
+export function Veil({
+  onClose,
+  children,
+}: Readonly<{ onClose?: () => void; children: ReactNode }>) {
   return (
-    <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/50 p-3">
+    <div // norm-ok: the veil is no control, a click on it doubles the sheet's own button to put it down.
+      className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/50 p-3"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.()
+      }}
+    >
       {children}
     </div>
   )

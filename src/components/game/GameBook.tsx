@@ -75,7 +75,7 @@ export function GameBook({
     </>
   )
   return (
-    <Veil>
+    <Veil onClose={onClose}>
       <Panel
         page
         gap="piece"

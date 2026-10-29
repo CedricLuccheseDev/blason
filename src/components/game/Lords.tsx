@@ -20,7 +20,8 @@ import { useMessages } from '~/i18n'
  * pointer lit, as he stands out on the map (« enlève le hud en bas à gauche
  * qui affiche le royaume que tu vises, highlight sur le panneau »), and the
  * other way, a line under the pointer lights its lord's land on the map
- * (« quand on hover highlight sur la map le territoire du seigneur »). The
+ * (« quand on hover highlight sur la map le territoire du seigneur »); a
+ * click brings the camera to his land, a right click opens his menu. The
  * fallen leave it, so that it shortens as the game goes; it folds away at a
  * click.
  */
@@ -28,14 +29,17 @@ export function Lords({
   summary,
   aimed,
   onLight,
+  onSeek,
   onMenu,
 }: Readonly<{
   summary: Summary
   aimed: number | null
   /** A lord's line pointed at, his land to light on the map; none when the pointer leaves. */
   onLight: (lord: number | null) => void
-  /** A lord's line clicked: his menu, as a right click on his land, by the pointer. */
+  /** A lord's line right clicked: his menu, as a right click on his land, by the pointer. */
   onMenu: (lord: number, x: number, y: number) => void
+  /** The camera brought to a lord's land. */
+  onSeek: (lord: number) => void
 }>) {
   const m = useMessages()
   const compact = useCompact()
@@ -103,10 +107,12 @@ export function Lords({
                 type="button"
                 onPointerEnter={() => point(lord.seat)}
                 onPointerLeave={() => point(null)}
-                // A lord's line opens his menu, as a right click on his land (« clique dans le menu seigneur ouvre les options alliance et tout »).
-                onClick={(e) =>
-                  !self && onMenu(lord.seat, e.clientX, e.clientY)
-                }
+                // A click brings the camera to his land, a right click opens his menu as on his land (« cliquer sur un seigneur dans la liste centre la cam au seigneur, clique droit ouvre le menu clique droit »).
+                onClick={() => onSeek(lord.seat)}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  if (!self) onMenu(lord.seat, e.clientX, e.clientY)
+                }}
                 className={`pointer-events-auto relative flex w-full cursor-pointer items-center text-left border-l-[3px] ${lord.allied ? 'border-pact' : 'border-transparent'} ${ring}`}
               >
                 <span

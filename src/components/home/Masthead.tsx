@@ -1,6 +1,6 @@
 import { Flourish } from './Ornaments'
 import { Shield } from '~/components/hud/Emblem'
-import { Inline } from '~/components/hud/Layout'
+import { Inline, Stack } from '~/components/hud/Layout'
 import { useMessages } from '~/i18n'
 
 // The head of the home, the name of the game (its line will come with the
@@ -9,12 +9,14 @@ import { useMessages } from '~/i18n'
 
 export function Title() {
   return (
-    <header className="text-center">
-      {/* norm-ok: wordmark, not copy */}
-      <h1 className="font-mark text-6xl leading-none text-quill max-sm:text-5xl short:text-5xl">
-        Blason
-      </h1>
-      <Flourish />
+    <header>
+      <Stack gap="hair" align="center">
+        {/* norm-ok: wordmark, not copy */}
+        <h1 className="font-mark text-6xl leading-none text-quill max-sm:text-5xl short:text-5xl">
+          Blason
+        </h1>
+        <Flourish />
+      </Stack>
     </header>
   )
 }

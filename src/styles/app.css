@@ -96,6 +96,15 @@
   html {
     font-synthesis: none;
   }
+  /* The hand over all that a click works, everywhere in the app (« tous les boutons de l'app il faut la souris en clickable »). */
+  button:not(:disabled),
+  [role='button'],
+  a[href],
+  label[for],
+  select,
+  summary {
+    cursor: pointer;
+  }
   .font-mono {
     font-variant-numeric: tabular-nums;
   }

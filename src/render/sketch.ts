@@ -51,8 +51,10 @@ function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
   const { width, height } = g.canvas
   g.fillStyle = css(TONE.seaWash)
   g.fillRect(0, 0, width, height)
-  // The whole land, as large as the canvas holds it, in its middle.
-  const scale = Math.min(width / world.width, height / world.height)
+  // The land covering the canvas, in its middle: on a card of another
+  // shape, cut at its sides rather than floating in the sea (« grossis en
+  // hauteur l'area partie publique »).
+  const scale = Math.max(width / world.width, height / world.height)
   const [dx, dy] = [width - world.width * scale, height - world.height * scale]
   const at = new DOMMatrix([scale, 0, 0, scale, dx / 2, dy / 2])
   g.setTransform(at)

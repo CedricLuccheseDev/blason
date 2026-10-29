@@ -182,6 +182,12 @@ export function makeScene(
     },
     /** The lord whose land is lit, pointed at in the HUD's list; none. */
     light: lit.light,
+    /** Where a lord's name is written, at the heart of his land; none while he holds none. */
+    placeOf: (lord: number) => placesOf(state).get(lord) ?? null,
+    /** Where an army's standard stands, by the village or market it left from; none. */
+    flagOf: armies.flagOf,
+    /** The army grown, pointed at in the HUD's campaigns; none. */
+    lightArmy: armies.light,
     /** The page's textures, which the game's end does not take with it. */
     destroy() {
       page.destroy()

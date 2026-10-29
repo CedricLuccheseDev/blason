@@ -9,8 +9,10 @@ import { useMessages } from '~/i18n'
 
 // Bottom right, my armies out (« en bas à droite mets les campagnes »): each
 // as its banner on the map, in my colour, its army's mark on it and its men
-// under it, the oldest first; a click calls it home, a red cross over it
-// under the pointer.
+// under it, the oldest first; a click brings the camera to it, and the
+// pointer over it grows its standard on the map (« si on clique sur
+// l'étendard en bas ça centre sur l'unité, et quand on hover ça la met en
+// valeur »).
 
 /** A banner on its pole, as the armies carry theirs on the map. */
 function Banner({ color, mark }: Readonly<{ color: string; mark: Mark }>) {
@@ -37,11 +39,14 @@ function Banner({ color, mark }: Readonly<{ color: string; mark: Mark }>) {
 
 export function Campaign({
   summary,
-  onRecall,
+  onSeek,
+  onSpot,
 }: Readonly<{
   summary: Summary
-  /** An army called home, by the village or market it left from. */
-  onRecall: (from: number) => void
+  /** The camera brought to an army, by the village or market it left from. */
+  onSeek: (from: number) => void
+  /** An army pointed at, grown on the map; none. */
+  onSpot: (from: number | null) => void
 }>) {
   const m = useMessages()
   const { me, campaign } = summary
@@ -53,20 +58,15 @@ export function Campaign({
           <button
             key={host.from}
             type="button"
-            title={m.game.recall(m.game.armies[host.army])}
-            aria-label={m.game.recall(m.game.armies[host.army])}
-            onClick={() => onRecall(host.from)}
-            className="group hud-press pointer-events-auto relative flex cursor-pointer flex-col items-center"
+            title={m.game.seek(m.game.armies[host.army])}
+            aria-label={m.game.seek(m.game.armies[host.army])}
+            onClick={() => onSeek(host.from)}
+            onPointerEnter={() => onSpot(host.from)}
+            onPointerLeave={() => onSpot(null)}
+            className="hud-press pointer-events-auto flex cursor-pointer flex-col items-center"
           >
             <Banner color={hex(me.color)} mark={ARMY_MARKS[host.army]} />
             <Figure size="s">{count(host.men)}</Figure>
-            {/* Under the pointer, the cross that calls it home (« une croix pour les rappeler »). norm-ok: a round red seal, the game's own mark, not a box. */}
-            <span
-              aria-hidden="true"
-              className="absolute -top-1 -right-1 hidden size-5 items-center justify-center rounded-full border border-quill bg-gules font-figures text-hud-s leading-none text-wax group-hover:flex"
-            >
-              ×
-            </span>
           </button>
         ))}
       </Inline>

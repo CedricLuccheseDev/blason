@@ -226,7 +226,15 @@ export async function mountGame(
     heralds: heralds.listen,
     light: scene.light,
     menu: menuFrom(state, aiming.point, pin.open),
-    recall: (tile) => session.send({ player: me, type: 'recall', tile }),
+    seek(from) {
+      const at = scene.flagOf(from)
+      if (at) camera.toward(at.x, at.y)
+    },
+    spot: scene.lightArmy,
+    seekLord(lord) {
+      const at = scene.placeOf(lord)
+      if (at) camera.toward(at.x, at.y)
+    },
     launch(book) {
       session.launch?.(hostSetup({ ...book, seed: land.seed, size: land.size }))
       refresh()

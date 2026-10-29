@@ -71,6 +71,7 @@ export function Places({
             aimed={aimed}
             onLight={game.light}
             onMenu={game.menu}
+            onSeek={game.seekLord}
           />
         )}
       </div>
@@ -92,7 +93,9 @@ export function Places({
           )}
         </div>
         <div className="justify-self-end">
-          {!waiting && <Campaign summary={summary} onRecall={game.recall} />}
+          {!waiting && (
+            <Campaign summary={summary} onSeek={game.seek} onSpot={game.spot} />
+          )}
         </div>
       </div>
     </div>

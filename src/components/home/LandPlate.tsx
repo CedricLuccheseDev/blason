@@ -48,7 +48,7 @@ export function LandPlate({
   const shown = seed !== null && drawn === seed
   return (
     <div
-      className="relative aspect-[17/10] max-h-[42dvh] w-full overflow-hidden border border-quill max-sm:max-h-none"
+      className="relative aspect-[3/2] max-h-[56dvh] w-full overflow-hidden border border-quill max-sm:max-h-none"
       style={{ background: hex(TONE.seaWash) }}
     >
       <canvas

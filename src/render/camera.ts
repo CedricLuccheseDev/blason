@@ -170,6 +170,12 @@ export function makeCamera(
     fit,
     focus,
     look,
+    /** Flies to a point of the world, at the zoom it is at. */
+    toward(x: number, y: number) {
+      fitted = false
+      target = world.scale.x
+      aim = { x, y, frames: 60 }
+    },
     home: goHome,
     /** One step closer (1) or farther (-1), round the middle of the screen. */
     zoomBy(step: 1 | -1) {

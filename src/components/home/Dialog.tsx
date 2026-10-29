@@ -7,7 +7,7 @@ import { useMessages } from '~/i18n'
 
 // A sheet laid over the home for one thing to set (the solo game, a private
 // room), as OpenFront's dialogs: the browser's own modal dialog, so the
-// keyboard stays inside it and Escape puts it down. The control marked
+// keyboard stays inside it and Escape, or a click outside it, puts it down. The control marked
 // `data-first` takes the keyboard as it opens.
 
 export function Dialog({
@@ -39,6 +39,10 @@ export function Dialog({
     <dialog
       ref={ref}
       onClose={onClose}
+      // A click outside the sheet, on the backdrop, puts it down (« les modals quand on clique dehors ça ferme les modals »).
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
       aria-label={title}
       // norm-ok: the browser's dialog, centred by its own margin and stripped of its own padding.
       className="hud m-auto w-[calc(100%-2rem)] max-w-[440px] overflow-visible bg-transparent p-0 backdrop:bg-quill/40"
