@@ -11,7 +11,9 @@ import type { Cells } from './cells'
 export type Biome = 'plain' | 'forest' | 'hills' | 'mountains'
 
 /** Of the land's cells, the highest so many in a thousand are mountains, the next hills; of the lowland, the wettest so many in a thousand woods. */
-const SHARE = { mountains: 60, hills: 150, forest: 400 } as const
+export type Shares = { mountains: number; hills: number; forest: number }
+
+const SHARE: Shares = { mountains: 60, hills: 150, forest: 400 }
 
 /** Passes of the neighbours' vote. */
 const PASSES = 2
@@ -25,18 +27,19 @@ export function placeBiomes(
   water: Array<boolean>,
   height: Array<number>,
   wet: Array<number>,
+  share: Shares = SHARE,
 ): Array<Biome> {
   const land = cells.sites.flatMap((_, c) => (water[c] ? [] : [c]))
   let biome: Array<Biome> = cells.sites.map(() => 'plain')
   const high = ranked(land, height)
-  const peaks = Math.floor((land.length * SHARE.mountains) / 1000)
-  const hills = Math.floor((land.length * SHARE.hills) / 1000)
+  const peaks = Math.floor((land.length * share.mountains) / 1000)
+  const hills = Math.floor((land.length * share.hills) / 1000)
   high.forEach((c, n) => {
     if (n < peaks) biome[c] = 'mountains'
     else if (n < peaks + hills) biome[c] = 'hills'
   })
   const low = ranked(high.slice(peaks + hills), wet)
-  const woods = Math.floor((low.length * SHARE.forest) / 1000)
+  const woods = Math.floor((low.length * share.forest) / 1000)
   low.slice(0, woods).forEach((c) => (biome[c] = 'forest'))
   for (let pass = 0; pass < PASSES; pass++) biome = vote(cells, water, biome)
   return biome

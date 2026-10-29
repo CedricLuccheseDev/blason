@@ -7,7 +7,7 @@ import type { Cells } from './cells'
 // none at all.
 
 /** Two cells joined by a side shorter than this, in map units, do not let a road through. */
-const WIDE = 9
+export const WIDE = 9
 
 /** Each cell's neighbours across a side wide enough for a road. */
 export function wideSides(cells: Cells): Array<Array<number>> {

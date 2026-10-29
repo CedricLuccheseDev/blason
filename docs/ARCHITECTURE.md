@@ -86,7 +86,8 @@ machine draws the same land). It has two generators, chosen by
 `generateWorld(seed, { generator })` from a table: the first, the game's
 (`classic.ts`), below, and a second on trial, the relief's, after it. They
 share the cells, the borders, the rivers and the biomes; each makes its own
-ground (`Ground` in `types.ts`: the water and each cell's height):
+ground (`Ground` in `types.ts`: the water, the high mountains, each cell's
+height):
 
 1. **Cells** (`points.ts`, `cells.ts`): points scattered evenly over the
    frame (Poisson disc, relaxed twice) and their Voronoi cells, some two
@@ -125,7 +126,7 @@ outline of a relief rather than of a figure:
    masses rounded, then the coast's features set on the coast they draw,
    turned out to sea, peninsulas, gulfs, sounds, bays, capes, fjords
    (`coastline.ts`), more of them and as large in map units on a larger
-   map.
+   map. The ranges' crests are kept apart, as the ridges.
 2. **The roughness**: a noise of every size, stronger in some places than in
    others (a second noise tempers it), so that a coast runs smooth here and
    ragged there.
@@ -136,10 +137,23 @@ outline of a relief rather than of a figure:
    priority flood, and the more water runs through a cell the deeper it
    digs it, never below the sea: valleys from the heights to the shore.
 5. **Lakes**, as the first generator's, in the hollows the water left.
-6. **Rivers** and **biomes** as the first generator's.
+6. **The high mountains** (`peaks.ts`): of the land, the 9 % that rise the
+   most, the ridges first, less the groups of a few cells; a chink where
+   two of their cells meet by a side too short for a tile is sealed. They
+   are no land of the game (`map.peaks`, apart from `map.land` and
+   `map.sea`; `grid.ts` makes their tiles no land, as the sea's), and the
+   world draws them apart (`world.peaks`). Then the **passes**
+   (`passes.ts`, `crossings.ts`): every piece of the land walled in by them
+   is joined to the rest by the lowest way over (a piece too small is
+   mountain too), and where a range parts two lands a long walk round it,
+   it is cut at its lowest, once for so many of its cells. A pass is a cell
+   wide, and the cells of a way are joined by sides wide enough for a road
+   of tiles (`pieces.ts`): the land stays one, tile by tile.
+7. **Rivers** and **biomes** as the first generator's, the biomes without
+   mountains of their own: the land below the high ones has hills.
 
 The tiles (`grid.ts`) then follow the cells: a tile is land when the cell
-nearest its middle is.
+nearest its middle is land, not when it is sea or high mountain.
 
 A map's size (`MAP_SIZES` in `rules.ts`, `generateWorld(seed, { size })`)
 multiplies its area, 1, 2 or 4 times the standard land's: the cells keep

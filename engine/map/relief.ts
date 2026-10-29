@@ -3,6 +3,7 @@ import { erode } from './erosion'
 import { stepsFromWater } from './ground'
 import { digLakes } from './lakes'
 import { DIRECTIONS, makeNoise } from './noise'
+import { raisePeaks } from './peaks'
 import { stream } from './points'
 import { recipeOf } from './recipes'
 import { levelOf, oneLand, shoreOf } from './seas'
@@ -14,21 +15,26 @@ import type { Bench } from './bench'
 // The second generator: a land raised as a land is. The family's recipe
 // lays its masses, its ranges, its gulfs and peninsulas (recipes.ts), a
 // noise roughens them, the sea comes up to its share, the water digs its
-// valleys down to it (erosion.ts). Its coasts are the outline of a relief,
-// smooth where the land falls gently, ragged where a range meets the sea,
-// and there is one land, no islet left.
+// valleys down to it (erosion.ts), and the highest ground becomes the high
+// mountains, cut by their passes (peaks.ts). Its coasts are the outline of
+// a relief, smooth where the land falls gently, ragged where a range meets
+// the sea, and there is one land, no islet left.
 
+/** Of the land, so many cells in a thousand are high mountains. */
+const PEAKS = 90
 /** Map units across one turn of the noise that roughens the relief. */
 const ROUGH = 230
 /** How deep the water digs its valleys, in heights of the highest ground. */
 const DIG = 0.14
+/** How much a range's crest counts, beside the height, for the high mountains to stand on it. */
+const RIDGE = 1.6
 
-/** The family, as the first generator draws it, and the sea this one gives it. */
+/** The family, as the first generator draws it, and the sea and mountains this one gives it. */
 export function planRelief(seed: string): Plan {
   const { kind } = pickShape(seed)
   const [low, high] = recipeOf(kind).sea
   const seaShare = low + drawInt(seed, high - low + 1, 'relief sea')
-  return { kind, seaShare }
+  return { kind, seaShare, peakShare: PEAKS }
 }
 
 /** The ground of a land raised from a seed, on these cells. */
@@ -91,5 +97,21 @@ export function sculptLand(
   )
   const steps = stepsFromWater(cells.neighbors, sea)
   const water = digLakes(seed, cells, sea, ground, steps, lakes)
-  return { water, heights: ground.map((h, c) => (water[c] ? -1 : h)) }
+  // The high mountains stand on the ranges' crests first, then on the highest.
+  const crest = clay.ridges.reduce((m, r) => Math.max(m, r), 1e-9)
+  const rise = ground.map((h, c) => h + (RIDGE * clay.ridges[c]) / crest)
+  const { peaks, passes } = raisePeaks(
+    cells,
+    ground,
+    rise,
+    water,
+    plan.peakShare,
+    bench.side,
+  )
+  return {
+    water,
+    peaks,
+    heights: ground.map((h, c) => (water[c] ? -1 : h)),
+    passes,
+  }
 }

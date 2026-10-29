@@ -3,8 +3,9 @@ import type { Grid } from './types'
 
 // The land cut into a fine grid of tiles, as OpenFront's map is cut in
 // pixels: a tile is land when the cell of the map nearest its middle is
-// land, so the grid follows the same coast as the drawing. Made from the
-// map's whole positions alone: the same on every machine.
+// land, so the grid follows the same coast as the drawing; a tile of the
+// high mountains is not, as the sea's. Made from the map's whole positions
+// alone: the same on every machine.
 
 /** The grid of a map so many units wide and high, tiles so many units a side. */
 export function makeGrid(
@@ -19,6 +20,7 @@ export function makeGrid(
   const sites = [
     ...map.land.map((c) => ({ x: c.x, y: c.y, land: true })),
     ...map.sea.map((s) => ({ x: s.x, y: s.y, land: false })),
+    ...map.peaks.map((p) => ({ x: p.x, y: p.y, land: false })),
   ]
   const bucket = 8 * size
   const bw = Math.ceil(width / bucket) + 1

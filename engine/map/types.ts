@@ -1,8 +1,9 @@
+import type { Point } from './points'
 import type { ShapeKind } from './shapes'
 
 // What the generator hands the simulation: the cells of the land, each with
-// its neighbours and its shore, and the cells of the open sea; and what each
-// generator makes of the cells, its ground.
+// its neighbours and its shore, the cells of the open sea, and those of the
+// high mountains; and what each generator makes of the cells, its ground.
 
 /** A cell of land: fixed for the whole game, rebuilt from the seed. */
 type LandCell = {
@@ -22,15 +23,26 @@ type SeaCell = {
   coast: Array<number>
 }
 
-export type GameMap = { land: Array<LandCell>; sea: Array<SeaCell> }
+/** A cell of the high mountains: no one's, as the sea, but dry. */
+type PeakCell = { x: number; y: number }
 
-/** The family a generator draws, and how much its sea takes of the frame, in thousandths. */
-export type Plan = { kind: ShapeKind; seaShare: number }
+export type GameMap = {
+  land: Array<LandCell>
+  sea: Array<SeaCell>
+  peaks: Array<PeakCell>
+}
+
+/** The family a generator draws, and how much its sea takes of the frame and its high mountains of the land, in thousandths. */
+export type Plan = { kind: ShapeKind; seaShare: number; peakShare: number }
 
 /** What a generator makes of the cells. */
 export type Ground = {
   /** The sea's cells and the lakes'. */
   water: Array<boolean>
+  /** The high mountains' cells, which no one crosses. */
+  peaks: Array<boolean>
   /** Each cell's height, about 0 on the shore to 1 on the highest; −1 under water. */
   heights: Array<number>
+  /** The middle of each pass over the high mountains. */
+  passes: Array<Point>
 }

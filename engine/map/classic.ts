@@ -7,10 +7,11 @@ import type { Ground, Plan } from './types'
 
 // The first generator, the game's: the family's figure warped by noise and
 // marked with its coast's features (shapes.ts), the sea up to its share
-// (terrain.ts), the ground raised from it (ground.ts), a few lakes.
+// (terrain.ts), the ground raised from it (ground.ts), a few lakes. Its
+// mountains are drawn only: no cell of it is closed to the armies.
 
 export function planClassic(seed: string): Plan {
-  return pickShape(seed)
+  return { ...pickShape(seed), peakShare: 0 }
 }
 
 export function classicLand(
@@ -27,5 +28,5 @@ export function classicLand(
   const steps = stepsFromWater(cells.neighbors, sea)
   const heights = raiseLand(seed, cells, sea, terrain, steps)
   const water = digLakes(seed, cells, sea, heights, steps, lakes)
-  return { water, heights }
+  return { water, peaks: water.map(() => false), heights, passes: [] }
 }

@@ -14,6 +14,13 @@ applies each rule is named beside it.
   mountains, hills, woods and plains are drawn only: they change nothing to
   the rules. The land is cut into a fine grid of tiles, four map units a side
   (`engine/grid.ts`), some 53,000 tiles of land.
+- On trial, not yet the game's: a second generator raises truer lands
+  (`generator: 'relief'`), with **high mountains** that close the ground as
+  the sea does: no one takes, crosses or builds on their tiles, and no
+  caravan's road goes over them. They stand in ranges, some 9 % of the land
+  (as much land is left to play as on today's maps), cut by **passes** a few
+  tiles wide, the ranges' fronts and chokepoints; the land is always one
+  piece through them.
 - A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
   huge (four times), chosen by `/play?size=large` or `huge` until the home
   offers it. Its tiles and cells keep their size: a larger land has more of
