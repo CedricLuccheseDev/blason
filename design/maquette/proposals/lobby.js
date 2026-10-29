@@ -75,8 +75,9 @@ export function book(mode, image) {
 }
 
 export const CSS = `
-.mq-veil { position: absolute; inset: 0; background: rgb(43 30 18 / 0.45); }
-.mq-book { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(calc(820px * var(--hud)), calc(100vw - 24px)); background: var(--color-vellum); border: 1.5px solid var(--color-quill); border-radius: 6px; box-shadow: 0 10px 30px rgb(43 30 18 / 0.45); padding: calc(26px * var(--hud)) calc(30px * var(--hud)) calc(20px * var(--hud)); display: flex; flex-direction: column; gap: calc(16px * var(--hud)); }
+/* The veil darkens the whole screen, the HUD's pieces with the map: only the book stands above it. */
+.mq-veil { position: absolute; inset: 0; z-index: 50; background: rgb(43 30 18 / 0.5); }
+.mq-book { position: absolute; z-index: 51; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(calc(820px * var(--hud)), calc(100vw - 24px)); background: var(--color-vellum); border: 1.5px solid var(--color-quill); border-radius: 6px; box-shadow: 0 10px 30px rgb(43 30 18 / 0.45); padding: calc(26px * var(--hud)) calc(30px * var(--hud)) calc(20px * var(--hud)); display: flex; flex-direction: column; gap: calc(16px * var(--hud)); }
 .mq-gilt { position: absolute; inset: 5px; border: 1px solid var(--color-gilt); border-radius: 3px; pointer-events: none; }
 .mq-close { position: absolute; top: calc(14px * var(--hud)); right: calc(18px * var(--hud)); font-family: 'IM Fell English', Georgia, serif; font-style: italic; font-size: var(--text-hud-s); opacity: 0.65; }
 .mq-pages { display: grid; grid-template-columns: 1fr auto 1fr; gap: calc(26px * var(--hud)); }
