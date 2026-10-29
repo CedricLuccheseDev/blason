@@ -3,15 +3,14 @@ import { MAP_SIZES } from '../rules'
 import { placeBiomes } from './biomes'
 import { makeBorders } from './borders'
 import { buildCells } from './cells'
-import { raiseLand, stepsFromWater, wetness } from './ground'
-import { digLakes } from './lakes'
+import { classicLand, planClassic } from './classic'
+import { wetness } from './ground'
 import { relax, scatter } from './points'
+import { planRelief, sculptLand } from './relief'
 import { makeRivers } from './rivers'
-import { pickShape } from './shapes'
-import { findSea, makeTerrain } from './terrain'
 import type { MapSize } from '../rules'
 import type { Biome } from './biomes'
-import type { GameMap } from './types'
+import type { GameMap, Ground, Plan } from './types'
 import type { Cells } from './cells'
 import type { Point } from './points'
 import type { ShapeKind } from './shapes'
@@ -22,9 +21,16 @@ type WorldCell = {
   outline: Array<Point>
 }
 
+/**
+ * The generators of lands: the first, the game's, warps a family's figure
+ * (classic.ts); the second raises a relief (relief.ts).
+ */
+export type Generator = 'classic' | 'relief'
+
 /** A land invented from a seed: the same on every machine. */
 export type World = {
   seed: string
+  generator: Generator
   shape: ShapeKind
   size: MapSize
   /** The frame of the map, which grows with the sea so a cell keeps its size. */
@@ -47,19 +53,46 @@ const FINE = 200
 const LAKE_EVERY = 500
 const RIVER_EVERY = 300
 
+/** What sets a generator apart: its plan and its ground. */
+const GENERATORS: Readonly<
+  Record<
+    Generator,
+    {
+      plan: (seed: string) => Plan
+      ground: (
+        seed: string,
+        plan: Plan,
+        cells: Cells,
+        width: number,
+        height: number,
+        scale: number,
+        lakes: number,
+      ) => Ground
+    }
+  >
+> = {
+  classic: { plan: planClassic, ground: classicLand },
+  relief: { plan: planRelief, ground: sculptLand },
+}
+
 /**
  * A land of the size asked for (rules.ts, MAP_SIZES), its cells the same
  * size whatever it is: a larger map has more of them, and more lakes,
- * rivers, woods and ranges, not larger ones.
+ * rivers, woods and ranges, not larger ones. The first generator unless
+ * another is asked for.
  */
 export function generateWorld(
   seed: string,
-  { size = 'standard' }: { size?: MapSize } = {},
+  {
+    size = 'standard',
+    generator = 'classic',
+  }: { size?: MapSize; generator?: Generator } = {},
 ): World {
   const scale = MAP_SIZES[size]
-  const shape = pickShape(seed)
+  const maker = GENERATORS[generator]
+  const plan = maker.plan(seed)
   const count = CELLS * scale
-  const area = Math.floor((count * 1000) / (1000 - shape.seaShare)) * CELL_AREA
+  const area = Math.floor((count * 1000) / (1000 - plan.seaShare)) * CELL_AREA
   // A screen's proportions, 17 by 10.
   const width = isqrt(Math.floor((area * 17) / 10))
   const height = Math.floor(area / width)
@@ -70,12 +103,16 @@ export function generateWorld(
     height,
   )
   const cells = buildCells(sites, width, height)
-  const terrain = makeTerrain(seed, shape, cells, width, height, scale)
-  const sea = findSea(cells, terrain)
-  const steps = stepsFromWater(cells.neighbors, sea)
-  const heights = raiseLand(seed, cells, sea, terrain, steps)
   const lakes = Math.floor(count / LAKE_EVERY)
-  const water = digLakes(seed, cells, sea, heights, steps, lakes)
+  const { water, heights } = maker.ground(
+    seed,
+    plan,
+    cells,
+    width,
+    height,
+    scale,
+    lakes,
+  )
   // Ten times as many cells are a tenth of the size: their borders wiggle less.
   const borders = makeBorders(seed, cells, water, count > FINE ? 2 : 0)
   const rivers = makeRivers(
@@ -103,7 +140,8 @@ export function generateWorld(
   )
   return {
     seed,
-    shape: shape.kind,
+    generator,
+    shape: plan.kind,
     size,
     width,
     height,

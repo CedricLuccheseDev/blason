@@ -82,7 +82,11 @@ can tune them without touching the code. The rules themselves are described in
 
 `engine/map/generate.ts` grows a land from a seed, in stages, each its own
 module, all pure and seeded (floating point, but only `+ − × ÷`, so every
-machine draws the same land):
+machine draws the same land). It has two generators, chosen by
+`generateWorld(seed, { generator })` from a table: the first, the game's
+(`classic.ts`), below, and a second on trial, the relief's, after it. They
+share the cells, the borders, the rivers and the biomes; each makes its own
+ground (`Ground` in `types.ts`: the water and each cell's height):
 
 1. **Cells** (`points.ts`, `cells.ts`): points scattered evenly over the
    frame (Poisson disc, relaxed twice) and their Voronoi cells, some two
@@ -109,6 +113,30 @@ machine draws the same land):
    the wettest of the lowland woods, the rest plain, by shares; then a vote
    of the neighbours, twice, so that they lie in regions. They are only
    drawn: the simulation knows land and water.
+
+The second generator (`relief.ts`), to be judged on a board before it may
+replace the first, raises a land as a land is, so that its coasts are the
+outline of a relief rather than of a figure:
+
+1. **The recipe** (`recipes.ts`, `bench.ts`, `sculpt.ts`): the same six
+   families, each a recipe of the sculptor's tools, hills, ranges, troughs
+   and domes, each spreading from cell to cell a little more or less at
+   each step, laid where the family wants them in heights of the map; the
+   masses rounded, then the coast's features set on the coast they draw,
+   turned out to sea, peninsulas, gulfs, sounds, bays, capes, fjords
+   (`coastline.ts`), more of them and as large in map units on a larger
+   map.
+2. **The roughness**: a noise of every size, stronger in some places than in
+   others (a second noise tempers it), so that a coast runs smooth here and
+   ragged there.
+3. **The sea** (`seas.ts`): the family's share of the lowest cells; a great
+   piece of land cut off is joined to the largest by a neck over the
+   shortest strait, the islets sink, the ponds are filled: one land.
+4. **The water's work** (`erosion.ts`): the rain runs down to the sea by a
+   priority flood, and the more water runs through a cell the deeper it
+   digs it, never below the sea: valleys from the heights to the shore.
+5. **Lakes**, as the first generator's, in the hollows the water left.
+6. **Rivers** and **biomes** as the first generator's.
 
 The tiles (`grid.ts`) then follow the cells: a tile is land when the cell
 nearest its middle is.
