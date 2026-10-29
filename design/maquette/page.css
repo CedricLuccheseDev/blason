@@ -1,0 +1,155 @@
+/* The maquette's page: the game's parchment and ink (src/styles/app.css),
+   its two hands, IM Fell for the words and Alegreya Sans for the figures;
+   the frames side by side, as tall as each other, filling the column. */
+:root {
+  color-scheme: light;
+  --vellum: #f6eedb;
+  --quill: #2b1e12;
+  --lead: #5e5749;
+  --shade: #d9c49a;
+  --gilt-deep: #946512;
+  --fell: 'IM Fell English', Georgia, serif;
+  --figures: 'Alegreya Sans', 'Trebuchet MS', sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--vellum);
+  color: var(--quill);
+  font-family: var(--fell);
+}
+header,
+main {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+header {
+  padding-top: 40px;
+  padding-bottom: 8px;
+}
+h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 400;
+}
+h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 400;
+}
+h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
+}
+header p,
+.line {
+  margin: 4px 0 0;
+  max-width: 70ch;
+  color: var(--lead);
+  font-size: 17px;
+  font-style: italic;
+}
+.moment {
+  padding: 32px 0;
+  border-top: 1px solid var(--shade);
+}
+header + main .moment:first-child {
+  border-top: 0;
+}
+.version {
+  margin-top: 20px;
+}
+.row {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  align-items: flex-start;
+}
+/* Each frame takes the row's width in the share of its own width to its
+   height: all of a row come out as tall. */
+.frame {
+  flex: var(--aspect) 1 0;
+  min-width: 0;
+  margin: 0;
+  cursor: zoom-in;
+}
+.screen {
+  position: relative;
+  aspect-ratio: var(--w) / var(--h);
+  overflow: hidden;
+  outline: 1px solid var(--shade);
+  background: var(--shade);
+}
+.screen iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--w) * 1px);
+  height: calc(var(--h) * 1px);
+  border: 0;
+  transform: scale(var(--k, 0.25));
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+figcaption {
+  margin-top: 6px;
+  color: var(--lead);
+  font-family: var(--figures);
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+/* A phone reads the frames one under the other, the upright ones narrower. */
+@media (max-width: 720px) {
+  header,
+  main {
+    padding: 0 16px;
+  }
+  header {
+    padding-top: 24px;
+  }
+  .row {
+    flex-direction: column;
+  }
+  .frame {
+    width: 100%;
+    flex: none;
+  }
+  .frame.upright {
+    width: 70%;
+  }
+}
+dialog {
+  width: 96vw;
+  max-width: none;
+  height: 96vh;
+  max-height: none;
+  padding: 12px;
+  border: 1px solid var(--shade);
+  background: var(--vellum);
+}
+dialog::backdrop {
+  background: rgb(43 30 18 / 0.6);
+}
+.large {
+  position: relative;
+  height: calc(100% - 28px);
+  overflow: hidden;
+}
+.large iframe {
+  position: absolute;
+  border: 0;
+  transform-origin: 0 0;
+}
+.large-name {
+  margin: 4px 0 0;
+  color: var(--lead);
+  font-family: var(--figures);
+  font-size: 14px;
+  font-weight: 500;
+}

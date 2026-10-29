@@ -138,6 +138,13 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/i18n/` : les mots, en français et en anglais, par section (`home`, `game`, `race`, `pacts`, `errors`).
 - `design/mockups/` : les sources des planches, tirées d'une partie du jeu (`cells.ts`) ; leurs pièces suivent les
   jetons du HUD (`kit.py`).
+- `design/maquette/` : **la maquette, calquée sur le jeu lui-même** (décidé le 29/10, « une vraie maquette … calquée
+  exactement pareille que le site ») : le front se dessine d'abord là, en propositions côte à côte, puis se code.
+  `npm run maquette` (`scripts/maquette.ts`) joue une partie de bots sans écran et en sauve les moments
+  (`public/saves/`, que `/play?save=<nom>` montre figés, `src/render/save.ts`) ; `capture.mjs` les ouvre dans Chrome à
+  chaque taille d'écran (`moments.mjs`) et prend à part la carte (une image) et le HUD (son balisage), avec la CSS du
+  jeu ; `build.mjs` les remonte dans `maquette.html`, chaque cadre le jeu au pixel près, et à côté les propositions
+  (`proposals/`), écrites dans les classes du jeu : celle qu'on retient est déjà son code.
 - Pas de Convex pour l'instant (projet créé en `--no-backend`) : il viendra pour les comptes et les classements. Le
   serveur de jeu sera sa propre brique, un relais en lockstep comme celui d'OpenFront (le Concept, « Les briques »).
 

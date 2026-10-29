@@ -369,6 +369,38 @@ the lord aimed at, the cartouche beside the pointer) are built from these and
 nothing else. The look follows the design boards, whose sources are in
 `design/mockups/` and mirror the same tokens (`kit.py`).
 
+## The maquette
+
+The interface is designed on the game itself, never beside it: the
+maquette (`design/maquette/maquette.html`) shows the game's real screen,
+held still at chosen moments of a real game, at the sizes of screen that
+matter, side by side. It cannot drift from the game, because each of its
+frames is the game. A piece of the HUD is redesigned there first, as
+proposals beside the game's own; the one chosen is then coded. It is made
+in three steps:
+
+1. `npm run maquette` (`scripts/maquette.ts`) plays a game of bots without
+   a screen and saves its moments (`public/saves/`, the saved games above):
+   the opening, minute 3, an offer of alliance, an alliance to renew, a war
+   up close, the whole land at minute 20.
+2. `node design/maquette/capture.mjs [game url]`, the game served, opens
+   each save in `/play?save=<name>` in a headless Chrome at each size
+   (`moments.mjs`: a desk's screen, a laptop's, a phone), staged as a player
+   would (the pointer on a neighbour's land, a key, a click), waits until
+   the map is drawn, and takes apart the map alone as an image and the HUD's
+   markup as the page rendered it, and once the page's CSS (`captures/`).
+   The dev server does not watch `design/`, and the game's CSS is not made
+   from it (`vite.config.ts`, the `@source not` of `app.css`): what the
+   maquette writes never reloads the pages it is capturing, nor feeds the
+   game's CSS with its words.
+3. `node design/maquette/build.mjs` lays them together again in
+   `maquette.html`: each frame a document of its real size, so that the
+   game's CSS lays the HUD out as the game does at that size, scaled down to
+   its place in the row, the map's image underneath and the HUD on top. A
+   proposal (`proposals/*.mjs`) puts new markup, written in the game's own
+   classes, in the place of a piece of the HUD, and is shown beside the
+   game's on the same moments and sizes.
+
 ## The home
 
 The home is built as OpenFront's, in the game's own materials: one column
