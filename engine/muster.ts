@@ -77,30 +77,51 @@ export function marchOut(
   visit: (tile: number, steps: number) => boolean,
 ): (tile: number) => Array<number> {
   const walks = walkers(state, lord)
-  const { owner } = state
-  // The tile before each one on its road: -1 at a village, -2 not walked.
-  const before = new Int32Array(owner.length).fill(-2)
+  const { owner, grid } = state
+  const { width } = grid
+  // Each tile's steps from the nearest village, -1 not walked, and that village.
+  const steps = new Int32Array(owner.length).fill(-1)
+  const root = new Int32Array(owner.length).fill(-1)
   const queue = sites.filter((site) => owner[site] === lord)
-  for (const site of queue) before[site] = -1
+  for (const site of queue) [steps[site], root[site]] = [0, site]
   let from = -1
   const reach = (next: number) => {
     const o = owner[next]
-    if (before[next] !== -2 || o < 0 || !walks[o]) return
-    before[next] = from
+    if (steps[next] !== -1 || o < 0 || !walks[o]) return
+    steps[next] = steps[from] + 1
+    root[next] = root[from]
     queue.push(next)
   }
   // A ring of tiles at a time, each a tile further than the one before.
-  let steps = 0
-  let ring = queue.length
-  for (let head = 0; head < queue.length; head++) {
-    if (head === ring) [steps, ring] = [steps + 1, queue.length]
-    from = queue[head]
-    if (!visit(from, steps)) break
-    eachAround(state.grid, from, reach)
+  for (const tile of queue) {
+    from = tile
+    if (!visit(from, steps[from])) break
+    eachAround(grid, from, reach)
   }
+  // Of the roads as short, the one nearest the straight line from its
+  // village: a regular stair rather than a right angle (« il fait faire des
+  // angles droits par les alliés »), as long to walk.
   return (tile) => {
     const road = [tile]
-    for (let p = before[tile]; p >= 0; p = before[p]) road.push(p)
+    const village = root[tile]
+    if (village < 0) return road
+    const [ax, ay] = [tile % width, Math.floor(tile / width)]
+    const [bx, by] = [village % width, Math.floor(village / width)]
+    const off = (t: number) =>
+      Math.abs(
+        ((t % width) - ax) * (by - ay) -
+          (Math.floor(t / width) - ay) * (bx - ax),
+      )
+    let at = tile
+    while (steps[at] > 0) {
+      let next = -1
+      eachAround(grid, at, (n) => {
+        if (steps[n] !== steps[at] - 1 || root[n] !== village) return
+        if (next < 0 || off(n) < off(next)) next = n
+      })
+      at = next
+      road.push(at)
+    }
     return road.reverse()
   }
 }
