@@ -9,8 +9,8 @@ import type { ReactNode } from 'react'
 // for a piece at the top of the screen; never off the screen's sides. It is
 // laid over the whole page, so that no sheet the piece stands in clips it.
 
-/** How long the pointer rests on a piece before its hint opens, in ms: a pointer passing by opens none. */
-const REST = 350
+/** How long the pointer rests on a piece before its hint opens, in ms: at once (« les tooltips du menu en bas, fais-les instantanés »). */
+const REST = 0
 /** The room kept from the screen's sides, and from the piece, in pixels. */
 const [EDGE, GAP] = [8, 8]
 

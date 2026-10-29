@@ -6,7 +6,7 @@ import { Campaign } from './Campaign'
 import { Moment } from './Moment'
 import { Purse } from './Purse'
 import { Race } from './Race'
-import { Realms } from './Realms'
+import { Lords } from './Lords'
 import type { RefObject } from 'react'
 import type { GameHandle, Summary } from '~/render/client'
 
@@ -49,8 +49,8 @@ export function Places({
     <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-7 max-sm:gap-2 max-sm:p-3 short:gap-2 short:p-3">
       <div className="flex items-start gap-2">
         <Sheet className="flex items-center gap-3 px-3 py-1">
-          <HomeMark onHome={onHome} />
           {onBook && <BookButton onOpen={onBook} />}
+          <HomeMark onHome={onHome} />
         </Sheet>
       </div>
       <div className="flex min-w-0 flex-col items-center gap-2">
@@ -58,9 +58,9 @@ export function Places({
         {!waiting && <Moment summary={summary} online={online} />}
         {cry && <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />}
       </div>
-      <div className="justify-self-end">
+      <div className="w-88 justify-self-end max-sm:w-auto">
         {!waiting && (
-          <Realms summary={summary} aimed={aimed} onLight={game.light} />
+          <Lords summary={summary} aimed={aimed} onLight={game.light} />
         )}
       </div>
       <div

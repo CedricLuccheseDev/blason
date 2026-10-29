@@ -24,14 +24,7 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
       aria-hidden="true"
       className="h-7 w-full max-w-[360px]"
     >
-      <line
-        x1={X(0)}
-        y1={Y}
-        x2={X(100)}
-        y2={Y}
-        stroke={INK}
-        strokeWidth="1"
-      />
+      <line x1={X(0)} y1={Y} x2={X(100)} y2={Y} stroke={INK} strokeWidth="1" />
       {Array.from({ length: 11 }, (_, i) => i * 10).map((p) => (
         <line
           key={p}
@@ -106,8 +99,8 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <Sheet className="flex flex-col items-center px-4 py-1">
-            <div className="w-[360px] max-sm:w-56 short:w-72">
+          <Sheet className="flex w-88 flex-col items-center px-4 py-1 max-sm:w-auto">
+            <div className="w-full max-sm:w-56">
               <Track summary={summary} />
             </div>
             <div className="flex items-baseline gap-3">
