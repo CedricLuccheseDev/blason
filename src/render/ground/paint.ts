@@ -142,8 +142,14 @@ function shadows(p: Pen, list: Array<Ornament>) {
   })
 }
 
-/** The decoration of a box, painted for so many pixels per tile on screen. */
-export function paint(p: Pen, ground: Ground, box: Box, perTile: number) {
+/** The decoration of a box, painted for so many pixels per tile on screen; with the shadows it casts, or plainer. */
+export function paint(
+  p: Pen,
+  ground: Ground,
+  box: Box,
+  perTile: number,
+  shadowed = true,
+) {
   const f = fades(perTile)
   const detail = f.near > 0.5 ? 2 : 1
   const shade = quieted(QUIET.tone * f.near)
@@ -171,7 +177,7 @@ export function paint(p: Pen, ground: Ground, box: Box, perTile: number) {
     span,
     detail,
   )
-  shadows(p, list)
+  if (shadowed) shadows(p, list)
   for (const it of list) {
     g.globalAlpha = (0.55 + 0.45 * it.w) * faint
     if (it.kind === 'tree')

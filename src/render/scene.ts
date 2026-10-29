@@ -1,7 +1,7 @@
-import { Container } from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
 import { UNIT } from '../../engine'
 import { makeLabels } from './layers/labels'
-import { drawLand, makeSea } from './layers/lands'
+import { landShape, makeSea } from './layers/lands'
 import { REACH, makePage } from './layers/page'
 import { makePaper } from './layers/paper'
 import { legible } from './ease'
@@ -46,6 +46,13 @@ import type { Anchor } from './heralds'
 // names and the standards shrink with it, as if the page were held farther
 // away, and the small writing fades out.
 
+/** Containers drawn as one render group, their batches kept until their own structure changes. */
+function group(...children: Array<Container>) {
+  const c = new Container({ isRenderGroup: true })
+  c.addChild(...children)
+  return c
+}
+
 export function makeScene(
   app: Application,
   land: World,
@@ -55,12 +62,18 @@ export function makeScene(
 ) {
   const page = makePage(land)
   const sea = makeSea(land)
-  const regions = makeRegions(state, land, me)
+  const regions = makeRegions(state, me)
   const ground = makeGround(land, state)
   const borders = makeBorders(land, regions.outline)
+  // The land's one shape, laid bare and clipped to twice: the washes with
+  // the ground's tones, then the borders over the decoration.
+  const shape = landShape(land)
+  const washed = new Container()
+  washed.addChild(regions.container, ground.tinted)
+  washed.mask = washed.addChild(new Graphics(shape))
   const lines = new Container()
   lines.addChild(regions.stone, borders.container)
-  lines.mask = lines.addChild(drawLand(land))
+  lines.mask = lines.addChild(new Graphics(shape))
   const marks = makeMarks(state)
   const life = makeLife(ground.fieldsNear)
   const armies = makeArmies(me)
@@ -90,31 +103,38 @@ export function makeScene(
   const scars = makeScars()
   const strikes = makeStrikes(me)
   const world = new Container()
-  world.addChild(page.container, sea.container, drawLand(land))
-  if (page.compass) world.addChild(page.compass)
+  // Each layer its own render group: what moves each frame (a man shown or
+  // hidden, a seal drawn again) rebuilds its own group's batches, never the
+  // washes', the borders' or the decoration's, which change a few times a
+  // second at most.
+  const below = [page.container, sea.container, new Graphics(shape)]
+  if (page.compass) below.push(page.compass)
   world.addChild(
-    regions.container,
-    ground.container,
-    trade.roads,
-    lines,
-    borders.coast,
-    scars.container,
-    marks.container,
-    life.container,
-    allies.container,
-    raids.container,
-    seals.container,
-    building.container,
-    pacts.container,
-    page.frame,
-    trade.container,
-    armies.container,
-    strikes.container,
-    tidings.container,
-    aim.container,
-    planted.container,
-    labels.container,
-    badges.container,
+    group(...below),
+    ...[
+      washed,
+      ground.container,
+      trade.roads,
+      lines,
+      borders.coast,
+      scars.container,
+      marks.container,
+      life.container,
+      allies.container,
+      raids.container,
+      seals.container,
+      building.container,
+      pacts.container,
+      page.frame,
+      trade.container,
+      armies.container,
+      strikes.container,
+      tidings.container,
+      aim.container,
+      planted.container,
+      labels.container,
+      badges.container,
+    ].map((layer) => group(layer)),
   )
   const paper = makePaper(land, REACH)
   world.addChild(paper.sprite)
@@ -146,6 +166,7 @@ export function makeScene(
     destroy() {
       page.destroy()
       paper.destroy()
+      shape.destroy()
       ground.destroy()
     },
     /** `far`: the land's size against the whole land's, under 1 only farther out than it. */
@@ -165,8 +186,8 @@ export function makeScene(
       raids.draw(state, zoom, traced)
       building.draw(state, zoom)
       seals.draw(state, zoom)
-      trade.draw(state, between)
-      armies.draw(state, zoom, between, far)
+      trade.draw(state, zoom, between)
+      armies.draw(state, zoom, seen, between, far)
       strikes.draw(state, zoom, between)
       tidings.draw(state, zoom)
       aim.draw(hovered, hand, zoom)

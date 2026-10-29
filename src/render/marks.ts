@@ -21,6 +21,7 @@ export function makeMarks(state: GameState) {
   const works = container.addChild(new Container())
   const at = (tile: number) => siteOf(state, tile)
   let key = ''
+  let seen = { tick: -1, zoom: 0 }
 
   function redraw() {
     villages.removeChildren().forEach((c) => c.destroy())
@@ -44,6 +45,9 @@ export function makeMarks(state: GameState) {
     container,
     /** At so many pixels per map unit. */
     update(zoom: number) {
+      // Nothing changes between two ticks but the zoom.
+      if (state.tick === seen.tick && zoom === seen.zoom) return
+      seen = { tick: state.tick, zoom }
       const built = state.works.map((w) => [w.tile, w.owner].join(':'))
       const now = [state.villages.length, ...built].join(',')
       if (now !== key) {

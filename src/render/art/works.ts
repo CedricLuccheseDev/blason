@@ -1,5 +1,6 @@
 import { CanvasSource, Texture } from 'pixi.js'
 import { TONE } from '../palette'
+import { sharpest } from '../quality'
 import { castleFar, castleNear } from './castle'
 import { marketFar, marketNear } from './market'
 import { villageFar, villageNear } from './village'
@@ -52,8 +53,7 @@ export function canvasFor(
   draw: (p: Pen) => void,
   box: Frame = BOX,
 ): HTMLCanvasElement {
-  const density = Math.min(2, window.devicePixelRatio || 1)
-  const res = px * density
+  const res = px * sharpest()
   const canvas = document.createElement('canvas')
   canvas.width = Math.ceil(box.width * res)
   canvas.height = Math.ceil(box.height * res)

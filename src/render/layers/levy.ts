@@ -43,10 +43,14 @@ function swords(g: Graphics, x: number, y: number, k: number) {
 export function makeLevySeals() {
   const container = new Container()
   const g = container.addChild(new Graphics())
+  let seen = { tick: -1, zoom: 0 }
 
   return {
     container,
+    /** Drawn again with a tick or the zoom: nothing else moves them. */
     draw(state: GameState, zoom: number) {
+      if (state.tick === seen.tick && zoom === seen.zoom) return
+      seen = { tick: state.tick, zoom }
       g.clear()
       // Too far to see the villages, too far for their seals.
       if (VILLAGE * zoom < FAR) return

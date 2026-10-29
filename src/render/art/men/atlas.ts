@@ -1,3 +1,4 @@
+import { sharpest } from '../../quality'
 import { LOOKS } from './looks'
 import { FRAMES } from './pose'
 import type { Box, Look } from './looks'
@@ -8,8 +9,12 @@ import type { Layer, Sketch } from './kit'
 // column for each frame. Plain canvas, so that a page can draw the sheet
 // without the game's renderer; the textures are cut out of it (textures.ts).
 
-/** Pixels a local unit: a man some fifty-five pixels tall. */
-export const RES = 5
+/**
+ * Pixels a local unit: a man some fifty-five pixels tall at a pixel and a
+ * half a point, the screen's pixels at the closest zoom; on a plainer
+ * screen as sharp as it shows him, and a sheet half the size.
+ */
+export const RES = Math.max(3.5, (5 * sharpest()) / 1.5)
 
 export type Sheet = {
   canvas: HTMLCanvasElement

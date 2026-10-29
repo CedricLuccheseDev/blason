@@ -2,7 +2,9 @@ import { Container, Graphics, Sprite } from 'pixi.js'
 import { jitter } from '../art/melee'
 import { TONE } from '../palette'
 import { hash } from '../pen'
+import { quality } from '../quality'
 import { SIZE, frameAt, makeFigure, pixel, shadowOf, sheetOf } from '../figures'
+import type { Box } from '../camera'
 import type { Spot } from '../fronts'
 import type { Look } from '../figures'
 import type { Man, Squad } from '../squads'
@@ -36,6 +38,8 @@ const SIZES: Record<Look, number> = {
 }
 /** The shadow pushed away from the light, to the lower right, in the drawings' units. */
 const CAST = 0.5
+/** Map units round the screen a man may stand in and still be laid: he is some four tall. */
+const MARGIN = 8
 
 /** A side drawn: its men, and whether they fight or walk. */
 export type Drawn = { squad: Squad; fighting: boolean }
@@ -109,8 +113,16 @@ export function makeTroops() {
     shadow.alpha = man.alpha * squad.alpha
   }
 
-  function side({ squad, fighting }: Drawn, seconds: number) {
-    for (const man of squad.men) one(squad, man, fighting, seconds)
+  /** A side's men on screen: those off it are not laid at all. */
+  function side({ squad, fighting }: Drawn, seconds: number, view: Box) {
+    for (const man of squad.men)
+      if (
+        man.x > view.left - MARGIN &&
+        man.x < view.right + MARGIN &&
+        man.y > view.top - MARGIN &&
+        man.y < view.bottom + MARGIN
+      )
+        one(squad, man, fighting, seconds)
   }
 
   /** The dust raised along a line, drifting, and sparks where iron meets iron. */
@@ -143,12 +155,19 @@ export function makeTroops() {
 
   return {
     container,
-    draw(sides: Array<Drawn>, lines: Array<Line>, seconds: number) {
+    draw(
+      sides: Array<Drawn>,
+      lines: Array<Line>,
+      seconds: number,
+      view: Box,
+    ) {
       used = 0
+      // When the frames run long, the men stand without their shadows (quality.ts).
+      shadows.visible = quality().footing
       dust.clear()
       sparks.clear()
       for (const line of lines) air(line, seconds)
-      for (const drawn of sides) side(drawn, seconds)
+      for (const drawn of sides) side(drawn, seconds, view)
       for (let i = used; i < pool.length; i++) {
         pool[i].figure.box.visible = false
         pool[i].shadow.visible = false

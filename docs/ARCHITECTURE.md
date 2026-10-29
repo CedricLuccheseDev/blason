@@ -155,7 +155,22 @@ orders. It decides nothing about the rules.
   paved roads, the borders (`layers/borders.ts`: a watercolour edge of the
   lord's colour and a ribbon of ink that swells as a quill's, `ribbon.ts`,
   `pen.ts`), the works (`marks.ts`) and their life (`layers/life.ts`), the
-  green and the red borders, then the wagons, the armies and the names.
+  green and the red borders, then the wagons, the armies and the names. Each
+  layer is its own render group, so that what moves every frame (a man shown
+  or hidden, a seal drawn again) rebuilds only its own batches, never the
+  washes' or the borders'. The washes with the ground's tones, and the
+  borders, are clipped to the land's one shape (`landShape` in
+  `layers/lands.ts`: its cells filled, their sides between two land cells
+  straight, only the coast as drawn), laid once and shared by every clip; the
+  washes and the borders' watercolour are laid with fewer points, none farther
+  from its line than the border's ink covers (`straighten` and `simplify` in
+  `geometry.ts`).
+- The map is light on the machine (`quality.ts`): the renderer draws at most
+  a pixel and a half a point, and so do the canvases painted for it (the works,
+  the men's sheets, the decoration). Off the screen, no man is laid; the works
+  and the seals are laid again only with a tick or the zoom; a road's stones
+  show only once each covers a pixel; the sea's shore lines leave out the
+  coast's smallest turns, the farther from it the more.
 - The map gains detail with the zoom, by the pixels a tile covers on screen
   (`ground/detail.ts`): from afar the wash and the works' silhouettes; at mid
   distance (9 to 18 pixels a tile) hatched hills, groves, rivers, fields round
@@ -173,7 +188,11 @@ orders. It decides nothing about the rules.
   when the land under it, a work or a road changed there (`changes.ts`, from
   the tiles' weights, `weights.ts`: nothing on a border, a road or a shore, a
   clearing round each work) or the zoom passed to another level, a few each
-  frame, the middle of the screen first, the new one fading in over the old.
+  frame within a budget of time, the middle of the screen first, the new one
+  fading in over the old; a chunk already painted waits most of a second
+  before it is painted again, however often a front moves through it. The
+  cache keeps some ten million pixels, without mipmaps: a chunk is painted
+  for its level and never shrunk much.
 - One light over the whole map, from the upper left (`art/light.ts`), so that
   what stands on it stands: each tree, hill and work casts a soft shadow to
   the lower right, as long as it is high, with a darker contact at its foot,

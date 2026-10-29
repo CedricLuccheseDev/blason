@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import { chain, flatten } from '../geometry'
+import { chain, flatten, simplifyLoop } from '../geometry'
 import { alongBorder } from '../pen'
 import { TONE, playerColor } from '../palette'
 import { makeRibbon } from '../ribbon'
@@ -20,6 +20,9 @@ const RIM = [
   { by: 2, width: 2.4, alpha: 0.22 },
   { by: 3.4, width: 2.8, alpha: 0.12 },
 ]
+
+/** How far the watercolour's soft strokes may stray from their line, in map units: well under a pixel on screen from afar, a soft pixel up close. */
+const SOFT = 0.1
 
 /** The ink's width in map units at so many pixels per unit: on screen 1.1 units, kept within 1.5 and 3 pixels. */
 const inkWidth = (zoom: number) => Math.min(3, Math.max(1.5, 1.1 * zoom)) / zoom
@@ -66,7 +69,8 @@ export function makeBorders(
     if (!free) {
       rim = rims.addChild(new Graphics())
       for (const { by, width: w, alpha } of RIM) {
-        for (const loop of loops) rim.poly(flatten(inside(loop, by)))
+        for (const loop of loops)
+          rim.poly(flatten(simplifyLoop(inside(loop, by), SOFT)))
         rim.stroke({ width: w, color: playerColor(key), alpha, join: 'round' })
       }
     }

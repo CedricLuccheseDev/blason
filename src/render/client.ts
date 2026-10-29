@@ -16,6 +16,7 @@ import { makeNotes } from './notes'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
+import { bestQuality } from './quality'
 import type { GameHandle } from './handle'
 import type { Aim } from './aiming'
 import type { News } from './news'
@@ -70,9 +71,12 @@ export async function mountGame(
     resizeTo: element,
     background: TONE.edge,
     antialias: true,
-    // Behind the home's menu, fewer pixels: a sharp game is not worth it there.
-    resolution: Math.min(devicePixelRatio || 1, hooks.spectate ? 1.5 : 2),
+    resolution: bestQuality().resolution,
     autoDensity: true,
+    // The game reads its own gestures and has no filters: neither pixi's
+    // events, which test the whole map under every move, nor its filters,
+    // its DOM layer or its accessibility overlay are loaded.
+    skipExtensionImports: true,
   })
   element.appendChild(app.canvas)
   const session = hooks.online
@@ -144,6 +148,11 @@ export async function mountGame(
     if (e.key === 'Escape') unpin()
     if (hand.key(e.key)) refresh()
   }
+  /** What is in hand changed: the figures and the aim again. */
+  const handed = (change: () => void) => {
+    change()
+    refresh()
+  }
   /** The figures and the aim again, after what is in hand changed. */
   function refresh() {
     hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
@@ -212,18 +221,9 @@ export async function mountGame(
       scene.destroy()
       hooks.online?.link.close()
     },
-    choose(next) {
-      hand.choose(next)
-      refresh()
-    },
-    hold(next) {
-      hand.hold(next)
-      refresh()
-    },
-    aim(next) {
-      hand.aim(next)
-      refresh()
-    },
+    choose: (next) => handed(() => hand.choose(next)),
+    hold: (next) => handed(() => hand.hold(next)),
+    aim: (next) => handed(() => hand.aim(next)),
     close: unpin,
     zoom: (step) => camera.zoomBy(step),
     home: () => camera.home(),

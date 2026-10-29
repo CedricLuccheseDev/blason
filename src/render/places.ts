@@ -100,10 +100,10 @@ function ringRound(g: Graphics, x: number, share: number, color: number) {
 /** The marks beside the lords' names, gliding with them: my allies' links, a traitor's broken shield. */
 export function makeBadges(state: GameState, me: number) {
   const container = new Container()
-  /** Each lord's marks, by the icons they show, drawn again only when these change; the alliance's ring, every time. */
+  /** Each lord's marks, by the icons they show, drawn again only when these change; their rings, when they moved. */
   const drawn = new Map<
     number,
-    { icons: string; g: Container; ring: Graphics }
+    { icons: string; g: Container; ring: Graphics; rings: string }
   >()
 
   /** The share of a traitor's mark still to run, 0 to 1. */
@@ -145,7 +145,7 @@ export function makeBadges(state: GameState, me: number) {
             one.position.set(k * 50, 0)
           })
           const ring = g.addChild(new Graphics())
-          mark = { icons: key, g, ring }
+          mark = { icons: key, g, ring, rings: '' }
           drawn.set(lord, mark)
         }
         const name = nameOf(lord)
@@ -158,14 +158,18 @@ export function makeBadges(state: GameState, me: number) {
           name.y - 12 / zoom,
         )
         // Round the links, the time left to the alliance, emptying as it
-        // runs out; round the broken shield, the time he stays a traitor.
+        // runs out; round the broken shield, the time he stays a traitor:
+        // drawn again only when they moved.
+        const shares = icons.map((icon) =>
+          icon === 'links' ? left(lord) : shame(lord),
+        )
+        const rings = shares.join()
+        if (rings === mark.rings) return
+        mark.rings = rings
         mark.ring.clear()
         icons.forEach((icon, k) => {
-          const [share, color] =
-            icon === 'links'
-              ? [left(lord), TONE.pact]
-              : [shame(lord), TONE.gules]
-          ringRound(mark.ring, k * 50, share, color)
+          const color = icon === 'links' ? TONE.pact : TONE.gules
+          ringRound(mark.ring, k * 50, shares[k], color)
         })
       })
     },

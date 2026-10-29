@@ -1,5 +1,5 @@
-import { Container, Sprite, Texture } from 'pixi.js'
-import { textureOf } from '../art/works'
+import { CanvasSource, Container, Sprite, Texture } from 'pixi.js'
+import { quality } from '../quality'
 import { makeCache } from './cache'
 import { fades } from './detail'
 import { makeChanges } from './changes'
@@ -13,14 +13,17 @@ import type { Box } from '../camera'
 // power of two, as sharp as the screen) and kept on the graphics card, laid
 // over the washes and multiplied into them. A chunk is painted again only
 // when the land under it changed hands or the zoom passed to another
-// level, a few each frame within a small budget of time, the middle of the
-// screen first; meanwhile the nearest level painted stands in, and the new
-// one fades in over the old. The whole fades in from mid distance.
+// level, a few each frame within a small budget of time (quality.ts), the
+// middle of the screen first; meanwhile the nearest level painted stands in,
+// and the new one fades in over the old. A chunk already painted at the
+// level waits a little before it is painted again, however often a front
+// moves through it: its trees on a border linger a moment. The whole fades
+// in from mid distance.
 
-/** Tiles a side of a chunk; ms a frame may spend painting; ms a chunk takes to fade into another. */
+/** Tiles a side of a chunk; ms a chunk takes to fade into another; ms a chunk painted waits before it is painted again. */
 const SIDE = 16
-const BUDGET_MS = 4
 const FADE_MS = 250
+const STALE_MS = 900
 
 type Slot = { now: Sprite; was: Sprite; since: number }
 
@@ -35,7 +38,7 @@ export function makeDecor(ground: Omit<Ground, 'weights' | 'fieldsNear'>) {
     Math.ceil(grid.height / SIDE),
   ]
   const slots = new Map<number, Slot>()
-  const density = () => Math.min(2, window.devicePixelRatio || 1)
+  const density = () => quality().resolution
 
   function sprite() {
     const s = container.addChild(new Sprite())
@@ -44,7 +47,7 @@ export function makeDecor(ground: Omit<Ground, 'weights' | 'fieldsNear'>) {
     return s
   }
 
-  function bake(chunk: number, level: number): Painted {
+  function bake(chunk: number, level: number, now: number): Painted {
     const q = 2 ** (level / 2)
     const size = Math.ceil(span * q)
     const canvas = document.createElement('canvas')
@@ -59,13 +62,17 @@ export function makeDecor(ground: Omit<Ground, 'weights' | 'fieldsNear'>) {
         changes.ground(),
         { x0, y0, x1: x0 + span, y1: y0 + span },
         px * grid.size,
+        quality().shadows,
       )
     }
+    // Painted for its level, it is never shrunk much: no mipmaps, a third less memory.
+    const source = new CanvasSource({ resource: canvas })
     return {
-      texture: textureOf(canvas),
+      texture: new Texture({ source }),
       level,
       version: changes.version(chunk),
       pixels: size * size,
+      at: now,
     }
   }
 
@@ -128,18 +135,16 @@ export function makeDecor(ground: Omit<Ground, 'weights' | 'fieldsNear'>) {
       )
       const shown = new Set<number>()
       const inUse = new Set<Texture>()
-      const until = performance.now() + BUDGET_MS
-      let painted = 0
+      const until = performance.now() + quality().paintMs
       for (const chunk of covered(view)) {
         if (!changes.worth(chunk, f.near > 0)) continue
         let p = cache.get(chunk, level)
-        if (
-          (!p || p.version !== changes.version(chunk)) &&
-          (painted === 0 || performance.now() < until)
-        ) {
-          p = bake(chunk, level)
+        // Missing at this level, or stale and done waiting: painted while the budget lasts, one at least.
+        const due =
+          !p || (p.version !== changes.version(chunk) && now - p.at > STALE_MS)
+        if (due && performance.now() < until) {
+          p = bake(chunk, level, now)
           cache.put(chunk, p, inUse)
-          painted++
         }
         p ??= cache.nearest(chunk, level)
         if (!p) continue

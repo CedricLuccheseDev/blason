@@ -28,10 +28,17 @@ function hourglass(g: Graphics, x: number, y: number, h: number) {
 export function makeBuilding() {
   const container = new Container()
   const g = container.addChild(new Graphics())
+  let empty = true
 
   return {
     container,
     draw(state: GameState, zoom: number) {
+      const building = state.works.some(
+        (w) => !standing(state, w) && w.ready !== undefined,
+      )
+      // Nothing being built, nothing drawn again.
+      if (!building && empty) return
+      empty = !building
       g.clear()
       const s = 1 / zoom
       const beat = 1 + 0.06 * Math.sin((performance.now() / 1000) * 4)

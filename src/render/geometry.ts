@@ -42,3 +42,72 @@ export function chain(
   })
   return lines
 }
+
+/**
+ * A loop without the points that lie on a straight line between their two
+ * neighbours: the same shape, fewer points to fill or stroke. A tiled
+ * border's straight runs and even steps are such lines, traced and
+ * smoothed; its curves keep every point.
+ */
+export function straighten(loop: ReadonlyArray<Point>): Array<Point> {
+  const n = loop.length
+  if (n < 4) return [...loop]
+  const kept: Array<Point> = []
+  for (let i = 0; i < n; i++) {
+    const [ax, ay] = loop[(i + n - 1) % n]
+    const [bx, by] = loop[i]
+    const [cx, cy] = loop[(i + 1) % n]
+    const [ux, uy, vx, vy] = [bx - ax, by - ay, cx - bx, cy - by]
+    const turn = Math.abs(ux * vy - uy * vx)
+    const ahead = ux * vx + uy * vy > 0
+    if (!ahead || turn > 1e-6 * Math.hypot(ux, uy) * Math.hypot(vx, vy))
+      kept.push(loop[i])
+  }
+  return kept.length >= 3 ? kept : [...loop]
+}
+
+/**
+ * An open line with fewer points, none of those left out farther than
+ * `within` from it (Douglas and Peucker): a line drawn wide away from what
+ * it follows needs none of its smallest turns.
+ */
+export function simplify(
+  line: ReadonlyArray<Point>,
+  within: number,
+): Array<Point> {
+  const n = line.length
+  if (n < 3) return [...line]
+  const keep = new Uint8Array(n)
+  keep[0] = keep[n - 1] = 1
+  const stack: Array<[number, number]> = [[0, n - 1]]
+  for (let span = stack.pop(); span; span = stack.pop()) {
+    const [a, b] = span
+    const [ax, ay] = line[a]
+    const [bx, by] = line[b]
+    const length = Math.hypot(bx - ax, by - ay)
+    let [far, gap] = [-1, within]
+    for (let i = a + 1; i < b; i++) {
+      const [x, y] = line[i]
+      const d =
+        length > 0
+          ? Math.abs((bx - ax) * (ay - y) - (ax - x) * (by - ay)) / length
+          : Math.hypot(x - ax, y - ay)
+      if (d > gap) [far, gap] = [i, d]
+    }
+    if (far < 0) continue
+    keep[far] = 1
+    stack.push([a, far], [far, b])
+  }
+  return line.filter((_, i) => keep[i] === 1)
+}
+
+/** A loop with fewer points, none of those left out farther than `within` from it. */
+export function simplifyLoop(
+  loop: ReadonlyArray<Point>,
+  within: number,
+): Array<Point> {
+  if (loop.length < 4) return [...loop]
+  const plain = simplify([...loop, loop[0]], within)
+  plain.pop()
+  return plain.length >= 3 ? plain : [...loop]
+}

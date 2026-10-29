@@ -45,17 +45,26 @@ function lay(g: Graphics, a: Spot, b: Spot) {
     }
 }
 
-export function drawPaving(g: Graphics, path: Array<Spot>, mine: boolean) {
-  g.moveTo(path[0].x, path[0].y)
-  for (const p of path.slice(1)) g.lineTo(p.x, p.y)
-  g.stroke({
+/** A stone's size in map units: farther out than a pixel a stone, the stones are not shown. */
+export const STONE = SIZE * 2
+
+/** The band of beaten earth, in one graphics, and its stones in another, shown only close enough to be seen. */
+export function drawPaving(
+  band: Graphics,
+  stones: Graphics,
+  path: Array<Spot>,
+  mine: boolean,
+) {
+  band.moveTo(path[0].x, path[0].y)
+  for (const p of path.slice(1)) band.lineTo(p.x, p.y)
+  band.stroke({
     width: WIDE,
     color: EARTH,
     alpha: mine ? 0.55 : 0.4,
     cap: 'round',
     join: 'round',
   })
-  for (let i = 0; i < path.length - 1; i++) lay(g, path[i], path[i + 1])
-  g.fill({ color: TONE.stone, alpha: mine ? 0.95 : 0.8 })
-  g.stroke({ width: 0.1, color: TONE.ink, alpha: mine ? 0.45 : 0.3 })
+  for (let i = 0; i < path.length - 1; i++) lay(stones, path[i], path[i + 1])
+  stones.fill({ color: TONE.stone, alpha: mine ? 0.95 : 0.8 })
+  stones.stroke({ width: 0.1, color: TONE.ink, alpha: mine ? 0.45 : 0.3 })
 }

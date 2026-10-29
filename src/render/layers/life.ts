@@ -11,15 +11,17 @@ import {
 } from '../art/works'
 import { fades, still } from '../ground/detail'
 import { siteOf } from '../marks'
+import { quality } from '../quality'
 import type { Texture } from 'pixi.js'
 import type { Field } from '../ground/fields'
 import type { Box } from '../camera'
-import type { GameState } from '../../../engine'
+import type { GameState, Work } from '../../../engine'
 
 // What lives on the land, only for what is on screen and only from mid
 // distance, slow and small: the mills' sails turning, and up close the
 // chimneys' smoke, the peasants hoeing their fields, the gold glinting on
-// the markets. Still under reduced motion, held as it stands.
+// the markets. Still under reduced motion, held as it stands; when the
+// frames run long (quality.ts), only the sails, and at the least still.
 
 /** Peasant poses, from upright to bent to the hoe. */
 const POSES = 8
@@ -81,7 +83,7 @@ export function makeLife(fieldsNear: (view: Box) => Array<Field>) {
       sails(p, 0, lod),
     )
     lay(sail, x + HUB[0] * k, y + HUB[1] * k, 6.5 * k, 1, t * 0.9 + x)
-    if (lod < 2) return
+    if (lod < 2 || !quality().bustle) return
     const smoke = stamp('puff', 0.6, 9, puff)
     CHIMNEYS.forEach(([cx, cy], i) => {
       for (let p = 0; p < 5; p++) {
@@ -107,12 +109,37 @@ export function makeLife(fieldsNear: (view: Box) => Array<Field>) {
     })
   }
 
+  /** The life of a work: a village's, a market's up close. */
+  function at(
+    work: Work,
+    x: number,
+    y: number,
+    k: number,
+    lod: 1 | 2,
+    t: number,
+    near: number,
+  ) {
+    if (work === 'village') village(x, y, k, lod, t, near)
+    else if (work === 'market' && lod === 2 && quality().bustle)
+      market(x, y, k, t)
+  }
+
+  /** A peasant hoeing his field, bent to it and up again. */
+  function peasant(fd: Field, t: number, near: number) {
+    const pose = Math.floor(
+      (Math.sin(t * 2.4 + fd.x) * 0.5 + 0.5) * (POSES - 1) + 0.5,
+    )
+    const man = stamp(`hoer${pose}`, 3, 12, (p) => hoer(p, pose / (POSES - 1)))
+    lay(man, fd.x, fd.y + 1, 3 * 1.5, near)
+  }
+
   return {
     container,
     draw(state: GameState, view: Box, zoom: number, now: number) {
       used = 0
       const f = fades(zoom * state.grid.size)
-      const t = still() ? 0 : now / 1000
+      const { turning, bustle } = quality()
+      const t = still() || !turning ? 0 : now / 1000
       const k = workScale(zoom)
       const lod = workLod(WORK_SPAN * zoom * k)
       const seen = (x: number, y: number, m: number) =>
@@ -123,20 +150,12 @@ export function makeLife(fieldsNear: (view: Box) => Array<Field>) {
       if (f.mid > 0 && lod > 0)
         for (const work of state.works) {
           const { x, y } = siteOf(state, work.tile)
-          if (!seen(x, y, 24 * k)) continue
-          if (work.work === 'village') village(x, y, k, lod as 1 | 2, t, f.near)
-          else if (work.work === 'market' && lod === 2) market(x, y, k, t)
+          if (seen(x, y, 24 * k))
+            at(work.work, x, y, k, lod as 1 | 2, t, f.near)
         }
-      if (f.near > 0)
+      if (f.near > 0 && bustle)
         fieldsNear(view).forEach((fd, i) => {
-          if (i % 4 !== 1 || !seen(fd.x, fd.y, 4)) return
-          const pose = Math.floor(
-            (Math.sin(t * 2.4 + fd.x) * 0.5 + 0.5) * (POSES - 1) + 0.5,
-          )
-          const man = stamp(`hoer${pose}`, 3, 12, (p) =>
-            hoer(p, pose / (POSES - 1)),
-          )
-          lay(man, fd.x, fd.y + 1, 3 * 1.5, f.near)
+          if (i % 4 === 1 && seen(fd.x, fd.y, 4)) peasant(fd, t, f.near)
         })
       for (let i = used; i < pool.length; i++) pool[i].visible = false
     },

@@ -13,6 +13,7 @@ import { warmFigures } from './figures'
 import type { Front, Spot } from './fronts'
 import type { Drawn, Line } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
+import type { Box } from './camera'
 import type { GameState, Host } from '../../engine'
 
 // The armies, as one picture. Each army is a few men kept from frame to
@@ -210,8 +211,14 @@ export function makeArmies(me: number) {
 
   return {
     container,
-    /** `far`: under 1 farther out than the whole land, where the standards shrink with it. */
-    draw(state: GameState, zoom: number, between = 0, far = 1) {
+    /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
+    draw(
+      state: GameState,
+      zoom: number,
+      view: Box,
+      between = 0,
+      far = 1,
+    ) {
       const seconds = performance.now() / 1000
       const dt = Math.min(0.1, seconds - last)
       last = seconds
@@ -228,7 +235,7 @@ export function makeArmies(me: number) {
         zoom,
       )
       roads.draw(state, marches, zoom)
-      troops.draw(sides(), lines(), seconds)
+      troops.draw(sides(), lines(), seconds, view)
       fallen.draw(seconds)
       label(zoom / far, legible(far), seconds)
     },
