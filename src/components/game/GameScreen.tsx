@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Defs } from './svg/kit'
-import { Race } from './Race'
 import { Cursor } from './Cursor'
 import { LordMenu } from './LordMenu'
-import { Lords } from './Lords'
+import { Shades } from './Shades'
 import { Heralds } from './Heralds'
-import { Bar } from './Bar'
-import { Moment } from './Moment'
-import { Banner } from './Banner'
 import { GameBook } from './GameBook'
-import { BookButton, HomeMark } from './BookParts'
+import { Places } from './Places'
 import { Failed } from './Failed'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Book, Level, MapSize } from '../../../engine'
@@ -153,46 +149,18 @@ export function GameScreen({
       {game && summary && (
         <>
           <Heralds game={game} summary={summary} />
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:grid-rows-[auto_1fr_auto] max-sm:gap-2 max-sm:p-2 short:gap-2 short:p-2">
-            <div className="relative flex w-80 min-w-0 flex-col items-start gap-2 max-sm:w-auto short:w-56">
-              <HomeMark onHome={() => void navigate({ to: '/' })} />
-              {!waiting && (
-                <Lords
-                  summary={summary}
-                  aimed={aim?.lord ?? null}
-                  onLight={game.light}
-                />
-              )}
-            </div>
-            <div className="flex min-w-0 flex-col items-center gap-2">
-              {!waiting && <Race summary={summary} />}
-              {!waiting && (
-                <Moment summary={summary} online={online !== undefined} />
-              )}
-              {cry && (
-                <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />
-              )}
-            </div>
-            <div className="max-sm:hidden" />
-            <div
-              ref={floor}
-              className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end gap-4 max-sm:col-span-2 max-sm:row-start-3 max-sm:grid-cols-1 max-sm:gap-2"
-            >
-              <div className="col-start-2 min-w-0 max-sm:col-start-1">
-                {!waiting && (
-                  <Bar
-                    summary={summary}
-                    onArmy={game.choose}
-                    onWork={game.hold}
-                    onCoup={game.aim}
-                  />
-                )}
-              </div>
-              <div className="pointer-events-auto flex flex-col gap-2 justify-self-end max-sm:absolute max-sm:right-0 max-sm:bottom-full max-sm:mb-2">
-                {hosting && <BookButton onOpen={() => setOpen(true)} />}
-              </div>
-            </div>
-          </div>
+          <Shades />
+          <Places
+            summary={summary}
+            game={game}
+            aimed={aim?.lord ?? null}
+            waiting={waiting}
+            online={online !== undefined}
+            cry={cry}
+            floor={floor}
+            onHome={() => void navigate({ to: '/' })}
+            onBook={hosting ? () => setOpen(true) : null}
+          />
           {aim?.pinned ? (
             <LordMenu
               key={`${aim.x},${aim.y}`}

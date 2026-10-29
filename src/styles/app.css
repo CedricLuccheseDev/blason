@@ -238,14 +238,17 @@
     --spacing: calc(0.25rem * var(--hud));
   }
   .hud-word {
-    @apply font-words text-hud-m text-quill;
+    @apply font-words text-hud-m;
+    color: var(--hud-ink, var(--color-quill));
   }
   .hud-name {
-    @apply font-words text-hud-l text-quill italic;
+    @apply font-words text-hud-l italic;
+    color: var(--hud-ink, var(--color-quill));
   }
   /* A hint is told in italics, at full ink like the rest: never fainter. */
   .hud-note {
-    @apply font-words text-hud-s text-quill italic;
+    @apply font-words text-hud-s italic;
+    color: var(--hud-ink, var(--color-quill));
   }
   /* The HUD's motion roles: what is touched lifts under the pointer and
      sinks when pressed; a sheet that appears rises a little as it comes. */
@@ -311,8 +314,19 @@
     transform: translate(16px, 12px) rotate(22deg);
     opacity: 0;
   }
+  /* norm-ok: a drawing floating on the map, cut round in ink as the letters are. */
+  .hud-cut {
+    filter: drop-shadow(0 0 1.2px var(--color-quill))
+      drop-shadow(0 1px 0 var(--color-quill));
+  }
+  /* norm-ok: the screen's top or bottom darkened, no edge, while the pointer is near it (« assombri en fonction de la souris »). */
+  .hud-shade {
+    @apply pointer-events-none absolute inset-x-0;
+    transition: opacity var(--duration-hud-enter) var(--ease-hud);
+  }
   .hud-figure {
-    @apply font-figures font-extrabold text-quill;
+    @apply font-figures font-extrabold;
+    color: var(--hud-ink, var(--color-quill));
     font-variant-numeric: lining-nums tabular-nums;
     /* Alegreya's space is narrow: "285 / 300" would read as one figure. */
     word-spacing: 0.12em;
@@ -320,6 +334,20 @@
 }
 
 @layer utilities {
+  /* norm-ok: a piece of the HUD floating on the map, no sheet under it: its words and figures in the map's lettering, parchment cut round in ink, its tones kept; its drawings cut round too. */
+  .hud-afloat {
+    --hud-ink: var(--color-vellum);
+  }
+  .hud-afloat .text-quill {
+    color: var(--color-vellum);
+  }
+  .hud-afloat :is(.hud-figure, .hud-word, .hud-note, .hud-name, .font-caps) {
+    -webkit-text-stroke: 0.2em var(--color-quill);
+    paint-order: stroke fill;
+  }
+  .hud-afloat svg {
+    filter: drop-shadow(0 0 1.2px var(--color-quill));
+  }
   .rise-in {
     animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }

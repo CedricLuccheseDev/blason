@@ -106,7 +106,7 @@ export function Purse({ summary }: Readonly<{ summary: Summary }>) {
   if (me.growth < 0) growing = t.peasants.sick(count(-me.growth))
   else if (me.peasants >= me.cap) growing = t.peasants.full
   return (
-    <div className="flex items-center gap-2">
+    <div className="hud-afloat flex items-center gap-2">
       {!compact && (
         <Shield
           color={hex(me.color)}

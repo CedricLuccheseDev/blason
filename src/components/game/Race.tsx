@@ -1,7 +1,6 @@
 import { Figure, Icon } from '../hud/Figure'
 import { Hint } from '../hud/Hint'
 import { ICON } from '../hud/tokens'
-import { Rule, Sheet } from '../hud/Sheet'
 import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
 import { Ecu } from './svg/kit'
@@ -24,7 +23,14 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
       aria-hidden="true"
       className="h-7 w-full max-w-[360px]"
     >
-      <line x1={X(0)} y1={Y} x2={X(100)} y2={Y} stroke={INK} strokeWidth="1" />
+      <line
+        x1={X(0)}
+        y1={Y}
+        x2={X(100)}
+        y2={Y}
+        stroke="var(--color-vellum)"
+        strokeWidth="2.5"
+      />
       {Array.from({ length: 11 }, (_, i) => i * 10).map((p) => (
         <line
           key={p}
@@ -32,9 +38,8 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
           y1={Y - (p % 50 ? 3 : 5)}
           x2={X(p)}
           y2={Y + (p % 50 ? 3 : 5)}
-          stroke={INK}
-          strokeWidth="1"
-          strokeOpacity="0.6"
+          stroke="var(--color-vellum)"
+          strokeWidth="2"
         />
       ))}
       {me && (
@@ -93,30 +98,31 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const figure = dropIn === null ? m.game.percent(needed) : minutes(dropIn)
   return (
     <div ref={room} className="flex w-full min-w-0 justify-center">
-      <div ref={piece} className="w-max">
+      <div ref={piece} className="hud-afloat w-max">
         <Hint
           title={m.hints.race.title}
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <Sheet className="flex items-center gap-3 px-3 py-1">
-            <Figure size="m">{minutes(summary.seconds)}</Figure>
-            <Rule />
-            <div className="w-44 max-sm:w-24 short:w-32">
+          <div className="flex flex-col items-center">
+            <div className="w-[360px] max-sm:w-56 short:w-72">
               <Track summary={summary} />
             </div>
-            <span
-              className="flex items-center gap-1"
-              title={step ? words : undefined}
-            >
-              {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
-              {step ? (
-                <Figure size="s">{figure}</Figure>
-              ) : (
-                <span className="hud-note whitespace-nowrap">{words}</span>
-              )}
-            </span>
-          </Sheet>
+            <div className="flex items-baseline gap-3">
+              <Figure size="l">{minutes(summary.seconds)}</Figure>
+              <span
+                className="flex items-center gap-1"
+                title={step ? words : undefined}
+              >
+                {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
+                {step ? (
+                  <Figure size="s">{figure}</Figure>
+                ) : (
+                  <span className="hud-note whitespace-nowrap">{words}</span>
+                )}
+              </span>
+            </div>
+          </div>
         </Hint>
       </div>
     </div>

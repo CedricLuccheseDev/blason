@@ -1,4 +1,4 @@
-import { Act, actClass } from '../hud/Act'
+import { Act } from '../hud/Act'
 import { Shield } from '../hud/Emblem'
 import { hex } from './format'
 import type { Book } from '../../../engine'
@@ -136,10 +136,10 @@ export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
       onClick={onHome}
       aria-label={m.home}
       title={m.home}
-      className={`${actClass('plain')} cursor-pointer`}
+      className="hud-press pointer-events-auto cursor-pointer"
     >
       {/* norm-ok: wordmark, not copy */}
-      <span className="font-mark text-hud-xl leading-none text-quill">
+      <span className="hud-word font-mark text-hud-xl leading-none text-quill">
         Blason
       </span>
     </button>

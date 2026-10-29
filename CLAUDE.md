@@ -111,7 +111,13 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   l'autre côté de la souris, et sur téléphone au-dessus de la barre ; les mots d'un pli ; un fanion vole vers la
   gauche près du bord droit). La mise en page en HTML, le SVG pour les seuls
   objets dessinés.
-- `src/components/game/` : le HUD de la partie (la liste des seigneurs en haut à gauche, en bandes : tous ceux encore
+- `src/components/game/` : le HUD de la partie, **sans fond depuis le 29/10** (« le HUD repensé », Concept) : six
+  places à une seule marge (`Places.tsx`), le nom du jeu en haut à gauche, la course et le temps dessous en haut au
+  centre (`Race.tsx`), les royaumes en haut à droite, les cinq premiers et moi, tous au clic (`Realms.tsx`), moi en
+  bas à gauche (`Purse.tsx`), toutes les actions sur une ligne en bas au centre (`Bar.tsx`), mes campagnes en bas à
+  droite (`Campaign.tsx`) ; tout flotte en lettres de la carte, claires cernées d'encre (`.hud-afloat`, `--hud-ink`),
+  et le haut ou le bas de l'écran ne s'assombrit que quand la souris s'en approche (`Shades.tsx`). Ce qui suit
+  décrit les pièces d'avant, dont le dessin a changé : (la liste des seigneurs en haut à gauche, en bandes : tous ceux encore
   debout, une ligne fine chacun lavée de sa couleur aussi loin que sa terre va contre celle du premier, le seigneur
   visé éclairé dans la liste (acté le 29/10, « ok les bandes ») ; la course sur une ligne,
   une trahison criée à tous sous la course sur une banderole de gueules (`Banner.tsx`), le coin haut droit laissé à

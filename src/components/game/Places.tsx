@@ -1,0 +1,88 @@
+import { BookButton, HomeMark } from './BookParts'
+import { Banner } from './Banner'
+import { Bar } from './Bar'
+import { Campaign } from './Campaign'
+import { Moment } from './Moment'
+import { Purse } from './Purse'
+import { Race } from './Race'
+import { Realms } from './Realms'
+import type { RefObject } from 'react'
+import type { GameHandle, Summary } from '~/render/client'
+
+// The HUD's six places, one margin (« le HUD repensé », 29/10): the game's
+// mark top left, the race top centre, the realms top right; me bottom left,
+// every action bottom centre, my campaigns bottom right; all floating, no
+// sheet under them (« mets ce que t'as mis en haut à gauche en bas à gauche,
+// toutes les actions au milieu, en bas à droite les campagnes, en haut à
+// droite les royaumes, en haut au centre le timer, en haut à gauche le logo
+// du jeu »).
+
+/** A betrayal cried under the race. */
+type Cry = { id: number; felon: number; victim: number }
+
+export function Places({
+  summary,
+  game,
+  aimed,
+  waiting,
+  online,
+  cry,
+  floor,
+  onHome,
+  onBook,
+}: Readonly<{
+  summary: Summary
+  game: GameHandle
+  aimed: number | null
+  /** A hosted game not launched yet: its pieces of play wait. */
+  waiting: boolean
+  online: boolean
+  cry: Cry | null
+  /** The bottom row: the cartouche keeps above it. */
+  floor: RefObject<HTMLDivElement | null>
+  onHome: () => void
+  /** The book's button, for a hosted game. */
+  onBook: (() => void) | null
+}>) {
+  return (
+    <div className="pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] gap-4 p-7 max-sm:gap-2 max-sm:p-3 short:gap-2 short:p-3">
+      <div className="hud-afloat flex flex-col items-start gap-2">
+        <HomeMark onHome={onHome} />
+      </div>
+      <div className="flex min-w-0 flex-col items-center gap-2">
+        {!waiting && <Race summary={summary} />}
+        {!waiting && <Moment summary={summary} online={online} />}
+        {cry && <Banner key={cry.id} felon={cry.felon} victim={cry.victim} />}
+      </div>
+      <div className="justify-self-end">
+        {!waiting && (
+          <Realms summary={summary} aimed={aimed} onLight={game.light} />
+        )}
+      </div>
+      <div
+        ref={floor}
+        className="relative col-span-3 row-start-3 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-end gap-4 max-sm:gap-2"
+      >
+        <div className="min-w-0">{!waiting && <Purse summary={summary} />}</div>
+        <div className="min-w-0">
+          {!waiting && (
+            <Bar
+              summary={summary}
+              onArmy={game.choose}
+              onWork={game.hold}
+              onCoup={game.aim}
+            />
+          )}
+        </div>
+        <div className="flex items-end gap-4 justify-self-end">
+          {!waiting && <Campaign summary={summary} />}
+          {onBook && (
+            <span className="pointer-events-auto">
+              <BookButton onOpen={onBook} />
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

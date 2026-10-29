@@ -51,6 +51,7 @@ export const en = {
       fire: 'Greek fire',
     },
     launch: 'click: launch',
+    campaign: 'On campaign',
     beyond: {
       troublemaker: 'only on another lord’s land',
       archers: 'too far from your border',

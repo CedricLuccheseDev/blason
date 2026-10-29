@@ -1,14 +1,11 @@
 import { CoupEmblem, MedallionEmblem, SealEmblem } from '../hud/Emblem'
 import { Figure } from '../hud/Figure'
-import { Sheet } from '../hud/Sheet'
 import { useCompact } from '../hud/useCompact'
 import { useFit } from '../hud/useFit'
 import { count, hex } from './format'
-import { Purse } from './Purse'
 import { Divide, Piece } from './BarPiece'
 import type { Army, Coup, Work } from '../../../engine'
 import type { Summary } from '~/render/client'
-import { keyAt } from '~/render/keys'
 import { useMessages } from '~/i18n'
 
 /** The drawing pressed in each army's seal. */
@@ -57,12 +54,10 @@ const FORMS: Record<(typeof FITS)[number], { band: string; gap: string }> = {
  */
 function Armies({
   summary,
-  keys,
   gap,
   onArmy,
 }: Readonly<{
   summary: Summary
-  keys: boolean
   gap: string
   onArmy: (army: Army) => void
 }>) {
@@ -72,14 +67,14 @@ function Armies({
   if (!me) return null
   return (
     <div className="flex flex-col items-center">
-      <div className={`flex items-end ${gap}`}>
-        {summary.armies.map((a, i) => {
+      <div className={`flex items-start ${gap}`}>
+        {summary.armies.map((a) => {
           const held = !summary.work && !summary.coup && a.army === summary.army
           const wax = held ? hex(me.color) : 'var(--color-vellum)'
           return (
             <Piece
               key={a.army}
-              k={keys ? keyAt(i + 1) : null}
+              k={null}
               name={m.game.armies[a.army]}
               hint={[
                 m.hints.armies[a.army],
@@ -126,8 +121,9 @@ function Armies({
 }
 
 /**
- * At the bottom, one thin band of parchment: on its left what the player has
- * (the purse); then the four armies as wax seals in a row, the three levied
+ * At the bottom in the middle, every action, floating on the map with no
+ * band under it (« essaie de mettre toutes les actions au milieu »; the purse
+ * goes bottom left): the four armies as wax seals in a row, the three levied
  * from the peasants at a village, the mercenaries hired at a market in gold,
  * the one in hand raised and named under the row with its figures; then the
  * three works as gilt medallions and the three coups as lozenges ringed in
@@ -157,29 +153,22 @@ export function Bar({
   const fit = compact ? 'rows' : FITS[step]
   const rows = fit === 'rows'
   const close = fit !== 'drawn'
-  // A phone has no keyboard: no keys, the pieces side by side.
-  const keys = !compact
-  const gap = keys ? FORMS[fit].gap : 'gap-0'
-  const first = summary.armies.length + 1
+  const gap = FORMS[fit].gap
   return (
     // The room is as wide as the layout lets the bar grow; the bar in it at
     // its own width, or, on rows, as wide as the room.
     <div ref={room} className="flex min-w-0 justify-center">
       <div ref={piece} className={rows ? 'min-w-0' : 'w-max'}>
-        <Sheet className={`flex items-center ${FORMS[fit].band}`}>
-          <div className={rows ? 'flex w-full justify-center' : ''}>
-            <Purse summary={summary} />
-          </div>
+        <div className={`hud-afloat flex items-start ${FORMS[fit].band}`}>
+          <Armies summary={summary} gap={gap} onArmy={onArmy} />
           {!rows && <Divide close={close} />}
-          <Armies summary={summary} keys={keys} gap={gap} onArmy={onArmy} />
-          {!rows && <Divide close={close} />}
-          <div className={`flex items-end ${gap}`}>
-            {summary.works.map((w, i) => {
+          <div className={`flex items-start ${gap}`}>
+            {summary.works.map((w) => {
               const held = summary.work === w.work
               return (
                 <Piece
                   key={w.work}
-                  k={keys ? keyAt(first + i) : null}
+                  k={null}
                   name={m.game.works[w.work]}
                   hint={[m.hints.works[w.work], m.hints.works.price]}
                   held={held}
@@ -202,13 +191,13 @@ export function Bar({
             })}
           </div>
           {!rows && <Divide close={close} />}
-          <div className={`flex items-end ${gap}`}>
-            {summary.coups.map((c, i) => {
+          <div className={`flex items-start ${gap}`}>
+            {summary.coups.map((c) => {
               const held = summary.coup === c.coup
               return (
                 <Piece
                   key={c.coup}
-                  k={keys ? keyAt(first + summary.works.length + i) : null}
+                  k={null}
                   name={m.game.coups[c.coup]}
                   hint={[m.hints.coups[c.coup], m.hints.coups.price]}
                   held={held}
@@ -234,7 +223,7 @@ export function Bar({
               )
             })}
           </div>
-        </Sheet>
+        </div>
       </div>
     </div>
   )

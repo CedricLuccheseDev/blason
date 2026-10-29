@@ -98,6 +98,8 @@ export type Summary = {
   asked: Array<number>
   /** The gold an offering of mine would give now: a share of my gold (the right click's menu). */
   offering: number
+  /** My armies out, the oldest first: which army, its men, and the lord it is sent at (-1, the free land). */
+  campaign: Array<{ army: Army; men: number; target: number }>
 }
 
 /**
@@ -191,5 +193,12 @@ export function summarize(
     ...pacts(state, me),
     offering: me >= 0 ? Math.floor(offeringOf(state, me) / UNIT) : 0,
     lords: lordsOf(state, me),
+    campaign: state.hosts
+      .filter((h) => h.owner === me)
+      .map((h) => ({
+        army: h.army,
+        men: Math.floor(h.men / UNIT),
+        target: h.target,
+      })),
   }
 }

@@ -52,6 +52,7 @@ export const fr: Messages = {
       fire: 'Feu grégeois',
     },
     launch: 'clic : lancer',
+    campaign: 'En campagne',
     beyond: {
       troublemaker: 'seulement sur la terre d’un autre',
       archers: 'trop loin de ta frontière',
