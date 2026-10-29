@@ -58,5 +58,5 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^5.0.5"
   },
-  "clNorm": "2026-10-27"
+  "clNorm": "2026-10-29"
 }

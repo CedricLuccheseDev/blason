@@ -7,7 +7,7 @@ import {
   seatPersons,
 } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
-import { fingerprints, isMove, tell } from './checks'
+import { isMove, tell } from './checks'
 import {
   beginning,
   broadcast,
@@ -124,14 +124,17 @@ function again(room: Room) {
   const player = room.players[seat]
   if (!player) return
   const standard = room.planted.get(seat)
-  room.turn = 0
-  room.pending = standard ? [standard] : []
-  room.joined = [seat]
-  room.left = []
-  room.played = []
-  room.prints = fingerprints()
-  room.planted = new Map(standard ? [[seat, standard]] : [])
-  room.waited = new Set([player])
+  // A new game from a fresh room, its players and its clock kept: no field
+  // of the last opening carried into this one.
+  Object.assign(room, makeRoom(room.code, room.setup), {
+    players: room.players,
+    timer: room.timer,
+    pending: standard ? [standard] : [],
+    joined: [seat],
+    played: [],
+    planted: new Map(standard ? [[seat, standard]] : []),
+    waited: new Set([player]),
+  })
   player.send(beginning(room, seat))
 }
 

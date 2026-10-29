@@ -10,7 +10,8 @@ import type { MapSize, Point, World } from '../../engine'
 // it (ahead.ts). As the map shows it from afar at the opening: the sea's
 // pale wash with lines along its shores, fading outwards (layers/lands.ts),
 // the land parchment, its woods, hills and mountains a shade darker
-// (ground/tones.ts), the coast in ink; its lines measured in the card's
+// (ground/tones.ts), the high mountains in stone with a mount on each of
+// their cells (layers/peaks.ts), the coast in ink; its lines measured in the card's
 // pixels rather than the map's units, so they read at that size.
 
 /** How much darker than the parchment each kind of land is: the plain bare. */
@@ -86,12 +87,39 @@ function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
   const soft = relief(world, at, [width, height], SOFT * ratio)
   g.drawImage(soft, 0, 0, width, height)
   g.restore()
+  mountains(g, world, px)
   g.lineWidth = INK * px
   g.strokeStyle = css(TONE.ink)
   g.stroke(coast)
   // The map's edge, as its frame's inner rule: on a card wider than the
   // land, a land that runs to it is cut there, not in the open sea.
   g.strokeRect(0, 0, world.width, world.height)
+}
+
+/** The high mountains, as the map draws them small (layers/peaks.ts): their ground in stone, and on each of their cells a mount in ink, `px` a pixel of the page in the map's units. */
+function mountains(g: CanvasRenderingContext2D, world: World, px: number) {
+  if (world.peaks.length === 0) return
+  const ground = new Path2D()
+  const mounts = new Path2D()
+  for (const { outline } of world.peaks) {
+    trace(ground, outline)
+    ground.closePath()
+    const xs = outline.map(([x]) => x)
+    const ys = outline.map(([, y]) => y)
+    const w = Math.max(...xs) - Math.min(...xs)
+    const [x, y] = [
+      (Math.min(...xs) + Math.max(...xs)) / 2,
+      (Math.min(...ys) + Math.max(...ys)) / 2,
+    ]
+    mounts.moveTo(x - w * 0.38, y + w * 0.22)
+    mounts.lineTo(x, y - w * 0.3)
+    mounts.lineTo(x + w * 0.38, y + w * 0.22)
+  }
+  g.fillStyle = css(TONE.stone)
+  g.fill(ground)
+  g.lineWidth = INK * px * 0.8
+  g.strokeStyle = css(TONE.ink)
+  g.stroke(mounts)
 }
 
 /**

@@ -1,4 +1,5 @@
-import { UNIT, barredBy, coupPrice, entryFor, launchSite } from '../../engine'
+import { UNIT, barredBy, coupPrice, launchSite } from '../../engine'
+import { courseNow } from './course'
 import { siteOf } from './marks'
 import type { Container } from 'pixi.js'
 import type { Army, Coup, GameState } from '../../engine'
@@ -77,7 +78,7 @@ export function makeAiming(
 
   /** Where the army in hand would strike a tile, and whose it is; none on my land, or where it may not go and no lord holds it. */
   function strikeAt(tile: number, pin: boolean, army: Army): Aim | null {
-    const gate = entryFor(state, me, tile, army)
+    const gate = courseNow(state, me, tile, army)?.entry ?? -1
     const owner = state.owner[tile]
     const lord = owner >= 0 && owner !== me ? owner : null
     // Another lord's land with nothing to strike, an ally's or one beyond

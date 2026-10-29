@@ -3,10 +3,10 @@ import {
   barredBy,
   canBuild,
   canStart,
-  courseFor,
   freeWorks,
   menFor,
 } from '../../../engine'
+import { courseNow } from '../course'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
@@ -54,7 +54,7 @@ export function makeAim(state: GameState, me: number) {
   function entryAt(tile: number, army: Army) {
     const key = `${tile}:${state.tick}:${army}`
     if (key !== read.key) {
-      const course = sendable(army) ? courseFor(state, me, tile, army) : null
+      const course = sendable(army) ? courseNow(state, me, tile, army) : null
       const road = course?.road ?? []
       read = {
         key,

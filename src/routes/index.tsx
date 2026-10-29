@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Home } from '~/components/home/Home'
 import { fetchBlogIndex } from '~/content/posts.runtime'
+import { SITE_URL } from '~/lib/site'
 
 // The home: the menu, the next public game, the journal reading the blog's posts.
 export const Route = createFileRoute('/')({
@@ -24,6 +25,8 @@ export const Route = createFileRoute('/')({
         (a, b) => b.date.localeCompare(a.date) || b.slug.localeCompare(a.slug),
       )
   },
+  // The home is the site's own page: it names itself, as every other does.
+  head: () => ({ links: [{ rel: 'canonical', href: `${SITE_URL}/` }] }),
   component: Index,
 })
 
