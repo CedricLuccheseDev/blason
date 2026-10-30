@@ -10,6 +10,8 @@ import type { GameSetup, Order } from '../engine'
 export type Player = {
   name: string
   send: (message: FromRelay) => void
+  /** Whether he answered the relay's last asking (relay.ts): a watcher sees who is gone without a word. */
+  answers?: () => boolean
 }
 
 /** A game at the relay, and the room its players gather in before it. */

@@ -60,12 +60,15 @@ const enlist = (host: Host): Army => ({
   gone: false,
 })
 
-export function makeArmies(me: number) {
+export function makeArmies(
+  me: number,
+  underWoods?: (x: number, y: number) => boolean,
+) {
   warmFigures()
   const container = new Container()
   const roads = makeRoads()
   const fallen = makeFallen(0.2)
-  const troops = makeTroops()
+  const troops = makeTroops(underWoods)
   const boats = makeBoats()
   const warning = makeWarning(me)
   container.addChild(

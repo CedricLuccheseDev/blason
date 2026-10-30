@@ -11,6 +11,7 @@ import {
 import { SEATS, TURN_MS } from '../net/protocol'
 import type { Land } from '../engine'
 import { isMove, tell } from './checks'
+import { unwatch, watch } from './watch'
 import {
   beginning,
   broadcast,
@@ -73,7 +74,7 @@ let turned = 0
 function publicGame(): Room {
   if (open) return open
   const land = PUBLIC_LANDS[turned++ % PUBLIC_LANDS.length]
-  const room = makeRoom('PUBLIC', publicSetup(freshSeed(), land))
+  const room = watch(makeRoom('PUBLIC', publicSetup(freshSeed(), land)))
   room.players = Array.from({ length: SEATS }, () => null)
   room.played = []
   open = room
@@ -153,6 +154,7 @@ function again(room: Room) {
 }
 
 function close(room: Room) {
+  unwatch(room)
   if (room.timer) clearInterval(room.timer)
   if (privates.get(room.code) === room) privates.delete(room.code)
   if (open === room) open = null
@@ -183,9 +185,11 @@ export function join(player: Player, code: string | null): Room | null {
   if (code === null) return sit(player, publicGame())
   // A bot in every seat no player takes, as before the host's book sets it.
   const made = () =>
-    makeRoom(
-      freeCode(),
-      botsSetup({ seed: freshSeed(), opening: SETUP_LIMITS.opening.public }),
+    watch(
+      makeRoom(
+        freeCode(),
+        botsSetup({ seed: freshSeed(), opening: SETUP_LIMITS.opening.public }),
+      ),
     )
   const room = code === 'new' ? made() : privates.get(code.toUpperCase())
   if (!room) {

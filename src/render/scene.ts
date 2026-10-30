@@ -15,7 +15,8 @@ import { makeGoals } from './layers/goals'
 import { makePlan } from './layers/plan'
 import { strategicOf } from './ground/detail'
 import { makePlanted } from './layers/planted'
-import { makeMarks } from './marks'
+import { makeMarks, tileAt } from './marks'
+import { FOREST } from './ground/terrain'
 import { makeBadges, placesEachTick } from './places'
 import { makeRegions } from './regions'
 import { makeTrade } from './trade'
@@ -85,7 +86,10 @@ export function makeScene(
   lines.mask = lines.addChild(new Graphics(shape))
   const marks = makeMarks(state, me)
   const life = makeLife(ground.fieldsNear)
-  const armies = makeArmies(me)
+  const armies = makeArmies(me, (x, y) => {
+    const t = tileAt(state.grid, x, y)
+    return t >= 0 && ground.terrain.biome[t] === FOREST
+  })
   const volleys = makeVolleys(armies.menOf)
   const aim = makeAim(state, me)
   const planted = makePlanted(me)

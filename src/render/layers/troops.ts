@@ -67,7 +67,13 @@ export function traits(look: Look, seed: number, men: number) {
 
 type Body = { figure: ReturnType<typeof makeFigure>; shadow: Sprite }
 
-export function makeTroops() {
+/** How much of a man shows under the woods' canopy (« Les unités marchent sur les arbres c'est bizarre »): glimpsed through it, his standard over the trees. */
+const UNDER_WOODS = 0.35
+
+export function makeTroops(
+  /** Whether a point of the map lies under the woods. */
+  underWoods: (x: number, y: number) => boolean = () => false,
+) {
   const container = new Container()
   const dust = container.addChild(new Graphics())
   const shadows = container.addChild(new Container())
@@ -103,7 +109,8 @@ export function makeTroops() {
     figure.tone(t.tint)
     figure.box.scale.set(pixel(t.size))
     figure.box.position.set(man.x, man.y)
-    figure.box.alpha = man.alpha * squad.alpha
+    const veiled = underWoods(man.x, man.y) ? UNDER_WOODS : 1
+    figure.box.alpha = man.alpha * squad.alpha * veiled
     figure.box.zIndex = man.y
     const s = figures.shadow
     const unit = SIZE * t.size
@@ -113,7 +120,7 @@ export function makeTroops() {
     )
     shadow.width = s.rx * 2 * unit
     shadow.height = s.ry * 2 * unit
-    shadow.alpha = man.alpha * squad.alpha
+    shadow.alpha = man.alpha * squad.alpha * (veiled < 1 ? 0 : 1)
   }
 
   /** A side's men on screen: those off it are not laid at all. */
