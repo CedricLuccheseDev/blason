@@ -201,7 +201,9 @@ least 10 tiles from one another (`engine/works.ts`):
 The first village and market cost nothing, so that a lord can always start
 again from nothing; then each costs double the one before (100 gold for the
 second). A castle costs 200 gold, then double. Three doublings at most. A
-work is taken with its tile.
+work is taken with its tile, and stands idle 8 seconds before it serves its
+new lord, as a work being built does (`seizedTicks`): no levy, no trade, no
+volley, so that a fight does not turn at once on what it took.
 
 A work takes time to build, and serves only once done: 10 seconds for a
 village or a market, 20 for a castle.

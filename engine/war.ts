@@ -1,7 +1,7 @@
 import { UNIT } from './units'
 import { isqrt } from './numbers'
 import { around } from './grid'
-import { holdOf, setOwner } from './land'
+import { holdOf, seize, setOwner } from './land'
 import { NEUTRAL } from './types'
 import { pop, push } from './heap'
 import { walled } from './battle'
@@ -124,7 +124,7 @@ function take(state: GameState, host: Host, tile: number) {
   if (state.owner[tile] === NEUTRAL)
     state.players[host.owner].gold += state.rules.neutralGold
   for (const work of state.works)
-    if (work.tile === tile) work.owner = host.owner
+    if (work.tile === tile) seize(state, work, host.owner)
   setOwner(state, tile, host.owner)
   for (const t of around(state.grid, tile))
     if (struck(state, host, t) && inBand(state, host, t))

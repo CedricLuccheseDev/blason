@@ -91,6 +91,17 @@ export function worksOf(state: GameState, lord: number, work: string) {
 export const standing = (state: GameState, work: GameState['works'][number]) =>
   (work.ready ?? 0) <= state.tick
 
+/** A work passed to another lord with its tile: idle a while before it serves him (rules.ts, seizedTicks), as a work being built is. */
+export function seize(
+  state: GameState,
+  work: GameState['works'][number],
+  lord: number,
+) {
+  if (work.owner === lord) return
+  work.owner = lord
+  work.ready = Math.max(work.ready ?? 0, state.tick + state.rules.seizedTicks)
+}
+
 /** The peasants a lord's land feeds: fewer by the tile as it grows, as the square root of its size. */
 export function fedByLand(state: GameState, lord: number): number {
   const { land, tiles } = state.rules.peasants

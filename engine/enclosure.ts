@@ -1,7 +1,7 @@
 import { TICKS_PER_SECOND } from './units'
 import { isAllied } from './diplomacy'
 import { NEUTRAL, SEA } from './types'
-import { setOwner } from './land'
+import { seize, setOwner } from './land'
 import { rebelled } from './scars'
 import type { GameState } from './types'
 
@@ -70,6 +70,7 @@ export function enclose(state: GameState): void {
     if (lord < 0 || (owner >= 0 && isAllied(state, owner, lord))) return
     const taken = new Set(tiles)
     for (const t of tiles) setOwner(state, t, lord)
-    for (const work of state.works) if (taken.has(work.tile)) work.owner = lord
+    for (const work of state.works)
+      if (taken.has(work.tile)) seize(state, work, lord)
   })
 }

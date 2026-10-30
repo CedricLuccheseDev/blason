@@ -121,6 +121,8 @@ export type Rules = {
   workPrice: Record<Work, number>
   /** Ticks each work takes to build before it serves. */
   buildTicks: Record<Work, number>
+  /** Ticks a work taken from another lord, or with free land, stands idle before it serves its new lord: no levy, no trade, no volley, so that a fight does not turn at once on what it took (« quand une construction est prise, il faut qu'elle soit inactive pendant 5/10s »). */
+  seizedTicks: number
   firstFree: ReadonlyArray<Work>
   priceDoublings: number
   castleGap: number
@@ -225,6 +227,7 @@ export const RULES: Rules = {
     market: 10 * SECOND,
     castle: 20 * SECOND,
   },
+  seizedTicks: 8 * SECOND,
   firstFree: ['village', 'market'],
   priceDoublings: 3,
   castleGap: 10,

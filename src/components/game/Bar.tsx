@@ -76,7 +76,8 @@ function Armies({
               name={m.game.armies[a.army]}
               hint={[m.hints.armies.men(count(a.men)), m.hints.armies[a.army]]}
               held={held}
-              onClick={() => onArmy(a.army)}
+              // What cannot be had is not taken in hand, only refused (« tu peux cliquer sur les constructions qui sont disable c'est un bug »).
+              onClick={() => (a.men > 0 || held) && onArmy(a.army)}
               figure={
                 a.share === null ? (
                   <Figure
@@ -161,7 +162,9 @@ export function Bar({
                   name={m.game.works[w.work]}
                   hint={[m.hints.works[w.work]]}
                   held={held}
-                  onClick={() => onWork(held ? null : w.work)}
+                  onClick={() =>
+                    (w.can || held) && onWork(held ? null : w.work)
+                  }
                   emblem={
                     <WorkEmblem
                       icon={w.work}
@@ -197,7 +200,9 @@ export function Bar({
                   name={m.game.coups[c.coup]}
                   hint={[m.hints.coups[c.coup]]}
                   held={held}
-                  onClick={() => onCoup(held ? null : c.coup)}
+                  onClick={() =>
+                    (c.can || held) && onCoup(held ? null : c.coup)
+                  }
                   emblem={
                     <CoupEmblem
                       icon={COUP_MARKS[c.coup]}
