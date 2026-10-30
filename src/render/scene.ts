@@ -8,6 +8,7 @@ import { makePaper } from './layers/paper'
 import { makeStamps } from './textures'
 import { makeArmies } from './armies'
 import { makeAim } from './layers/aim'
+import { makeGoals } from './layers/goals'
 import { makePlanted } from './layers/planted'
 import { makeMarks } from './marks'
 import { makeBadges, tilePlaces } from './places'
@@ -45,7 +46,7 @@ import type { Anchor } from './heralds'
 // ashes); the villages and the works, and their life; the borders between
 // allies in green and those at war in red; the frame; the wagons, the
 // armies and the castles' arrows falling on them, the coups on their way,
-// the aim, the standards planted in the
+// the aim, the war banners where my armies go (layers/goals.ts), the standards planted in the
 // opening, and over all each lord's name and peasants at the heart of his
 // land. An alliance broken snaps between the names, under the wagons and
 // the armies. The grain of the parchment over the whole page, moving with
@@ -91,6 +92,7 @@ export function makeScene(
   const volleys = makeVolleys(armies.menOf)
   const aim = makeAim(state, me)
   const planted = makePlanted(me)
+  const goals = makeGoals(me)
   // Where the lords are written, read once a tick for the names and their marks.
   let read = { tick: -1, places: new Map() as Placement }
   const placesOf = (s: GameState) => {
@@ -149,6 +151,7 @@ export function makeScene(
       tidings.container,
       aim.container,
       planted.container,
+      goals.container,
       labels.container,
       badges.container,
     ].map((layer) => group(layer)),
@@ -235,6 +238,7 @@ export function makeScene(
       m('tidings', () => tidings.draw(state, zoom))
       m('aim', () => aim.draw(hovered, hand, zoom))
       m('planted', () => planted.draw(state, zoom, now))
+      m('goals', () => goals.draw(state, zoom))
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
       m('labels', () =>
         // The bottom row's band, where the words fade under its pieces.

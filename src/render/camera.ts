@@ -31,12 +31,18 @@ export function makeCamera(
   const fitZoom = () =>
     Math.min(app.screen.width / land.width, app.screen.height / land.height) *
     0.96
+  /** The land fitted to the screen laid flat, whichever way the phone is held: the closest zoom stands on it, not on the screen's narrow side (« on peut pas beaucoup zoomé », upright). */
+  const flatZoom = () => {
+    const long = Math.max(app.screen.width, app.screen.height)
+    const short = Math.min(app.screen.width, app.screen.height)
+    return Math.min(long / land.width, short / land.height) * 0.96
+  }
   // A larger land, its side so many times the standard one's, lets the
   // camera come as close as the standard land does: the detail up close
   // is the same whatever its size.
   const side = Math.sqrt(MAP_SIZES[land.size])
   /** The closest zoom. */
-  const closest = () => CLOSE * fitZoom() * side
+  const closest = () => CLOSE * flatZoom() * side
   /** A zoom within the camera's reach. */
   const within = (k: number) =>
     Math.max(FAR * fitZoom(), Math.min(closest(), k))
