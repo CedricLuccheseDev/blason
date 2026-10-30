@@ -170,6 +170,8 @@ export function makeScene(
 
   return {
     world,
+    /** What the ear reads of the map (render/sound.ts): its ground, and the part of it on screen. */
+    ear: { terrain: ground.terrain, view },
     /**
      * Where the HUD lays its pieces on the map this frame: the seal of each
      * of my alliances in its last moments, when it asks to be renewed,

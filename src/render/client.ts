@@ -75,7 +75,7 @@ export async function mountGame(
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
   const heralds = makeHeralds(scene.world, () => app.screen)
-  const sound = makeSound(state, me, scene.world, () => app.screen)
+  const sound = makeSound(state, me, scene.world, () => app.screen, scene.ear)
 
   const home = () => (me < 0 ? null : landBox(state, me))
   const camera = makeCamera(app, scene.world, land, home)

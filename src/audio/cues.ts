@@ -1,6 +1,9 @@
+import type { Bus } from './mix'
+
 // The sounds that tell the player what he does not look at, and give weight
 // to what he does (Concept, « Les sons qui informent »): each made of one or
-// two files in public/sounds/ played together, how loud, and how soon it may
+// two layers played together, each one file of public/sounds/ or a family of
+// takes to turn between, its bus (audio/mix.ts), how loud, and how soon it may
 // sound again. Each is a hit, a second or so, the end of the game hardly more
 // (« c'est surtout des hit que l'on veut pour que ça reste digeste »). A sound
 // more is an entry here and its file, nothing else.
@@ -16,16 +19,24 @@ export type Cue =
   | 'gold'
   | 'victory'
   | 'defeat'
+  | 'clash'
+  | 'volley'
+  | 'stone'
+  | 'press'
 
 type Layer = {
-  /** Its file in public/sounds/, without the extension. */
-  file: string
+  /** Its file in public/sounds/, without the extension; a family of takes, the first the one heard unless the cue turns. */
+  file: string | ReadonlyArray<string>
   /** Seconds after the cue begins. */
   delay?: number
 }
 
 export type CueSpec = {
   layers: ReadonlyArray<Layer>
+  /** Where it plays; the cues that tell the player something unless said. */
+  bus?: Bus
+  /** Turns between its family's takes, never the same twice running (« on verra si on tourne entre les samples de même famille »). */
+  turn?: boolean
   /** Its loudness, 0 to 1. */
   gain: number
   /** Seconds before it may sound again; heard in between, it is dropped. */
@@ -70,4 +81,35 @@ export const CUES: Record<Cue, CueSpec> = {
   victory: { layers: [{ file: 'fanfare' }], gain: 0.9, again: 0, last: true },
   /** The knell, a tolling bell. */
   defeat: { layers: [{ file: 'knell' }], gain: 0.9, again: 0, last: true },
+  /** Up close, two armies at grips: a clash of swords, now and then. */
+  clash: {
+    layers: [{ file: ['clash-1', 'clash-2', 'clash-3'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.7,
+    again: 0.7,
+  },
+  /** Up close, a castle's volley or the archers' coup: arrows loosed. */
+  volley: {
+    layers: [{ file: ['volley-1', 'volley-2', 'volley-3'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.6,
+    again: 0.8,
+  },
+  /** A piece of the HUD pressed: a light wooden click (« Le hud aussi doit avoir des petits sons aux clics »). */
+  press: {
+    layers: [{ file: ['press-1', 'press-2', 'press-3'] }],
+    bus: 'ui',
+    gain: 0.6,
+    again: 0.05,
+  },
+  /** Up close, a trebuchet's stone come down. */
+  stone: {
+    layers: [{ file: ['stone-1', 'stone-2', 'stone-3'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.8,
+    again: 0.5,
+  },
 }

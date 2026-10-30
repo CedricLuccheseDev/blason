@@ -35,6 +35,8 @@ export function makeGround(world: World, state: GameState) {
   return {
     container,
     tinted,
+    /** The ground under each tile, for the beds the land gives to hear (render/ambience.ts). */
+    terrain,
     /** The fields of the villages round a view, for the peasants at work in them. */
     fieldsNear: (view: Box) =>
       decor.fieldsNear(view.left, view.top, view.right, view.bottom),

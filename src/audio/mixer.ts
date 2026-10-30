@@ -1,24 +1,30 @@
+import { makeBeds } from './beds'
+import { chance } from './chance'
 import { CUES } from './cues'
+import { COMPRESSOR, DUCKS, FALL, LEVELS, RISE, VOICES, gainOf } from './mix'
+import { makeMusic } from './music'
+import type { Hearing } from './beds'
 import type { Cue } from './cues'
+import type { Bus, Duck } from './mix'
 
-// The game's sound, by the browser's Web Audio: each cue's files fetched
-// once, played together through its own loudness and placed left or right,
-// where on the screen it happens. A cry to all lowers the other sounds while
-// it passes; the end of the game silences them for good. Nothing sounds
-// before the player's first gesture (the browser forbids it), nor while the
-// page is hidden; M mutes, remembered from one game to the next.
+// The game's sound, by the browser's Web Audio, mixed as audio/mix.ts says:
+// four buses, each its level and the duck that lowers it, into a master
+// that mutes and a compressor. Each cue's files fetched once, played
+// together through its own loudness, placed left or right where on the
+// screen it happens; the beds looping under them, the music streamed. A
+// cry to all lowers the rest while it passes; the end of the game silences
+// all but itself, for good. Nothing sounds before the player's first
+// gesture (the browser forbids it), nor while the page is hidden; M mutes,
+// remembered from one game to the next.
 
 /** Where the player's choice to mute is kept. */
 const MUTED = 'blason-muted'
-/** How low the other sounds fall under a cry, for how long, and how fast they fall and come back, in seconds. */
-const DUCK = 0.3
-const CRY = 2
-const FALL = 0.08
-const RISE = 0.6
 
 export type Mixer = {
-  /** A cue, placed from -1 (left) to 1 (right). */
-  play: (cue: Cue, pan?: number) => void
+  /** A cue, placed from -1 (left) to 1 (right), at a share of its loudness (the world's, by how close it is). */
+  play: (cue: Cue, pan?: number, level?: number) => void
+  /** The beds as the screen has them. */
+  hear: (hearing: Hearing) => void
   /** Mutes or unmutes; whether it is muted now. */
   toggle: () => boolean
   destroy: () => void
@@ -40,14 +46,28 @@ function keepMuted(muted: boolean) {
   }
 }
 
+/** A take of a layer's family: the first, or for a cue that turns, any but the last heard. */
+function takeOf(files: ReadonlyArray<string>, turn: boolean, last = -1) {
+  if (!turn || files.length < 2) return 0
+  const i = Math.floor(chance() * (files.length - 1))
+  return i >= last && last >= 0 ? i + 1 : i
+}
+
 export function makeMixer(): Mixer {
   let ctx: AudioContext | null = null
   let master: GainNode | null = null
-  let effects: GainNode | null = null
+  /** Each bus: where its sounds go in, and the gain its ducks move. */
+  const buses = new Map<Bus, { input: GainNode; duck: GainNode }>()
   const buffers = new Map<string, Promise<AudioBuffer | null>>()
   const last = new Map<Cue, number>()
+  const taken = new Map<string, number>()
+  let beds: ReturnType<typeof makeBeds> | null = null
+  let music: ReturnType<typeof makeMusic> | null = null
   let muted = readMuted()
   let over = false
+  let voices = 0
+
+  const inputOf = (bus: Bus) => buses.get(bus)!.input
 
   function load(file: string): Promise<AudioBuffer | null> {
     const known = buffers.get(file)
@@ -60,60 +80,100 @@ export function makeMixer(): Mixer {
     return loading
   }
 
-  /** At the first gesture: the context, its two levels, every file fetched. */
+  /** At the first gesture: the context, its buses and master, every cue's files fetched, the beds and the music begun. */
   function wake() {
     if (ctx) return
     ctx = new AudioContext()
+    const squeeze = ctx.createDynamicsCompressor()
+    for (const [k, v] of Object.entries(COMPRESSOR))
+      squeeze[k as keyof typeof COMPRESSOR].value = v
+    squeeze.connect(ctx.destination)
     master = ctx.createGain()
     master.gain.value = muted ? 0 : 1
-    master.connect(ctx.destination)
-    effects = ctx.createGain()
-    effects.connect(master)
+    master.connect(squeeze)
+    for (const [bus, db] of Object.entries(LEVELS) as Array<[Bus, number]>) {
+      const input = ctx.createGain()
+      input.gain.value = gainOf(db)
+      const lowered = ctx.createGain()
+      input.connect(lowered).connect(master)
+      buses.set(bus, { input, duck: lowered })
+    }
     for (const spec of Object.values(CUES))
-      for (const layer of spec.layers) void load(layer.file)
+      for (const { file } of spec.layers)
+        for (const f of typeof file === 'string' ? [file] : file) void load(f)
+    beds = makeBeds(ctx, inputOf('beds'), load)
+    music = makeMusic(ctx, inputOf('music'))
   }
 
   function hide() {
     if (!ctx) return
-    void (document.hidden ? ctx.suspend() : ctx.resume())
+    if (document.hidden) {
+      void ctx.suspend()
+      music?.pause()
+    } else {
+      void ctx.resume()
+      music?.resume()
+    }
   }
 
   window.addEventListener('pointerdown', wake)
   window.addEventListener('keydown', wake)
   document.addEventListener('visibilitychange', hide)
 
-  /** The other sounds lowered while a cry passes. */
-  function duck(level: GainNode, now: number) {
-    level.gain.cancelScheduledValues(now)
-    level.gain.setTargetAtTime(DUCK, now, FALL)
-    level.gain.setTargetAtTime(1, now + CRY, RISE)
+  /** The buses lowered while a cue or a cry passes, back after its hold. */
+  function duck({ under, depth, hold }: Duck, now: number) {
+    for (const bus of under) {
+      const gain = buses.get(bus)?.duck.gain
+      if (!gain) continue
+      gain.cancelScheduledValues(now)
+      gain.setTargetAtTime(gainOf(depth), now, FALL)
+      gain.setTargetAtTime(1, now + hold, RISE)
+    }
   }
 
   return {
-    play(cue, pan = 0) {
-      if (!ctx || !master || !effects || muted || over || document.hidden)
-        return
+    play(cue, pan = 0, level = 1) {
+      if (!ctx || !master || muted || over || document.hidden) return
       const spec = CUES[cue]
+      const bus = spec.bus ?? 'cues'
       const now = ctx.currentTime
       if (now - (last.get(cue) ?? -Infinity) < spec.again) return
+      if (bus === 'world' && voices >= VOICES) return
       last.set(cue, now)
       if (spec.last) {
         over = true
-        effects.gain.setTargetAtTime(0, now, FALL)
-      } else if (spec.cry) duck(effects, now)
+        for (const b of ['cues', 'world', 'beds', 'ui'] as const)
+          buses.get(b)?.duck.gain.setTargetAtTime(0, now, FALL)
+        music?.end()
+      } else if (spec.cry) duck(DUCKS.cry, now)
+      else if (bus === 'cues') duck(DUCKS.cue, now)
       const out = ctx.createGain()
-      out.gain.value = spec.gain
+      out.gain.value = spec.gain * level
       const place = ctx.createStereoPanner()
       place.pan.value = Math.max(-1, Math.min(1, pan))
-      out.connect(place).connect(spec.cry || spec.last ? master : effects)
-      for (const { file, delay = 0 } of spec.layers)
-        void load(file).then((buffer) => {
-          if (!buffer || !ctx) return
+      // A cry or the end is heard over the duck it casts.
+      out.connect(place).connect(spec.cry || spec.last ? master : inputOf(bus))
+      spec.layers.forEach(({ file, delay = 0 }, i) => {
+        const files = typeof file === 'string' ? [file] : file
+        const key = `${cue}:${i}`
+        const pick = takeOf(files, spec.turn ?? false, taken.get(key))
+        taken.set(key, pick)
+        if (bus === 'world') voices += 1
+        void load(files[pick]).then((buffer) => {
+          if (!buffer || !ctx) {
+            if (bus === 'world') voices -= 1
+            return
+          }
           const source = ctx.createBufferSource()
           source.buffer = buffer
           source.connect(out)
+          if (bus === 'world') source.onended = () => (voices -= 1)
           source.start(Math.max(ctx.currentTime, now + delay))
         })
+      })
+    },
+    hear(hearing) {
+      if (!over) beds?.set(hearing)
     },
     toggle() {
       muted = !muted
@@ -126,6 +186,8 @@ export function makeMixer(): Mixer {
       window.removeEventListener('pointerdown', wake)
       window.removeEventListener('keydown', wake)
       document.removeEventListener('visibilitychange', hide)
+      beds?.stop()
+      music?.stop()
       void ctx?.close()
     },
   }

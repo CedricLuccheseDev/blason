@@ -31,6 +31,9 @@ dans le même commit.
   pourquoi, puis la construction. Cédric veut apprendre l'architecture : expliquer avant de coder.
 - **Une question à la fois**, avec une recommandation ; être critique en joueur ; rester simple et nerveux
   comme OpenFront, sans empiler les règles.
+- **Chaque feature avec son son** (30/10, « a chaque fois aussi qu'on ajoutera des features il faudra penser au son qui va
+  avec ») : une règle, une pièce du HUD ou un geste nouveau se pense avec ce qu'on en entend, dans la même brique ; son
+  entrée dans la table (`audio/cues.ts`, `beds.ts`), sa famille (le bus de `audio/mix.ts`) et ses fichiers crédités.
 - **Construit de zéro.** OpenFront (AGPL-3.0) se lit pour comprendre, il ne se recopie jamais.
 - **Une architecture SOLID, acté le 27/10** (« Rajoute en règle qu'on instaure une architecture SOLID ») : le code
   est fait de modules et de fonctions plus que de classes, et les cinq principes s'y lisent ainsi.
@@ -93,14 +96,23 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   leurs constructions sur leur terre (29/10, « essaye de les décaler quand ils sont sur un bâtiment », `layers/crowd.ts`,
   `clearance.ts`) ; les étendards des armées (`flags.ts`) grandissent quand on survole leur campagne ; `camera.ts` la
   caméra du joueur ; `summary.ts` ce que lit le HUD, une fois par seconde.
-- `src/audio/` : **le son** (brique 1, les sons qui informent, actée le 29/10), qui ne connaît rien du jeu : `cues.ts` la
-  table des sons (un ou deux fichiers de `public/sounds/`, leur volume, le délai avant de revenir, le cri à tous qui
-  fait baisser les autres, la fin qui fait tout taire), `mixer.ts` les joue en Web Audio, après le premier geste du
-  joueur, à gauche ou à droite, M pour couper (gardé d'une partie à l'autre), muet quand la page est cachée. Ce que le
-  joueur entend se lit dans le rendu : `render/hearing.ts` (les nouvelles de la seconde, et à chaque pas mon armée qui
-  part, ma construction posée, une caravane qui me paie, `arrivals.ts`, lue aussi par le « + » d'or, et la fin),
-  `render/sound.ts` place chaque son selon où il tombe sur l'écran. Des prises d'époque de Freesound, en CC0 ou CC BY (`public/sounds/CREDITS.md`),
-  coupées en coups courts, la fin à peine plus longue (30/10, « c'est surtout des hit que l'on veut pour que ça reste digeste »). Le réglage du son viendra dans une modale de réglages, avec le profil.
+- `src/audio/` : **le son**, qui ne connaît rien du jeu, mixé comme celui d'un jeu (30/10, « Il faudra qu'on gère le mixage
+  de l'ensemble pour que ça soit propre … digne d'un jeu vidéo ») : `mix.ts` la table du mixage, cinq bus à leur niveau
+  (ce qui informe, le monde de près, les fonds, la musique, l'interface), qui baisse quoi quand un son informe ou qu'un
+  cri passe, trois sons du monde à la fois, un compresseur sur le tout ; tous les fichiers au même volume, la table seule
+  règle l'équilibre. `cues.ts` les sons qui informent (brique 1, actée le 29/10 : des coups courts, « c'est surtout des
+  hit ») et ceux du monde et de l'interface, chacun une famille de prises, la première entendue sauf s'il tourne (« on
+  verra si on tourne entre les samples de même famille ») ; `beds.ts` les fonds de la terre (la carte qu'on entend,
+  choisie le 30/10, « Je veux que le jeu soit vivant »), des boucles sans couture ; `music.ts` la musique (« Et la
+  musique aussi »), les pièces de Kevin MacLeod l'une après l'autre avec un silence entre ; `mixer.ts` joue le tout en
+  Web Audio, après le premier geste du joueur, à gauche ou à droite, M pour couper (gardé d'une partie à l'autre), muet
+  quand la page est cachée. Ce que le joueur entend se lit dans le rendu : `render/hearing.ts` (les nouvelles de la
+  seconde, et à chaque pas mon armée qui part, ma construction posée, une caravane qui me paie, `arrivals.ts`, lue aussi
+  par le « + » d'or, et la fin), `render/ambience.ts` (les fonds selon ce qui est à l'écran, une fois par seconde),
+  `render/spectacle.ts` (de près seulement : batailles, flèches des châteaux, coups qui tombent), `render/sound.ts` place
+  chaque son selon où il tombe sur l'écran, et le clic de bois sur chaque pièce du HUD pressée. Des prises de Freesound
+  en CC0 ou CC BY et la musique en CC BY (`public/sounds/CREDITS.md`). Le réglage des volumes viendra dans une modale de
+  réglages, avec le profil.
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (15, 18, 22, 28, rien sous 15, acté le 29/10 : « La police texte toute petite là elle est
   dure à lire ») par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note` en italique à pleine encre, `.hud-figure`),

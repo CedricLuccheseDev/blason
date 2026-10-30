@@ -102,3 +102,7 @@ play needs the relay beside it (`npm run relay`).
 Blason is free software under the
 [GNU Affero General Public License v3.0](LICENSE): whoever runs a modified
 version of it on a server must offer its source to the players.
+
+The sounds and the music are their authors', under CC0 or CC BY 4.0; the
+music is Kevin MacLeod's (incompetech.com). Each is listed with its source
+in [public/sounds/CREDITS.md](public/sounds/CREDITS.md).

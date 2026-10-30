@@ -408,23 +408,45 @@ orders. It decides nothing about the rules.
 ## The sound
 
 `src/audio/` plays the game's sounds with the browser's Web Audio, and knows
-nothing of the game: `cues.ts` is the table of cues (each made of one or two
-files in `public/sounds/`, its loudness, how soon it may sound again, whether
-it is a cry to all that lowers the others, or the end that silences them for
-good; each a short hit, a second or so, the end hardly more, so that
-they stay light to hear), and `mixer.ts` plays them, fetched once after the player's first
-gesture (the browser allows no sound before), placed left or right, muted by
-M and remembered, silent while the page is hidden. A cue more is an entry in
-the table and its file.
+nothing of the game. It is mixed as a game's sound is (`mix.ts`): every file
+brought to one loudness, so that a table alone sets the balance; five buses,
+each at its level, into a master that mutes and a gentle compressor, so that
+nothing clips when everything falls at once:
+
+- **the cues** that tell the player something (`cues.ts`): his army leaving,
+  an army at him, a herald's letter, his alliances, a betrayal cried to all,
+  his work laid, gold come in, the end. Short hits, a second or so, the end
+  hardly more;
+- **the world** heard up close: a clash of swords, a volley, a stone (in
+  `cues.ts` too, on their bus), three at once at most;
+- **the beds** of the land (`beds.ts`): the sea, the wind, the woods, the
+  villages, long loops played on without a seam, each as loud as the share
+  of the screen it holds, their highs filtered away from afar;
+- **the music** (`music.ts`): pieces of the period, streamed one after the
+  other with a silence between;
+- **the interface**: a light wooden click on each piece of the HUD pressed.
+
+What tells comes first: a cue lowers the beds and the music a little while
+it passes, a cry to all lowers everything else, the end of the game silences
+all but itself. Each sound is a family of takes, the first the one heard
+unless its entry turns between them, never the same twice running.
+`mixer.ts` plays it all after the player's first gesture (the browser allows
+no sound before), each sound placed left or right, muted by M and
+remembered, silent while the page is hidden. A sound more is an entry in a
+table and its files.
 
 What the player hears is read in `src/render/`, never in the engine:
 `hearing.ts` turns the news of the second (`news.ts`: an army or a coup at
 him, a herald's letter, his alliances made or ended, any betrayal) and, each
 tick, his army leaving, his work laid, a caravan paying him (`arrivals.ts`,
 read alike by the map's "+" of gold) and the end of the game into cues, each
-from its tile; `sound.ts` places them by where the tile falls across the
-screen, off it too, so that the ear tells where to look. The files come from
-Freesound, under CC0 or CC BY; their sources and authors are listed in
+from its tile; `ambience.ts` samples the screen once a second over the drawn
+ground (`ground/terrain.ts`) for the beds, `spectacle.ts` reads each tick the
+battles, the castles' volleys and the coups come down on screen, heard only
+coming closer, as the map's two scales would have it; `sound.ts` places each
+sound by where it falls across the screen, off it too, so that the ear tells
+where to look. The files come from Freesound and the music from Kevin
+MacLeod, under CC0 or CC BY; their sources and authors are listed in
 `public/sounds/CREDITS.md`.
 
 ## The interface
