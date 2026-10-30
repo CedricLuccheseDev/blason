@@ -43,8 +43,8 @@ type Entry = {
   size: MapSize
   /** The lords it suits, from the fewest to the most. */
   lords: readonly [number, number]
-  /** Of its land, how many in a thousand are high mountains. */
-  peaks: number
+  /** Its high ranges, each a line along its crest, in degrees, longitude then latitude (« sur la map europe y'a pas les pyrénées »): the high mountains stand along them, where the land is high enough. */
+  ranges: ReadonlyArray<ReadonlyArray<number>>
 }
 
 export const ATLAS: Readonly<Record<Atlas, Entry>> = {
@@ -52,7 +52,26 @@ export const ATLAS: Readonly<Record<Atlas, Entry>> = {
     sheet: EUROPE,
     size: 'large',
     lords: [12, 20],
-    peaks: 45,
+    ranges: [
+      [-1.8, 43.1, 0, 42.8, 1.5, 42.6, 2.9, 42.45], // the Pyrenees
+      [
+        5.6, 44.1, 6.9, 44.6, 7, 45.8, 8, 46.3, 9.5, 46.5, 11, 46.9, 12.5, 47,
+        14, 47.3, 15.5, 47.5,
+      ], // the Alps
+      [
+        8.8, 44.3, 11, 44, 12.6, 43.2, 13.5, 42.3, 14.5, 41.3, 15.8, 40.3, 16.2,
+        39.3,
+      ], // the Apennines
+      [14.5, 45.6, 16.5, 44, 18.5, 43, 19.8, 42.5], // the Dinaric Alps
+      [
+        17.5, 49.4, 19.5, 49.3, 21.5, 49.2, 23.5, 48.3, 25, 47.5, 25.6, 46.2,
+        25, 45.4, 23, 45.4, 22.4, 44.8,
+      ], // the Carpathians
+      [22.5, 43.4, 24.5, 42.8, 26.5, 42.7], // the Balkan
+      [37.5, 44, 40.5, 43.3, 43.5, 42.7, 45, 42.3], // the Caucasus
+      [29.5, 37, 32, 36.8, 35, 37.5, 38, 38, 41, 38.6], // the Taurus
+      [-1, 35.3, 2, 36.2, 6, 36.4, 9, 36.6], // the Tell Atlas
+    ],
     straits: [
       [0.4, 50.4, 2.3, 51.4], // the Pas-de-Calais
       [-6.4, 55.5, -5.2, 54.5], // the North Channel
@@ -107,35 +126,46 @@ export function planOf(atlas: Atlas): Plan {
   return {
     kind: 'continent',
     seaShare: seaShareOf(atlas),
-    peakShare: ATLAS[atlas].peaks,
+    // Its high mountains are its ranges' (rangesOf), not a share.
+    peakShare: 0,
   }
 }
 
-/**
- * Each cell's local relief: its height over the lowest ground two cells
- * round it. The high mountains go to the steep ranges, the Alps, the
- * Pyrenees, the Carpathians, not to a high plateau, flat however high.
- */
-function reliefOf(
+/** How near a range's crest a cell's site lies to stand on it, in cells' spacings; how high its ground must be. */
+const CREST = 1.1
+const HIGH = 0.08
+
+/** Each cell's rise on a range: its height on a crest of the map's ranges where it is high enough, below naught off them. */
+function rangesOf(
+  atlas: Atlas,
   cells: Cells,
+  width: number,
+  height: number,
   ground: Array<number>,
-  sea: Array<boolean>,
 ): Array<number> {
-  return ground.map((h, c) => {
-    if (sea[c]) return -1
-    let low = h
-    for (const n of cells.neighbors[c])
-      for (const m of [n, ...cells.neighbors[n]])
-        if (!sea[m]) low = Math.min(low, ground[m])
-    return h - low + h * 0.25
-  })
+  const { sheet, ranges } = ATLAS[atlas]
+  const at = (lon: number, lat: number): Point => [
+    ((lon - sheet.west) / (sheet.east - sheet.west)) * width,
+    ((sheet.north - lat) / (sheet.north - sheet.south)) * height,
+  ]
+  const reach = CREST * isqrt(Math.floor((width * height) / cells.sites.length))
+  const rise = ground.map(() => -1)
+  for (const line of ranges)
+    for (let k = 0; k + 3 < line.length; k += 2) {
+      const [a, b] = [at(line[k], line[k + 1]), at(line[k + 2], line[k + 3])]
+      cells.sites.forEach((site, c) => {
+        if (ground[c] < HIGH || apartSq(site, a, b) > reach * reach) return
+        rise[c] = 1 + ground[c]
+      })
+    }
+  return rise
 }
 
 /** The ground of a map of the atlas on these cells: each cell's height read where it stands on the Earth. */
 export function atlasLand(atlas: Atlas) {
   return (
     _seed: string,
-    plan: Plan,
+    _plan: Plan,
     cells: Cells,
     width: number,
     height: number,
@@ -171,12 +201,17 @@ export function atlasLand(atlas: Atlas) {
       sea[c] ? -1 : Math.max(0.002, h / highest),
     )
     const side = isqrt(scale * 10000) / 100
+    const crest = rangesOf(atlas, cells, width, height, ground)
+    const land = ground.filter((h) => h >= 0).length
+    const share = Math.ceil(
+      (crest.filter((r) => r > 0).length * 1000) / Math.max(1, land),
+    )
     const { peaks, passes } = raisePeaks(
       cells,
       ground,
-      reliefOf(cells, ground, sea),
+      crest,
       sea,
-      plan.peakShare,
+      share,
       side,
       false,
     )
@@ -251,15 +286,17 @@ function openStraits(
     STRAIT * isqrt(Math.floor((width * height) / cells.sites.length))
   for (const [lon1, lat1, lon2, lat2] of straits) {
     const [a, b] = [at(lon1, lat1), at(lon2, lat2)]
-    const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
-    const long = dx * dx + dy * dy || 1
-    cells.sites.forEach(([x, y], c) => {
-      const t = Math.max(
-        0,
-        Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / long),
-      )
-      const [px, py] = [a[0] + t * dx - x, a[1] + t * dy - y]
-      if (px * px + py * py <= reach * reach) wet[c] = true
+    cells.sites.forEach((site, c) => {
+      if (apartSq(site, a, b) <= reach * reach) wet[c] = true
     })
   }
+}
+
+/** The square of how far a point lies from a segment. */
+function apartSq([x, y]: Point, a: Point, b: Point): number {
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
+  const long = dx * dx + dy * dy || 1
+  const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / long))
+  const [px, py] = [a[0] + t * dx - x, a[1] + t * dy - y]
+  return px * px + py * py
 }
