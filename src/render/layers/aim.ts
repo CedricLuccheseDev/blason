@@ -29,6 +29,9 @@ const REACH: Partial<Record<Work, (state: GameState) => number>> = {
   market: (state) => state.rules.tradeRange,
 }
 
+/** Dashes a path is drawn with at most: beyond them, the rest of a far way is left undrawn. */
+const DASHES = 4000
+
 export function makeAim(state: GameState, me: number) {
   const container = new Container()
   const marks = container.addChild(new Graphics())
@@ -72,24 +75,32 @@ export function makeAim(state: GameState, me: number) {
     return read
   }
 
-  /** A dotted line along a path, its dashes some seven pixels apart on screen, their rhythm kept from one stretch to the next, however short. */
+  /**
+   * A dotted line along a path, its dashes some seven pixels apart on
+   * screen, their rhythm kept from one stretch to the next, however short.
+   * Each dash counted by its number along the whole path, never by adding
+   * up lengths: summed, a long path's lengths stopped moving the pen on, and
+   * the loop drew without end until the page ran out of memory (« au moment
+   * ou ça commence ça crash »). So many dashes at most.
+   */
   function path(points: Array<At>, zoom: number) {
     const period = 7 / zoom
     const dash = period / 2
     let along = 0
-    for (let i = 1; i < points.length; i++) {
+    let drawn = 0
+    for (let i = 1; i < points.length && drawn < DASHES; i++) {
       const [a, b] = [points[i - 1], points[i]]
       const d = Math.hypot(b.x - a.x, b.y - a.y)
+      if (!(d > 0)) continue
       const at = (k: number) =>
         [a.x + ((b.x - a.x) * k) / d, a.y + ((b.y - a.y) * k) / d] as const
-      let k = 0
-      while (k < d) {
-        const phase = (along + k) % period
-        if (phase < dash) {
-          const end = Math.min(d, k + dash - phase)
-          marks.moveTo(...at(k)).lineTo(...at(end))
-          k = end
-        } else k += period - phase
+      const last = Math.ceil((along + d) / period)
+      for (let j = Math.floor(along / period); j < last; j++) {
+        const start = Math.max(j * period, along) - along
+        const end = Math.min(j * period + dash, along + d) - along
+        if (end <= start) continue
+        marks.moveTo(...at(start)).lineTo(...at(end))
+        if (++drawn >= DASHES) break
       }
       along += d
     }

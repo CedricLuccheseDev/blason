@@ -83,7 +83,8 @@ export function Places({
         </div>
         {/* Upright on a phone, the bar on a row of its own under the purse and the campaigns. */}
         <div className="min-w-0 max-sm:col-span-2 max-sm:row-start-2">
-          {!waiting && (
+          {/* Nothing to raise nor build while the standards are planted (« n'affiche pas la bar du bas dans la phase de posage »). */}
+          {!waiting && summary.opening === null && (
             <Bar
               summary={summary}
               onArmy={game.choose}

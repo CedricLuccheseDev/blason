@@ -68,19 +68,45 @@ function reachable(
   state: GameState,
   tile: number,
   owners: ReadonlySet<number>,
-): Uint8Array {
-  const seen = new Uint8Array(state.owner.length)
-  const queue = new Int32Array(state.owner.length)
+): (t: number) => boolean {
+  const { seen, queue } = buffersOf(state)
+  const round = (seen.round += 1)
+  const { marks } = seen
   let size = 0
-  seen[tile] = 1
+  marks[tile] = round
   queue[size++] = tile
   const visit = (n: number) => {
-    if (seen[n] || !owners.has(state.owner[n])) return
-    seen[n] = 1
+    if (marks[n] === round || !owners.has(state.owner[n])) return
+    marks[n] = round
     queue[size++] = n
   }
   for (let i = 0; i < size; i++) eachAround(state.grid, queue[i], visit)
-  return seen
+  return (t) => marks[t] === round
+}
+
+/**
+ * Each map's search buffers, made once and marked anew each search, never
+ * cleared: a search over a great map's free land, under the pointer each
+ * tick, made two arrays as large as the map every time, and their garbage
+ * brought the page down (« sur europe au bout de 10s », « ça plante »).
+ * A search's answer holds only until the next one.
+ */
+const BUFFERS = new WeakMap<
+  GameState['grid'],
+  { seen: { marks: Int32Array; round: number }; queue: Int32Array }
+>()
+
+function buffersOf(state: GameState) {
+  let buffers = BUFFERS.get(state.grid)
+  if (!buffers) {
+    const n = state.owner.length
+    buffers = {
+      seen: { marks: new Int32Array(n), round: 0 },
+      queue: new Int32Array(n),
+    }
+    BUFFERS.set(state.grid, buffers)
+  }
+  return buffers
 }
 
 /**
@@ -93,13 +119,13 @@ function borderOf(
   player: number,
   target: number,
   tile: number,
-  reach: Uint8Array,
+  reach: (t: number) => boolean,
 ) {
   const walks = walkers(state, player)
   const { owner } = state
   const gaps = new Map<number, number>()
   const mark = (t: number) => {
-    if (owner[t] === target && reach[t] && !gaps.has(t))
+    if (owner[t] === target && reach(t) && !gaps.has(t))
       gaps.set(t, apart(state.grid, t, tile))
   }
   for (let t = 0; t < owner.length; t++)
