@@ -100,6 +100,8 @@ export type Rules = {
   combat: { peasants: number; castle: number; army: number; castleArmy: number }
   /** The least a lord's tile costs the army that takes it, in thousandths of a man, however thin his land: an army is never unending (« la frontiere adverse augmente alors que y'a pas d'unité c'est infini »). */
   leastCost: number
+  /** An army's pace in the woods, in percent of its own, on the march and at its front (« la foret doit donner un malus de vitesses aux troupes »). */
+  forestPace: number
   /** Ticks an even battle between two armies lasts, and how near, in tiles, two armies must come to fight. */
   battleTicks: number
   meetTiles: number
@@ -219,6 +221,7 @@ export const RULES: Rules = {
   marchPace: 600,
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
   leastCost: 100,
+  forestPace: 60,
   battleTicks: 40,
   meetTiles: 8,
   neutralHold: 50,

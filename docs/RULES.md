@@ -180,6 +180,9 @@ leaves it gives his seat back to its bot.
   standard. Then it strikes from where it landed, as from a border. Its
   sounds: a boat's creak and an oar when mine takes to the water, oars up
   close.
+- **The woods** (`grid.wood`, the forest cells): an army marches there at 60 %
+  of its pace, and each tile of woods it takes costs its front as much more
+  time (`forestPace`).
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
   while he bears the traitor's mark; the villagers on free land):

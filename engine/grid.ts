@@ -20,7 +20,13 @@ export function makeGrid(
   const rows = Math.ceil(height / size)
   // The sites of the map in buckets of the grid, to find the nearest fast.
   const sites = [
-    ...map.land.map((c) => ({ x: c.x, y: c.y, land: true, water: false })),
+    ...map.land.map((c) => ({
+      x: c.x,
+      y: c.y,
+      land: true,
+      water: false,
+      wood: c.wood === true,
+    })),
     ...map.sea.map((s) => ({ x: s.x, y: s.y, land: false, water: true })),
     ...map.peaks.map((p) => ({ x: p.x, y: p.y, land: false, water: false })),
     ...map.dead.map((d) => ({ x: d.x, y: d.y, land: false, water: false })),
@@ -54,11 +60,13 @@ export function makeGrid(
   const half = Math.floor(size / 2)
   const land: Array<boolean> = []
   const water: Array<boolean> = []
+  const wood: Array<boolean> = []
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < cols; c++) {
       const site = siteAt(c * size + half, r * size + half)
       land.push(site?.land ?? false)
       water.push(site?.water ?? false)
+      wood.push(site !== null && 'wood' in site && site.wood === true)
     }
   return {
     width: cols,
@@ -66,6 +74,7 @@ export function makeGrid(
     size,
     land,
     water,
+    wood,
     area: land.filter(Boolean).length,
   }
 }

@@ -160,7 +160,7 @@ export function generateWorld(
   const wet = wetness(seed, cells, water, heights, rivers.banks)
   const closed = water.map((w, c) => w || peaks[c] || dead[c])
   const biomes = placeBiomes(cells, closed, heights, wet, maker.biomes)
-  const map = gameMap(cells, water, peaks, dead)
+  const map = gameMap(cells, water, peaks, dead, (c) => biomes[c] === 'forest')
   const outline = (c: number) => borders.outline(c)
   const onLand = cells.sites.flatMap((_, c) => (closed[c] ? [] : [c]))
   const land = onLand.map((c): WorldCell => ({
@@ -203,6 +203,7 @@ function gameMap(
   water: Array<boolean>,
   peaks: Array<boolean>,
   dead: Array<boolean>,
+  wooded: (c: number) => boolean,
 ): GameMap {
   const index = cells.sites.map(() => -1)
   let landCount = 0
@@ -222,7 +223,14 @@ function gameMap(
   return {
     land: cells.sites.flatMap((_, c) =>
       open(c)
-        ? [{ ...at(c), neighbors: pick(c, open), shore: pick(c, isWater) }]
+        ? [
+            {
+              ...at(c),
+              neighbors: pick(c, open),
+              shore: pick(c, isWater),
+              ...(wooded(c) ? { wood: true } : {}),
+            },
+          ]
         : [],
     ),
     sea: cells.sites.flatMap((_, c) =>

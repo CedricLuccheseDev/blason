@@ -12,6 +12,8 @@ type LandCell = {
   neighbors: Array<number>
   /** The sea cells along its coast. */
   shore: Array<number>
+  /** Its woods, which slow the armies (« la foret doit donner un malus de vitesses aux troupes »). */
+  wood?: boolean
 }
 
 /** A cell of the open sea, held by no one. */

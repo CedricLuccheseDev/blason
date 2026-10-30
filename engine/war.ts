@@ -170,6 +170,11 @@ function strideOf(state: GameState, host: Host): number {
 function march(state: GameState, host: Host) {
   const taken: Array<number> = []
   const stride = strideOf(state, host)
+  // The woods taken cost it ticks: it owes them before it takes more.
+  if ((host.slow ?? 0) >= 100 && stride > 0) {
+    host.slow = (host.slow ?? 0) - 100 * stride
+    return
+  }
   while (taken.length < stride && host.men > 0) {
     const next = pop(host.queue)
     if (!next) break
@@ -183,6 +188,9 @@ function march(state: GameState, host: Host) {
     if (!fight(state, host, tile)) break
     take(state, host, tile)
     taken.push(tile)
+    if (wooded(state, tile))
+      host.slow =
+        (host.slow ?? 0) + Math.floor(10_000 / state.rules.forestPace) - 100
   }
   if (taken.length) host.edge = [...taken, ...host.edge].slice(0, 9)
 }
@@ -192,9 +200,10 @@ function march(state: GameState, host: Host) {
  * on, it strikes him from where it stands; cut by anyone else, it goes home.
  */
 function walk(state: GameState, host: Host) {
+  const step = stepOf(state, host)
   const next = Math.min(
     host.road.length - 1,
-    Math.floor((host.along + paceOf(state, host)) / 1000),
+    Math.floor((host.along + step) / 1000),
   )
   for (let i = Math.floor(host.along / 1000) + 1; i <= next; i++) {
     const tile = host.road[i]
@@ -211,10 +220,20 @@ function walk(state: GameState, host: Host) {
     disband(state, host)
     return
   }
-  host.along = Math.min(
-    (host.road.length - 1) * 1000,
-    host.along + paceOf(state, host),
-  )
+  host.along = Math.min((host.road.length - 1) * 1000, host.along + step)
+}
+
+/** Whether a tile is of the woods (grid.wood), where an army goes slower. */
+const wooded = (state: GameState, tile: number) =>
+  state.grid.wood?.[tile] === true
+
+/** An army's pace on its road this tick: slower in the woods. */
+function stepOf(state: GameState, host: Host): number {
+  const here = host.road[Math.floor(host.along / 1000)]
+  const pace = paceOf(state, host)
+  return wooded(state, here)
+    ? Math.floor((pace * state.rules.forestPace) / 100)
+    : pace
 }
 
 /** An army of the lord's called home, by the village or market it left from (« une croix pour les rappeler »): its survivors back to his peasants, the mercenaries their way. */

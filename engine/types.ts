@@ -15,6 +15,8 @@ export type Grid = {
   land: Array<boolean>
   /** The sea's tiles and the lakes', which the boats sail; not the high mountains, which are no land either. */
   water: Array<boolean>
+  /** The woods' tiles, which slow the armies; none on a test's land. */
+  wood?: Array<boolean>
   /** Tiles of land in all. */
   area: number
 }
@@ -117,6 +119,8 @@ export type Host = {
   closing: number
   /** The tiles each side of its line it takes, as wide as its men. */
   wide: number
+  /** What the woods it took still owe, in hundredths of its stride: it waits them out before it takes more. */
+  slow?: number
 }
 
 /** Two lords who may not strike each other, until it runs out. */
