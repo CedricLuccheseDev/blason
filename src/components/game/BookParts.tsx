@@ -7,6 +7,7 @@ import { Icon } from '../hud/Figure'
 import type { IconName } from '../hud/Figure'
 import { hex } from './format'
 import type { ReactNode } from 'react'
+import { LEVELS } from '../../../engine'
 import type { Book } from '../../../engine'
 import { Flourish } from '~/components/home/Ornaments'
 import { PLAYERS } from '~/render/palette'
@@ -53,44 +54,188 @@ export function Head({
   )
 }
 
-/** The lords in play, a fixed grid of every seat (« fais plutot une grille avec les noms comme ça on voit bien quand un joueur a rejoins »): me, the friends come by their names, the bots marked as such, the seats left free faded; its team's numeral on each when there are teams. Its height never moves with them. */
+// norm-ok: a seat's small controls, a bot's level and the way to another team, form controls of the book.
+const CHIP =
+  'hud-press flex items-center rounded-sm border border-quill/30 px-1'
+
+/** The numerals of the teams. */
+const NUMERALS = ['I', 'II', 'III', 'IV']
+
+/**
+ * The lords in play (« fais plutot une grille avec les noms comme ça on voit
+ * bien quand un joueur a rejoins », « range mieux les équipes, et il faut
+ * pouvoir les bouger, et il faut choisir le niveau des bots par bot »): with
+ * teams, a box for each, a lord dragged from one to another or sent on by
+ * his arrow; without, a fixed grid of every seat, the free ones faded. Me,
+ * the friends by their names, the bots marked as such, each its level a
+ * click away. The host's to change; read only for a guest.
+ */
 export function Seats({
   book,
   names = [],
-}: Readonly<{ book: Book; names?: Array<string> }>) {
+  onChange,
+}: Readonly<{
+  book: Book
+  names?: Array<string>
+  onChange?: (book: Book) => void
+}>) {
   const m = useMessages()
   const guests = book.guests ?? 0
   const lords = 1 + guests + book.bots
+  const teams = book.teams >= 2 ? book.teams : 0
+  const teamOf = (i: number) => {
+    const moved = book.teamOf?.[i]
+    return moved !== undefined && moved < teams ? moved : i % teams
+  }
+  const move = (i: number, team: number) => {
+    const teamOfAll = Array.from({ length: PLAYERS.length }, (_, k) =>
+      k === i ? team : teamOf(k),
+    )
+    onChange?.({ ...book, teamOf: teamOfAll })
+  }
+  const level = (i: number) => {
+    const now = book.levels?.[i] ?? book.level
+    const next = LEVELS[(LEVELS.indexOf(now) + 1) % LEVELS.length]
+    const levels = Array.from(
+      { length: PLAYERS.length },
+      (_, k) => book.levels?.[k] ?? book.level,
+    )
+    levels[i] = next
+    onChange?.({ ...book, levels })
+  }
+  const botAt = (i: number) => guests < i && i < lords
+  const seat = (i: number) => (
+    <SeatLine
+      key={i}
+      i={i}
+      book={book}
+      who={whoOf(i, guests, names, m)}
+      bot={botAt(i)}
+      onLevel={onChange && (() => level(i))}
+      onMove={
+        onChange && teams ? () => move(i, (teamOf(i) + 1) % teams) : undefined
+      }
+    />
+  )
+  if (!teams)
+    return (
+      <ul className={`grid grid-cols-2 ${GAP.hair}`}>
+        {PLAYERS.map((_, i) =>
+          i < lords ? seat(i) : <FreeSeat key={i} i={i} />,
+        )}
+      </ul>
+    )
+  const seated = Array.from({ length: lords }, (_, i) => i)
   return (
-    <ul className={`grid grid-cols-3 ${GAP.hair}`}>
-      {PLAYERS.map((player, i) => {
-        const free = i >= lords
-        const bot = !free && i > guests
-        let who = m.book.free
-        if (i === 0) who = names[0] || m.book.you
-        else if (i <= guests) who = names[i] || m.book.guest
-        else if (bot) who = m.game.colors[player.key]
-        return (
-          <li
-            key={player.key}
-            className={`flex min-w-0 items-center ${GAP.hair} ${free ? 'opacity-35' : ''}`}
+    <Stack gap="part">
+      <div className={`grid grid-cols-2 ${GAP.part}`}>
+        {Array.from({ length: teams }, (_, t) => (
+          <section
+            key={t}
+            onDragOver={(e) => onChange && e.preventDefault()}
+            onDrop={(e) => {
+              const i = Number(e.dataTransfer.getData('text/plain'))
+              if (Number.isInteger(i)) move(i, t)
+            }}
+            className="border-t border-gilt/60"
           >
-            <Shield color={hex(player.color)} size="s" />
-            {bot && (
-              <span title={m.book.bot} className="text-lead-deep">
-                <Icon name="bot" size={16} />
+            <Stack gap="hair">
+              <span className={`flex items-center text-gilt-deep ${GAP.hair}`}>
+                <Icon name="banner" size={16} />
+                <Fine>{m.book.team(NUMERALS[t])}</Fine>
               </span>
-            )}
-            <Fine className="truncate">{who}</Fine>
-            {book.teams >= 2 && !free && (
-              <Fine className="ml-auto text-gilt-deep">
-                {['I', 'II', 'III', 'IV'][i % book.teams]}
-              </Fine>
-            )}
-          </li>
-        )
-      })}
-    </ul>
+              <ul className={`flex flex-col ${GAP.hair}`}>
+                {seated.filter((i) => teamOf(i) === t).map(seat)}
+              </ul>
+            </Stack>
+          </section>
+        ))}
+      </div>
+      <Fine className="text-center">
+        {m.book.freeSeats(PLAYERS.length - lords)}
+      </Fine>
+    </Stack>
+  )
+}
+
+/** Who sits a seat, by his name. */
+function whoOf(
+  i: number,
+  guests: number,
+  names: Array<string>,
+  m: ReturnType<typeof useMessages>,
+) {
+  if (i === 0) return names[0] || m.book.you
+  if (i <= guests) return names[i] || m.book.guest
+  return m.game.colors[PLAYERS[i].key]
+}
+
+/** A lord's line: his shield, his name, a bot's level, and for the host the way to another team. */
+function SeatLine({
+  i,
+  book,
+  who,
+  bot,
+  onLevel,
+  onMove,
+}: Readonly<{
+  i: number
+  book: Book
+  who: string
+  bot: boolean
+  onLevel?: () => void
+  onMove?: () => void
+}>) {
+  const m = useMessages().book
+  const level = book.levels?.[i] ?? book.level
+  return (
+    <li
+      draggable={onMove !== undefined}
+      onDragStart={(e) => e.dataTransfer.setData('text/plain', String(i))}
+      className={`flex min-w-0 items-center ${GAP.hair} ${onMove ? 'cursor-grab' : ''}`}
+    >
+      <Shield color={hex(PLAYERS[i].color)} size="s" />
+      {bot && (
+        <span title={m.bot} className="text-lead-deep">
+          <Icon name="bot" size={16} />
+        </span>
+      )}
+      <Fine className="min-w-0 flex-1 truncate">{who}</Fine>
+      {bot && (
+        <button
+          type="button"
+          disabled={!onLevel}
+          title={m.nextLevel}
+          onClick={onLevel}
+          className={`${CHIP} ${GAP.hair} ${onLevel ? 'cursor-pointer hover:bg-shade' : ''}`}
+        >
+          <Icon name="crown" size={14} />
+          <Fine>{m.level1[level]}</Fine>
+        </button>
+      )}
+      {onMove && (
+        <button
+          type="button"
+          title={m.moveTeam}
+          aria-label={m.moveTeam}
+          onClick={onMove}
+          className={`${CHIP} cursor-pointer border-transparent text-gilt-deep hover:bg-shade`}
+        >
+          <Icon name="banner" size={14} />
+        </button>
+      )}
+    </li>
+  )
+}
+
+/** A seat no one sits, faded: the grid keeps its place. */
+function FreeSeat({ i }: Readonly<{ i: number }>) {
+  const m = useMessages().book
+  return (
+    <li className={`flex min-w-0 items-center opacity-35 ${GAP.hair}`}>
+      <Shield color={hex(PLAYERS[i].color)} size="s" />
+      <Fine className="truncate">{m.free}</Fine>
+    </li>
   )
 }
 

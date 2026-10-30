@@ -37,6 +37,8 @@ export type Mixer = {
   hear: (hearing: Hearing) => void
   /** Mutes or unmutes; whether it is muted now. */
   toggle: () => boolean
+  /** Whether a game's end was heard: everything after it silent. */
+  ended: () => boolean
   destroy: () => void
 }
 
@@ -235,6 +237,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
         master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.05)
       return muted
     },
+    ended: () => over,
     destroy() {
       window.removeEventListener('pointerdown', wake)
       window.removeEventListener('keydown', wake)

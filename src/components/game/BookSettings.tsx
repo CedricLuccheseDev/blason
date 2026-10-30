@@ -44,7 +44,7 @@ export function BookSettings({
         }
         title={m.lords}
       />
-      <Seats book={book} names={names} />
+      <Seats book={book} names={names} onChange={edit ? onChange : undefined} />
       <Setting name={m.bots} icon="bot">
         <Stepper
           name={m.bots}
@@ -53,6 +53,7 @@ export function BookSettings({
           most={most}
           less={m.less}
           more={m.more}
+          of={m.of(most)}
           onCount={edit ? (bots) => set({ bots }) : undefined}
         />
       </Setting>
@@ -64,7 +65,11 @@ export function BookSettings({
             value: level,
             label: m.levels[level],
           }))}
-          onPick={edit ? (level: Level) => set({ level }) : undefined}
+          onPick={
+            edit
+              ? (level: Level) => set({ level, levels: undefined })
+              : undefined
+          }
         />
       </Setting>
       <Setting name={m.teams} icon="banner">
@@ -75,7 +80,11 @@ export function BookSettings({
             value: teams,
             label: teams ? String(teams) : m.none,
           }))}
-          onPick={edit ? (teams: number) => set({ teams }) : undefined}
+          onPick={
+            edit
+              ? (teams: number) => set({ teams, teamOf: undefined })
+              : undefined
+          }
         />
       </Setting>
       <Setting name={m.opening} icon="hourglass">

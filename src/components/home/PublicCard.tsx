@@ -5,6 +5,7 @@ import { atPublic } from './useRoom'
 import { useUpcoming } from './useUpcoming'
 import type { ReactNode } from 'react'
 import type { Room, RoomActions } from './useRoom'
+import type { Land } from '../../../engine'
 import { Act } from '~/components/hud/Act'
 import { Inline, Panel, Stack } from '~/components/hud/Layout'
 import { Heading, Note } from '~/components/hud/Text'
@@ -46,7 +47,8 @@ export function PublicCard({
   /** Whether a relay is there to play online at all. */
   online: boolean
 }>) {
-  const t = useMessages().home
+  const m = useMessages()
+  const t = m.home
   const heard = useUpcoming()
   const game = heard.lost ? null : heard.game
   const here = atPublic(room)
@@ -58,6 +60,12 @@ export function PublicCard({
   if (failed) status = <RoomTrouble room={room} />
   else if (!online) status = <p className="hud-note">{t.room.unavailable}</p>
   else if (heard.lost) status = <p className="hud-note">{t.public.lost}</p>
+  // The public games turn through every map (server/rooms.ts): its own, or a random land at its size.
+  const land: Land = game?.map
+    ? { kind: 'real', map: game.map }
+    : { kind: 'drawn', size: game?.size ?? 'standard' }
+  const landName =
+    land.kind === 'real' ? m.book.lands[land.map] : m.book.random[land.size]
   let word = t.public.play
   if (entering) word = t.public.entering
   else if (failed) word = t.room.retry
@@ -65,7 +73,7 @@ export function PublicCard({
     <Panel gap="part">
       <LandPlate
         seed={game?.seed ?? null}
-        land={{ kind: 'drawn', size: game?.size ?? 'standard' }}
+        land={land}
         label={t.public.land}
       >
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}
@@ -84,8 +92,9 @@ export function PublicCard({
               <Heading>{t.public.title}</Heading>
               {/* One alone in the last opening waits in this one: said even on a phone, it is why to play now. */}
               {game && game.waiting > 0 && <Note>{t.public.waiting}</Note>}
+              {/* Its land's name (« écris le nom de la map sur partie publique »). */}
               {game && game.waiting === 0 && (
-                <Note className="max-sm:hidden">{t.public.live}</Note>
+                <Note className="max-sm:hidden">{landName}</Note>
               )}
             </Stack>
           </h2>

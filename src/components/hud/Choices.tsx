@@ -47,7 +47,7 @@ export function Choices<T extends string | number>({
   )
 }
 
-/** A count between less and more, kept within its bounds. */
+/** A count between less and more, kept within its bounds; its figure written in at once, its most said beside it (« il faut cliquer sur 15 pour ecrire directement avec le max affiché »). */
 export function Stepper({
   name,
   value,
@@ -56,6 +56,7 @@ export function Stepper({
   onCount,
   less,
   more,
+  of,
 }: Readonly<{
   name: string
   value: number
@@ -65,14 +66,18 @@ export function Stepper({
   onCount?: (value: number) => void
   less: string
   more: string
+  /** The most, as said beside the figure. */
+  of: string
 }>) {
+  const count = (n: number) =>
+    onCount?.(Math.max(least, Math.min(most, Math.round(n))))
   const step = (by: number, label: string, sign: string) => (
     <button
       type="button"
       aria-label={`${name} : ${label}`}
       title={label}
       disabled={!onCount || value + by < least || value + by > most}
-      onClick={() => onCount?.(value + by)}
+      onClick={() => count(value + by)}
       className={`${PART} max-w-16 bg-vellum text-hud-l text-quill hover:bg-shade disabled:cursor-default disabled:opacity-35`}
     >
       {sign}
@@ -81,9 +86,23 @@ export function Stepper({
   return (
     <div role="group" aria-label={name} className={PLATE}>
       {step(-1, less, '−')}
-      <span className="hud-figure flex flex-1 items-center justify-center border-l border-quill/40 bg-vellum text-hud-l text-quill">
-        {value}
-      </span>
+      <label className="flex flex-1 items-center justify-center gap-2 border-l border-quill/40 bg-vellum">
+        <input
+          type="number"
+          min={least}
+          max={most}
+          value={value}
+          readOnly={!onCount}
+          aria-label={name}
+          onChange={(e) => {
+            const n = Number(e.target.value)
+            if (e.target.value !== '' && Number.isFinite(n)) count(n)
+          }}
+          onFocus={(e) => e.target.select()}
+          className="hud-figure w-14 bg-transparent text-right text-hud-l text-quill [appearance:textfield] focus-visible:outline-2 focus-visible:outline-gilt-deep [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <span className="hud-note text-hud-s text-lead-deep">{of}</span>
+      </label>
       {step(1, more, '+')}
     </div>
   )

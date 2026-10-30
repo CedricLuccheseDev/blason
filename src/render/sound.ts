@@ -1,4 +1,5 @@
 import { makeMixer } from '../audio/mixer'
+import type { Mixer } from '../audio/mixer'
 import { listenPresses } from '../audio/presses'
 import { bedsOf } from './ambience'
 import { heardIn, makeHearing } from './hearing'
@@ -24,6 +25,35 @@ const LEAN = 0.8
 /** What the ear reads of the map: its ground, and the part of it on screen. */
 export type Ear = { terrain: Terrain; rivers: Rivers; view: () => Box }
 
+/** The game's mixer, kept from one game to the next on the page: a land changed in the book mounts the game anew, and its music went on from its start each time (« quand on change de map ça reset la musique »). */
+let kept: {
+  mixer: Mixer
+  closing: ReturnType<typeof setTimeout> | null
+} | null = null
+/** How long a game's mixer waits for the next before it falls silent, in ms. */
+const KEEP_MS = 1500
+
+/** The mixer a game sounds through: the last game's if it is waiting and its end was not heard, else a new one. */
+function claimMixer(): Mixer {
+  if (kept) {
+    if (kept.closing) clearTimeout(kept.closing)
+    if (!kept.mixer.ended()) return kept.mixer
+    kept.mixer.destroy()
+  }
+  kept = { mixer: makeMixer(), closing: null }
+  return kept.mixer
+}
+
+/** A game gone: its mixer waits a moment for the next, then falls silent. */
+function releaseMixer() {
+  const held = kept
+  if (!held) return
+  held.closing = setTimeout(() => {
+    held.mixer.destroy()
+    if (kept === held) kept = null
+  }, KEEP_MS)
+}
+
 export function makeSound(
   state: GameState,
   me: number,
@@ -31,7 +61,7 @@ export function makeSound(
   screen: () => Rectangle,
   ear: Ear,
 ) {
-  const mixer = makeMixer()
+  const mixer = claimMixer()
   const hearing = makeHearing(state, me)
   const spectacle = makeSpectacle()
 
@@ -69,7 +99,7 @@ export function makeSound(
     toggle: mixer.toggle,
     destroy() {
       stopPresses()
-      mixer.destroy()
+      releaseMixer()
     },
   }
 }

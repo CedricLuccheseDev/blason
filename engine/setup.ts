@@ -89,6 +89,10 @@ export type Book = {
   level: Level
   teams: number
   opening: number
+  /** Each seat's team as the host moved it (« il faut pouvoir les bouger »); unmoved, dealt in turn. */
+  teamOf?: Array<number>
+  /** Each bot's level as the host set it (« choisir le niveau des bots par bot directement »); unset, the book's. */
+  levels?: Array<Level>
 }
 
 /**
@@ -103,9 +107,15 @@ export function hostSetup(book: Book): GameSetup {
   const bots = Math.max(0, Math.min(max - 1 - guests, book.bots))
   const lords = 1 + guests + bots
   const teams = book.teams >= 2 ? Math.min(SETUP_LIMITS.teams, book.teams) : 0
+  const teamAt = (i: number) => {
+    const moved = book.teamOf?.[i]
+    return moved !== undefined && moved >= 0 && moved < teams
+      ? moved
+      : i % teams
+  }
   const seats = Array.from({ length: max }, (_, i): Seat => ({
-    team: teams && i < lords ? i % teams : -1,
-    bot: i > guests && i < lords ? book.level : null,
+    team: teams && i < lords ? teamAt(i) : -1,
+    bot: i > guests && i < lords ? (book.levels?.[i] ?? book.level) : null,
     person: i <= guests,
   }))
   const { min, max: most } = SETUP_LIMITS.opening
