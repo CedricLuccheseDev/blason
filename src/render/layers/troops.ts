@@ -155,12 +155,7 @@ export function makeTroops() {
 
   return {
     container,
-    draw(
-      sides: Array<Drawn>,
-      lines: Array<Line>,
-      seconds: number,
-      view: Box,
-    ) {
+    draw(sides: Array<Drawn>, lines: Array<Line>, seconds: number, view: Box) {
       used = 0
       // When the frames run long, the men stand without their shadows (quality.ts).
       shadows.visible = quality().footing

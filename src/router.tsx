@@ -11,4 +11,3 @@ export function getRouter() {
     defaultNotFoundComponent: NotFoundScreen,
   })
 }
-
