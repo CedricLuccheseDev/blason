@@ -1,16 +1,12 @@
-import { siteOf } from './marks'
 import type { GameState } from '../../engine'
 import type { Anchor } from './heralds'
 import type { Spot } from './cord'
 
 // Where each herald stands with his letter, an offer of alliance made to
-// the player (Heralds.tsx draws it): on the player's land, at its tile
-// nearest the offering lord's capital, a few tiles in from the border, so
-// that the letter is read as come from him and lies on the land it is
-// addressed to. Sought again once a second, as the land moves.
-
-/** Tiles in from the border the herald stands, at most. */
-const IN = 4
+// the player (Heralds.tsx draws it): midway between the two lords' names,
+// where the alliance would join them (« la popup alliance accepter met la
+// entre le lien au milieu »), so that it is read at once as between him and
+// the player. Sought again once a second, as the lands move.
 
 export function makeEnvoys(
   state: GameState,
@@ -20,27 +16,12 @@ export function makeEnvoys(
   /** Where each herald stands, and the second it was sought. */
   const stands = new Map<number, { at: Spot; second: number }>()
 
-  /** My tile nearest a point, moved a few tiles towards my own capital. */
-  function nearest(to: Spot): Spot | null {
-    let best = -1
-    let near = Infinity
-    state.owner.forEach((owner, t) => {
-      if (owner !== me) return
-      const { x, y } = siteOf(state, t)
-      const d = (x - to.x) ** 2 + (y - to.y) ** 2
-      if (d < near) [best, near] = [t, d]
-    })
-    if (best < 0) return null
-    const at = siteOf(state, best)
-    const home = capitalOf(me)
-    if (!home) return at
-    const d = Math.hypot(home.x - at.x, home.y - at.y)
-    const step = Math.min(d / 3, IN * state.grid.size)
-    if (d === 0) return at
-    return {
-      x: at.x + ((home.x - at.x) / d) * step,
-      y: at.y + ((home.y - at.y) / d) * step,
-    }
+  /** Midway between my name and the offering lord's; none while either is not written. */
+  function between(lord: number): Spot | null {
+    const mine = capitalOf(me)
+    const theirs = capitalOf(lord)
+    if (!mine || !theirs) return null
+    return { x: (mine.x + theirs.x) / 2, y: (mine.y + theirs.y) / 2 }
   }
 
   return {
@@ -56,8 +37,7 @@ export function makeEnvoys(
       return offers.flatMap((r) => {
         let stand = stands.get(r.from)
         if (stand?.second !== second) {
-          const capital = capitalOf(r.from)
-          const at = capital && nearest(capital)
+          const at = between(r.from)
           if (!at) return []
           stand = { at, second }
           stands.set(r.from, stand)

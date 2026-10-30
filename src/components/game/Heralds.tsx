@@ -21,7 +21,7 @@ const GAP = 6
  * The diplomacy on the map, as the board's direction A has it: the seal of
  * each of my alliances in its last moments, when it asks to be renewed,
  * beside my ally's name, past his figure and his marks; the herald's letter
- * of each offer made to me, on my land nearest the lord who sends it, until
+ * of each offer made to me, midway between his name and mine, until
  * it is answered or refused; the news where it happened, a pennant planted
  * there a few seconds. The render says where each lies on the screen; one
  * out of view waits at its edge, an arrow towards it. Under the HUD's
