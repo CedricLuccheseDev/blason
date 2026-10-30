@@ -281,14 +281,19 @@ made to you, the seal of an alliance to renew:
   of either sent at the other), drawn by lot among all those the network
   reaches: the farther and the allies' more often (the chance goes with the
   road's length, twice for an ally, half for his own). It goes along the network's roads, through as many markets as it
-  takes, over its lord's land, his allies' and free land, and the land of the
-  lords whose markets it goes to; any other lord bars the way. The more
+  takes, over any land, as OpenFront's trains, but a lord's at war with its
+  own, who bars the way. The more
   caravans its lord has on the roads, the less often it sends one: with 6 out,
   one time in two.
 - It makes one journey at 4 tiles a second. Arriving, it pays both markets
   0.15 gold for each tile of its road, twice as much between allies; between
   two markets of one lord, half as much, paid once.
-- An enemy who takes a tile of its road ahead takes the caravan: it turns to
+- **Relays** (`engine/relays.ts`, as OpenFront's stations): each village
+  within 2 tiles of its road, once a caravan, pays its own lord and the
+  caravan's (the same lord once): 3.5 gold between allies, 2.5 between other
+  lords, 1 for a lord's own caravan. Nothing is taken from the merchant; the
+  "+" of gold rises over the village for whoever gains it.
+- An enemy, a lord at war with its own, who takes a tile of its road ahead takes the caravan: it turns to
   his nearest market and pays him alone. If he has none it can reach, it is
   plundered.
 

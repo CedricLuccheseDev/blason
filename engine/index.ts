@@ -58,6 +58,7 @@ export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 // What the screen and the bots ask of the rules.
 export { courseFor, entryFor } from './course'
 export { afloat } from './crossing'
+export { relayGold } from './relays'
 export { canBuild, priceOf } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'

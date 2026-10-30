@@ -1,7 +1,8 @@
-import { around } from './grid'
 import { drawInt } from './numbers'
 import { standing } from './land'
-import { atWar, isAllied, isFriendly } from './diplomacy'
+import { atWar, isAllied, warsOf } from './diplomacy'
+import { around } from './grid'
+import { relay } from './relays'
 import { tradeLinks } from './network'
 import { NEUTRAL } from './types'
 import type { Caravan, GameState } from './types'
@@ -12,17 +13,20 @@ import type { Link } from './network'
 // those the trade network reaches (network.ts), the far ones and the allies'
 // more often, and less often the more caravans its lord has on the roads. It
 // goes along the network's roads, through as many markets as it takes, over
-// its lord's land, his allies' and the free land, entering only the land of
-// the lords whose markets it goes to; any other lord bars the way. It makes
-// one journey at a walk; arriving, it pays both markets, more the longer its
-// road, twice as much between allies. An enemy who takes a tile of the road
-// ahead takes the caravan: it turns to his nearest market and pays him alone,
-// or is plundered if he has none it can reach.
+// any land but a lord's at war with its own (« On fait comme OpenFront ? »,
+// « go »); each village it passes by is a relay, which pays its lord and the
+// caravan's, as OpenFront's stations do. It makes one journey at a walk;
+// arriving, it pays both markets, more the longer its road, twice as much
+// between allies. An enemy who takes a tile of the road ahead takes the
+// caravan: it turns to his nearest market and pays him alone, or is
+// plundered if he has none it can reach.
 
-/** Tiles a road may cross for this lord: his, his allies', free land. */
+/** Tiles a road may cross for this lord: any land but a lord's at war with him (« On fait comme OpenFront ? », « go »), who takes the caravan there. */
 function open(state: GameState, lord: number, tile: number): boolean {
   const owner = state.owner[tile]
-  return owner === NEUTRAL || (owner >= 0 && isFriendly(state, lord, owner))
+  return (
+    owner === NEUTRAL || (owner >= 0 && !warsOf(state).has(lord * 64 + owner))
+  )
 }
 
 /** Tiles searched at most for a road, so a market far from all costs little. */
@@ -226,6 +230,7 @@ export function moveCaravans(state: GameState) {
       if (!open(state, c.owner, tile) && !c.via.includes(state.owner[tile]))
         if (!seize(state, c, i)) return false
     }
+    relay(state, c, c.road[Math.min(here, last)])
     if (here < c.road.length - 1) return true
     const end = c.road[c.road.length - 1]
     const market = state.works.find(

@@ -146,6 +146,8 @@ export type Caravan = {
   gold: number
   /** Taken by an enemy: the place on its road it was taken, its new lord's road from there. */
   taken?: number
+  /** The villages it passed by and paid as relays, their tiles. */
+  stops?: Array<number>
 }
 
 export type GameState = {

@@ -145,3 +145,21 @@ export function offer(state: GameState, player: number, target: number) {
 /** Whether a lord gave another an offering lately, still remembered. */
 export const gaveLately = (state: GameState, from: number, to: number) =>
   state.offerings.some((o) => o.from === from && o.to === to)
+
+/** The lords at war, each pair both ways (a × 64 + b), read again only when the armies change: every tile of every road asks. */
+const WARS = new WeakMap<
+  GameState,
+  { hosts: GameState['hosts']; count: number; pairs: Set<number> }
+>()
+
+export function warsOf(state: GameState): Set<number> {
+  const known = WARS.get(state)
+  const { hosts } = state
+  if (known?.hosts === hosts && known.count === hosts.length) return known.pairs
+  const pairs = new Set<number>()
+  for (const h of hosts)
+    if (h.target >= 0)
+      pairs.add(h.owner * 64 + h.target).add(h.target * 64 + h.owner)
+  WARS.set(state, { hosts, count: hosts.length, pairs })
+  return pairs
+}
