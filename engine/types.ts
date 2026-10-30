@@ -102,6 +102,8 @@ export type Host = {
   from: number
   road: Array<number>
   along: number
+  /** On its way to a lord its land does not touch: it takes the free land between first (course.ts). */
+  through?: boolean
   /** Whether an enemy army is upon it this tick: it stands, and goes to meet it. */
   fighting: boolean
   /** Ticks before the blows begin, the two armies walking to meet each other; -1 with no enemy upon it. */

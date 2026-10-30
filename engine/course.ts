@@ -50,7 +50,13 @@ const builtWorks = (state: GameState, lord: number, work: Work) =>
     .map((w) => w.tile)
 
 /** Where and how an army would go: the border tile it enters by, the village (or market) it is raised at, and its road there; with none free to reach the front, no village (-1) and no road. */
-export type Course = { entry: number; from: number; road: Array<number> }
+/** Its entry, the village or market it is raised at (-1 for none free), its road there; `through`, the free land it takes on its way to a lord whose land its own does not touch. */
+export type Course = {
+  entry: number
+  from: number
+  road: Array<number>
+  through: boolean
+}
 
 /**
  * The border an army may enter by: the target's tiles beside land the lord's
@@ -102,7 +108,12 @@ export function courseFor(
   const target = state.owner[tile]
   if (target === player || target < NEUTRAL) return null
   if (target >= 0 && isAllied(state, player, target)) return null
-  const gaps = borderOf(state, player, target, tile)
+  let gaps = borderOf(state, player, target, tile)
+  // No border with the lord: the army takes the free land on its way to him
+  // first, then strikes him (« il faut quand meme pouvoir », « Prend la
+  // terre libre »).
+  const through = target >= 0 && gaps.size === 0
+  if (through) gaps = borderOf(state, player, NEUTRAL, tile)
   const nearest = nearestOf(gaps)
   if (nearest < 0) return null
   const wide = wideOf(state, menFor(state, player, army))
@@ -139,7 +150,12 @@ export function courseFor(
   // un souci avec le traceur bleu »).
   if (best.entry < 0) return null
   const road = roadTo(best.end)
-  return { entry: best.entry, from: free.length > 0 ? road[0] : -1, road }
+  return {
+    entry: best.entry,
+    from: free.length > 0 ? road[0] : -1,
+    road,
+    through,
+  }
 }
 
 /** Where an army of the kind against the tile's lord, or the free land, enters (courseFor), or -1. */

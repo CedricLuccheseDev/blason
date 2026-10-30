@@ -147,11 +147,13 @@ export function makeScene(
       life.container,
       allies.container,
       raids.container,
-      seals.container,
-      building.container,
       pacts.container,
       page.frame,
       trade.container,
+      // A village's seal and a work's gauge over the caravans passing by
+      // (« attentions aux couche le marchand passe par dessus »).
+      seals.container,
+      building.container,
       armies.container,
       volleys.container,
       strikes.container,

@@ -78,9 +78,10 @@ function touches(state: GameState, player: number, tile: number) {
   return around(state.grid, tile).some((t) => passable(state, player, t))
 }
 
-/** Whether a tile is the army's to strike: its target's, or free. */
-const struck = (state: GameState, target: number, tile: number) =>
-  state.owner[tile] === target
+/** Whether a tile is the army's to strike: its target's; or free, on its way to a lord its land does not touch (course.ts, `through`). */
+const struck = (state: GameState, host: Host, tile: number) =>
+  state.owner[tile] === host.target ||
+  (host.through === true && state.owner[tile] === NEUTRAL)
 
 /** A click: an army raised at one of the lord's free villages, or mercenaries hired at one of his free markets, marching by the course that brings it soonest to strike the clicked tile's lord or free domain. */
 export function attack(
@@ -97,11 +98,12 @@ export function attack(
   const lord = state.players[player]
   if (!hired(state, army)) lord.peasants -= men
   lord.gold -= costOf(state, men, army)
-  const { entry, from, road } = course
+  const { entry, from, road, through } = course
   state.hosts.push({
     owner: player,
     army,
     target: state.owner[tile],
+    ...(through ? { through } : {}),
     men,
     aim: tile,
     entry,
@@ -125,7 +127,7 @@ function take(state: GameState, host: Host, tile: number) {
     if (work.tile === tile) work.owner = host.owner
   setOwner(state, tile, host.owner)
   for (const t of around(state.grid, tile))
-    if (struck(state, host.target, t) && inBand(state, host, t))
+    if (struck(state, host, t) && inBand(state, host, t))
       push(host.queue, [priority(state, host, t), t])
 }
 
@@ -136,13 +138,15 @@ function take(state: GameState, host: Host, tile: number) {
  */
 function fight(state: GameState, host: Host, tile: number): boolean {
   const held = holdOf(state, tile)
+  // Its holder's: the target's, or nobody's on the free land it crosses.
+  const holder = state.owner[tile]
   const { castle, peasants } = state.rules.combat
-  const rate = walled(state, tile, host.target) ? castle : peasants
+  const rate = walled(state, tile, holder) ? castle : peasants
   const cost = Math.floor((held * rate) / 100)
   const paid = Math.min(cost, host.men)
   const killed = rate === 0 ? held : Math.floor((paid * 100) / rate)
-  if (host.target !== NEUTRAL) {
-    const lord = state.players[host.target]
+  if (holder >= 0) {
+    const lord = state.players[holder]
     lord.peasants = Math.max(0, lord.peasants - killed)
   }
   host.men -= paid
@@ -164,7 +168,7 @@ function march(state: GameState, host: Host) {
     const next = pop(host.queue)
     if (!next) break
     const tile = next[1]
-    const ours = struck(state, host.target, tile)
+    const ours = struck(state, host, tile)
     if (!ours || !touches(state, host.owner, tile)) continue
     if (!fight(state, host, tile)) break
     take(state, host, tile)

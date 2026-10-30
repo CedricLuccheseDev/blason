@@ -63,6 +63,7 @@ describe('the entry that brings it soonest', () => {
         entry: host.entry,
         from: host.from,
         road: host.road,
+        through: host.through === true,
       })
       expect(host.from).toBe(army === 'mercenaries' ? 20 * 32 + 27 : 165)
     }

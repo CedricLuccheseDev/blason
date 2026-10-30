@@ -147,6 +147,11 @@ leaves it gives his seat back to its bot.
   only if that is truly sooner. The same course is drawn under the pointer
   before the click. With no village free, the aim shows the border tile
   nearest the click.
+- **A lord the land does not touch**: with free land between the two, the
+  army enters by the free land and takes it on its way, straight towards the
+  click, then strikes the lord without stopping (`engine/course.ts`,
+  `through`). Another lord's land in between still bars the way, unless he
+  is an ally.
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
   while he bears the traitor's mark; the villagers on free land):
