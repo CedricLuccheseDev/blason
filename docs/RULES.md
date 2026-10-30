@@ -32,9 +32,11 @@ applies each rule is named beside it.
   mountains on the real ranges. Every piece of land the water touches is in
   the game, the islands with the rest; only a piece the high mountains close
   all round is not.
-- A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
-  huge (four times), chosen by `/play?size=large` or `huge` until the home
-  offers it. Its tiles and cells keep their size: a larger land has more of
+- A map has a **size** (`MAP_SIZES`): small (half the land), standard,
+  large (twice) or huge (four times). The game's book offers its lands as a
+  list of cards, the smallest first: the invented land small, middling or
+  great, and the maps of the Earth, each with the lords it suits
+  (`/play?size=huge` draws the huge one). Its tiles and cells keep their size: a larger land has more of
   them, and more lakes, rivers, ranges and woods.
 - The game is played on one piece of land: a tile the sea cuts off, which
   no walk reaches, is no part of it (`engine/land.ts`).

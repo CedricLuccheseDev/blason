@@ -1,19 +1,11 @@
-import {
-  ATLAS_MAPS,
-  LEVELS,
-  MAP_SIZES,
-  SETUP_LIMITS,
-  TICKS_PER_SECOND,
-  lordsFor,
-  sizeOf,
-} from '../../../engine'
+import { LEVELS, SETUP_LIMITS, TICKS_PER_SECOND } from '../../../engine'
 import { Act, Tap } from '../hud/Act'
 import { Inline, Panel, Ruled, Spread, Stack, Veil } from '../hud/Layout'
 import { Note } from '../hud/Text'
 import { Head, Invite, Seats, Setting, stepped } from './BookParts'
+import { MapList } from './MapList'
 import type { ReactNode } from 'react'
-import type { Book, Land, Level } from '../../../engine'
-import { LandPlate } from '~/components/home/LandPlate'
+import type { Book, Level } from '../../../engine'
 import { useMessages } from '~/i18n'
 
 // The book of the game (Concept, 29/10: « dans les 2 cas on est en game »,
@@ -21,30 +13,13 @@ import { useMessages } from '~/i18n'
 // object, open on two pages over the game, a veil over the rest. Before the
 // launch it is the host's lobby, open of itself: the land, its size or
 // another one; the lords, his bots, their level, the teams, the planting;
-// « Lancer la partie ». The land is one of a list, each its own size (« Fais
-// pas de mode carte moyenne grosse tout ça, chaque carte a sa propre
-// taille »), the smallest first, its size and the lords it suits said under
-// it, and whether it suits this game. After it, his menu: the same settings for the next
+// « Lancer la partie ». The land is one of a list of cards (MapList.tsx),
+// each its own size (« Fais pas de mode carte moyenne grosse tout ça, chaque
+// carte a sa propre taille »), the smallest first, its size and the lords it
+// suits said under it, and whether it suits this game. After it, his menu: the same settings for the next
 // land, « Recommencer », « Quitter ». The book's button (BookButton) opens
 // it again.
 
-/** The lands the book offers, the smallest first: the invented land, then the atlas's maps of the Earth. */
-const LANDS: ReadonlyArray<Land> = [
-  { kind: 'drawn', size: 'standard' } as Land,
-  ...ATLAS_MAPS.map((map): Land => ({ kind: 'real', map })),
-].sort((a, b) => MAP_SIZES[sizeOf(a)] - MAP_SIZES[sizeOf(b)])
-
-/** A land's name in the list. */
-const keyOf = (land: Land) => (land.kind === 'real' ? land.map : 'drawn')
-
-/** The land before or after one in the list. */
-function steppedLand(land: Land, by: 1 | -1): Land {
-  const at = Math.max(
-    0,
-    LANDS.findIndex((l) => keyOf(l) === keyOf(land)),
-  )
-  return LANDS[Math.max(0, Math.min(LANDS.length - 1, at + by))]
-}
 const TEAMS = [0, 2, 3, 4] as const
 /** The plantings offered, in seconds, within the setup's bounds. */
 const OPENINGS = [10, 20, 30, 45, 60] as const
@@ -121,13 +96,6 @@ export function GameBook({
     hosts
   )
   const kicker = lobby ? m.yours : m.going(running)
-  /** The land's size and the lords it suits, and whether it suits this game's. */
-  function landLine({ land, bots: seated, guests = 0 }: Book) {
-    const [least, most] = lordsFor(land)
-    const lords = seated + guests + 1
-    const line = m.landLine(m.sizes[sizeOf(land)], least, most)
-    return lords >= least && lords <= most ? `${line}, ${m.suits}` : line
-  }
   return (
     <Veil onClose={onClose}>
       <Panel
@@ -147,13 +115,10 @@ export function GameBook({
           left={
             <>
               <Head kicker={guest ? m.hostGame : kicker} title={m.land} />
-              <LandPlate seed={book.seed} land={book.land} label={m.land} />
-              <Choice
-                name={m.size}
-                value={m.lands[keyOf(book.land)]}
-                onStep={(by) => set({ land: steppedLand(book.land, by) })}
+              <MapList
+                book={book}
+                onPick={guest ? undefined : (land) => set({ land })}
               />
-              <Note>{landLine(book)}</Note>
               {/* Another seed draws another invented land; the Earth's is the Earth's. */}
               {!guest && book.land.kind === 'drawn' && (
                 <Inline justify="center">

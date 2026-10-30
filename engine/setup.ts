@@ -30,6 +30,7 @@ const drawn = (size: MapSize): Land => ({ kind: 'drawn', size })
 
 /** The lords an invented land suits, by its size. */
 const INVENTED: Readonly<Record<MapSize, readonly [number, number]>> = {
+  small: [2, 8],
   standard: [2, 16],
   large: [10, 20],
   huge: [16, 20],

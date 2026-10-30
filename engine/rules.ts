@@ -15,13 +15,14 @@ export type Work = 'village' | 'market' | 'castle'
 export type Coup = 'archers' | 'troublemaker' | 'trebuchet'
 
 /** The sizes a map may be drawn at. */
-export type MapSize = 'standard' | 'large' | 'huge'
+export type MapSize = 'small' | 'standard' | 'large' | 'huge'
 
 /**
  * Each size's land, so many times the standard one's area (some 53,000
  * tiles): its tiles and cells the same size, more of them.
  */
 export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
+  small: 0.5,
   standard: 1,
   large: 2,
   huge: 4,
