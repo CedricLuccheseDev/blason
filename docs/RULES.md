@@ -139,8 +139,10 @@ leaves it gives his seat back to its bot.
   lord reads it shifted by his own offset. It bends the band's edge too, up
   to 3 tiles in or out. Two fronts meet in a ragged line,
   as a coast, rather than a straight one (`engine/rough.ts`).
-- **The entry that brings it soonest**: of all the border tiles, the army
-  enters by the one that brings it to the click soonest, counting its march
+- **The entry that brings it soonest**: of the border tiles from which the
+  click can be reached over the lord's land, no high mountain nor sea
+  crossed, the army enters by the one that brings it to the click soonest;
+  with none, nothing is sent, counting its march
   from the free village (or market) nearest by the march, then its way
   across the enemy's land, straight to the click. That way is slow: the
   bulge's tip goes only as fast as it fills the land behind it, about a

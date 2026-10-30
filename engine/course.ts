@@ -59,21 +59,47 @@ export type Course = {
 }
 
 /**
+ * The tiles from which the tile aimed at is reached over the land of these
+ * owners, no high mountain nor sea crossed (« bug on peut pas traverser les
+ * montagnes »: the army entered where a range stood between it and the
+ * click, and the aim drew its line across).
+ */
+function reachable(
+  state: GameState,
+  tile: number,
+  owners: ReadonlySet<number>,
+): Uint8Array {
+  const seen = new Uint8Array(state.owner.length)
+  const queue = new Int32Array(state.owner.length)
+  let size = 0
+  seen[tile] = 1
+  queue[size++] = tile
+  const visit = (n: number) => {
+    if (seen[n] || !owners.has(state.owner[n])) return
+    seen[n] = 1
+    queue[size++] = n
+  }
+  for (let i = 0; i < size; i++) eachAround(state.grid, queue[i], visit)
+  return seen
+}
+
+/**
  * The border an army may enter by: the target's tiles beside land the lord's
- * armies walk, each with how far it is from the tile aimed at (the square of
- * the distance).
+ * armies walk, from which the tile aimed at is reached (`reach`), each with
+ * how far it is from it (the square of the distance).
  */
 function borderOf(
   state: GameState,
   player: number,
   target: number,
   tile: number,
+  reach: Uint8Array,
 ) {
   const walks = walkers(state, player)
   const { owner } = state
   const gaps = new Map<number, number>()
   const mark = (t: number) => {
-    if (owner[t] === target && !gaps.has(t))
+    if (owner[t] === target && reach[t] && !gaps.has(t))
       gaps.set(t, apart(state.grid, t, tile))
   }
   for (let t = 0; t < owner.length; t++)
@@ -108,12 +134,25 @@ export function courseFor(
   const target = state.owner[tile]
   if (target === player || target < NEUTRAL) return null
   if (target >= 0 && isAllied(state, player, target)) return null
-  let gaps = borderOf(state, player, target, tile)
+  let gaps = borderOf(
+    state,
+    player,
+    target,
+    tile,
+    reachable(state, tile, new Set([target])),
+  )
   // No border with the lord: the army takes the free land on its way to him
   // first, then strikes him (« il faut quand meme pouvoir », « Prend la
   // terre libre »).
   const through = target >= 0 && gaps.size === 0
-  if (through) gaps = borderOf(state, player, NEUTRAL, tile)
+  if (through)
+    gaps = borderOf(
+      state,
+      player,
+      NEUTRAL,
+      tile,
+      reachable(state, tile, new Set([target, NEUTRAL])),
+    )
   const nearest = nearestOf(gaps)
   if (nearest < 0) return null
   const wide = wideOf(state, menFor(state, player, army))
