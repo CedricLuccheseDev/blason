@@ -166,6 +166,22 @@ export type Ship = {
   gold: number
 }
 
+/** A warship of a lord's, patrolling round a tile of the water (warships.ts). */
+export type Warship = {
+  /** Its number, the order that sends it names it by. */
+  id: number
+  owner: number
+  /** The tile of water it patrols round. */
+  post: number
+  /** The water's tiles of its way, from where it set out, and how far along it is, in thousandths of a tile. */
+  way: Array<number>
+  along: number
+  /** The shots it may still take before it sinks. */
+  hull: number
+  /** The tick it may shoot again. */
+  reload: number
+}
+
 export type GameState = {
   /** What the game was made of, never changed: its seed, its opening (in the rules) and its teams are laid below, where the rules read them. */
   setup: GameSetup
@@ -183,6 +199,9 @@ export type GameState = {
   offerings: Array<Offering>
   caravans: Array<Caravan>
   ships: Array<Ship>
+  warships: Array<Warship>
+  /** The warships fitted out in the game: the last one's number. */
+  warshipsBuilt: number
   strikes: Array<Strike>
   scars: Array<Scar>
   /** Each seat's team, as the setup gives it, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */
@@ -200,4 +219,8 @@ export type Order = { player: number } & (
   /** An army called home, by the village or market it left from: its survivors back to the peasants. */
   | { type: 'recall'; tile: number }
   | { type: 'coup'; tile: number; coup: Coup }
+  /** A warship fitted out at the lord's port nearest a tile of water, and sent there. */
+  | { type: 'warship'; tile: number }
+  /** One of his warships, by its number, sent to a tile of water. */
+  | { type: 'sail'; tile: number; ship: number }
 )

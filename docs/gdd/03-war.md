@@ -121,8 +121,7 @@ How land changes hands. Figures: `docs/RULES.md` (War).
 - Acceptance: Given two lands across a strait, When a lord attacks the other,
   Then his army sails and takes its landing (engine test).
 #### Validation
-- Confidence: Preliminary. Open question: may warships sink armies at sea? —
-  Cédric, with the warships (10).
+- Confidence: Preliminary. Warships sink them at sea (D-WAR-8).
 
 ## D-WAR-7: Encircled land
 
@@ -137,3 +136,50 @@ How land changes hands. Figures: `docs/RULES.md` (War).
   round a piece under 200 tiles.
 #### Validation
 - Confidence: Supported.
+
+## D-WAR-8: Warships
+
+- Status: Accepted
+- Owner: Cédric
+- Updated: 2026-10-30
+- Scope: maps with water; every mode
+- Links: P1; D-ECO-5, D-ECO-6, D-WAR-6
+#### Why?
+- Need: the merchant ships make gold at sea and nothing threatens them; the
+  sea has no war of its own.
+- Outcome: warships, proposed 30/10; « On peut l'envoyer autre part aussi »;
+  « fais comme open front tu choisi une position sur l'eau et il part du port
+  le plus proche »; « Oui » to sinking the armies' boats (Cédric, 30/10).
+- Evidence: OpenFront's warships, built at a port, patrolling, taking trade
+  ships and sinking transports, moved by a click (mechanism read, not
+  copied).
+- Alternative left: warships carrying armies — the boats of D-WAR-6 already
+  do, from any coast.
+#### How?
+- Chosen in the bar as a work, its price doubling with each, then a click on
+  the water: it is built at one's port nearest that point by sea and sails
+  there to patrol round it. None if no port of one's own reaches that water.
+- Selected, then a click on the water it can reach, it sails there and
+  patrols there.
+- It takes the merchant ships of lords not allied that pass near: their gold
+  goes to its lord, the ship gone. It sinks the boats of enemy armies
+  crossing (D-WAR-6), their men lost. It fights the warships of lords not allied
+  that it meets, shot for shot, until one sinks.
+- Seen on the map as a ship of war under its lord's colours; heard as a shot
+  of the guns, the hulls' crash, a bell when a ship is taken (D-SND-1).
+#### What?
+- Parameters (tunable, `RULES`): its price as a castle's; patrol within 12
+  tiles of its point; takes a ship within 3 tiles; 4 shots to sink, one every
+  2 s.
+- Edge cases: the port it left taken or destroyed, the warship sails on; it
+  never leaves the water it was built on; a click on water no port of one's
+  own reaches builds nothing and costs nothing.
+- Acceptance: Given a merchant ship of an enemy passing within 3 tiles of a
+  warship, When the step runs, Then the ship is taken and its gold goes to the
+  warship's lord (engine test).
+#### Validation
+- Riskiest hypothesis: the bots' warships don't make the sea a nuisance where
+  merchant ships stop paying.
+- Method: arena (gold from ships before and after), then played on Britain
+  and the Mediterranean.
+- Confidence: Untested.

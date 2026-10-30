@@ -157,6 +157,13 @@ export type Rules = {
   shipPace: number
   shipCrowd: number
   shipGold: number
+  /** A warship (warships.ts): its price, in gold, doubling with each afloat; it sails so many thousandths of a tile a tick, patrols within so many tiles of its post, shoots within so many, every so many ticks, and sinks at so many shots. */
+  warshipPrice: number
+  warshipPace: number
+  warshipPatrol: number
+  warshipReach: number
+  warshipReload: number
+  warshipHull: number
   relayReach: number
   relayGold: { self: number; other: number; ally: number }
   allyTrade: number
@@ -263,6 +270,12 @@ export const RULES: Rules = {
   shipPace: 800,
   shipCrowd: 4,
   shipGold: 150,
+  warshipPrice: 200,
+  warshipPace: 600,
+  warshipPatrol: 12,
+  warshipReach: 3,
+  warshipReload: 2 * SECOND,
+  warshipHull: 4,
   relayReach: 2,
   relayGold: { self: 1000, other: 2500, ally: 3500 },
   allyTrade: 200,

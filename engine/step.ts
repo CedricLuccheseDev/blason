@@ -2,6 +2,7 @@ import { TICKS_PER_SECOND } from './units'
 import { fingerprint } from './numbers'
 import { moveCaravans, sendCaravans } from './caravans'
 import { moveShips, sendShips } from './ships'
+import { launchWarship, sailWarships, sendWarship } from './warships'
 import {
   ally,
   breakAlliance,
@@ -58,6 +59,7 @@ function judge(state: GameState): void {
     state.hosts = state.hosts.filter((host) => host.owner !== id)
     state.caravans = state.caravans.filter((c) => c.owner !== id)
     state.ships = state.ships.filter((s) => s.owner !== id)
+    state.warships = state.warships.filter((s) => s.owner !== id)
     state.alliances = state.alliances.filter((x) => x.a !== id && x.b !== id)
   })
   // A side is a team, its members' land together, or a lord alone; the one
@@ -115,6 +117,8 @@ const KINDS: ReadonlySet<string> = new Set<Order['type']>([
   'breakAlliance',
   'offering',
   'recall',
+  'warship',
+  'sail',
 ])
 
 function isValid(state: GameState, order: Order): boolean {
@@ -132,6 +136,7 @@ function isValid(state: GameState, order: Order): boolean {
     return Object.hasOwn(state.rules.armies, order.army)
   if (order.type === 'build') return WORKS.includes(order.work)
   if (order.type === 'coup') return COUPS.includes(order.coup)
+  if (order.type === 'sail') return Number.isInteger(order.ship)
   return true
 }
 
@@ -151,6 +156,10 @@ function apply(state: GameState, order: Order): void {
   else if (order.type === 'ally') ally(state, order.player, order.target)
   else if (order.type === 'offering') offer(state, order.player, order.target)
   else if (order.type === 'recall') recall(state, order.player, order.tile)
+  else if (order.type === 'warship')
+    launchWarship(state, order.player, order.tile)
+  else if (order.type === 'sail')
+    sendWarship(state, order.player, order.ship, order.tile)
   else breakAlliance(state, order.player, order.target)
 }
 
@@ -170,6 +179,7 @@ export function step(state: GameState, orders: Array<Order> = []) {
     moveCaravans(state)
     sendShips(state)
     moveShips(state)
+    sailWarships(state)
     expireDiplomacy(state)
     judge(state)
   }
