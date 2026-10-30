@@ -27,7 +27,8 @@ applies each rule is named beside it.
   (`src/render/layers/peaks.ts`).
 - **Maps of the real Earth** (`engine/map/atlas.ts`): the British Isles
   (small), France (middling), the Mediterranean and Europe (large), the
-  World (huge); and two lands of legend, Middle-earth and Westeros (large),
+  World (huge); and two lands of legend, Middle-earth (large) and Westeros
+  with Essos (huge),
   drawn by our own hand (`scripts/legend.ts`), never traced; each ground baked from the world's heights, its great lakes
   and main rivers real; a map of some lands only, as France or the British
   Isles, draws its neighbours' land **dead**: dulled, no one's, no army

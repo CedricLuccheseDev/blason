@@ -22,7 +22,7 @@ export const bookEn = {
     europe: 'Europe',
     world: 'The World',
     middle: 'Middle-earth',
-    westeros: 'Westeros',
+    westeros: 'Westeros and Essos',
   },
   landLine: (size: string, least: number, most: number) =>
     `${size}, for ${least} to ${most} lords`,
@@ -104,7 +104,7 @@ export const bookFr: BookMessages = {
     europe: 'L’Europe',
     world: 'Le monde',
     middle: 'La Terre du Milieu',
-    westeros: 'Westeros',
+    westeros: 'Westeros et Essos',
   },
   landLine: (size: string, least: number, most: number) =>
     `${size}, pour ${least} à ${most} seigneurs`,
