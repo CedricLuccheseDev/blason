@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { RoomTrouble, Seats } from './Seats'
-import type { KeyboardEvent } from 'react'
+import type { ClipboardEvent, KeyboardEvent } from 'react'
 import type { Room, RoomActions } from './useRoom'
 import { Act } from '~/components/hud/Act'
 import { GAP, Stack } from '~/components/hud/Layout'
@@ -55,6 +55,20 @@ export function PrivateRoom({
     setTyped((now) => now.map((c, k) => (k === i ? s : c)))
     if (s) boxes.current[i + 1]?.focus()
   }
+  // A code pasted whole, or the link a host copied (« il faut pouvoir ctrl v
+  // dedans »): its five signs laid in the boxes from the first.
+  const paste = (e: ClipboardEvent<HTMLInputElement>) => {
+    const text = e.clipboardData.getData('text')
+    const code = (/room=([^&\s]+)/.exec(text)?.[1] ?? text)
+      .split('')
+      .map(sign)
+      .filter(Boolean)
+      .slice(0, LENGTH)
+    if (code.length < 2) return
+    e.preventDefault()
+    setTyped(Array.from({ length: LENGTH }, (_, k) => code[k] ?? ''))
+    boxes.current[Math.min(code.length, LENGTH - 1)]?.focus()
+  }
   const back = (i: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !typed[i]) boxes.current[i - 1]?.focus()
   }
@@ -84,6 +98,7 @@ export function PrivateRoom({
                   data-first={i === 0 && way === 'join' ? true : undefined}
                   onChange={(e) => type(i, e.target.value)}
                   onKeyDown={(e) => back(i, e)}
+                  onPaste={paste}
                   className={BOX}
                 />
               ))}

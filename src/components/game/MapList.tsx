@@ -1,5 +1,7 @@
 import { ATLAS_MAPS, MAP_SIZES, lordsFor, sizeOf } from '../../../engine'
+import { Icon } from '../hud/Figure'
 import { GAP, Stack, Tag } from '../hud/Layout'
+import type { IconName } from '../hud/Figure'
 import { Fine, Name, Word } from '../hud/Text'
 import type { Atlas, Book, Land, MapSize } from '../../../engine'
 import { LandPlate } from '~/components/home/LandPlate'
@@ -23,6 +25,9 @@ const bySize = (a: Land, b: Land) => MAP_SIZES[sizeOf(a)] - MAP_SIZES[sizeOf(b)]
 const real = (maps: ReadonlyArray<Atlas>) =>
   maps.map((map): Land => ({ kind: 'real', map })).sort(bySize)
 
+/** The seed a map of the atlas is drawn with on its card: any will do, the same each time. */
+const ATLAS_SEED = 'atlas'
+
 /** A land's name in the list. */
 const keyOf = (land: Land) => (land.kind === 'real' ? land.map : land.size)
 
@@ -38,17 +43,29 @@ export function MapList({
   onAnother?: () => void
 }>) {
   const m = useMessages().book
-  const sections: Array<[string, Array<Land>]> = [
-    [m.randomLands, RANDOM.map((size): Land => ({ kind: 'drawn', size }))],
-    [m.earthLands, real(ATLAS_MAPS.filter((a) => !LEGENDS.includes(a)))],
-    [m.legendLands, real(LEGENDS)],
+  // The Earth, the legends, then the random lands (« fait la terre, legend, puis aléatoire »).
+  const sections: Array<[string, IconName, Array<Land>]> = [
+    [
+      m.earthLands,
+      'globe',
+      real(ATLAS_MAPS.filter((a) => !LEGENDS.includes(a))),
+    ],
+    [m.legendLands, 'book', real(LEGENDS)],
+    [
+      m.randomLands,
+      'die',
+      RANDOM.map((size): Land => ({ kind: 'drawn', size })),
+    ],
   ]
   return (
     <Stack gap="piece">
-      {sections.map(([title, lands]) => (
+      {sections.map(([title, icon, lands]) => (
         <section key={title}>
           <Stack gap="part">
-            <h3 className="border-b border-gilt/50">
+            <h3
+              className={`flex items-center border-b border-gilt/50 ${GAP.hair}`}
+            >
+              <Icon name={icon} size={20} />
               <Word>{title}</Word>
             </h3>
             <div
@@ -104,7 +121,13 @@ function Card({
       className={`hud-press text-left outline-offset-2 ${chosen ? 'outline-2 outline-gilt' : 'opacity-75 hover:opacity-100'} ${onPick ? 'cursor-pointer' : ''}`}
     >
       <Stack gap="hair">
-        <LandPlate seed={book.seed} land={land} label={name} whole>
+        {/* A map of the atlas is the same whatever the seed: drawn once, never again as another random land is drawn (« quand on fait clique une autre y'a toutes les map qui rechargent »). */}
+        <LandPlate
+          seed={land.kind === 'real' ? ATLAS_SEED : book.seed}
+          land={land}
+          label={name}
+          whole
+        >
           {suits && (
             <span className="absolute top-1 right-1">
               <Tag>

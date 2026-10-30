@@ -32,18 +32,28 @@ const [FROM, TO] = [2.6, 3.8]
 /** How far from the coast's own line a shore line may stray, against its distance from the shore. */
 const WITHIN = 0.04
 
-/** The sea's wash with its shore lines so wide, in map units. */
+/** How much darker the open sea is than the shallows, beyond the last shore line: each band out from the coast a step deeper (« pour la mer a chaque couche assombri l'eau. pour simuler les fond marins »). */
+const DEEPEST = 0.22
+
+/** The water's tone so many bands out from the coast, of the shore lines' count. */
+const depthOf = (band: number) =>
+  mixColor(TONE.seaWash, TONE.seaLine, (DEEPEST * band) / SHORES.length)
+
+/** The sea's wash with its shore lines so wide, in map units, the water darkening band by band out to the open sea. */
 function sea(world: World, width: number): Graphics {
   const g = new Graphics()
     .rect(0, 0, world.width, world.height)
-    .fill(TONE.seaWash)
+    .fill(depthOf(SHORES.length))
   // The coast drawn wide in the line's colour, then a little less wide in
-  // the sea's: what is left is a line at that distance from every shore (the
-  // land, drawn over it, hides the inner half). The coast alone, not every
-  // cell's outline: a land of small cells would be painted over and over.
+  // the water's within it: what is left is a line at that distance from
+  // every shore (the land, drawn over it, hides the inner half), the water
+  // inside it a band shallower than the one outside. The coast alone, not
+  // every cell's outline: a land of small cells would be painted over and
+  // over.
   const line = { join: 'round', cap: 'round' } as const
   const coast = chain(world.coast)
-  for (const [d, strength] of [...SHORES].reverse()) {
+  ;[...SHORES].reverse().forEach(([d, strength], k) => {
+    const band = SHORES.length - 1 - k
     // So far from the shore, the coast's smallest turns do not show: a
     // line a twenty-fifth of its distance from the coast's is enough.
     const plain = coast.map((run) => flatten(simplify(run, d * WITHIN)))
@@ -51,11 +61,11 @@ function sea(world: World, width: number): Graphics {
     g.stroke({
       ...line,
       width: 2 * d + width,
-      color: mixColor(TONE.seaWash, TONE.seaLine, strength),
+      color: mixColor(depthOf(band + 1), TONE.seaLine, strength),
     })
     for (const run of plain) g.poly(run, false)
-    g.stroke({ ...line, width: 2 * d - width, color: TONE.seaWash })
-  }
+    g.stroke({ ...line, width: 2 * d - width, color: depthOf(band) })
+  })
   return g
 }
 

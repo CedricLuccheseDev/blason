@@ -71,6 +71,69 @@ const MORE = {
     { d: 'M6 11 H18 V21 H6 Z' },
     { d: 'M8.5 11 V8 A3.5 3.5 0 0 1 15.5 8 V11 M12 14.5 V17.5', open: true },
   ],
+  // The book of the game's own (« met des icons partout pour tout qui soit
+  // très évocatrices »): a bot, the Earth, the legends, a die for the random
+  // lands, the level's crown, the teams' banner, a letter to invite, the
+  // door out, the way back, a game begun again, the launch's horn.
+  bot: [
+    {
+      d: 'M5 8 H19 Q20.5 8 20.5 9.5 V18 Q20.5 19.5 19 19.5 H5 Q3.5 19.5 3.5 18 V9.5 Q3.5 8 5 8 Z',
+    },
+    { d: 'M12 8 V4 M9 15.5 H15', open: true },
+    { d: 'M7.6 12.5 A1.4 1.4 0 1 0 10.4 12.5 A1.4 1.4 0 1 0 7.6 12.5 Z' },
+    { d: 'M13.6 12.5 A1.4 1.4 0 1 0 16.4 12.5 A1.4 1.4 0 1 0 13.6 12.5 Z' },
+    { d: 'M10.8 3.5 A1.2 1.2 0 1 0 13.2 3.5 A1.2 1.2 0 1 0 10.8 3.5 Z' },
+  ],
+  globe: [
+    { d: 'M2.5 12 A9.5 9.5 0 1 0 21.5 12 A9.5 9.5 0 1 0 2.5 12 Z' },
+    {
+      d: 'M2.5 12 H21.5 M12 2.5 Q7 12 12 21.5 M12 2.5 Q17 12 12 21.5 M4.5 6.5 H19.5 M4.5 17.5 H19.5',
+      open: true,
+    },
+  ],
+  book: [
+    {
+      d: 'M12 6 Q8 3.5 2.5 4 V19 Q8 18.5 12 21 Q16 18.5 21.5 19 V4 Q16 3.5 12 6 Z',
+    },
+    {
+      d: 'M12 6 V21 M5 8 Q7.5 7.6 9.5 8.6 M5 11.5 Q7.5 11.1 9.5 12.1',
+      open: true,
+    },
+  ],
+  die: [
+    { d: 'M5 3 H19 Q21 3 21 5 V19 Q21 21 19 21 H5 Q3 21 3 19 V5 Q3 3 5 3 Z' },
+    { d: 'M7 7 A1 1 0 1 0 9 7 A1 1 0 1 0 7 7 Z' },
+    { d: 'M11 12 A1 1 0 1 0 13 12 A1 1 0 1 0 11 12 Z' },
+    { d: 'M15 17 A1 1 0 1 0 17 17 A1 1 0 1 0 15 17 Z' },
+  ],
+  crown: [
+    { d: 'M3.5 18 L2.5 7 L8 11.5 L12 4.5 L16 11.5 L21.5 7 L20.5 18 Z' },
+    { d: 'M3.5 21 H20.5', open: true },
+  ],
+  banner: [
+    { d: 'M5 21.5 V2.5', open: true },
+    { d: 'M5 3.5 H19 L16 8 L19 12.5 H5 Z' },
+  ],
+  letter: [
+    { d: 'M2.5 5.5 H21.5 V18.5 H2.5 Z' },
+    { d: 'M2.5 5.5 L12 13 L21.5 5.5', open: true },
+  ],
+  door: [
+    { d: 'M5 21.5 V3 H16 V21.5', open: true },
+    { d: 'M5 3 L13 5 V21.5 L5 20 Z' },
+    { d: 'M18 12 H23 M20.5 9.5 L23 12 L20.5 14.5', open: true },
+  ],
+  back: [{ d: 'M20 12 H5 M10.5 6 L4.5 12 L10.5 18', open: true }],
+  again: [
+    {
+      d: 'M19.5 12 A7.5 7.5 0 1 1 16.8 6.2 M19.5 3.5 V7.5 H15.5',
+      open: true,
+    },
+  ],
+  horn: [
+    { d: 'M3 9 H7 L19 3.5 V20.5 L7 15 H3 Z' },
+    { d: 'M7 9 V15', open: true },
+  ],
   // The whole land raised: the peasant's fork, never a village's house.
   pitchfork: [
     {

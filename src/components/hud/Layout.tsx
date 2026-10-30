@@ -151,7 +151,7 @@ export function Veil({
 }: Readonly<{ onClose?: () => void; children: ReactNode }>) {
   return (
     <div // norm-ok: the veil is no control, a click on it doubles the sheet's own button to put it down.
-      className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/50 p-3"
+      className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/40 p-3 backdrop-blur-[3px] hud-enter"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose?.()
       }}

@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import {
+  ATLAS_MAPS,
   SETUP_LIMITS,
   botsSetup,
   publicSetup,
@@ -8,6 +9,7 @@ import {
   sizeOf,
 } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
+import type { Land } from '../engine'
 import { isMove, tell } from './checks'
 import {
   beginning,
@@ -58,10 +60,20 @@ function freeCode(): string {
 
 const freshSeed = () => `online-${randomBytes(6).toString('hex')}`
 
+/** The lands the public games turn through, one each, in turn (« les parties publiques fait les tourné avec toutes les maps pas que les random »): the random ones at each size, and every map of the atlas. */
+const PUBLIC_LANDS: ReadonlyArray<Land> = [
+  { kind: 'drawn', size: 'standard' },
+  ...ATLAS_MAPS.map((map): Land => ({ kind: 'real', map })),
+  { kind: 'drawn', size: 'small' },
+  { kind: 'drawn', size: 'large' },
+]
+let turned = 0
+
 /** The public game in its opening; when none is, one opens and begins, so that there always is one to see or to join. */
 function publicGame(): Room {
   if (open) return open
-  const room = makeRoom('PUBLIC', publicSetup(freshSeed()))
+  const land = PUBLIC_LANDS[turned++ % PUBLIC_LANDS.length]
+  const room = makeRoom('PUBLIC', publicSetup(freshSeed(), land))
   room.players = Array.from({ length: SEATS }, () => null)
   room.played = []
   open = room
@@ -75,6 +87,7 @@ export function upcoming(): Upcoming {
   return {
     seed: room.setup.seed,
     size: sizeOf(room.setup.land),
+    ...(room.setup.land.kind === 'real' ? { map: room.setup.land.map } : {}),
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
     startsIn: Math.max(0, SETUP_LIMITS.opening.public - room.turn) * TURN_MS,
     taken: seated(room),

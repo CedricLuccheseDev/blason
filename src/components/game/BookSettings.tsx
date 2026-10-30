@@ -1,7 +1,7 @@
 import { LEVELS, SETUP_LIMITS, TICKS_PER_SECOND } from '../../../engine'
 import { Choices, Stepper } from '../hud/Choices'
 import { Note } from '../hud/Text'
-import { Head, Invite, Seats, Setting } from './BookParts'
+import { Head, Seats, Setting } from './BookParts'
 import type { Book, Level } from '../../../engine'
 import { useMessages } from '~/i18n'
 
@@ -16,15 +16,15 @@ const OPENINGS = [10, 20, 30, 45, 60] as const
 
 export function BookSettings({
   book,
-  code,
   lobby,
   guest,
+  names,
   onChange,
 }: Readonly<{
   book: Book
-  code: string | null
   lobby: boolean
   guest: boolean
+  names?: Array<string>
   onChange: (book: Book) => void
 }>) {
   const m = useMessages().book
@@ -44,9 +44,8 @@ export function BookSettings({
         }
         title={m.lords}
       />
-      <Seats book={book} />
-      {code && <Invite code={code} />}
-      <Setting name={m.bots}>
+      <Seats book={book} names={names} />
+      <Setting name={m.bots} icon="bot">
         <Stepper
           name={m.bots}
           value={book.bots}
@@ -57,7 +56,7 @@ export function BookSettings({
           onCount={edit ? (bots) => set({ bots }) : undefined}
         />
       </Setting>
-      <Setting name={m.level}>
+      <Setting name={m.level} icon="crown">
         <Choices
           name={m.level}
           value={book.level}
@@ -68,7 +67,7 @@ export function BookSettings({
           onPick={edit ? (level: Level) => set({ level }) : undefined}
         />
       </Setting>
-      <Setting name={m.teams}>
+      <Setting name={m.teams} icon="banner">
         <Choices
           name={m.teams}
           value={book.teams}
@@ -79,7 +78,7 @@ export function BookSettings({
           onPick={edit ? (teams: number) => set({ teams }) : undefined}
         />
       </Setting>
-      <Setting name={m.opening}>
+      <Setting name={m.opening} icon="hourglass">
         <Choices
           name={m.opening}
           value={seconds}

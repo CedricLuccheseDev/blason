@@ -41,7 +41,14 @@ const wss = new WebSocketServer({
   maxPayload: 16 * 1024,
 })
 
+/** How often each player is asked whether he is still there, in ms. */
+const BEAT_MS = 30_000
+/** The sockets that answered since the last asking. */
+const answered = new WeakSet<object>()
+
 wss.on('connection', (socket) => {
+  answered.add(socket)
+  socket.on('pong', () => answered.add(socket))
   const player: Player = {
     name: '',
     send: (message) => {
@@ -65,6 +72,22 @@ wss.on('connection', (socket) => {
     if (room) leave(room, player)
   })
 })
+
+// A player gone without a word (his network lost, his laptop shut) leaves
+// no close behind him: asked every half minute, one who did not answer the
+// last asking is cut, and leaves his game, which closes once no one is left
+// in it (« est-ce qu'il y a plein de parties fantome dans le serveur ? »).
+const beat = setInterval(() => {
+  for (const socket of wss.clients) {
+    if (!answered.has(socket)) {
+      socket.terminate()
+      continue
+    }
+    answered.delete(socket)
+    socket.ping()
+  }
+}, BEAT_MS)
+wss.on('close', () => clearInterval(beat))
 
 http.listen(PORT, () => {
   console.warn(`relay listening on :${PORT}`)

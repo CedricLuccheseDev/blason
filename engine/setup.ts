@@ -145,9 +145,12 @@ export function bookOf(setup: GameSetup): Book {
 }
 
 /** The public game the relay keeps in its opening: the standard land and no bot, every seat empty until a person takes it, an opening long enough for players to come. */
-export function publicSetup(seed: string): GameSetup {
+export function publicSetup(
+  seed: string,
+  land: Land = drawn('standard'),
+): GameSetup {
   const seats = many(SETUP_LIMITS.seats.max, null)
-  return on(seed, drawn('standard'), SETUP_LIMITS.opening.public, seats)
+  return on(seed, land, SETUP_LIMITS.opening.public, seats)
 }
 
 /** The world of a land: drawn from the seed at its size, or a map of the Earth (the seed then lays its cells and draws its woods); the arena may draw it with another generator. */

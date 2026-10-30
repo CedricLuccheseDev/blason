@@ -1,7 +1,8 @@
 import { Act, Tap } from '../hud/Act'
-import { Inline, Panel, Ruled, Spread, Stack, Veil } from '../hud/Layout'
+import { Icon } from '../hud/Figure'
+import { Panel, Ruled, Spread, Stack, Veil } from '../hud/Layout'
 import { Note } from '../hud/Text'
-import { Head } from './BookParts'
+import { Head, Invite } from './BookParts'
 import { BookSettings } from './BookSettings'
 import { MapList } from './MapList'
 import type { ReactNode } from 'react'
@@ -31,6 +32,7 @@ export function GameBook({
   onRestart,
   onQuit,
   guest,
+  names,
 }: Readonly<{
   book: Book
   /** The room's code to give friends; none without a relay. */
@@ -45,25 +47,39 @@ export function GameBook({
   onQuit: () => void
   /** A guest's book, to read: what his room says (waiting for the host, or why it failed), no setting his to change. */
   guest?: { status: string }
+  /** The persons seated, the host first. */
+  names?: Array<string>
 }>) {
   const m = useMessages().book
   const set = (part: Partial<Book>) => onChange({ ...book, ...part })
   const lobby = running === null
+  // The foot (« met pas voir la carte, mais quitter, et retour si on est en
+  // jeu »), each its icon: before the game, the invitation, the way out and
+  // the launch; in it, the way out, back to the game, and another.
+  const quit = (
+    <Act tone="plain" onClick={onQuit}>
+      <Icon name="door" size={18} />
+      {m.quit}
+    </Act>
+  )
   const hosts: ReactNode = lobby ? (
     <>
-      <Act tone="plain" onClick={onClose}>
-        {m.see}
-      </Act>
+      {code && <Invite code={code} />}
+      {quit}
       <Act call onClick={onLaunch}>
+        <Icon name="horn" size={20} />
         {m.launch}
       </Act>
     </>
   ) : (
     <>
-      <Act tone="plain" onClick={onQuit}>
-        {m.quit}
+      {quit}
+      <Act tone="plain" onClick={onClose}>
+        <Icon name="back" size={18} />
+        {m.back}
       </Act>
       <Act call onClick={onRestart}>
+        <Icon name="again" size={20} />
         {m.restart}
       </Act>
     </>
@@ -71,14 +87,7 @@ export function GameBook({
   const foot: ReactNode = guest ? (
     <Stack gap="part" align="center">
       <Note>{guest.status}</Note>
-      <Inline gap="piece" justify="center">
-        <Act tone="plain" onClick={onQuit}>
-          {m.quit}
-        </Act>
-        <Act tone="plain" onClick={onClose}>
-          {m.see}
-        </Act>
-      </Inline>
+      {quit}
     </Stack>
   ) : (
     hosts
@@ -113,9 +122,9 @@ export function GameBook({
           right={
             <BookSettings
               book={book}
-              code={code}
               lobby={lobby}
               guest={guest !== undefined}
+              names={names}
               onChange={onChange}
             />
           }

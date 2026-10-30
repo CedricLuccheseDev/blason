@@ -62,12 +62,19 @@ function sketch(
   g.fillRect(0, 0, width, height)
   // The land covering the canvas, in its middle: on a card of another
   // shape, cut at its sides rather than floating in the sea (« grossis en
-  // hauteur l'area partie publique »); or whole, in a list of maps, a tall
-  // one between two bands of sea.
+  // hauteur l'area partie publique »); or, in a list of maps, its land in
+  // play whole and in the middle, the rest of the map round it as far as
+  // the card goes (« fais pas les rectangles sur les maps … rend ça mieux »).
+  const frame = whole
+    ? boundsOf(world)
+    : { x: 0, y: 0, w: world.width, h: world.height }
   const fit = whole ? Math.min : Math.max
-  const scale = fit(width / world.width, height / world.height)
-  const [dx, dy] = [width - world.width * scale, height - world.height * scale]
-  const at = new DOMMatrix([scale, 0, 0, scale, dx / 2, dy / 2])
+  const scale = fit(width / frame.w, height / frame.h)
+  const [dx, dy] = [
+    width / 2 - (frame.x + frame.w / 2) * scale,
+    height / 2 - (frame.y + frame.h / 2) * scale,
+  ]
+  const at = new DOMMatrix([scale, 0, 0, scale, dx, dy])
   g.setTransform(at)
   /** A pixel of the page, in the map's units. */
   const px = ratio / scale
@@ -107,37 +114,27 @@ function sketch(
   g.strokeStyle = css(TONE.ink)
   g.stroke(coast)
   // The map's edge, as its frame's inner rule: on a card wider than the
-  // land, a land that runs to it is cut there, not in the open sea. Whole on
-  // a card of a list, no rule: the land fades into the sea round it (« fais
-  // pas les rectangles sur les maps … rend ça mieux »).
-  if (whole) fade(g, world, at)
-  else g.strokeRect(0, 0, world.width, world.height)
+  // land, a land that runs to it is cut there, not in the open sea. In a
+  // list of maps, none: the map runs on to the card's edge.
+  if (!whole) g.strokeRect(0, 0, world.width, world.height)
 }
 
-/** The map's four edges faded into the sea's wash, a tenth of its shorter side deep. */
-function fade(g: CanvasRenderingContext2D, world: World, at: DOMMatrix) {
-  const { width, height } = world
-  const deep = Math.min(width, height) * 0.1
-  const sea = css(TONE.seaWash)
-  const clear = css(TONE.seaWash, 0)
-  g.save()
-  g.setTransform(at)
-  const edges: Array<
-    [number, number, number, number, number, number, number, number]
-  > = [
-    [0, 0, 0, deep, 0, 0, width, deep],
-    [0, height, 0, height - deep, 0, height - deep, width, deep],
-    [0, 0, deep, 0, 0, 0, deep, height],
-    [width, 0, width - deep, 0, width - deep, 0, deep, height],
-  ]
-  for (const [x0, y0, x1, y1, rx, ry, rw, rh] of edges) {
-    const ramp = g.createLinearGradient(x0, y0, x1, y1)
-    ramp.addColorStop(0, sea)
-    ramp.addColorStop(1, clear)
-    g.fillStyle = ramp
-    g.fillRect(rx, ry, rw, rh)
-  }
-  g.restore()
+/** The land in play's bounds, a little sea round it, within the map's frame: what a card of a list shows whole. */
+function boundsOf(world: World) {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity]
+  for (const { outline } of world.land)
+    for (const [x, y] of outline) {
+      x0 = Math.min(x0, x)
+      y0 = Math.min(y0, y)
+      x1 = Math.max(x1, x)
+      y1 = Math.max(y1, y)
+    }
+  const pad = Math.max(x1 - x0, y1 - y0) * 0.05
+  x0 = Math.max(0, x0 - pad)
+  y0 = Math.max(0, y0 - pad)
+  x1 = Math.min(world.width, x1 + pad)
+  y1 = Math.min(world.height, y1 + pad)
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }
 }
 
 /** The high mountains, as the map draws them small (layers/peaks.ts): their ground in stone, and on each of their cells a mount in ink, `px` a pixel of the page in the map's units. */

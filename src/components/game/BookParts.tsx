@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Act } from '../hud/Act'
-import { Inline, Line, Stack } from '../hud/Layout'
-import { Note, Title } from '../hud/Text'
+import { GAP, Stack } from '../hud/Layout'
+import { Fine, Note, Title } from '../hud/Text'
 import { Shield } from '../hud/Emblem'
+import { Icon } from '../hud/Figure'
+import type { IconName } from '../hud/Figure'
 import { hex } from './format'
 import type { ReactNode } from 'react'
 import type { Book } from '../../../engine'
@@ -14,15 +16,20 @@ import { useMessages } from '~/i18n'
 // page's head, the lords seated by team, the link to invite friends, and
 // the book's button over the camera's.
 
-/** One setting: its name, and its control (Choices.tsx), or its value for whoever reads it only. */
+/** One setting: its name above, its control (Choices.tsx) the page's width under it. */
 export function Setting({
   name,
+  icon,
   children,
-}: Readonly<{ name: string; children: ReactNode }>) {
+}: Readonly<{ name: string; icon: IconName; children: ReactNode }>) {
   return (
-    <Line name={<Note>{name}</Note>}>
-      <span className="flex flex-1 justify-end">{children}</span>
-    </Line>
+    <Stack gap="hair">
+      <span className={`flex items-center ${GAP.hair}`}>
+        <Icon name={icon} size={18} />
+        <Note>{name}</Note>
+      </span>
+      {children}
+    </Stack>
   )
 }
 
@@ -46,47 +53,44 @@ export function Head({
   )
 }
 
-/** The lords in play: me and the bots, by team, a shield each. */
-export function Seats({ book }: Readonly<{ book: Book }>) {
-  const m = useMessages().book
+/** The lords in play, a fixed grid of every seat (« fais plutot une grille avec les noms comme ça on voit bien quand un joueur a rejoins »): me, the friends come by their names, the bots marked as such, the seats left free faded; its team's numeral on each when there are teams. Its height never moves with them. */
+export function Seats({
+  book,
+  names = [],
+}: Readonly<{ book: Book; names?: Array<string> }>) {
+  const m = useMessages()
   const guests = book.guests ?? 0
-  const whoSits = (i: number) => {
-    if (i === 0) return m.you
-    return i <= guests ? m.guest : m.bot
-  }
-  const lords = Array.from(
-    { length: Math.min(PLAYERS.length, 1 + guests + book.bots) },
-    (_, i) => i,
-  )
-  const sides =
-    book.teams >= 2
-      ? Array.from({ length: book.teams }, (_, t) =>
-          lords.filter((i) => i % book.teams === t),
-        )
-      : [lords]
+  const lords = 1 + guests + book.bots
   return (
-    <Stack>
-      {sides.map((side, t) => (
-        <Inline key={t} justify="center">
-          {book.teams >= 2 && (
-            <span className="hud-figure w-6 text-gilt-deep">
-              {['I', 'II', 'III', 'IV'][t]}
-            </span>
-          )}
-          <Inline gap="hair" justify="center" wrap>
-            {side.map((i) => (
-              <span
-                key={i}
-                title={whoSits(i)}
-                className={i <= guests ? '' : 'opacity-55'}
-              >
-                <Shield color={hex(PLAYERS[i].color)} size="s" />
+    <ul className={`grid grid-cols-3 ${GAP.hair}`}>
+      {PLAYERS.map((player, i) => {
+        const free = i >= lords
+        const bot = !free && i > guests
+        let who = m.book.free
+        if (i === 0) who = names[0] || m.book.you
+        else if (i <= guests) who = names[i] || m.book.guest
+        else if (bot) who = m.game.colors[player.key]
+        return (
+          <li
+            key={player.key}
+            className={`flex min-w-0 items-center ${GAP.hair} ${free ? 'opacity-35' : ''}`}
+          >
+            <Shield color={hex(player.color)} size="s" />
+            {bot && (
+              <span title={m.book.bot} className="text-lead-deep">
+                <Icon name="bot" size={16} />
               </span>
-            ))}
-          </Inline>
-        </Inline>
-      ))}
-    </Stack>
+            )}
+            <Fine className="truncate">{who}</Fine>
+            {book.teams >= 2 && !free && (
+              <Fine className="ml-auto text-gilt-deep">
+                {['I', 'II', 'III', 'IV'][i % book.teams]}
+              </Fine>
+            )}
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 
@@ -131,7 +135,7 @@ export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
   )
 }
 
-/** The room's link, to give friends: a click copies it, and whoever opens it sits in the game at once (« au lieu d'un code fais copier un lien c'est mieux »). */
+/** The room's link, to give friends: a click copies it, and whoever opens it sits in the game at once (« au lieu d'un code fais copier un lien c'est mieux »), a button of the book's foot with its letter (« le bouton inviter met le en bas avec une icon invitation »). */
 export function Invite({ code }: Readonly<{ code: string }>) {
   const m = useMessages().book
   const [copied, setCopied] = useState(false)
@@ -143,10 +147,9 @@ export function Invite({ code }: Readonly<{ code: string }>) {
       .catch(() => setCopied(false))
   }
   return (
-    <Setting name={m.invite}>
-      <Act tone={copied ? 'pact' : 'plain'} onClick={copy}>
-        {copied ? m.linkCopied : m.copyLink}
-      </Act>
-    </Setting>
+    <Act tone={copied ? 'pact' : 'plain'} onClick={copy}>
+      <Icon name="letter" size={18} />
+      {copied ? m.linkCopied : m.invite}
+    </Act>
   )
 }

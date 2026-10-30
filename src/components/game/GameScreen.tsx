@@ -51,6 +51,8 @@ export type Hosting = {
   quit: () => void
   /** A guest's: his book to read, what his room says. */
   guest?: { status: string }
+  /** The persons seated, by their seats, the host first, as the relay tells them. */
+  names?: Array<string>
 }
 
 export function GameScreen({
@@ -215,6 +217,7 @@ export function GameScreen({
           }}
           onQuit={hosting.quit}
           guest={hosting.guest}
+          names={hosting.names}
         />
       )}
     </main>

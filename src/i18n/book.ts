@@ -72,6 +72,8 @@ export const bookEn = {
   cardLine: (size: string, least: number, most: number) =>
     `${size} · ${least} to ${most} lords`,
   copyLink: 'Copy the link',
+  free: 'Free',
+  back: 'Back',
   linkCopied: 'Link copied',
   short: (s: number) => `${s} s`,
   invite: 'Invite',
@@ -168,6 +170,8 @@ export const bookFr: BookMessages = {
   cardLine: (size: string, least: number, most: number) =>
     `${size} · ${least} à ${most} seigneurs`,
   copyLink: 'Copier le lien',
+  free: 'Libre',
+  back: 'Retour',
   linkCopied: 'Lien copié',
   short: (s: number) => `${s} s`,
   invite: 'Inviter',

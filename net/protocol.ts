@@ -1,5 +1,5 @@
-import { MAP_SIZES } from '../engine'
-import type { GameSetup, MapSize, Order } from '../engine'
+import { ATLAS_MAPS, MAP_SIZES } from '../engine'
+import type { Atlas, GameSetup, MapSize, Order } from '../engine'
 
 // The words between the players and the relay (docs/ARCHITECTURE.md): the
 // relay computes nothing, as OpenFront's. It runs each game as a list of
@@ -51,6 +51,8 @@ export type Lobby = {
 export type Upcoming = {
   seed: string
   size: MapSize
+  /** A map of the atlas, its land; none for a random one, drawn at its size (« les parties publiques fait les tourné avec toutes les maps »). */
+  map?: Atlas
   /** Ms left to join it: then it goes on with whoever came, and the next opens. */
   closesIn: number
   /** Ms left of its opening, the count its players see in the game (« y'a pas le même temps affiché en jeu que sur la home »). */
@@ -97,8 +99,9 @@ export function parse<T extends { t: string }>(data: unknown): T | null {
 /** The public game in its opening as the relay answers it (GET /public), or null if it is not one. */
 export function readUpcoming(value: unknown): Upcoming | null {
   if (typeof value !== 'object' || value === null) return null
-  const { seed, size, closesIn, startsIn, taken, seats, waiting } =
+  const { seed, size, map, closesIn, startsIn, taken, seats, waiting } =
     value as Record<string, unknown>
+  const atlas = ATLAS_MAPS.find((a) => a === map)
   const known = (Object.keys(MAP_SIZES) as Array<MapSize>).find(
     (s) => s === size,
   )
@@ -110,6 +113,7 @@ export function readUpcoming(value: unknown): Upcoming | null {
     ? {
         seed,
         size: known,
+        ...(atlas ? { map: atlas } : {}),
         closesIn,
         // A relay older than the word: its doors' count, a few seconds short.
         startsIn: typeof startsIn === 'number' ? startsIn : closesIn,

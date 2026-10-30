@@ -117,3 +117,37 @@ export function deadOf(
     return vote > 0
   })
 }
+
+/** The fewest cells a piece of dead land keeps against the land in play: under them, it is a crumb its outline missed, and lives. */
+const CRUMB = 8
+
+/**
+ * The crumbs of dead land on the coast of the land in play, a cape or a
+ * bay the countries' outline drew as sea, given back to it (« y'a des zones
+ * dead sur france »): a piece of dead cells touching land in play, under so
+ * many cells. A neighbour's land is far wider; an island of another's apart
+ * touches none, and stays dead.
+ */
+export function reviveCrumbs(
+  cells: Cells,
+  dead: Array<boolean>,
+  sea: Array<boolean>,
+) {
+  const seen = new Uint8Array(dead.length)
+  dead.forEach((d, start) => {
+    if (!d || seen[start] || sea[start]) return
+    const piece = [start]
+    let touches = false
+    seen[start] = 1
+    for (let k = 0; k < piece.length && piece.length < CRUMB; k++)
+      for (const n of cells.neighbors[piece[k]]) {
+        if (sea[n]) continue
+        if (!dead[n]) touches = true
+        else if (!seen[n]) {
+          seen[n] = 1
+          piece.push(n)
+        }
+      }
+    if (touches && piece.length < CRUMB) for (const c of piece) dead[c] = false
+  })
+}

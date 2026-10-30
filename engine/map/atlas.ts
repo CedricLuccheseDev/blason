@@ -1,7 +1,14 @@
 import { isqrt } from '../numbers'
 import { MAP_SIZES } from '../rules'
 import { raisePeaks } from './peaks'
-import { deadOf, framed, openStraits, rangesOf, spacingOf } from './landmarks'
+import {
+  deadOf,
+  framed,
+  openStraits,
+  rangesOf,
+  reviveCrumbs,
+  spacingOf,
+} from './landmarks'
 import { keepLands } from './seas'
 import { ATLAS } from './earth'
 import type { Atlas } from './earth'
@@ -103,6 +110,7 @@ export function atlasLand(atlas: Atlas) {
     // The Earth's lands as they are, its islands apart: Great Britain,
     // Ireland, Sicily, Corsica, the Danish isles.
     const sea = keepLands(cells, wet, ISLET)
+    if (dead) reviveCrumbs(cells, dead, sea)
     const highest = raw.reduce((m, h, c) => (sea[c] ? m : Math.max(m, h)), 1e-9)
     const ground = [...raw].map((h, c) =>
       sea[c] ? -1 : Math.max(0.002, h / highest),

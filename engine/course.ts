@@ -217,12 +217,26 @@ export function courseFor(
   if (best.entry < 0)
     return overWater(state, player, tile, sites, free.length > 0)
   const road = roadTo(best.end)
-  return {
+  const byLand = {
     entry: best.entry,
     from: free.length > 0 ? road[0] : -1,
     road,
     through,
   }
+  // A long way round by the land, the sea perhaps sooner (« il faut y aller
+  // a la mer dans ce cas la »): sought only when the land's road goes far
+  // round, as a search over the water costs.
+  if (
+    road.length * road.length * 4 <=
+    apart(state.grid, road[0], tile) * 9 + 64
+  )
+    return byLand
+  const sea = overWater(state, player, tile, sites, free.length > 0)
+  if (!sea) return byLand
+  const sail =
+    marchTime(state, army, sea.road.length) +
+    crossTime(state, army, wide, apart(state.grid, sea.entry, tile))
+  return sail < best.time ? sea : byLand
 }
 
 /**
