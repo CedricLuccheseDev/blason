@@ -23,6 +23,26 @@ export const COMPACT_INSET: Inset = {
   left: 56,
 }
 
+/** The most of the screen's height, and of its width, the room kept clear of the HUD may take. */
+const MOST = { down: 0.45, across: 0.3 }
+
+/**
+ * The room kept clear of the HUD, never more than a share of the screen: on
+ * a phone laid flat it took all but a strip of it, and every pennant waited
+ * at the edge, sliding as the camera moved (« le drapeau de guerre ne reste
+ * pas où il est quand je déplace la caméra »).
+ */
+export function within(inset: Inset, width: number, height: number): Inset {
+  const down = Math.min(1, (height * MOST.down) / (inset.top + inset.bottom))
+  const across = Math.min(1, (width * MOST.across) / (inset.left + inset.right))
+  return {
+    top: inset.top * down,
+    bottom: inset.bottom * down,
+    left: inset.left * across,
+    right: inset.right * across,
+  }
+}
+
 export function placeOn(
   at: { x: number; y: number },
   width: number,

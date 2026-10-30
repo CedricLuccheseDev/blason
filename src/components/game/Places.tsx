@@ -47,7 +47,7 @@ export function Places({
 }>) {
   return (
     <div
-      className={`pointer-events-none absolute inset-0 grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
+      className={`pointer-events-none absolute inset-0 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
     >
       <Inline className="self-start">
         {/* Upright on a phone the race needs the top's width: the game's mark gives way, the book's button stays. */}

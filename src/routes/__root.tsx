@@ -45,7 +45,18 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // The map to the edges of a phone, under its notch and its bars (« Sur
+      // mobile on peut fill le haut et le bas ? »); the HUD keeps clear of
+      // them (components/game/Places.tsx).
+      {
+        name: 'viewport',
+        content: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      {
+        name: 'apple-mobile-web-app-status-bar-style',
+        content: 'black-translucent',
+      },
       { name: 'theme-color', content: '#f6eedb' },
       { title: 'Blason' },
       { name: 'description', content: DESCRIPTION },

@@ -43,7 +43,7 @@ describe('the world heard up close', () => {
 
   it('hears no battle off the screen, nor from afar', () => {
     expect(clashes(ELSEWHERE, 30)).toBe(0)
-    expect(clashes(ALL, 6)).toBe(0)
+    expect(clashes(ALL, 3)).toBe(0)
   })
 
   it('hears a trebuchet’s stone where it came down', () => {

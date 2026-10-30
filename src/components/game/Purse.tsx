@@ -117,22 +117,21 @@ export function Purse({
   return (
     <div className={`hud-afloat flex items-end ${GAP.line}`}>
       {/* As tall as the two lines beside it (« le blason est pas aussi haut que la partie droite »); a click brings the camera back to my land (« cliquer sur le blason centre la cam sur le territoire »). */}
-      {!compact && (
-        <Hint title={t.home.title} lines={[t.home.line]}>
-          <button
-            type="button"
-            onClick={onHome}
-            aria-label={t.home.title}
-            className="hud-press flex cursor-pointer"
-          >
-            <Shield
-              color={hex(me.color)}
-              size="purse"
-              level={Math.min(1, me.peasants / Math.max(1, me.cap))}
-            />
-          </button>
-        </Hint>
-      )}
+      {/* On a phone too, smaller (« Le blason n'est pas affiché sur mobile en bas a gauche »). */}
+      <Hint title={t.home.title} lines={[t.home.line]}>
+        <button
+          type="button"
+          onClick={onHome}
+          aria-label={t.home.title}
+          className="hud-press flex cursor-pointer"
+        >
+          <Shield
+            color={hex(me.color)}
+            size={compact ? 'm' : 'purse'}
+            level={Math.min(1, me.peasants / Math.max(1, me.cap))}
+          />
+        </button>
+      </Hint>
       {/* Two lines everywhere, narrow on a phone too (« le HUD sur téléphone »). */}
       <div className={`grid grid-cols-[auto_auto] items-center ${GAP.hair}`}>
         <Hint title={t.peasants.title} lines={[fed, growing]}>

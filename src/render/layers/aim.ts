@@ -96,13 +96,22 @@ export function makeAim(state: GameState, me: number) {
     ghost.visible = true
   }
 
-  /** A dotted ring round a point, its dots some twelve pixels apart on screen, sixteen at least. */
+  /**
+   * A dotted ring round a point, its dots some twelve pixels apart on
+   * screen, sixteen at least; each dot a few straight strokes, no arc: on a
+   * phone an arc after a moveTo was drawn from the map's origin (« Le bug
+   * long pression », the bundle of lines to the top left, as the works'
+   * timer did before its gauge).
+   */
   function dotted(p: At, r: number, tone: number, zoom: number) {
     const dots = Math.max(16, Math.round((2 * Math.PI * r * zoom) / 12))
+    const at = (a: number) =>
+      [p.x + Math.cos(a) * r, p.y + Math.sin(a) * r] as const
     for (let k = 0; k < dots; k++) {
       const a = (k / dots) * Math.PI * 2
-      marks.moveTo(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r)
-      marks.arc(p.x, p.y, r, a, a + Math.PI / dots)
+      const span = Math.PI / dots
+      marks.moveTo(...at(a))
+      for (let i = 1; i <= 3; i++) marks.lineTo(...at(a + (span * i) / 3))
     }
     marks.stroke({ width: 2.4 / zoom, color: tone, cap: 'round' })
   }

@@ -26,8 +26,16 @@ export function makeInput(
   let press: { x: number; y: number } | null = null
   let long: ReturnType<typeof setTimeout> | undefined
 
+  // From the screen's coordinates, not offsetX/Y, which a phone may give as
+  // naught around a long press: the aim then ran to the top left corner
+  // (« les traits qui vont jusqu'en haut a gauche … quand on reste appuyé
+  // sur mobile »).
   function tileAt(e: PointerEvent): number {
-    const { x, y } = view.toLocal({ x: e.offsetX, y: e.offsetY })
+    const box = canvas.getBoundingClientRect()
+    const { x, y } = view.toLocal({
+      x: e.clientX - box.left,
+      y: e.clientY - box.top,
+    })
     return pick(x, y)
   }
 
@@ -59,7 +67,8 @@ export function makeInput(
   const onMove = (e: PointerEvent) => {
     if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > SLOP)
       clearTimeout(long)
-    on.hover(press ? -1 : tileAt(e))
+    // A finger hovers nothing: what it rests on is a press, the aim is the mouse's.
+    on.hover(press || e.pointerType === 'touch' ? -1 : tileAt(e))
   }
   const onLeave = () => on.hover(-1)
   const onMenu = (e: Event) => e.preventDefault()

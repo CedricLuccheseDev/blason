@@ -7,7 +7,8 @@ import type { Box } from './camera'
 import type { GameState, Strike } from '../../engine'
 
 // The world heard up close (Concept, « La carte qu'on entend »), read each
-// tick: two armies at grips, a clash of swords now and then; a castle's
+// tick: an army fighting, a clash of swords now and then, more often where
+// two armies are at grips than where one takes a land; a castle's
 // volley as it is loosed; the archers' coup or a trebuchet's stone come
 // down. Only what is on screen, and only coming closer: from afar the map
 // is the strategist's, and these are its spectacle. Heard by all, as they
@@ -16,10 +17,10 @@ import type { GameState, Strike } from '../../engine'
 /** What the world gives to hear, where (in map units), and how loud, 0 to 1. */
 export type Spectacle = { cue: Cue; x: number; y: number; level: number }
 
-/** The pixels a tile covers over which the world comes to be heard. */
-const HEARD = [12, 22] as const
-/** The chance, each tick, that a battle on screen gives a clash: now and then, never in time. */
-const CLASH = 0.3
+/** The pixels a tile covers over which the world comes to be heard: from mid distance (« On entend pas les bruits des armées tout ça quand on zoom »). */
+const HEARD = [5, 12] as const
+/** The chance, each tick, that the fighting on screen gives a clash: now and then, never in time; two armies at grips more than one taking a land. */
+const CLASH = { battle: 0.3, front: 0.12 }
 
 const on = (view: Box, x: number, y: number) =>
   x >= view.left && x <= view.right && y >= view.top && y <= view.bottom
@@ -46,14 +47,15 @@ export function makeSpectacle() {
         const { x, y } = siteOf(state, tile)
         if (on(view, x, y)) heard.push({ cue, x, y, level })
       }
-      // One clash at most, from one of the battles on screen.
-      const battles = state.hosts.filter((h) => {
-        if (!h.fighting || h.closing !== 0 || h.edge.length === 0) return false
+      // One clash at most, from one of the armies fighting on screen.
+      const fighting = state.hosts.filter((h) => {
+        if (h.men <= 0 || h.edge.length === 0 || h.closing > 0) return false
         const { x, y } = siteOf(state, h.edge[0])
         return on(view, x, y)
       })
-      if (battles.length > 0 && chance() < CLASH)
-        hear('clash', battles[Math.floor(chance() * battles.length)].edge[0])
+      const odds = fighting.some((h) => h.fighting) ? CLASH.battle : CLASH.front
+      if (fighting.length > 0 && chance() < odds)
+        hear('clash', fighting[Math.floor(chance() * fighting.length)].edge[0])
       for (const work of state.works)
         if (
           work.work === 'castle' &&

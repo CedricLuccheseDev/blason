@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useCompact } from '../hud/useCompact'
 import { scaled } from '../hud/tokens'
-import { COMPACT_INSET, INSET, placeOn, spread } from './edge'
+import { COMPACT_INSET, INSET, placeOn, spread, within } from './edge'
 import { PACT_SEAL, PactSeal } from './PactSeal'
 import { HeraldLetter, OFFER } from './HeraldLetter'
 import { POLE, Pennant } from './Pennant'
@@ -46,12 +46,16 @@ export function Heralds({
   // The HUD's corners grow with its scale, and so does the room kept clear of them.
   const k = hudScale()
   const drawn = compact ? COMPACT_INSET : INSET
-  const inset = {
-    top: drawn.top * k,
-    right: drawn.right * k,
-    bottom: drawn.bottom * k,
-    left: drawn.left * k,
-  }
+  const inset = within(
+    {
+      top: drawn.top * k,
+      right: drawn.right * k,
+      bottom: drawn.bottom * k,
+      left: drawn.left * k,
+    },
+    laid.width,
+    laid.height,
+  )
   const { box } = PACT_SEAL[compact ? 'compact' : 'wide']
   // A seal lies past the end of my ally's name and marks, which the render
   // gives, and stays past it when kept from the top or the bottom of the
