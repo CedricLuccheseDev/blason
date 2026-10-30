@@ -1,5 +1,5 @@
 import { apart, eachAround } from './grid'
-import { marching, marchOut, positionOf } from './muster'
+import { marchOut, marching, positionOf } from './muster'
 import type { GameState, Host } from './types'
 
 // The crossing (« les armées qui traversent l'eau vers une autre rive »,

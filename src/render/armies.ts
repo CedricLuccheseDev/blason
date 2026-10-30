@@ -2,9 +2,9 @@ import { Container } from 'pixi.js'
 import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
-import { makeBoats } from './layers/boats'
+import { afloatOf, makeBoats } from './layers/boats'
 import { makeFallen } from './layers/fallen'
-import { makeTroops } from './layers/troops'
+import { linesOf, makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
 import { makeFlags } from './flags'
 import { TONE, playerColor } from './palette'
@@ -12,8 +12,7 @@ import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
 import { ARMY_LOOKS, warmFigures } from './figures'
 import type { Front, Spot } from './fronts'
-import type { Afloat } from './layers/boats'
-import type { Drawn, Line } from './layers/troops'
+import type { Drawn } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
 import type { Box } from './camera'
 import type { GameState, Host } from '../../engine'
@@ -171,48 +170,6 @@ export function makeArmies(me: number) {
       if (!now.has(host)) dismiss(host, army, dt)
   }
 
-  /** The lines where men fight: each front, each battle once. */
-  function lines(): Array<Line> {
-    const drawn: Array<Line> = []
-    const told = new Set<Host>()
-    for (const [host, army] of armies) {
-      const { front } = army
-      if (!front?.line || army.gone || told.has(host)) continue
-      if (front.foe) told.add(front.foe)
-      // The dust rises where the men stand, which never jump, before them.
-      const men = middle(army.troops.men)
-      if (!men) continue
-      drawn.push({
-        at: {
-          x: men.x + front.facing.x * GAP,
-          y: men.y + front.facing.y * GAP,
-        },
-        across: { x: -front.facing.y, y: front.facing.x },
-        width: Math.ceil(army.troops.men.length / 2) * 3.6,
-        alpha: army.troops.alpha,
-        seed: host.from,
-      })
-    }
-    return drawn
-  }
-
-  /** The armies at sea, each its boat where its head is, the way it sails. */
-  function afloat(): Array<Afloat> {
-    return [...armies].flatMap(([host, army]) =>
-      army.afloat > 0 && army.front
-        ? [
-            {
-              key: army,
-              at: army.front.at,
-              facing: army.front.facing.x < 0 ? -1 : 1,
-              color: playerColor(host.owner),
-              alpha: army.afloat,
-            },
-          ]
-        : [],
-    )
-  }
-
   /** Every side drawn: each army's men, and the peasants before it. */
   function sides(): Array<Drawn> {
     return [...armies.values()].flatMap((a) => [
@@ -274,9 +231,9 @@ export function makeArmies(me: number) {
         layer.container.visible = men > 0
       }
       if (men > 0) {
-        troops.draw(sides(), lines(), seconds, view)
+        troops.draw(sides(), linesOf(armies), seconds, view)
         fallen.draw(seconds)
-        boats.draw(afloat())
+        boats.draw(afloatOf(armies))
       }
       flags.place(armies, zoom / far, legible(far), seconds)
     },

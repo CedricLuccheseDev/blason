@@ -4,8 +4,11 @@ import { TONE } from '../palette'
 import { hash } from '../pen'
 import { quality } from '../quality'
 import { SIZE, frameAt, makeFigure, pixel, shadowOf, sheetOf } from '../figures'
+import { GAP } from '../fronts'
+import { middle } from '../squads'
 import type { Box } from '../camera'
-import type { Spot } from '../fronts'
+import type { Front, Spot } from '../fronts'
+import type { Host } from '../../../engine'
 import type { Look } from '../figures'
 import type { Man, Squad } from '../squads'
 
@@ -169,4 +172,27 @@ export function makeTroops() {
       }
     },
   }
+}
+
+/** The lines where men fight: each front, each battle once, the dust rising before the men where they stand, who never jump. */
+export function linesOf(
+  armies: Map<Host, { troops: Squad; front: Front | null; gone: boolean }>,
+): Array<Line> {
+  const drawn: Array<Line> = []
+  const told = new Set<Host>()
+  for (const [host, army] of armies) {
+    const { front } = army
+    if (!front?.line || army.gone || told.has(host)) continue
+    if (front.foe) told.add(front.foe)
+    const men = middle(army.troops.men)
+    if (!men) continue
+    drawn.push({
+      at: { x: men.x + front.facing.x * GAP, y: men.y + front.facing.y * GAP },
+      across: { x: -front.facing.y, y: front.facing.x },
+      width: Math.ceil(army.troops.men.length / 2) * 3.6,
+      alpha: army.troops.alpha,
+      seed: host.from,
+    })
+  }
+  return drawn
 }
