@@ -158,9 +158,10 @@ export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
       title={m.home}
       className="hud-press pointer-events-auto cursor-pointer"
     >
-      {/* norm-ok: wordmark, not copy */}
+      {/* norm-ok: wordmark, not copy. Upright on a phone, its initial alone: the race needs the width, and the way home stays (« Y'a plus le bouton logo »). */}
       <span className="hud-word font-mark text-hud-xl leading-none text-quill">
-        Blason
+        <span className="max-sm:hidden">Blason</span>
+        <span className="sm:hidden">B</span>
       </span>
     </button>
   )
