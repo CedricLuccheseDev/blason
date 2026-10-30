@@ -85,7 +85,7 @@ describe('a setup read from the wire', () => {
       { opening: SETUP_LIMITS.opening.max + 1 },
       { opening: 99.5 },
       { seats: [seat] },
-      { seats: botsSetup({ seed: 's', lords: 21 }).seats },
+      { seats: botsSetup({ seed: 's', lords: 25 }).seats },
       { seats: [seat, { ...seat, team: SETUP_LIMITS.teams }] },
       { seats: [seat, { ...seat, bot: 'cunning' }] },
       { seats: [seat, { ...seat, person: 'yes' }] },

@@ -1,6 +1,6 @@
 # Blason
 
-Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : vingt seigneurs, joueurs et bots, sur une terre
+Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : vingt-quatre seigneurs, joueurs et bots, sur une terre
 redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent la terre et qu'on lève en armées,
 l'or qui paie les constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
 navigateur.
@@ -8,7 +8,7 @@ navigateur.
 **La doctrine** (Cédric, 28/10) : « un jeu qui prend plusieurs briques des rts complexes, mais en simplifié rapide et
 fun. Et agréable visuellement ». Chaque règle et chaque écran se jugent à cette aune.
 
-Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est fait comme celui d'OpenFront,
+Phase actuelle : **la terre fluide**, sur `/play` contre vingt-trois bots ; l'accueil (`/`) est fait comme celui d'OpenFront,
 la partie publique en cours de pose où « Jouer » entre aussitôt, le solo et les parties privées. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
 état est à l'étiquette git `fiefs-final`). Le dépôt est fait pour devenir public, comme celui d'OpenFront : code
 rangé, documenté en anglais (`README.md`, `docs/`, `CONTRIBUTING.md`), sous licence AGPL-3.0.
@@ -205,7 +205,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   **Pas de salon d'attente** (acté le 29/10, « comme dans openfront ne fait pas de lobby en attente ») : le relais
   tient toujours une partie publique dans son ouverture, de 30 secondes en ligne, lancée dès qu'elle s'ouvre,
   **sans aucun bot** (acté le 29/10, « en ligne il faut 0 bot », « le matchmaking classique il ne doit pas ajouter
-  de bot ») : jusqu'à vingt personnes, chacun pour soi, sur une terre standard ; « Jouer » y entre aussitôt sur le
+  de bot ») : jusqu'à vingt-quatre personnes, chacun pour soi, sur une terre standard ; « Jouer » y entre aussitôt sur le
   premier siège libre, avec les tours déjà joués à rattraper, pour planter son étendard ; un siège que personne ne
   prend reste vide, sans seigneur, ni étendard ni terre. Plus personne n'entre dans les 5 dernières secondes : la
   partie continue avec ceux qui sont venus et la suivante s'ouvre ; vide, elle est abandonnée et une nouvelle terre

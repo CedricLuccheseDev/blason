@@ -711,7 +711,7 @@ simulation.
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
   (`server/rooms.ts`, one game's seats and turns in `server/room.ts`) is
   made of its setup (`room.setup`), its land drawn as it opens from a seed
-  at the standard size, and seats up to twenty persons: the public game's
+  at the standard size, and seats up to twenty-four persons: the public game's
   setup has no bot (`publicSetup`), the seats no one took staying empty; a
   private room's has a bot in every seat (`botsSetup`) until the host's book
   sets them. As on OpenFront there is no room to wait in: one public game
@@ -722,7 +722,7 @@ simulation.
   on the first free seat, given the land, the opening and every turn played
   so far, and his seat is a person's from the next turn, on every browser.
   No one comes in during the opening's last 5 seconds, so that the last to
-  come may still plant his standard, nor once twenty have come: then the
+  come may still plant his standard, nor once twenty-four have come: then the
   game goes on with whoever came, and the next opens; if no one came, it is
   dropped and a new land takes its place; if one alone came, no one wins
   alone: the opening begins again on the same land, as a new game. The relay

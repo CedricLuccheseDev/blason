@@ -1,6 +1,6 @@
 # Blason
 
-Blason is a medieval real-time strategy game played in the browser. Twenty
+Blason is a medieval real-time strategy game played in the browser. Twenty-four
 lords share a land drawn anew for each game and take it from one another tile
 by tile: peasants hold the land and march out as armies, gold builds, alliances
 are short and traitors are marked for all to see. The whole map is drawn in
@@ -28,7 +28,7 @@ It is inspired by [OpenFront](https://openfront.io) and written from scratch.
   village and market are free, so a lord can always start again.
 - **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord
   who breaks one bears the traitor's mark.
-- **Nineteen bots** that read the same state and send the same orders as you.
+- **Twenty-three bots** that read the same state and send the same orders as you.
 - **A deterministic simulation**, the same on every machine, ready for
   lockstep multiplayer.
 
@@ -51,7 +51,7 @@ npm run dev
 ```
 
 Then open the address `npm run dev` prints: the home offers the public game
-in its opening, a solo game against nineteen bots, and private rooms. Online
+in its opening, a solo game against twenty-three bots, and private rooms. Online
 play needs the relay beside it (`npm run relay`).
 
 ## Commands

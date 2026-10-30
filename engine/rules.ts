@@ -180,7 +180,7 @@ const MINUTE = 60 * SECOND
  * letters at most.
  */
 export const SETUP_LIMITS = {
-  seats: { min: 2, max: 20 },
+  seats: { min: 2, max: 24 },
   teams: 4,
   opening: {
     min: 5 * SECOND,

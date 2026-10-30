@@ -3,7 +3,7 @@
 // mine, red for a fight and green for an alliance. Every other tone is muted earth, so that only a
 // player's colour stands out.
 
-/** Twenty heraldic colours, one per seat; their names live in the messages. */
+/** Twenty-four heraldic colours, one per seat (« Passe de 20 a 24 joueurs »); their names live in the messages. */
 export const PLAYERS = [
   { key: 'azure', color: 0x2f6db5 },
   { key: 'gules', color: 0xc0392b },
@@ -25,6 +25,10 @@ export const PLAYERS = [
   { key: 'peacock', color: 0x1f7a99 },
   { key: 'plum', color: 0x5a2347 },
   { key: 'slate', color: 0x7c8b9a },
+  { key: 'amaranth', color: 0xb5236e },
+  { key: 'ochre', color: 0xb58a3a },
+  { key: 'indigo', color: 0x40379a },
+  { key: 'mint', color: 0x6fc7a8 },
 ] as const
 
 export type Heraldry = (typeof PLAYERS)[number]['key']

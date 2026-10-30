@@ -104,6 +104,10 @@ export const en = {
       peacock: 'Peacock',
       plum: 'Plum',
       slate: 'Slate',
+      amaranth: 'Amaranth',
+      ochre: 'Ochre',
+      indigo: 'Indigo',
+      mint: 'Mint',
     },
   },
   race: {

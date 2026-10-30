@@ -99,6 +99,10 @@ export const fr: Messages = {
       peacock: 'Canard',
       plum: 'Prune',
       slate: 'Ardoise',
+      amaranth: 'Amarante',
+      ochre: 'Ocre',
+      indigo: 'Indigo',
+      mint: 'Menthe',
     },
   },
   race: {

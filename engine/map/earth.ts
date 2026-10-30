@@ -73,7 +73,7 @@ export const ATLAS: Readonly<Record<Atlas, Entry>> = {
   mediterranean: {
     sheet: MEDITERRANEAN,
     size: 'large',
-    lords: [10, 20],
+    lords: [10, 24],
     ranges: [
       PYRENEES,
       ALPS,
@@ -98,7 +98,7 @@ export const ATLAS: Readonly<Record<Atlas, Entry>> = {
   europe: {
     sheet: EUROPE,
     size: 'large',
-    lords: [12, 20],
+    lords: [12, 24],
     ranges: [
       PYRENEES,
       ALPS,
@@ -132,7 +132,7 @@ export const ATLAS: Readonly<Record<Atlas, Entry>> = {
   world: {
     sheet: WORLD,
     size: 'huge',
-    lords: [16, 20],
+    lords: [16, 24],
     ranges: [
       [73, 35.5, 77, 34, 81, 30.5, 84, 28.5, 88, 27.8, 92, 27.8, 95, 29], // the Himalaya
       [68.5, 35, 71, 36, 74, 36.5], // the Hindu Kush

@@ -77,7 +77,7 @@ bot », « le matchmaking classique il ne doit pas ajouter de bot »):
   drawn at its opening and shown on the home's card, with an opening of 30
   seconds. Whoever plays comes straight into its opening, on the first free
   seat, to plant his standard; no one comes in during its last 5 seconds,
-  nor once twenty have come.
+  nor once twenty-four have come.
 - A seat no person takes stays **empty**: no lord there, given no standard
   and no land, counted for nothing in the race (`engine/opening.ts`).
 - **No one wins alone**: one person alone when the doors close sees the

@@ -16,8 +16,8 @@ import type { GameSetup, MapSize, Order } from '../engine'
 export const TURN_MS = 100
 /** Turns between two fingerprints a player tells. */
 export const HASH_EVERY = 50
-/** Seats at most for persons in a game: every one of the twenty lords (« tu affiches 8 joueurs partout mais ça a aucun sens »). */
-export const SEATS = 20
+/** Seats at most for persons in a game: every one of the twenty-four lords (« tu affiches 8 joueurs partout mais ça a aucun sens », « Passe de 20 a 24 joueurs »). */
+export const SEATS = 24
 
 /** An order as a player sends it: its seat is the relay's to set. */
 export type Move = Order extends infer O

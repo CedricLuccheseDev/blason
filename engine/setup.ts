@@ -32,8 +32,8 @@ const drawn = (size: MapSize): Land => ({ kind: 'drawn', size })
 const INVENTED: Readonly<Record<MapSize, readonly [number, number]>> = {
   small: [2, 8],
   standard: [2, 16],
-  large: [10, 20],
-  huge: [16, 20],
+  large: [10, 24],
+  huge: [16, 24],
 }
 
 /** The lords a land suits, from the fewest to the most: the book says which suits a game (« une taille recommandé en fonction du nombre de joueurs »). */
