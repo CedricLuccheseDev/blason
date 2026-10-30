@@ -1,4 +1,4 @@
-import { apart, groundOf, marching, meet, positionOf } from '../../engine'
+import { apart, marching, meet, positionOf, wayBetween } from '../../engine'
 import { siteOf } from './marks'
 import { headOf, pathOf } from './layers/column'
 import { pointOn } from './roads'
@@ -9,10 +9,10 @@ import type { GameState, Host } from '../../engine'
 // attack has taken furthest towards the click, the click a direction and no
 // halt: the front moves on with the land taken, past the click if the army
 // goes on, and never stands on land the army does not hold. In a battle,
-// its side of the ground the game has the two armies fight on (groundOf),
-// halfway between where the game has them, facing the other along the line
-// between them, which crosses no sea: the two armies charge into each
-// other there, on land.
+// its half of the way over the land between the two armies, round what
+// stands between, walked while they close, then its side of the ground in
+// its middle (battle.ts, wayBetween), facing the other: the two armies
+// charge into each other there, on land.
 
 export type Spot = { x: number; y: number }
 
@@ -37,8 +37,16 @@ const unit = (x: number, y: number): Spot => {
   return { x: x / d, y: y / d }
 }
 
-/** A battle as it is drawn: its two armies, the ground they met on, the way back to each side. */
-type Battle = { a: Host; b: Host; site: Spot; back: Spot; quiet: number }
+/** A battle as it is drawn: its two armies, the ground they met on, the way back to each side, each army's half of the way to it and the ticks they took to walk it. */
+type Battle = {
+  a: Host
+  b: Host
+  site: Spot
+  back: Spot
+  quiet: number
+  halves: Map<Host, Array<Spot>>
+  closing: number
+}
 
 /** Ticks a battle is kept once neither army fights: a pause is not its end. */
 const QUIET = 10
@@ -109,21 +117,50 @@ export function makeFronts() {
         .sort((p, q) => near(p) - near(q))
         .at(0)
       if (!b) continue
-      const here = siteOf(state, positionOf(a))
-      const there = siteOf(state, positionOf(b))
-      const site = siteOf(state, groundOf(state, a, b))
-      const back = unit(here.x - there.x, here.y - there.y)
-      const battle = { a, b, site, back, quiet: 0 }
+      // The way over the land between them, round what stands between
+      // (battle.ts): each walks his half of it to the ground in its middle.
+      const way = (
+        wayBetween(state, positionOf(a), positionOf(b)) ?? [
+          positionOf(a),
+          positionOf(b),
+        ]
+      ).map((t) => siteOf(state, t))
+      const mid = Math.floor(way.length / 2)
+      const site = way[mid]
+      const from = way[Math.max(0, mid - 1)]
+      const to = way[Math.min(way.length - 1, mid + 1)]
+      const back = unit(from.x - to.x, from.y - to.y)
+      const halves = new Map([
+        [a, way.slice(0, mid + 1)],
+        [b, way.slice(mid).reverse()],
+      ])
+      const closing = Math.max(1, a.closing, b.closing)
+      const battle = { a, b, site, back, quiet: 0, halves, closing }
       battles.set(a, battle)
       battles.set(b, battle)
     }
   }
 
-  /** An army in a battle: its side of the ground, facing the other. */
+  /** An army in a battle: walking its half of the way to the ground, then on its side of it, facing the other (« ils se rencontrent quand ils se touchent »). */
   function fight(host: Host, battle: Battle, head: number): Front {
     const sign = battle.a === host ? 1 : -1
     const back = { x: battle.back.x * sign, y: battle.back.y * sign }
     const { site } = battle
+    const half = battle.halves.get(host) ?? []
+    if (host.closing > 0 && half.length > 1) {
+      const along = (1 - host.closing / battle.closing) * (half.length - 1)
+      const at = pointOn(half, along)
+      const ahead = pointOn(half, Math.min(half.length - 1, along + 1))
+      return {
+        host,
+        phase: 'battle',
+        at,
+        facing: unit(ahead.x - at.x, ahead.y - at.y),
+        head,
+        line: null,
+        foe: battle.a === host ? battle.b : battle.a,
+      }
+    }
     return {
       host,
       phase: 'battle',

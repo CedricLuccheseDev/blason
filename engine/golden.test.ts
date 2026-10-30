@@ -62,7 +62,7 @@ describe('the golden games', () => {
     expect(prints(state, [100, 600, 1500])).toEqual({
       100: 'da08c324242d0',
       600: 'a55eab8b696d',
-      1500: '7d92f7bc110e',
+      1500: '137e9eff0b33aa',
     })
   }, 60_000)
 

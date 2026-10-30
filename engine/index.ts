@@ -77,7 +77,7 @@ export {
   isTeammate,
   offeringOf,
 } from './diplomacy'
-export { groundOf, meet } from './battle'
+export { meet, wayBetween } from './battle'
 export { shootsAt, underFire } from './volleys'
 export { tradeLinks } from './network'
 export type { Link } from './network'

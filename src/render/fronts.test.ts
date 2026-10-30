@@ -82,7 +82,8 @@ describe('a battle', () => {
     for (const army of state.hosts) {
       const front = fronts.get(army)
       expect(front?.phase).toBe('battle')
-      expect(dry(front?.line ?? null)).toBe(true)
+      // Walking to the ground, then fighting on it: on the land all along.
+      expect(dry(front?.line ?? front?.at ?? null)).toBe(true)
       expect(dry(front?.at ?? null)).toBe(true)
     }
   })
