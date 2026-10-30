@@ -3,6 +3,7 @@ import { LandPlate } from './LandPlate'
 import { RoomTrouble, Seats } from './Seats'
 import { atPublic } from './useRoom'
 import { useUpcoming } from './useUpcoming'
+import { Icon } from '../hud/Figure'
 import type { ReactNode } from 'react'
 import type { Room, RoomActions } from './useRoom'
 import type { Land } from '../../../engine'
@@ -71,11 +72,7 @@ export function PublicCard({
   else if (failed) word = t.room.retry
   return (
     <Panel gap="part">
-      <LandPlate
-        seed={game?.seed ?? null}
-        land={land}
-        label={t.public.land}
-      >
+      <LandPlate seed={game?.seed ?? null} land={land} label={t.public.land}>
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}
         {(ready || failed) && (
           <button
@@ -113,6 +110,7 @@ export function PublicCard({
           className={`absolute right-2 bottom-2 ${ready || failed ? '' : 'opacity-50'}`}
         >
           <Act call asleep={!ready && !failed} onClick={() => rooms.join(null)}>
+            <Icon name="horn" size={20} />
             {word}
           </Act>
         </div>

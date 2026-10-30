@@ -3,8 +3,8 @@ import { Act } from '../hud/Act'
 import { Shield } from '../hud/Emblem'
 import { StandingBadge } from '../hud/Standing'
 import { useCompact } from '../hud/useCompact'
-import { Figure } from '../hud/Figure'
-import { Inline, Panel } from '../hud/Layout'
+import { Figure, Icon } from '../hud/Figure'
+import { GAP, Inline, Panel } from '../hud/Layout'
 import { Fine, Note } from '../hud/Text'
 import { hex } from './format'
 import { standingsOf } from './standing'
@@ -90,7 +90,10 @@ export function Lords({
         onClick={() => setOpen(!open)}
         className="pointer-events-auto flex cursor-pointer items-center justify-between hud-press"
       >
-        <Note>{m.lord.list}</Note>
+        <span className={`flex items-center ${GAP.hair}`}>
+          <Icon name="crown" size={16} />
+          <Note>{m.lord.list}</Note>
+        </span>
         <Note
           className={`transition-transform duration-(--duration-hud-press) ease-hud ${open ? '' : '-rotate-90'}`}
         >

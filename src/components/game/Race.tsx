@@ -164,10 +164,15 @@ function Opening({
     <div className="flex w-full min-w-0 justify-center">
       <Panel className="max-w-xl">
         <Inline gap="piece">
-          <Figure size="xl">{opening}</Figure>
+          <Figure icon="hourglass" size="xl">
+            {opening}
+          </Figure>
           <Rule />
           <Stack gap="hair">
-            <Call>{title}</Call>
+            <Inline gap="hair">
+              <Icon name="banner" size={22} />
+              <Call>{title}</Call>
+            </Inline>
             {hint && <Note>{hint}</Note>}
             {touch && <Note>{m.menu.hintTouch}</Note>}
           </Stack>

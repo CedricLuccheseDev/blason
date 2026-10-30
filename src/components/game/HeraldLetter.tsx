@@ -100,9 +100,11 @@ export function HeraldLetter({
         <Inline>
           <Act tone="pact" onClick={onSeal}>
             <Icon name="links" size={ICON.m} />
+            <Icon name="check" size={18} />
             {m.heralds.accept}
           </Act>
           <Act tone="gules" onClick={onRefuse}>
+            <Icon name="cross" size={18} />
             {m.heralds.refuse}
           </Act>
         </Inline>

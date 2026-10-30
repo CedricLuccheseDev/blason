@@ -111,7 +111,11 @@ export function GameBook({
           fill
           left={
             <>
-              <Head kicker={guest ? m.hostGame : kicker} title={m.land} />
+              <Head
+                kicker={guest ? m.hostGame : kicker}
+                title={m.land}
+                icon="globe"
+              />
               <MapList
                 book={book}
                 onPick={guest ? undefined : (land) => set({ land })}

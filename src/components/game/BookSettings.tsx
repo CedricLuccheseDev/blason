@@ -43,6 +43,7 @@ export function BookSettings({
             : m.seated(book.bots, book.guests ?? 0)
         }
         title={m.lords}
+        icon="crown"
       />
       <Seats book={book} names={names} onChange={edit ? onChange : undefined} />
       <Setting name={m.bots} icon="bot">

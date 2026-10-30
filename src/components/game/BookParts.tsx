@@ -34,16 +34,18 @@ export function Setting({
   )
 }
 
-/** A page's head: a line above, its title in capitals, a gold rule. */
+/** A page's head: a line above, its title in capitals beside its icon, a gold rule. */
 export function Head({
   kicker,
   title,
-}: Readonly<{ kicker: string; title: string }>) {
+  icon,
+}: Readonly<{ kicker: string; title: string; icon?: IconName }>) {
   return (
     <header>
       <Stack gap="hair" align="center" className="text-center">
         <Note>{kicker}</Note>
-        <h2>
+        <h2 className={`flex items-center ${GAP.hair}`}>
+          {icon && <Icon name={icon} size={26} />}
           <Title>{title}</Title>
         </h2>
         <span className="w-3/5">

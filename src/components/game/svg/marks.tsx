@@ -134,6 +134,17 @@ const MORE = {
     { d: 'M3 9 H7 L19 3.5 V20.5 L7 15 H3 Z' },
     { d: 'M7 9 V15', open: true },
   ],
+  check: [{ d: 'M4 12.5 L9.5 18 L20 6', open: true }],
+  cross: [{ d: 'M6 6 L18 18 M18 6 L6 18', open: true }],
+  eye: [
+    { d: 'M2 12 Q12 3.5 22 12 Q12 20.5 2 12 Z' },
+    { d: 'M9 12 A3 3 0 1 0 15 12 A3 3 0 1 0 9 12 Z' },
+  ],
+  key: [
+    { d: 'M3 12 A4 4 0 1 0 11 12 A4 4 0 1 0 3 12 Z' },
+    { d: 'M11 12 H21 M17.5 12 V15.5 M20.5 12 V14.5', open: true },
+  ],
+  plus: [{ d: 'M12 4.5 V19.5 M4.5 12 H19.5', open: true }],
   // The whole land raised: the peasant's fork, never a village's house.
   pitchfork: [
     {

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Act, actClass } from '../hud/Act'
-import { Figure } from '../hud/Figure'
+import { Figure, Icon } from '../hud/Figure'
 import { Line, Panel, Ruled, Stack, Veil } from '../hud/Layout'
 import { Heading, Note, Title } from '../hud/Text'
 import { count, minutes } from './format'
@@ -45,15 +45,18 @@ export function Moment({
             reloadDocument
             className={actClass()}
           >
+            <Icon name="again" size={20} />
             {m.game.playAgain}
           </Link>
           {!online && (
             <Link to="/" reloadDocument className={actClass('plain')}>
+              <Icon name="door" size={18} />
               {m.game.quit}
             </Link>
           )}
           {fallen && !winner && (
             <Act tone="plain" onClick={watch}>
+              <Icon name="eye" size={18} />
               {m.game.watchEnd}
             </Act>
           )}

@@ -13,6 +13,7 @@ import { atPrivate, atPublic, useRoom } from './useRoom'
 import type { Entry } from './Journal'
 import { Act } from '~/components/hud/Act'
 import { GAP, Stack } from '~/components/hud/Layout'
+import { Icon } from '~/components/hud/Figure'
 import { useMessages } from '~/i18n'
 import { relayUrl } from '~/render/link'
 import { holdOnline } from '~/render/online'
@@ -81,9 +82,11 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
             <PublicCard room={room} rooms={rooms} online={online} />
             <div className={`grid sm:grid-cols-2 ${GAP.line}`}>
               <Act tone="plain" onClick={create}>
+                <Icon name="plus" size={18} />
                 {t.create}
               </Act>
               <Act tone="plain" asleep={!online} onClick={() => show('join')}>
+                <Icon name="key" size={18} />
                 {t.joinPrivate}
               </Act>
             </div>
