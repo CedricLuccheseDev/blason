@@ -7,7 +7,7 @@ import { useBeside } from '../hud/useBeside'
 import { useCompact } from '../hud/useCompact'
 import { count, hex } from './format'
 import { ARMY_MARKS, ARMY_WAX, COUP_MARKS } from './Bar'
-import type { RefObject } from 'react'
+import type { ReactNode, RefObject } from 'react'
 import type { Aim, Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
@@ -41,29 +41,56 @@ function Mouse({ button }: Readonly<{ button: 'left' | 'right' }>) {
   )
 }
 
+/** What cannot be had now, struck through in gules. */
+function Struck({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <span className="relative inline-flex">
+      {children}
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 size-full"
+      >
+        <path
+          d="M4 20 L20 4"
+          stroke="var(--color-gules)"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
+  )
+}
+
 /**
  * The left of the cartouche: the army in hand, its men, and for mercenaries
- * their gold; whether a click sends it, or why not, in gules: every village
- * (or market) with its army out, or no man to raise, the gold short.
+ * their gold; whether a click sends it, or why not, in gules: no army free
+ * (its seal struck through), or no man to raise, the gold short.
  */
 function ArmyHalf({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
   const { me } = summary
   const army = summary.armies.find((a) => a.army === summary.army)
   if (!me || !army) return null
+  const seal = ARMY_WAX[army.army] ?? hex(me.color)
   let note = null
+  // None free to leave: the army's seal struck through, and a word (« note
+  // juste no army avec l'icon army barré »).
   if (army.free === 0)
-    note = <Note className="text-gules">{m.game.noLevy[army.at]}</Note>
+    note = (
+      <Inline gap="hair">
+        <Struck>
+          <SealEmblem icon={ARMY_MARKS[army.army]} color={seal} size="xs" dim />
+        </Struck>
+        <Note className="text-gules">{m.game.noLevy[army.at]}</Note>
+      </Inline>
+    )
   else if (army.men === 0)
     note = <Note className="text-gules">{m.game.noMen[army.at]}</Note>
   return (
     <Stack gap="hair">
       <Inline>
-        <SealEmblem
-          icon={ARMY_MARKS[army.army]}
-          color={ARMY_WAX[army.army] ?? hex(me.color)}
-          size="xs"
-        />
+        <SealEmblem icon={ARMY_MARKS[army.army]} color={seal} size="xs" />
         <Figure icon="soldier" size="m">
           {count(army.men)}
         </Figure>

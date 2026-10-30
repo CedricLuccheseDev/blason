@@ -5,7 +5,14 @@ import { makeNews } from './news'
 describe('the news', () => {
   it('tells an offering given me once, its gold, on the giver’s land nearest mine', () => {
     const land = Array.from({ length: 10 }, () => true)
-    const grid = { width: 10, height: 1, size: 4, land, area: land.length }
+    const grid = {
+      width: 10,
+      height: 1,
+      size: 4,
+      land,
+      water: land.map((on) => !on),
+      area: land.length,
+    }
     const state = createGame(grid, botsSetup({ seed: 'test', lords: 3 }))
     for (const t of [0, 1, 2]) state.owner[t] = 0
     for (const t of [6, 7, 8, 9]) state.owner[t] = 1
@@ -22,7 +29,14 @@ describe('the news', () => {
 
   it('tells my alliances once each, offered, made and ended unbroken, over the other’s name', () => {
     const land = Array.from({ length: 10 }, () => true)
-    const grid = { width: 10, height: 1, size: 4, land, area: land.length }
+    const grid = {
+      width: 10,
+      height: 1,
+      size: 4,
+      land,
+      water: land.map((on) => !on),
+      area: land.length,
+    }
     const state = createGame(grid, botsSetup({ seed: 'test', lords: 3 }))
     for (const t of [0, 1, 2]) state.owner[t] = 0
     for (const t of [6, 7, 8, 9]) state.owner[t] = 1

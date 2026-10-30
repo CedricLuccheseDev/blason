@@ -7,7 +7,14 @@ import type { Host } from '../../engine'
 /** A strip of land, ten tiles of four units: the west half sea, the east half wood. */
 function game() {
   const land = Array.from({ length: 10 }, (_, i) => i >= 5)
-  const grid = { width: 10, height: 1, size: 4, land, area: 5 }
+  const grid = {
+    width: 10,
+    height: 1,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: 5,
+  }
   const state = createGame(grid, botsSetup({ seed: 'test', lords: 2 }))
   const biome = Uint8Array.from(land, (l) => (l ? FOREST : 255))
   const shore = Uint8Array.from(

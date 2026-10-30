@@ -1,13 +1,19 @@
-import { NO_ONE, TICKS_PER_SECOND, wonBy } from '../../engine'
+import {
+  NO_ONE,
+  TICKS_PER_SECOND,
+  afloat,
+  positionOf,
+  wonBy,
+} from '../../engine'
 import type { Cue } from '../audio/cues'
-import type { GameState } from '../../engine'
+import type { GameState, Host } from '../../engine'
 import type { News, PactNews } from './news'
 
 // What the player hears of the game, and where (audio/cues.ts says how each
 // sounds): the news, read once a second as the pennants read them, an army
 // or a coup against him, a herald's letter, his alliances made or ended, a
 // betrayal cried to all; and each tick, so that they sound with the gesture,
-// his army leaving, his work laid, and the end of the game (a caravan
+// his army leaving and taking to the water, his work laid, and the end of the game (a caravan
 // paying him is seen, its « + » of gold, not heard: « pas besoin de ce son
 // la »), won or lost, or his own fall; in the opening, his standard planted,
 // a drum for each of its last seconds, and a horn as the game begins.
@@ -42,6 +48,8 @@ export function heardIn(news: Array<News>): Array<Heard> {
 /** What the player did or earned since the last tick, heard as it happens. */
 export function makeHearing(state: GameState, me: number) {
   let hosts = new Set(state.hosts)
+  /** My armies at sea at the last reading: one taking to the water is heard once. */
+  let sailing = new Set<Host>()
   let works = new Set(state.works)
   let tick = state.tick
   let alive = me >= 0 && state.players[me].alive
@@ -82,6 +90,13 @@ export function makeHearing(state: GameState, me: number) {
       for (const host of state.hosts)
         if (host.owner === me && !hosts.has(host))
           heard.push({ cue: 'muster', tile: host.from })
+      const afloatNow = new Set(
+        state.hosts.filter((h) => h.owner === me && afloat(state, h)),
+      )
+      for (const host of afloatNow)
+        if (!sailing.has(host))
+          heard.push({ cue: 'embark', tile: positionOf(host) })
+      sailing = afloatNow
       // Laid, not taken: a work taken from another stands already.
       for (const work of state.works)
         if (work.owner === me && work.ready !== undefined && !works.has(work))

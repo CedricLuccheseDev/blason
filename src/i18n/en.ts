@@ -26,7 +26,7 @@ export const en = {
     tooNear: 'too near another standard',
     click: 'click: attack',
     noLevy: {
-      village: 'every village of yours has an army out',
+      village: 'no army',
       market: 'no market free to hire them at',
     },
     noMen: {

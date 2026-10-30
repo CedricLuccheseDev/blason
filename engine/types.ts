@@ -13,6 +13,8 @@ export type Grid = {
   /** A tile's side, in map units. */
   size: number
   land: Array<boolean>
+  /** The sea's tiles and the lakes', which the boats sail; not the high mountains, which are no land either. */
+  water: Array<boolean>
   /** Tiles of land in all. */
   area: number
 }

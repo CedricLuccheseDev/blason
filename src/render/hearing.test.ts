@@ -5,12 +5,20 @@ import type { Host } from '../../engine'
 
 function game() {
   const land = Array.from({ length: 10 }, () => true)
-  const grid = { width: 10, height: 1, size: 4, land, area: land.length }
+  const grid = {
+    width: 10,
+    height: 1,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: land.length,
+  }
   return createGame(grid, botsSetup({ seed: 'test', lords: 3 }))
 }
 
 /** An army of a lord's, raised at a tile: only what the ear reads of it. */
-const hostOf = (owner: number, from: number) => ({ owner, from }) as Host
+const hostOf = (owner: number, from: number) =>
+  ({ owner, from, road: [from], along: 0 }) as unknown as Host
 
 describe('what the player hears', () => {
   it('hears the news that concern him, each from where it happened', () => {

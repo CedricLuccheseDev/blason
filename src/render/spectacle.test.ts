@@ -5,7 +5,14 @@ import type { Host, Strike } from '../../engine'
 
 function game() {
   const land = Array.from({ length: 10 }, () => true)
-  const grid = { width: 10, height: 1, size: 4, land, area: land.length }
+  const grid = {
+    width: 10,
+    height: 1,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: land.length,
+  }
   return createGame(grid, botsSetup({ seed: 'test', lords: 2 }))
 }
 
@@ -19,6 +26,8 @@ const battle = (state: ReturnType<typeof game>) =>
     closing: 0,
     men: 10,
     edge: [3],
+    road: [3],
+    along: 0,
   } as unknown as Host)
 
 /** The clashes heard in so many ticks. */

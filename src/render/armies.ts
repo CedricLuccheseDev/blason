@@ -2,6 +2,7 @@ import { Container } from 'pixi.js'
 import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
+import { makeBoats } from './layers/boats'
 import { makeFallen } from './layers/fallen'
 import { makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
@@ -11,6 +12,7 @@ import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
 import { ARMY_LOOKS, warmFigures } from './figures'
 import type { Front, Spot } from './fronts'
+import type { Afloat } from './layers/boats'
 import type { Drawn, Line } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
 import type { Box } from './camera'
@@ -31,12 +33,18 @@ const FADE = 0.5
 type Army = {
   troops: Squad
   peasants: Squad
+  /** How much it shows as a boat, its men aboard: 1 at sea, 0 ashore (layers/boats.ts). */
+  afloat: number
   /** Its men at the last tick read, and its place this frame; gone once the game no longer has it. */
   men: number
   front: Front | null
   flag: Spot | null
   gone: boolean
 }
+
+/** Whether an army's head is on the water of its road (crossing.ts). */
+const atSea = (state: GameState, host: Host, head: number) =>
+  state.grid.water[host.road[Math.min(host.road.length - 1, Math.round(head))]]
 
 /** The colour of the peasants who hold a land: their lord's, or the free land's. */
 const peasantColor = (owner: number) =>
@@ -46,6 +54,7 @@ const peasantColor = (owner: number) =>
 const enlist = (host: Host): Army => ({
   troops: makeSquad(ARMY_LOOKS[host.army], playerColor(host.owner)),
   peasants: makeSquad('peasant', peasantColor(host.target)),
+  afloat: 0,
   men: host.men,
   front: null,
   flag: null,
@@ -58,11 +67,13 @@ export function makeArmies(me: number) {
   const roads = makeRoads()
   const fallen = makeFallen(0.2)
   const troops = makeTroops()
+  const boats = makeBoats()
   const warning = makeWarning(me)
   container.addChild(
     warning.container,
     roads.container,
     fallen.container,
+    boats.container,
     troops.container,
   )
   const fronts = makeFronts()
@@ -111,15 +122,26 @@ export function makeArmies(me: number) {
     peasants.alpha = Math.min(1, peasants.alpha + dt / FADE)
   }
 
-  /** Each man of the army a frame closer to his place: in a column on the march, in ranks at the front or in battle. */
+  /** Each man of the army a frame closer to his place: in a column on the march, in ranks at the front or in battle; gathered aboard at sea, its boat shown for them. */
   function place(state: GameState, host: Host, army: Army, dt: number) {
     const front = army.front as Front
+    const sailing = front.phase === 'march' && atSea(state, host, front.head)
     const shape: Shape =
-      front.phase === 'march'
+      front.phase === 'march' && !sailing
         ? { line: 'column', path: pathOf(state, host), head: front.head }
         : { line: 'ranks', at: front.at, facing: front.facing }
     rally(army.troops, figuresOf(host.men / UNIT), shape, dt)
-    army.troops.alpha = Math.min(1, army.troops.alpha + dt / FADE)
+    // Aboard, its men go with the boat, its standard over it.
+    if (sailing) for (const man of army.troops.men) Object.assign(man, front.at)
+    const step = dt / FADE
+    army.troops.alpha = Math.max(
+      0,
+      Math.min(1, army.troops.alpha + (sailing ? -step : step)),
+    )
+    army.afloat = Math.max(
+      0,
+      Math.min(1, army.afloat + (sailing ? step : -step)),
+    )
     defend(state, host, army, dt)
   }
 
@@ -174,6 +196,23 @@ export function makeArmies(me: number) {
     return drawn
   }
 
+  /** The armies at sea, each its boat where its head is, the way it sails. */
+  function afloat(): Array<Afloat> {
+    return [...armies].flatMap(([host, army]) =>
+      army.afloat > 0 && army.front
+        ? [
+            {
+              key: army,
+              at: army.front.at,
+              facing: army.front.facing.x < 0 ? -1 : 1,
+              color: playerColor(host.owner),
+              alpha: army.afloat,
+            },
+          ]
+        : [],
+    )
+  }
+
   /** Every side drawn: each army's men, and the peasants before it. */
   function sides(): Array<Drawn> {
     return [...armies.values()].flatMap((a) => [
@@ -212,7 +251,13 @@ export function makeArmies(me: number) {
       // alliés »).
       const marches = standing.flatMap((a) =>
         a.front?.phase === 'march' && isFriendly(state, me, a.front.host.owner)
-          ? [{ host: a.front.host, head: a.front.head, alpha: a.troops.alpha }]
+          ? [
+              {
+                host: a.front.host,
+                head: a.front.head,
+                alpha: Math.max(a.troops.alpha, a.afloat),
+              },
+            ]
           : [],
       )
       warning.draw(
@@ -224,13 +269,14 @@ export function makeArmies(me: number) {
       // From afar the men fade out, their standards stay (« les etendard
       // sans l'armée »); not drawn at all once gone.
       const men = 1 - strategic
-      troops.container.alpha = men
-      fallen.container.alpha = men
-      troops.container.visible = men > 0
-      fallen.container.visible = men > 0
+      for (const layer of [troops, fallen, boats]) {
+        layer.container.alpha = men
+        layer.container.visible = men > 0
+      }
       if (men > 0) {
         troops.draw(sides(), lines(), seconds, view)
         fallen.draw(seconds)
+        boats.draw(afloat())
       }
       flags.place(armies, zoom / far, legible(far), seconds)
     },

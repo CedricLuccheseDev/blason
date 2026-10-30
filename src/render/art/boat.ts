@@ -1,0 +1,51 @@
+import { TONE } from '../palette'
+import type { Graphics } from 'pixi.js'
+
+// An army at sea as a pen draws it small on an old map, sailing right, its
+// keel on (0, 0) (« les armées qui traversent l'eau »): a long open boat,
+// its oars out, a square sail in its lord's colour on the mast and a white
+// wake behind. Drawn once per colour.
+
+const WOOD = 0x8a6440
+const OARS = 0x6b4c30
+const CLOTH = 0xefe3c4
+
+export function drawBoat(g: Graphics, color: number): void {
+  const ink = { color: TONE.ink, join: 'round', cap: 'round' } as const
+  // The wake, two strokes trailing from the stern.
+  g.moveTo(-11, 0.4)
+    .quadraticCurveTo(-15, 1.2, -19, 0.6)
+    .moveTo(-10.6, 1.4)
+    .quadraticCurveTo(-14, 2.6, -17, 2.4)
+    .stroke({ color: CLOTH, width: 0.8, cap: 'round', alpha: 0.9 })
+  // The oars, dipping into the water.
+  for (const x of [-6, -2, 2, 6]) g.moveTo(x, -2).lineTo(x - 2.4, 2.2)
+  g.stroke({ ...ink, width: 0.7 }).stroke({ color: OARS, width: 0.35 })
+  // The hull, its stem and stern raised.
+  g.moveTo(-11, -3.6)
+    .quadraticCurveTo(-10, 0, -5, 0.4)
+    .lineTo(6, 0.4)
+    .quadraticCurveTo(11, 0, 12.4, -4.4)
+    .lineTo(10.4, -3)
+    .lineTo(-9.4, -3)
+    .closePath()
+    .fill(WOOD)
+    .stroke({ ...ink, width: 0.7 })
+  g.moveTo(-9, -1.6)
+    .lineTo(9.6, -1.6)
+    .stroke({ ...ink, width: 0.35 })
+  // The mast and its sail, the lord's colour.
+  g.moveTo(0, -3)
+    .lineTo(0, -15)
+    .stroke({ ...ink, width: 0.7 })
+  g.moveTo(-4.6, -13.6)
+    .quadraticCurveTo(-0.4, -12.2, 4.2, -13.6)
+    .lineTo(4.6, -5.6)
+    .quadraticCurveTo(0, -4.2, -5, -5.6)
+    .closePath()
+    .fill(color)
+    .stroke({ ...ink, width: 0.6 })
+  g.moveTo(-4.8, -9.6)
+    .quadraticCurveTo(0, -8.4, 4.4, -9.6)
+    .stroke({ color: CLOTH, width: 0.9, alpha: 0.8 })
+}

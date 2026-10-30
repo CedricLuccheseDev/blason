@@ -10,7 +10,8 @@ applies each rule is named beside it.
   land on every machine. Its shape is one of six families (a continent, a
   coast, an inland sea, two lands and a neck, a strip between two seas,
   fjords), with peninsulas, bays and capes; it is one piece, with no
-  islands. Lakes lie inland and, like the sea, no army crosses them. Rivers,
+  islands. Lakes lie inland; an army crosses them, and the sea, only by
+  boat (below). Rivers,
   hills, woods, plains and the lower mountains are drawn only: they change
   nothing to the rules; the high mountains close the ground (below). The land is cut into a fine grid of tiles, four map units a side
   (`engine/grid.ts`), some 53,000 tiles of land.
@@ -27,8 +28,10 @@ applies each rule is named beside it.
 - **Maps of the real Earth** (`engine/map/atlas.ts`): Europe first, its
   ground baked from the world's heights, its great lakes and main rivers
   real; each map has its own size and the lords it suits, its islands kept
-  apart and its straits open (until ships come, an island is reached by
-  none), its high mountains on the real ranges.
+  apart and its straits open (an island is reached by boat), its high
+  mountains on the real ranges. Every piece of land the water touches is in
+  the game, the islands with the rest; only a piece the high mountains close
+  all round is not.
 - A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
   huge (four times), chosen by `/play?size=large` or `huge` until the home
   offers it. Its tiles and cells keep their size: a larger land has more of
@@ -159,6 +162,16 @@ leaves it gives his seat back to its bot.
   click, then strikes the lord without stopping (`engine/course.ts`,
   `through`). Another lord's land in between still bars the way, unless he
   is an ally.
+- **Across the water** (`engine/crossing.ts`, as on OpenFront): a land no
+  road reaches by land, the army reaches by boat. It lands on the shore of
+  that land nearest the click (the free land's, taken on its way, when the
+  lord's own reaches no water); it walks its lord's land to the coast that
+  brings it there soonest, the crossing counted, takes to the water from any
+  tile of it, no port needed, and sails a tile a step, as it walks. At sea it
+  takes nothing and fights no battle; it is seen as a boat under its
+  standard. Then it strikes from where it landed, as from a border. Its
+  sounds: a boat's creak and an oar when mine takes to the water, oars up
+  close.
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
   while he bears the traitor's mark; the villagers on free land):

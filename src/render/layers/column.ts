@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import { paceOf } from '../../../engine'
+import { isFriendly, paceOf } from '../../../engine'
 import { playerColor } from '../palette'
 import { siteOf } from '../marks'
 import { drawRoad } from '../roads'
@@ -22,7 +22,10 @@ export function pathOf(state: GameState, host: Host): Array<Spot> {
   let path = paths.get(host)
   // A road cut short under the army is drawn again, as far as it goes now.
   if (!path || path.length !== host.road.length) {
-    path = drawRoad(state, host.road, (t) => state.owner[t] === host.owner, 0)
+    // Straight over the land it marches, its lord's and his allies', and the water it sails.
+    const open = (t: number) =>
+      isFriendly(state, host.owner, state.owner[t]) || state.grid.water[t]
+    path = drawRoad(state, host.road, open, 0)
     paths.set(host, path)
   }
   return path

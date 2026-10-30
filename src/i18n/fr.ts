@@ -27,7 +27,7 @@ export const fr: Messages = {
     tooNear: 'trop près d’un autre étendard',
     click: 'clic : attaquer',
     noLevy: {
-      village: 'tous tes villages ont une armée dehors',
+      village: 'aucune armée',
       market: 'aucun marché libre pour les engager',
     },
     noMen: {

@@ -4,7 +4,8 @@ import type { Grid } from './types'
 // The land cut into a fine grid of tiles, as OpenFront's map is cut in
 // pixels: a tile is land when the cell of the map nearest its middle is
 // land, so the grid follows the same coast as the drawing; a tile of the
-// high mountains is not, as the sea's. Made from the map's whole positions
+// high mountains is not, as the sea's, but only the sea's is water, which
+// the boats sail (crossing.ts). Made from the map's whole positions
 // alone: the same on every machine.
 
 /** The grid of a map so many units wide and high, tiles so many units a side. */
@@ -18,9 +19,9 @@ export function makeGrid(
   const rows = Math.ceil(height / size)
   // The sites of the map in buckets of the grid, to find the nearest fast.
   const sites = [
-    ...map.land.map((c) => ({ x: c.x, y: c.y, land: true })),
-    ...map.sea.map((s) => ({ x: s.x, y: s.y, land: false })),
-    ...map.peaks.map((p) => ({ x: p.x, y: p.y, land: false })),
+    ...map.land.map((c) => ({ x: c.x, y: c.y, land: true, water: false })),
+    ...map.sea.map((s) => ({ x: s.x, y: s.y, land: false, water: true })),
+    ...map.peaks.map((p) => ({ x: p.x, y: p.y, land: false, water: false })),
   ]
   const bucket = 8 * size
   const bw = Math.ceil(width / bucket) + 1
@@ -29,8 +30,8 @@ export function makeGrid(
     const key = Math.floor(s.y / bucket) * bw + Math.floor(s.x / bucket)
     buckets.set(key, [...(buckets.get(key) ?? []), i])
   })
-  /** Whether the site nearest a point is land, among the buckets round it. */
-  function landAt(x: number, y: number): boolean {
+  /** The site nearest a point, among the buckets round it. */
+  function siteAt(x: number, y: number) {
     const bx = Math.floor(x / bucket)
     const by = Math.floor(y / bucket)
     let best = -1
@@ -46,18 +47,23 @@ export function makeGrid(
             best = i
           }
         }
-    return best >= 0 && sites[best].land
+    return best >= 0 ? sites[best] : null
   }
   const half = Math.floor(size / 2)
   const land: Array<boolean> = []
+  const water: Array<boolean> = []
   for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      land.push(landAt(c * size + half, r * size + half))
+    for (let c = 0; c < cols; c++) {
+      const site = siteAt(c * size + half, r * size + half)
+      land.push(site?.land ?? false)
+      water.push(site?.water ?? false)
+    }
   return {
     width: cols,
     height: rows,
     size,
     land,
+    water,
     area: land.filter(Boolean).length,
   }
 }

@@ -17,7 +17,14 @@ function bay(): GameState {
     const [x, y] = [t % WIDTH, Math.floor(t / WIDTH)]
     return !(x >= 8 && x <= 11 && y <= 9)
   })
-  const grid: Grid = { width: WIDTH, height: 16, size: 4, land, area: 0 }
+  const grid: Grid = {
+    width: WIDTH,
+    height: 16,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: 0,
+  }
   grid.area = land.filter(Boolean).length
   const state = createGame(grid, botsSetup({ seed: 'bay', lords: 2 }), RULES)
   const strip = (t: number) => t % WIDTH >= 13 && Math.floor(t / WIDTH) === 12

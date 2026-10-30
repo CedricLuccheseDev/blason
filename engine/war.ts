@@ -78,6 +78,10 @@ function touches(state: GameState, player: number, tile: number) {
   return around(state.grid, tile).some((t) => passable(state, player, t))
 }
 
+/** Whether a tile is where the army came ashore from the water (crossing.ts), which it strikes first, though it borders no land of its lord's. */
+const landed = (state: GameState, host: Host, tile: number) =>
+  tile === host.entry && state.grid.water[host.road.at(-1) ?? -1]
+
 /** Whether a tile is the army's to strike: its target's; or free, on its way to a lord its land does not touch (course.ts, `through`). */
 const struck = (state: GameState, host: Host, tile: number) =>
   state.owner[tile] === host.target ||
@@ -171,7 +175,11 @@ function march(state: GameState, host: Host) {
     if (!next) break
     const tile = next[1]
     const ours = struck(state, host, tile)
-    if (!ours || !touches(state, host.owner, tile)) continue
+    if (
+      !ours ||
+      !(touches(state, host.owner, tile) || landed(state, host, tile))
+    )
+      continue
     if (!fight(state, host, tile)) break
     take(state, host, tile)
     taken.push(tile)
@@ -191,8 +199,8 @@ function walk(state: GameState, host: Host) {
   for (let i = Math.floor(host.along / 1000) + 1; i <= next; i++) {
     const tile = host.road[i]
     const owner = state.owner[tile]
-    // Its own land and its allies' it walks; an ally turned away on the road sends it home.
-    if (passable(state, host.owner, tile)) continue
+    // Its own land and its allies' it walks, the water it sails; an ally turned away on the road sends it home.
+    if (passable(state, host.owner, tile) || state.grid.water[tile]) continue
     if (owner === host.target) {
       host.road = host.road.slice(0, i)
       host.along = (host.road.length - 1) * 1000

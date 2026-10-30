@@ -10,7 +10,14 @@ import type { GameState, Grid, Order } from '../types'
 /** A row of so many tiles, all of it land. */
 function field(width: number): Grid {
   const land = Array.from({ length: width }, () => true)
-  return { width, height: 1, size: 4, land, area: land.length }
+  return {
+    width,
+    height: 1,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: land.length,
+  }
 }
 
 /** A game past its opening, no village, nothing born, no gold. */

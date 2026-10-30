@@ -10,7 +10,14 @@ import type { GameState, Grid, Order } from './types'
 
 function field(width: number, height = 1): Grid {
   const land = Array.from({ length: width * height }, () => true)
-  return { width, height, size: 4, land, area: land.length }
+  return {
+    width,
+    height,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: land.length,
+  }
 }
 
 /** A game past its opening, no income, nothing born and no one sick; lord 0 on the left, lord 1 on the right of a row. */

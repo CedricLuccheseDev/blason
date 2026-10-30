@@ -109,6 +109,10 @@ between them, never the same twice running (`src/audio/cues.ts`, `beds.ts`).
 | `hammer-1.ogg`    | A hammer on wood                | [Hammer on Wood](https://freesound.org/people/L.i.Z.e.L.l.E_+/sounds/707864/), L.i.Z.e.L.l.E_+                                                             | CC0                                                       |
 | `hammer-2.ogg`    | A hammer on a nail              | [Hammer hitting nail.wav](https://freesound.org/people/LiezelDippenaar/sounds/707525/), LiezelDippenaar                                                    | CC0                                                       |
 | `hammer-3.ogg`    | A roof hammered                 | [Japan_Kashiwa_Temple_Hammering_Roof.wav](https://freesound.org/people/RutgerMuller/sounds/364849/), RutgerMuller                                          | CC0                                                       |
+| `oars-1.ogg`      | An oar stroke in the water      | [Water_Paddle_med_003.wav](https://freesound.org/people/EpicWizard/sounds/316590/), EpicWizard                                                             | CC0                                                       |
+| `oars-2.ogg`      | An oar stroke in the water      | [Water_Paddle_med_004.wav](https://freesound.org/people/EpicWizard/sounds/316589/), EpicWizard                                                             | CC0                                                       |
+| `oars-3.ogg`      | An oar stroke in the water      | [Water_Paddle_med_014.wav](https://freesound.org/people/EpicWizard/sounds/316595/), EpicWizard                                                             | CC0                                                       |
+| `creak-1.ogg`     | An old wooden boat creaking     | [S29-24 Creak and roll of old sailing boat; closer; wood stressing.wav](https://freesound.org/people/craigsmith/sounds/675785/), craigsmith                | CC0                                                       |
 
 ## Music
 

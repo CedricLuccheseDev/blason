@@ -73,11 +73,12 @@ export function makeAim(state: GameState, me: number) {
         key,
         entry,
         road: road.length
-          ? // Straightened over the land it marches, mine and my allies'.
+          ? // Straightened over the land it marches, mine and my allies', and the water it sails.
             drawRoad(
               state,
               road,
-              (t) => isFriendly(state, me, state.owner[t]),
+              (t) =>
+                isFriendly(state, me, state.owner[t]) || state.grid.water[t],
               0,
             )
           : [],

@@ -11,7 +11,14 @@ const hand = { army: 'host', work: null, coup: null } as const
 /** Lord 0 on the left of a row, a village on his first tile and a market on his fifth; lord 1 beside him. A village feeds 100 and the land none: a full company is 25 men. */
 function realm(gold: number): GameState {
   const land = Array.from({ length: 20 }, () => true)
-  const grid: Grid = { width: 20, height: 1, size: 4, land, area: 20 }
+  const grid: Grid = {
+    width: 20,
+    height: 1,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: 20,
+  }
   const state = createGame(grid, botsSetup({ seed: 'summary', lords: 2 }), {
     ...RULES,
     fillSeconds: Number.MAX_SAFE_INTEGER,
@@ -61,7 +68,14 @@ describe('the armies the bar shows', () => {
 describe('the summary', () => {
   it('says the gold an offering would give: a quarter of mine, whole', () => {
     const land = Array.from({ length: 10 }, () => true)
-    const grid = { width: 10, height: 1, size: 4, land, area: land.length }
+    const grid = {
+      width: 10,
+      height: 1,
+      size: 4,
+      land,
+      water: land.map((on) => !on),
+      area: land.length,
+    }
     const state = createGame(grid, botsSetup({ seed: 'test', lords: 2 }))
     state.players[0].gold = 86 * UNIT + 900
     expect(summarize(state, 0, hand).offering).toBe(21)

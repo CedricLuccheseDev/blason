@@ -10,6 +10,8 @@ import type { Bus } from './mix'
 
 export type Cue =
   | 'muster'
+  | 'embark'
+  | 'oars'
   | 'alarm'
   | 'herald'
   | 'pact'
@@ -58,6 +60,15 @@ export const CUES: Record<Cue, CueSpec> = {
   muster: {
     layers: [{ file: ['horn-1', 'horn-2', 'horn-3', 'horn-4'] }],
     gain: 0.7,
+    again: 1,
+  },
+  /** My army takes to the water (crossing.ts): a boat's wood creaks, an oar strikes the sea. */
+  embark: {
+    layers: [
+      { file: 'creak-1' },
+      { file: ['oars-1', 'oars-2', 'oars-3'], delay: 0.25 },
+    ],
+    gain: 0.6,
     again: 1,
   },
   /** An army or a coup comes for me: the tocsin, an alarm bell rung fast. */
@@ -186,6 +197,13 @@ export const CUES: Record<Cue, CueSpec> = {
   tick: { layers: [{ file: ['tick-1', 'tick-2'] }], gain: 0.5, again: 0.8 },
   /** The opening over, the game begun: a long horn. */
   start: { layers: [{ file: 'start-1' }], gain: 0.8, again: 5 },
+  /** Up close, a boat at sea: its oars striking the water now and then. */
+  oars: {
+    layers: [{ file: ['oars-1', 'oars-2', 'oars-3'] }],
+    bus: 'world',
+    gain: 0.4,
+    again: 1.4,
+  },
   /** Up close, a trebuchet's stone come down. */
   stone: {
     layers: [{ file: ['stone-1', 'stone-2', 'stone-3'] }],
