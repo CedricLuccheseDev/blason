@@ -411,7 +411,8 @@ orders. It decides nothing about the rules.
 nothing of the game: `cues.ts` is the table of cues (each made of one or two
 files in `public/sounds/`, its loudness, how soon it may sound again, whether
 it is a cry to all that lowers the others, or the end that silences them for
-good), and `mixer.ts` plays them, fetched once after the player's first
+good; each a short hit, a second or so, the end hardly more, so that
+they stay light to hear), and `mixer.ts` plays them, fetched once after the player's first
 gesture (the browser allows no sound before), placed left or right, muted by
 M and remembered, silent while the page is hidden. A cue more is an entry in
 the table and its file.
@@ -422,8 +423,9 @@ him, a herald's letter, his alliances made or ended, any betrayal) and, each
 tick, his army leaving, his work laid, a caravan paying him (`arrivals.ts`,
 read alike by the map's "+" of gold) and the end of the game into cues, each
 from its tile; `sound.ts` places them by where the tile falls across the
-screen, off it too, so that the ear tells where to look. The files and their
-sources are listed in `public/sounds/CREDITS.md`.
+screen, off it too, so that the ear tells where to look. The files come from
+Freesound, under CC0 or CC BY; their sources and authors are listed in
+`public/sounds/CREDITS.md`.
 
 ## The interface
 

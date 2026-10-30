@@ -99,8 +99,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   joueur, à gauche ou à droite, M pour couper (gardé d'une partie à l'autre), muet quand la page est cachée. Ce que le
   joueur entend se lit dans le rendu : `render/hearing.ts` (les nouvelles de la seconde, et à chaque pas mon armée qui
   part, ma construction posée, une caravane qui me paie, `arrivals.ts`, lue aussi par le « + » d'or, et la fin),
-  `render/sound.ts` place chaque son selon où il tombe sur l'écran. Sons provisoires en CC0 (`public/sounds/CREDITS.md`),
-  à remplacer par des prises d'époque. Le réglage du son viendra dans une modale de réglages, avec le profil.
+  `render/sound.ts` place chaque son selon où il tombe sur l'écran. Des prises d'époque de Freesound, en CC0 ou CC BY (`public/sounds/CREDITS.md`),
+  coupées en coups courts, la fin à peine plus longue (30/10, « c'est surtout des hit que l'on veut pour que ça reste digeste »). Le réglage du son viendra dans une modale de réglages, avec le profil.
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (15, 18, 22, 28, rien sous 15, acté le 29/10 : « La police texte toute petite là elle est
   dure à lire ») par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note` en italique à pleine encre, `.hud-figure`),

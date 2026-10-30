@@ -1,21 +1,24 @@
 # Sounds
 
-The game's sounds, every one free to share: in the public domain or under
-CC0, so that they may live in this public repository. They are provisional,
-chosen for the first sounds of the game; the period ones (horn, bells, lute,
-wax) will replace them. Each was cut, faded out and levelled to the same
-loudness.
+The game's sounds, every one free to share, so that they may live in this
+public repository: under CC0, or under CC BY 4.0, whose authors are named
+here as that license asks. All come from [Freesound](https://freesound.org).
+Each was cut to a short hit (the end of the game a little longer), faded out
+and brought to the same loudness; the cut is ours, the recording its
+author's.
 
 | File | What it is | Source | License |
 |---|---|---|---|
-| `horn.mp3` | Hunting horn, one note | [Hunting horn tone](https://commons.wikimedia.org/wiki/File:Hunting_horn_tone.ogg), Alon-De-Lon, Wikimedia Commons | CC0 |
-| `tocsin.mp3` | A small bell struck five times | [Striking a bell 15cm large](https://commons.wikimedia.org/wiki/File:Striking_a_bell_15cm_large.ogg), stephan, Wikimedia Commons | Public domain |
-| `parchment.mp3` | A map unfolded | [Opening and closing a map sounds](https://opengameart.org/content/opening-and-closing-a-map-sounds), OpenGameArt | CC0 |
-| `handbell.mp3` | A hand bell rung | [Bell-ring](https://commons.wikimedia.org/wiki/File:Bell-ring.flac), qubodup, Wikimedia Commons | CC0 |
-| `wax.mp3` | A book laid down | [RPG Audio](https://kenney.nl/assets/rpg-audio), Kenney | CC0 |
-| `lute-up.mp3`, `lute-down.mp3`, `low-chord.mp3` | Plucked strings | Computed for Blason (Karplus-Strong) | CC0 |
-| `snap.mp3` | A dry thwack | [Thwack sounds](https://opengameart.org/content/thwack-sounds), OpenGameArt | CC0 |
-| `mallet.mp3` | Wood struck three times | [100 CC0 metal and wood SFX](https://opengameart.org/content/100-cc0-metal-and-wood-sfx), OpenGameArt | CC0 |
-| `coins.mp3` | Coins in a hand | [RPG Audio](https://kenney.nl/assets/rpg-audio), Kenney | CC0 |
-| `fanfare.mp3` | A short fanfare | [Classic fanfare lick](https://opengameart.org/content/classic-fanfare-lick), OpenGameArt | CC0 |
-| `knell.mp3` | A great temple bell | [Peace bell, Hiroshima](https://commons.wikimedia.org/wiki/File:25822_heigh-hoo_peace-bell-hiroshima.wav), Heigh-hoo, Wikimedia Commons | CC0 |
+| `horn.mp3` | A war horn | [war horn.wav](https://freesound.org/people/adharca/sounds/539956/), adharca | CC0 |
+| `tocsin.mp3` | An alarm bell, rung fast | [alarm bell.mp3](https://freesound.org/people/Mrtenant/sounds/418705/), Mrtenant | CC0 |
+| `parchment.mp3` | A map unfolded | [Unfold a map](https://freesound.org/people/Breviceps/sounds/447931/), Breviceps | CC0 |
+| `handbell.mp3` | A hand bell, one stroke | [bell12.wav](https://freesound.org/people/creeeeak/sounds/531017/), creeeeak | CC0 |
+| `wax.mp3` | A seal pressed in wax | [Wax seal](https://freesound.org/people/Cerise_Virtuelle/sounds/759526/), Cerise_Virtuelle | CC0 |
+| `lute.mp3` | A lute chord | [29.Lute.wav](https://freesound.org/people/miguelab1998/sounds/408576/), miguelab1998 | CC0 |
+| `oud.mp3` | A low oud phrase | [#4 Oud Motif D2.wav](https://freesound.org/people/tarane468/sounds/550880/), tarane468 | CC0 |
+| `sword.mp3` | A sword drawn | [Sword - Unsheathe](https://freesound.org/people/Vrymaa/sounds/770035/), Vrymaa | CC0 |
+| `timpani.mp3` | A dark timpani stroke | [Dark Timpani 1.wav](https://freesound.org/people/Sorinious_Genious/sounds/573245/), Sorinious_Genious | CC0 |
+| `mallet.mp3` | Two hammer blows on wood | [Hammer on Wood](https://freesound.org/people/L.i.Z.e.L.l.E_+/sounds/707864/), L.i.Z.e.L.l.E_+ | CC0 |
+| `coins.mp3` | A pile of coins | [Pile of Coins](https://freesound.org/people/DrMinky/sounds/166189/), DrMinky | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| `fanfare.mp3` | A medieval fanfare | [Medieval Fanfare.wav](https://freesound.org/people/gertraut_hecher/sounds/572935/), gertraut_hecher | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| `knell.mp3` | A tolling bell | [TollBell.wav](https://freesound.org/people/daytripper/sounds/73678/), daytripper | CC0 |
