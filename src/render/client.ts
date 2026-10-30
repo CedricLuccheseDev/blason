@@ -1,4 +1,4 @@
-import { Application } from 'pixi.js'
+import { Application, CullerPlugin, extensions } from 'pixi.js'
 import { NO_ONE, hostSetup } from '../../engine'
 import { makeAiming } from './aiming'
 import { makePin } from './pin'
@@ -21,6 +21,12 @@ import { makeHeralds } from './heralds'
 import { makeSound } from './sound'
 import { bestQuality, governFrames } from './quality'
 import type { GameHandle, GameHooks } from './handle'
+
+// What lies off the screen is left out of the drawing (« Le jeu ram quand
+// y'a beaucoup trop de bâtiments unités … faire du culling »): pixi's
+// culler, before each frame, against the screen, once for every game; the
+// scene says what may be left out (scene.ts).
+extensions.add(CullerPlugin)
 
 // The game on screen, the land taken bit by bit: the manuscript map
 // of the game, its lands spreading tile by tile as in OpenFront, with its

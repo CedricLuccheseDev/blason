@@ -15,8 +15,24 @@ export type Link = { a: number; b: number; road: Array<number> }
 
 const laid = new WeakMap<GameState, { key: string; links: Array<Link> }>()
 
+/** Each tile's reach once walked: it depends on the land and the range alone, which a game never changes, so a market built again where one stood, or the network laid again round it, walks nothing anew (« Le jeu ram quand y'a beaucoup trop de bâtiments »). */
+const walked = new WeakMap<GameState, Map<number, Map<number, number>>>()
+
 /** The tiles of land within a market's range, each with the tile it is reached from, walking from the market. */
 function reach(state: GameState, from: number): Map<number, number> {
+  let known = walked.get(state)
+  if (!known) {
+    known = new Map()
+    walked.set(state, known)
+  }
+  const kept = known.get(from)
+  if (kept) return kept
+  const before = walk(state, from)
+  known.set(from, before)
+  return before
+}
+
+function walk(state: GameState, from: number): Map<number, number> {
   const r = state.rules.tradeRange
   const before = new Map<number, number>([[from, -1]])
   const queue = [from]

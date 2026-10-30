@@ -63,7 +63,10 @@ function takeOf(files: ReadonlyArray<string>, turn: boolean, last = -1) {
   return i >= last && last >= 0 ? i + 1 : i
 }
 
-export function makeMixer(): Mixer {
+/** The whole game's sound, or the home's: its interface's clicks alone, no beds and no music (« Les son de hud doivent être aussi dans la home »). */
+export type Scope = 'game' | 'home'
+
+export function makeMixer(scope: Scope = 'game'): Mixer {
   let ctx: AudioContext | null = null
   let master: GainNode | null = null
   /** Each bus: where its sounds go in, and the gain its ducks move. */
@@ -114,9 +117,12 @@ export function makeMixer(): Mixer {
       lowered.connect(send).connect(room)
       buses.set(bus, { input, duck: lowered })
     }
-    for (const spec of Object.values(CUES))
+    for (const spec of Object.values(CUES)) {
+      if (scope === 'home' && spec.bus !== 'ui') continue
       for (const { file } of spec.layers)
         for (const f of typeof file === 'string' ? [file] : file) void load(f)
+    }
+    if (scope === 'home') return
     beds = makeBeds(ctx, inputOf('beds'), load)
     music = makeMusic(ctx, inputOf('music'))
   }

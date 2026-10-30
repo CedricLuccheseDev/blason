@@ -95,7 +95,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   et ne s'effacent qu'avec une terre trop petite à l'écran pour les porter (`layers/labels.ts`) ; ils s'écartent de
   leurs constructions sur leur terre (29/10, « essaye de les décaler quand ils sont sur un bâtiment », `layers/crowd.ts`,
   `clearance.ts`) ; les étendards des armées (`flags.ts`) grandissent quand on survole leur campagne ; `camera.ts` la
-  caméra du joueur ; `summary.ts` ce que lit le HUD, une fois par seconde.
+  caméra du joueur ; ce qui sort de l'écran n'est pas dessiné (le culler de pixi, `client.ts`, chaque pièce des calques marquée
+  `cullable` par `scene.ts`, 30/10 « Le jeu ram … faire du culling ») ; `summary.ts` ce que lit le HUD, une fois par seconde.
 - `src/audio/` : **le son**, qui ne connaît rien du jeu, mixé comme celui d'un jeu (30/10, « Il faudra qu'on gère le mixage
   de l'ensemble pour que ça soit propre … digne d'un jeu vidéo ») : `mix.ts` la table du mixage, cinq bus à leur niveau
   (ce qui informe, le monde de près, les fonds, la musique, l'interface), qui baisse quoi quand un son informe ou qu'un

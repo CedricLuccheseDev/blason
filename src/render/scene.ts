@@ -55,6 +55,13 @@ import type { Anchor } from './heralds'
 // under 16 pixels, and the standards' small writing fades out.
 
 /** Containers drawn as one render group, their batches kept until their own structure changes. */
+/** Every piece the layers hold may be left out of the drawing while it lies off the screen (pixi's culler, client.ts): a work, a man, a banner, a name. Marked each frame, the new ones with the rest. */
+function cullable(world: Container) {
+  for (const group of world.children)
+    for (const layer of group.children)
+      for (const piece of layer.children) piece.cullable = true
+}
+
 function group(...children: Array<Container>) {
   const c = new Container({ isRenderGroup: true })
   c.addChild(...children)
@@ -216,6 +223,7 @@ export function makeScene(
       m: Measure = unmeasured,
     ) {
       const now = performance.now()
+      cullable(world)
       const retraced = m('regions', () => regions.update(now))
       const traced = retraced !== null
       const seen = view()

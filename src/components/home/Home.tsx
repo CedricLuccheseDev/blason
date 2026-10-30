@@ -8,6 +8,7 @@ import { Lord, Title } from './Masthead'
 import { Frame, Rose } from './Ornaments'
 import { PrivateRoom } from './PrivateRoom'
 import { PublicCard } from './PublicCard'
+import { usePresses } from './usePresses'
 import { atPrivate, atPublic, useRoom } from './useRoom'
 import type { Entry } from './Journal'
 import { Act } from '~/components/hud/Act'
@@ -39,6 +40,7 @@ function useGameAhead() {
 export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
   const t = useMessages().home
   const navigate = useNavigate()
+  usePresses()
   const [open, setOpen] = useState<Open>(null)
   // Online is offered where a relay is: its address is built into the page
   // as into the server, so the page drawn there already says it.

@@ -1,4 +1,5 @@
 import { makeMixer } from '../audio/mixer'
+import { listenPresses } from '../audio/presses'
 import { bedsOf } from './ambience'
 import { heardIn, makeHearing } from './hearing'
 import { siteOf } from './marks'
@@ -14,13 +15,11 @@ import type { News } from './news'
 // The game heard: what the player hears of it (hearing.ts), each sound
 // placed left or right by where it happens on the screen, off the screen too,
 // so that the ear tells him where to look; the land under the camera
-// (ambience.ts) and, up close, the world's spectacle (spectacle.ts); and a
-// light click on each piece of the HUD pressed.
+// (ambience.ts) and, up close, the world's spectacle (spectacle.ts); and the
+// HUD's presses (audio/presses.ts).
 
 /** How far a sound at the screen's edge leans to its side, 0 to 1. */
 const LEAN = 0.8
-/** What a press is in the HUD: what the player clicks, the map aside. */
-const PRESSED = 'button, a, [role="button"]'
 
 /** What the ear reads of the map: its ground, and the part of it on screen. */
 export type Ear = { terrain: Terrain; rivers: Rivers; view: () => Box }
@@ -51,15 +50,7 @@ export function makeSound(
   /** Pixels a tile covers on screen. */
   const perTile = () => world.scale.x * state.grid.size
 
-  // What cannot be had now (aria-disabled, the bar's pieces short) knocks dull.
-  function press(e: PointerEvent) {
-    if (!(e.target instanceof Element)) return
-    const pressed = e.target.closest(PRESSED)
-    if (!pressed) return
-    const short = pressed.getAttribute('aria-disabled') === 'true'
-    mixer.play(short ? 'refused' : 'press')
-  }
-  window.addEventListener('pointerdown', press)
+  const stopPresses = listenPresses((cue) => mixer.play(cue))
 
   return {
     /** After every tick played. */
@@ -75,7 +66,7 @@ export function makeSound(
     },
     toggle: mixer.toggle,
     destroy() {
-      window.removeEventListener('pointerdown', press)
+      stopPresses()
       mixer.destroy()
     },
   }

@@ -1,5 +1,4 @@
 import { TICKS_PER_SECOND } from './units'
-import { around } from './grid'
 import { isAllied } from './diplomacy'
 import { NEUTRAL, SEA } from './types'
 import { setOwner } from './land'
@@ -16,27 +15,39 @@ import type { GameState } from './types'
 // everything. Allies never take each other's land
 // so, and land held by rebels is never taken so. Read once a second.
 
-/** A piece of land held by one owner, and who borders it: a lord, several, or the open (-2). */
+/** The tiles of the piece being read, kept from one reading to the next: the reading makes no list of its own (it walks the whole land once a second). */
+let queue = new Int32Array(0)
+
+/** A piece of land held by one owner, its tiles the first `size` of `queue`, and who borders it: a lord, several, or the open (-2). */
 function pieceOf(state: GameState, start: number, seen: Uint8Array) {
   const { width, height } = state.grid
+  const last = (height - 1) * width
   const owner = state.owner[start]
-  const tiles = [start]
+  if (queue.length < state.owner.length)
+    queue = new Int32Array(state.owner.length)
   const borders = new Set<number>()
+  let size = 0
+  queue[size++] = start
   seen[start] = 1
-  for (const t of tiles) {
-    const [x, y] = [t % width, Math.floor(t / width)]
-    if (x === 0 || y === 0 || x === width - 1 || y === height - 1)
-      borders.add(SEA)
-    for (const n of around(state.grid, t)) {
-      const o = state.owner[n]
-      if (o !== owner) borders.add(o)
-      else if (!seen[n]) {
-        seen[n] = 1
-        tiles.push(n)
-      }
+  // Each tile beside, in the order of grid.ts's around.
+  const visit = (n: number) => {
+    const o = state.owner[n]
+    if (o !== owner) borders.add(o)
+    else if (!seen[n]) {
+      seen[n] = 1
+      queue[size++] = n
     }
   }
-  return { owner, tiles, borders }
+  for (let i = 0; i < size; i++) {
+    const t = queue[i]
+    const x = t % width
+    if (x === 0 || t < width || x === width - 1 || t >= last) borders.add(SEA)
+    if (x > 0) visit(t - 1)
+    if (x < width - 1) visit(t + 1)
+    if (t >= width) visit(t - width)
+    if (t < last) visit(t + width)
+  }
+  return { owner, size, borders }
 }
 
 /** The land encircled by a lord passes to him. */
@@ -49,15 +60,16 @@ export function enclose(state: GameState): void {
     // The free land's sea is no wall: one lord beside it is enough; nor is
     // it round a small piece of a lord's (« oui pour 3 »), never a whole
     // coastal realm.
-    const small = piece.tiles.length < state.rules.seaWalled
+    const small = piece.size < state.rules.seaWalled
     if (owner === NEUTRAL || small) piece.borders.delete(SEA)
     if (piece.borders.size !== 1) return
+    const tiles = Array.from(queue.subarray(0, piece.size))
     // Rebels are never encircled: they must be fought for.
-    if (piece.tiles.some((t) => rebelled(state, t))) return
+    if (tiles.some((t) => rebelled(state, t))) return
     const [lord] = piece.borders
     if (lord < 0 || (owner >= 0 && isAllied(state, owner, lord))) return
-    const taken = new Set(piece.tiles)
-    for (const t of piece.tiles) setOwner(state, t, lord)
+    const taken = new Set(tiles)
+    for (const t of tiles) setOwner(state, t, lord)
     for (const work of state.works) if (taken.has(work.tile)) work.owner = lord
   })
 }

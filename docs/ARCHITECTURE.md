@@ -428,7 +428,9 @@ nothing clips when everything falls at once:
   highs filtered away from afar, each fetched once first heard;
 - **the music** (`music.ts`): pieces of the period, streamed one after the
   other with a silence between;
-- **the interface**: a light wooden click on each piece of the HUD pressed.
+- **the interface**: a light wooden click on each piece pressed, a dull knock
+  on one that cannot be had now (`presses.ts`, read from the page itself), in
+  the game and on the home page alike, where the mixer plays only these.
 
 All but the interface and the music send a share of themselves into one
 generated room (`room.ts`), a short open-air reverberation, so that the
