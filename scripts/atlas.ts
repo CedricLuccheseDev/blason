@@ -1,0 +1,155 @@
+import { writeFileSync } from 'node:fs'
+
+// The atlas's grounds baked from the world's heights: ETOPO 2022 (NOAA,
+// public domain), read through NOAA's ERDDAP server, one point every 0.2
+// degrees, written as an engine module of bytes (engine/map/atlas/); its
+// great lakes poured in as water and its main rivers laid on it, from
+// Natural Earth (public domain), « Les fleuves rivières et lac sont de la
+// vrai eau ». Run once per map, or again to change its frame:
+// npx tsx scripts/atlas.ts europe -12 45 35 60
+
+const [name = 'europe', west = '-12', east = '45', south = '35', north = '60'] =
+  process.argv.slice(2)
+/** The heights' grid is one arc-minute: so many minutes a point. */
+const STRIDE = 12
+/** The height the bytes reach, in metres: higher is as high. */
+const TOP = 4000
+/** The rivers and lakes kept, by Natural Earth's rank: the greater, the lower. */
+const RANK = 7
+/** How far a river may stray from its drawn line once simplified, in degrees. */
+const STRAY = 0.06
+const EARTH =
+  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/'
+
+type Coords = Array<[number, number]>
+type Feature = {
+  properties: { scalerank?: number }
+  geometry: { type: string; coordinates: unknown } | null
+}
+
+/** The lines or rings of a feature, whatever its geometry. */
+function partsOf(f: Feature): Array<Coords> {
+  const g = f.geometry
+  if (!g) return []
+  const c = g.coordinates as never
+  if (g.type === 'LineString') return [c]
+  if (g.type === 'MultiLineString' || g.type === 'Polygon') return c
+  if (g.type === 'MultiPolygon') return (c as Array<Array<Coords>>).flat()
+  return []
+}
+
+/** A line with its points fewer, none more than STRAY off it (Douglas and Peucker). */
+function simplify(line: Coords): Coords {
+  if (line.length < 3) return line
+  const [a, b] = [line[0], line[line.length - 1]]
+  let [far, at] = [0, 0]
+  for (let i = 1; i < line.length - 1; i++) {
+    const [x, y] = line[i]
+    const d =
+      Math.abs((b[0] - a[0]) * (a[1] - y) - (a[0] - x) * (b[1] - a[1])) /
+      (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1)
+    if (d > far) [far, at] = [d, i]
+  }
+  if (far <= STRAY) return [a, b]
+  return [
+    ...simplify(line.slice(0, at + 1)).slice(0, -1),
+    ...simplify(line.slice(at)),
+  ]
+}
+
+const features = async (layer: string): Promise<Array<Feature>> =>
+  (
+    (await (await fetch(`${EARTH}ne_10m_${layer}.geojson`)).json()) as {
+      features: Array<Feature>
+    }
+  ).features.filter((f) => (f.properties.scalerank ?? 99) <= RANK)
+
+const url =
+  'https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.csv?altitude' +
+  `%5B(${south}):${STRIDE}:(${north})%5D%5B(${west}):${STRIDE}:(${east})%5D`
+const text = await (await fetch(url)).text()
+const rows = text
+  .trim()
+  .split('\n')
+  .slice(2)
+  .map((line) => line.split(',').map(Number))
+const lats = [...new Set(rows.map(([la]) => la.toFixed(1)))].sort(
+  (a, b) => Number(b) - Number(a),
+)
+const lons = [...new Set(rows.map(([, lo]) => lo.toFixed(1)))].sort(
+  (a, b) => Number(a) - Number(b),
+)
+const height = new Map(
+  rows.map(([la, lo, h]) => [`${la.toFixed(1)}:${lo.toFixed(1)}`, h]),
+)
+const [w, e, s, n] = [west, east, south, north].map(Number)
+const inside = ([x, y]: [number, number]) =>
+  x >= w && x <= e && y >= s && y <= n
+/** Whether a point lies within a ring (even-odd). */
+function within([x, y]: [number, number], ring: Coords) {
+  let odd = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi)
+      odd = !odd
+  }
+  return odd
+}
+const lakes = (await features('lakes'))
+  .flatMap(partsOf)
+  .filter((ring) => ring.some(inside))
+const bytes = lats.flatMap((la) =>
+  lons.map((lo) => {
+    const h = height.get(`${la}:${lo}`) ?? 0
+    const point: [number, number] = [Number(lo), Number(la)]
+    if (h <= 0 || lakes.some((ring) => within(point, ring))) return 0
+    return (
+      1 + Math.min(253, Math.round(Math.sqrt(Math.min(h, TOP) / TOP) * 253))
+    )
+  }),
+)
+// The main rivers within the frame, cut where they leave it, in tenths of a degree.
+const rivers = (await features('rivers_lake_centerlines'))
+  .flatMap(partsOf)
+  .flatMap((line) => {
+    const runs: Array<Coords> = [[]]
+    for (const p of line)
+      if (inside(p)) runs[runs.length - 1].push([p[0], p[1]])
+      else if (runs[runs.length - 1].length) runs.push([])
+    return runs.filter((r) => r.length > 1).map(simplify)
+  })
+  .map((line) =>
+    line.flatMap(([x, y]) => [Math.round(x * 10), Math.round(y * 10)]),
+  )
+const b64 = Buffer.from(bytes).toString('base64')
+const lines = b64.match(/.{1,76}/g) ?? []
+const Name = name.toUpperCase()
+writeFileSync(
+  `engine/map/atlas/${name}.ts`,
+  `// ${name}'s ground: ETOPO 2022 (NOAA, public domain), one point every 0.2
+// degrees, its great lakes and main rivers from Natural Earth (public
+// domain), baked by scripts/atlas.ts. A byte a point, west to east, north to
+// south: 0 the sea or a lake, else 1 + 253 times the square root of the
+// height over ${TOP} metres, so that the lowlands keep their shades. Read by
+// map/atlas.ts.
+
+export const ${Name} = {
+  west: ${lons[0]},
+  east: ${lons.at(-1)},
+  north: ${lats[0]},
+  south: ${lats.at(-1)},
+  cols: ${lons.length},
+  rows: ${lats.length},
+  /** Its frame, width over height, in hundredths: the longitudes shrunk by the cosine of the middle latitude, worked out here as the engine may not. */
+  aspect: ${Math.round(((e - w) * Math.cos((((n + s) / 2) * Math.PI) / 180) * 100) / (n - s))},
+  /** The main rivers, each its points in tenths of a degree, longitude then latitude, from its source down. */
+  rivers: [
+${rivers.map((r) => `    [${r.join(', ')}],`).join('\n')}
+  ],
+  data:
+${lines.map((l) => `  '${l}'`).join(' +\n')},
+}
+`,
+)
+process.stdout.write(`${name}: ${lons.length} by ${lats.length}\n`)

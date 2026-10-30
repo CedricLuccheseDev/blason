@@ -5,6 +5,7 @@ import {
   publicSetup,
   readSetup,
   seatPersons,
+  sizeOf,
 } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
 import { isMove, tell } from './checks'
@@ -73,7 +74,7 @@ export function upcoming(): Upcoming {
   const room = publicGame()
   return {
     seed: room.setup.seed,
-    size: room.setup.land.size,
+    size: sizeOf(room.setup.land),
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
     startsIn: Math.max(0, SETUP_LIMITS.opening.public - room.turn) * TURN_MS,
     taken: seated(room),

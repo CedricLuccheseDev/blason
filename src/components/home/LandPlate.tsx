@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { whenIdle } from './idle'
 import type { ReactNode } from 'react'
-import type { MapSize } from '../../../engine'
+import type { Land } from '../../../engine'
 import { hex } from '~/components/game/format'
 import { TONE } from '~/render/palette'
 
@@ -12,17 +12,19 @@ import { TONE } from '~/render/palette'
 
 export function LandPlate({
   seed,
-  size,
+  land,
   label,
   children,
 }: Readonly<{
   seed: string | null
-  size: MapSize
+  land: Land
   /** What the land is, for whoever cannot see it. */
   label: string
   children?: ReactNode
 }>) {
   const canvas = useRef<HTMLCanvasElement>(null)
+  // The land as a key: its object is made anew at each render.
+  const landKey = land.kind === 'real' ? land.map : land.size
   const [drawn, setDrawn] = useState<string | null>(null)
 
   // The drawing's code is fetched at once; the land, some hundreds of ms
@@ -35,7 +37,7 @@ export function LandPlate({
     void import('~/render/sketch').then(({ sketchGame }) => {
       if (!live) return
       stop = whenIdle(() => {
-        sketchGame(element, seed, size)
+        sketchGame(element, seed, land)
         setDrawn(seed)
       }, 1000)
     })
@@ -43,7 +45,7 @@ export function LandPlate({
       live = false
       stop()
     }
-  }, [seed, size])
+  }, [seed, landKey])
 
   const shown = seed !== null && drawn === seed
   return (

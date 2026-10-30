@@ -65,7 +65,7 @@ export function PublicCard({
     <Panel gap="part">
       <LandPlate
         seed={game?.seed ?? null}
-        size={game?.size ?? 'standard'}
+        land={{ kind: 'drawn', size: game?.size ?? 'standard' }}
         label={t.public.land}
       >
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}

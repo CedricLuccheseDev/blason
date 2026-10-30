@@ -1,11 +1,12 @@
 import { makeGrid } from './grid'
+import { ATLAS, ATLAS_MAPS } from './map/atlas'
 import { generateWorld } from './map/generate'
 import { MAP_SIZES, RULES, SETUP_LIMITS } from './rules'
 import { LEVELS } from './bots/levels'
 import type { Generator, World } from './map/generate'
 import type { Level } from './bots/levels'
 import type { MapSize } from './rules'
-import type { GameSetup, Grid, Seat } from './types'
+import type { GameSetup, Grid, Land, Seat } from './types'
 
 // What a game is made of, in one object (GameSetup, types.ts): its seed and
 // the land drawn from it, how it is won, its opening, its seats. The host's
@@ -16,20 +17,31 @@ import type { GameSetup, Grid, Seat } from './types'
 const MODES: ReadonlyArray<GameSetup['mode']> = ['conquest']
 const SIZES = Object.keys(MAP_SIZES) as Array<MapSize>
 
-/** A setup on a land drawn from the seed, its lords each for himself. */
-const drawn = (
+/** A setup on a land, its lords each for himself. */
+const on = (
   seed: string,
-  size: MapSize,
+  land: Land,
   opening: number,
   seats: Array<Seat>,
-): GameSetup => ({
-  v: 1,
-  seed,
-  land: { kind: 'drawn', size },
-  mode: 'conquest',
-  opening,
-  seats,
-})
+): GameSetup => ({ v: 1, seed, land, mode: 'conquest', opening, seats })
+
+/** The land drawn from the seed at a size. */
+const drawn = (size: MapSize): Land => ({ kind: 'drawn', size })
+
+/** The lords an invented land suits, by its size. */
+const INVENTED: Readonly<Record<MapSize, readonly [number, number]>> = {
+  standard: [2, 16],
+  large: [10, 20],
+  huge: [16, 20],
+}
+
+/** The lords a land suits, from the fewest to the most: the book says which suits a game (« une taille recommandé en fonction du nombre de joueurs »). */
+export const lordsFor = (land: Land): readonly [number, number] =>
+  land.kind === 'real' ? ATLAS[land.map].lords : INVENTED[land.size]
+
+/** A land's size: the one drawn at, or a map of the Earth's own. */
+export const sizeOf = (land: Land): MapSize =>
+  land.kind === 'real' ? ATLAS[land.map].size : land.size
 
 /** So many seats alike, each a lord for himself. */
 const many = (lords: number, bot: Level | null): Array<Seat> =>
@@ -49,24 +61,27 @@ export function botsSetup({
   lords?: number
   opening?: number
 }): GameSetup {
-  return drawn(seed, size, opening, many(lords, level))
+  return on(seed, drawn(size), opening, many(lords, level))
 }
 
 /** A game alone: the player at the first seat from the first turn, a bot of the level chosen at every other. */
 export function aloneSetup(o: {
   seed: string
-  size: MapSize
+  /** The invented land's size, or the land itself. */
+  size?: MapSize
+  land?: Land
   level: Level
 }): GameSetup {
   const player: Seat = { team: -1, bot: null, person: true }
   const bots = many(SETUP_LIMITS.seats.max - 1, o.level)
-  return drawn(o.seed, o.size, SETUP_LIMITS.opening.alone, [player, ...bots])
+  const land = o.land ?? drawn(o.size ?? 'standard')
+  return on(o.seed, land, SETUP_LIMITS.opening.alone, [player, ...bots])
 }
 
 /** What the host's book sets: his land, his guests seated, his bots and their level, his teams (0: each for himself), the opening's length in ticks. */
 export type Book = {
   seed: string
-  size: MapSize
+  land: Land
   /** Persons seated after the host, from the second seat. */
   guests?: number
   bots: number
@@ -94,7 +109,7 @@ export function hostSetup(book: Book): GameSetup {
   }))
   const { min, max: most } = SETUP_LIMITS.opening
   const opening = Math.max(min, Math.min(most, book.opening))
-  return drawn(book.seed, book.size, opening, seats)
+  return on(book.seed, book.land, opening, seats)
 }
 
 /**
@@ -119,7 +134,7 @@ export function bookOf(setup: GameSetup): Book {
   const teams = new Set(seats.flatMap((s) => (s.team >= 0 ? [s.team] : [])))
   return {
     seed: setup.seed,
-    size: setup.land.size,
+    land: setup.land,
     guests: Math.max(0, seats.filter((s) => s.person).length - 1),
     bots: seats.filter((s) => s.bot !== null).length,
     level: seats.find((s) => s.bot !== null)?.bot ?? 'normal',
@@ -131,7 +146,15 @@ export function bookOf(setup: GameSetup): Book {
 /** The public game the relay keeps in its opening: the standard land and no bot, every seat empty until a person takes it, an opening long enough for players to come. */
 export function publicSetup(seed: string): GameSetup {
   const seats = many(SETUP_LIMITS.seats.max, null)
-  return drawn(seed, 'standard', SETUP_LIMITS.opening.public, seats)
+  return on(seed, drawn('standard'), SETUP_LIMITS.opening.public, seats)
+}
+
+/** The world of a land: drawn from the seed at its size, or a map of the Earth (the seed then lays its cells and draws its woods); the arena may draw it with another generator. */
+export function worldOf(seed: string, land: Land, generator?: Generator) {
+  return generateWorld(
+    seed,
+    land.kind === 'real' ? { atlas: land.map } : { size: land.size, generator },
+  )
 }
 
 /** The land a setup is played on, and its tiles; the arena may draw it with another generator. */
@@ -139,10 +162,7 @@ export function landOf(
   setup: GameSetup,
   generator?: Generator,
 ): { world: World; grid: Grid } {
-  const world = generateWorld(setup.seed, {
-    size: setup.land.size,
-    generator,
-  })
+  const world = worldOf(setup.seed, setup.land, generator)
   const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
   return { world, grid }
 }
@@ -178,10 +198,15 @@ function readSeats(value: unknown): Array<Seat> | null {
   return seats.every((seat): seat is Seat => seat !== null) ? seats : null
 }
 
-function readLand(value: unknown): GameSetup['land'] | null {
-  if (!isRecord(value) || value.kind !== 'drawn') return null
+function readLand(value: unknown): Land | null {
+  if (!isRecord(value)) return null
+  if (value.kind === 'real') {
+    const map = among(ATLAS_MAPS, value.map)
+    return map ? { kind: 'real', map } : null
+  }
+  if (value.kind !== 'drawn') return null
   const size = among(SIZES, value.size)
-  return size ? { kind: 'drawn', size } : null
+  return size ? drawn(size) : null
 }
 
 /** A setup as it came down the wire, checked and bounded (SETUP_LIMITS), or none: the relay reads the host's, the browser the relay's. Only what a setup holds is kept. */

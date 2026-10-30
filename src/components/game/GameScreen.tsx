@@ -9,7 +9,7 @@ import { GameBook } from './GameBook'
 import { Places } from './Places'
 import { Failed } from './Failed'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
-import type { Book, Level, MapSize } from '../../../engine'
+import type { Atlas, Book, Land, Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
 import type { Save } from '~/render/save'
 import { PLAYERS } from '~/render/palette'
@@ -59,6 +59,7 @@ export function GameScreen({
   online,
   save,
   size: sized = 'standard',
+  map,
   hosting,
 }: Readonly<{
   me: number
@@ -68,11 +69,16 @@ export function GameScreen({
   /** A saved game, held still at its tick (render/save.ts). */
   save?: Save
   size?: MapSize
+  /** A map of the Earth, over the size. */
+  map?: Atlas
   /** The host's game, held until he launches it from his book (« créer une partie »). */
   hosting?: Hosting
 }>) {
-  // A hosted game's land is its book's: another land or size, another game.
-  const size = hosting?.book.size ?? sized
+  // A hosted game's land is its book's: another land, another game.
+  const land: Land =
+    hosting?.book.land ??
+    (map ? { kind: 'real', map } : { kind: 'drawn', size: sized })
+  const landKey = land.kind === 'real' ? land.map : land.size
   const seed = hosting?.book.seed
   const [open, setOpen] = useState(hosting !== undefined)
   const waiting = hosting !== undefined && !hosting.launched
@@ -122,7 +128,7 @@ export function GameScreen({
           level,
           online,
           save,
-          size,
+          land,
           book: hosting?.book,
         })
         if (off()) mounted.destroy()
@@ -137,7 +143,7 @@ export function GameScreen({
       handle?.destroy()
     }
     // The book's other settings change the game only at its launch.
-  }, [me, level, online, save, size, seed])
+  }, [me, level, online, save, landKey, seed])
 
   // touch-none: the fingers belong to the game, which pinches its own map
   // sharp; the browser zooming the page would only blur it. Pinned to the

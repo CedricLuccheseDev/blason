@@ -98,7 +98,7 @@ describe('a setup read from the wire', () => {
 describe('the host’s setup', () => {
   const book = {
     seed: 'host',
-    size: 'standard' as const,
+    land: { kind: 'drawn' as const, size: 'standard' as const },
     bots: 5,
     level: 'hard' as const,
     teams: 2,
@@ -139,7 +139,7 @@ describe('a host’s book read back', () => {
   it('gives back the book its setup was made from', () => {
     const book = {
       seed: 'back',
-      size: 'large' as const,
+      land: { kind: 'drawn' as const, size: 'large' as const },
       guests: 2,
       bots: 5,
       level: 'hard' as const,
@@ -155,7 +155,7 @@ describe('a host’s book read back', () => {
 describe('a host’s setup fitted to who sits', () => {
   const book = {
     seed: 'fit',
-    size: 'standard' as const,
+    land: { kind: 'drawn' as const, size: 'standard' as const },
     guests: 1,
     bots: 3,
     level: 'hard' as const,

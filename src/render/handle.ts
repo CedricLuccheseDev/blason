@@ -4,7 +4,7 @@ import type { News } from './news'
 import type { Online } from './online'
 import type { Save } from './save'
 import type { Summary } from './summary'
-import type { Army, Book, Coup, Level, MapSize, Work } from '../../engine'
+import type { Army, Book, Coup, Land, Level, Work } from '../../engine'
 
 // What the page holds of a game on screen (client.ts): its orders, its
 // camera, and where the HUD lays its pieces on the map.
@@ -19,8 +19,8 @@ export type GameHooks = {
   names: Array<string>
   /** The bots' level, chosen at the home; normal if none. */
   level?: Level
-  /** The land's size; standard if none. Online, the relay's. */
-  size?: MapSize
+  /** The land: the standard invented one if none. Online, the relay's. */
+  land?: Land
   /** A game online (online.ts): its land, its turns and my seat come from the relay. */
   online?: Online
   /** The host's game, held while he sets it in his book (« créer une partie »), its land the one asked. */

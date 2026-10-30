@@ -3,7 +3,7 @@ import { css } from './art/ink'
 import { mixColor } from './ease'
 import { chain, simplify } from './geometry'
 import { TONE } from './palette'
-import type { MapSize, Point, World } from '../../engine'
+import type { Land, Point, World } from '../../engine'
 
 // The land of a game to come, drawn small on a canvas for its card on the
 // home: the very land the game will have, made from its seed and kept for
@@ -38,9 +38,9 @@ const SHARPEST = 2
 export function sketchGame(
   canvas: HTMLCanvasElement,
   seed: string,
-  size: MapSize,
+  land: Land,
 ): void {
-  const world = landAhead(seed, size)
+  const world = landAhead(seed, land)
   const ratio = Math.min(SHARPEST, window.devicePixelRatio || 1)
   canvas.width = Math.round(canvas.clientWidth * ratio)
   canvas.height = Math.round(canvas.clientHeight * ratio)

@@ -6,7 +6,7 @@ import { makeCamera } from './camera'
 import { makeInput } from './input'
 import { makeHand } from './hand'
 import { TONE } from './palette'
-import { takeLand } from './ahead'
+import { STANDARD, takeLand } from './ahead'
 import { makeClick, makeKeys, menuFrom, seeking } from './clicks'
 import { makePerf } from './perf'
 import { landBox, tileAt } from './marks'
@@ -22,6 +22,7 @@ import { makeRecord } from './record'
 import { makeSound } from './sound'
 import { bestQuality, governFrames } from './quality'
 import type { GameHandle, GameHooks } from './handle'
+import type { Land } from '../../engine'
 
 // What lies off the screen is left out of the drawing (« Le jeu ram quand
 // y'a beaucoup trop de bâtiments unités … faire du culling »): pixi's
@@ -61,10 +62,12 @@ export async function mountGame(
   const { save } = hooks
   // Online, the relay says the land; a save says its own.
   const online = hooks.online?.setup
-  const asked = online
-    ? { seed: online.seed, size: online.land.size }
-    : (save ?? { seed, size: hooks.size })
-  const { land, grid } = takeLand(asked.seed, asked.size)
+  const asked: { seed: string | null; land: Land } = online
+    ? online
+    : save
+      ? { seed: save.seed, land: { kind: 'drawn', size: save.size } }
+      : { seed, land: hooks.land ?? STANDARD }
+  const { land, grid } = takeLand(asked.seed, asked.land)
   await app.init({
     preference: 'webgl',
     resizeTo: element,
@@ -78,7 +81,12 @@ export async function mountGame(
     skipExtensionImports: true,
   })
   element.appendChild(app.canvas)
-  const session = openSession(grid, land, me, hooks)
+  const session = openSession(
+    grid,
+    { seed: land.seed, land: asked.land },
+    me,
+    hooks,
+  )
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
   const heralds = makeHeralds(scene.world, () => app.screen)
@@ -235,7 +243,7 @@ export async function mountGame(
     menu: menuFrom(state, aiming.point, pin.open),
     ...seeking(scene, camera),
     launch(book) {
-      session.launch?.(hostSetup({ ...book, seed: land.seed, size: land.size }))
+      session.launch?.(hostSetup({ ...book, seed: land.seed }))
       refresh()
     },
     attack() {

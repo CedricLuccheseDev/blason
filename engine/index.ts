@@ -23,7 +23,12 @@ export {
   publicSetup,
   readSetup,
   seatPersons,
+  lordsFor,
+  sizeOf,
+  worldOf,
 } from './setup'
+export { ATLAS, ATLAS_MAPS } from './map/atlas'
+export type { Atlas } from './map/atlas'
 export type { Book } from './setup'
 export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'
 export type { Army, Coup, MapSize, Work } from './rules'
@@ -34,6 +39,7 @@ export type {
   GameState,
   Grid,
   Host,
+  Land,
   Order,
   Scar,
   Strike,

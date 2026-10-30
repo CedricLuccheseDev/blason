@@ -30,7 +30,7 @@ describe('a private room and its host’s book', () => {
     rooms.join(friend, told.lobby.room)
     const book = hostSetup({
       seed: 'book',
-      size: 'standard',
+      land: { kind: 'drawn', size: 'standard' },
       guests: 1,
       bots: 3,
       level: 'hard',
@@ -62,7 +62,7 @@ describe('a private room and its host’s book', () => {
     rooms.join(friend, told.lobby.room)
     const book = hostSetup({
       seed: 'shown',
-      size: 'large',
+      land: { kind: 'drawn', size: 'large' },
       guests: 1,
       bots: 2,
       level: 'easy',
@@ -89,7 +89,7 @@ describe('a private room and its host’s book', () => {
     // The host launched with one guest; a second came on the way.
     const book = hostSetup({
       seed: 'fit',
-      size: 'standard',
+      land: { kind: 'drawn', size: 'standard' },
       guests: 1,
       bots: 3,
       level: 'hard',
@@ -116,7 +116,7 @@ describe('a private room and its host’s book', () => {
     const setup = room.setup
     const other = hostSetup({
       seed: 'other',
-      size: 'large',
+      land: { kind: 'drawn', size: 'large' },
       bots: 0,
       level: 'easy',
       teams: 0,

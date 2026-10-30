@@ -1,5 +1,6 @@
 import type { Army, Coup, MapSize, Rules, Work } from './rules'
 import type { Level } from './bots/levels'
+import type { Atlas } from './map/atlas'
 
 export const NEUTRAL = -1
 export const SEA = -2
@@ -60,13 +61,17 @@ export type Seat = {
   person: boolean
 }
 
+/** The land a game is played on: drawn from the seed at a size, or a map of the real Earth at its own (map/atlas.ts, « chaque carte a sa propre taille »). */
+export type Land =
+  { kind: 'drawn'; size: MapSize } | { kind: 'real'; map: Atlas }
+
 /** What a game is made of (setup.ts): the host's book fills it, the relay passes it on, every machine makes the same game from it. */
 export type GameSetup = {
   /** The format's version: a setup of another is refused, never half read. */
   v: 1
   seed: string
-  /** The land, drawn from the seed at its size (its shape drawn too, until a host may choose it). */
-  land: { kind: 'drawn'; size: MapSize }
+  /** The land it is played on (Land). */
+  land: Land
   /** How it is won: the conquest of the land, for now (step.ts). */
   mode: 'conquest'
   /** The opening, in ticks. */

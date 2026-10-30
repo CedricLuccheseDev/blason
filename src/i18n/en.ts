@@ -22,8 +22,7 @@ export const en = {
       'Click anywhere on the land; you may move it until the count ends',
     planted: 'Your standard is planted',
     others: 'The lords are planting their standards',
-    plantedHint:
-      'Click elsewhere to move it; the land round it is yours when the count ends',
+    plantedHint: 'Click elsewhere to move it',
     tooNear: 'too near another standard',
     click: 'click: attack',
     noLevy: {

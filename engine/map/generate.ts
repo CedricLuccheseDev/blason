@@ -8,12 +8,14 @@ import { wetness } from './ground'
 import { relax, scatter } from './points'
 import { planRelief, sculptLand } from './relief'
 import { makeRivers } from './rivers'
+import { ATLAS, atlasLand, planOf, riversOf, widthOf } from './atlas'
 import type { MapSize } from '../rules'
 import type { Biome, Shares } from './biomes'
 import type { GameMap, Ground, Plan } from './types'
 import type { Cells } from './cells'
 import type { Point } from './points'
 import type { ShapeKind } from './shapes'
+import type { Atlas } from './atlas'
 
 /** What the rendering draws of a cell of land; the simulation reads the GameMap. */
 type WorldCell = {
@@ -32,6 +34,8 @@ export type Generator = 'classic' | 'relief'
 export type World = {
   seed: string
   generator: Generator
+  /** A map of the real Earth (atlas.ts); none for an invented land. */
+  atlas?: Atlas
   shape: ShapeKind
   size: MapSize
   /** The frame of the map, which grows with the sea so a cell keeps its size. */
@@ -97,18 +101,29 @@ const GENERATORS: Readonly<
 export function generateWorld(
   seed: string,
   {
-    size = 'standard',
+    size: asked = 'standard',
     generator = 'relief',
-  }: { size?: MapSize; generator?: Generator } = {},
+    atlas,
+  }: { size?: MapSize; generator?: Generator; atlas?: Atlas } = {},
 ): World {
+  // A map of the real Earth has its own size, and reads its ground there.
+  const size = atlas ? ATLAS[atlas].size : asked
   const scale = MAP_SIZES[size]
-  const maker = GENERATORS[generator]
+  const maker = atlas
+    ? {
+        plan: () => planOf(atlas),
+        ground: atlasLand(atlas),
+        biomes: GENERATORS.relief.biomes,
+      }
+    : GENERATORS[generator]
   const plan = maker.plan(seed)
   // The land open to the armies keeps its count: the high mountains come on top.
   const count = Math.floor((CELLS * scale * 1000) / (1000 - plan.peakShare))
   const area = Math.floor((count * 1000) / (1000 - plan.seaShare)) * CELL_AREA
-  // A screen's proportions, 17 by 10.
-  const width = isqrt(Math.floor((area * 17) / 10))
+  // A screen's proportions, 17 by 10; the Earth's own for a map of it.
+  const width = atlas
+    ? widthOf(atlas, area)
+    : isqrt(Math.floor((area * 17) / 10))
   const height = Math.floor(area / width)
   const spacing = (isqrt(CELL_AREA) * 86) / 100
   const sites = relax(
@@ -129,14 +144,17 @@ export function generateWorld(
   )
   // Ten times as many cells are a tenth of the size: their borders wiggle less.
   const borders = makeBorders(seed, cells, water, count > FINE ? 2 : 0)
-  const rivers = makeRivers(
-    seed,
-    cells,
-    water,
-    heights,
-    borders,
-    Math.floor(count / RIVER_EVERY),
-  )
+  // A map of the Earth has its own rivers; an invented land, its own.
+  const rivers = atlas
+    ? riversOf(atlas, cells, width, height)
+    : makeRivers(
+        seed,
+        cells,
+        water,
+        heights,
+        borders,
+        Math.floor(count / RIVER_EVERY),
+      )
   const wet = wetness(seed, cells, water, heights, rivers.banks)
   const closed = water.map((w, c) => w || peaks[c])
   const biomes = placeBiomes(cells, closed, heights, wet, maker.biomes)
@@ -158,6 +176,7 @@ export function generateWorld(
   return {
     seed,
     generator,
+    ...(atlas ? { atlas } : {}),
     shape: plan.kind,
     size,
     width,

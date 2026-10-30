@@ -23,8 +23,7 @@ export const fr: Messages = {
       'Clique où tu veux sur la terre ; tu peux le déplacer jusqu’à la fin du compte',
     planted: 'Ton étendard est planté',
     others: 'Les seigneurs plantent leurs étendards',
-    plantedHint:
-      'Clique ailleurs pour le déplacer ; la terre autour sera à toi à la fin du compte',
+    plantedHint: 'Clique ailleurs pour le déplacer',
     tooNear: 'trop près d’un autre étendard',
     click: 'clic : attaquer',
     noLevy: {

@@ -24,6 +24,11 @@ applies each rule is named beside it.
   piece through them. On the map, a range is washed in stone and ringed in
   ink, a mount on each of its cells; a pass is the gap the range leaves
   (`src/render/layers/peaks.ts`).
+- **Maps of the real Earth** (`engine/map/atlas.ts`): Europe first, its
+  ground baked from the world's heights, its great lakes and main rivers
+  real; each map has its own size and the lords it suits, its islands kept
+  apart and its straits open (until ships come, an island is reached by
+  none), its high mountains on the real ranges.
 - A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
   huge (four times), chosen by `/play?size=large` or `huge` until the home
   offers it. Its tiles and cells keep their size: a larger land has more of

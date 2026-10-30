@@ -10,7 +10,11 @@ export const bookEn = {
   going: (minutes: number) =>
     `the game going on, for ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,
   land: 'The land',
-  size: 'Its size',
+  size: 'The land',
+  lands: { drawn: 'An invented land', europe: 'Europe' },
+  landLine: (size: string, least: number, most: number) =>
+    `${size}, for ${least} to ${most} lords`,
+  suits: 'suits this game',
   sizes: { standard: 'Standard', large: 'Large', huge: 'Huge' },
   another: 'Another land',
   or: 'or',
@@ -70,7 +74,11 @@ export const bookFr: BookMessages = {
   going: (minutes: number) =>
     `la partie en cours, depuis ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,
   land: 'La terre',
-  size: 'Sa taille',
+  size: 'La terre',
+  lands: { drawn: 'Une terre inventée', europe: 'L’Europe' },
+  landLine: (size: string, least: number, most: number) =>
+    `${size}, pour ${least} à ${most} seigneurs`,
+  suits: 'conseillée pour cette partie',
   sizes: { standard: 'Standard', large: 'Grande', huge: 'Immense' },
   another: 'Une autre terre',
   or: 'ou',
