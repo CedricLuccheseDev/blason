@@ -8,7 +8,7 @@ import { chance } from './chance'
 // is hidden; at the end of the game it fades out for the fanfare or the
 // knell. A piece more is an entry here and its file.
 
-const PIECES: ReadonlyArray<string> = [
+export const PIECES: ReadonlyArray<string> = [
   'thatched-villagers',
   'minstrel-guild',
   'village-consort',

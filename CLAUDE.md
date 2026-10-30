@@ -113,8 +113,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   (ce qui informe, le monde de près, les fonds, la musique, l'interface), qui baisse quoi quand un son informe ou qu'un
   cri passe, trois sons du monde à la fois, un compresseur sur le tout ; tous les fichiers au même volume, la table seule
   règle l'équilibre. `cues.ts` les sons qui informent (brique 1, actée le 29/10 : des coups courts, « c'est surtout des
-  hit ») et ceux du monde et de l'interface, chacun une famille de prises, la première entendue sauf s'il tourne (« on
-  verra si on tourne entre les samples de même famille ») ; `beds.ts` les fonds de la terre (la carte qu'on entend,
+  hit ») et ceux du monde et de l'interface, chacun une famille de prises, tirées tour à tour sans la même deux fois de suite et
+  jouées un peu plus haut ou plus bas (« on se lasse », 30/10 ; `audio/files.test.ts` vérifie que chacune est là et créditée) ; `beds.ts` les fonds de la terre (la carte qu'on entend,
   choisie le 30/10, « Je veux que le jeu soit vivant »), des boucles sans couture ; `music.ts` la musique (« Et la
   musique aussi »), les pièces de Kevin MacLeod l'une après l'autre avec un silence entre ; `mixer.ts` joue le tout en
   Web Audio, après le premier geste du joueur, à gauche ou à droite, M pour couper (gardé d'une partie à l'autre), muet

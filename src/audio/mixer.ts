@@ -56,11 +56,20 @@ function keepMuted(muted: boolean) {
   }
 }
 
-/** A take of a layer's family: the first, or for a cue that turns, any but the last heard. */
-function takeOf(files: ReadonlyArray<string>, turn: boolean, last = -1) {
-  if (!turn || files.length < 2) return 0
+/** A take of a layer's family, any but the last heard (« les sons sont toujours les mêmes … on se lasse »). */
+function takeOf(files: ReadonlyArray<string>, last = -1) {
+  if (files.length < 2) return 0
+  if (last < 0) return Math.floor(chance() * files.length)
   const i = Math.floor(chance() * (files.length - 1))
-  return i >= last && last >= 0 ? i + 1 : i
+  return i >= last ? i + 1 : i
+}
+
+/** How far a take may play above or below its pitch, so that one blow heard twice is never quite the same. */
+const SWAY = 0.03
+
+/** A take's pitch this time: swayed a little, the end's as recorded. */
+function pitchOf(last = false) {
+  return last ? 1 : 1 + (chance() * 2 - 1) * SWAY
 }
 
 /** The whole game's sound, or the home's: its interface's clicks alone, no beds and no music (« Les son de hud doivent être aussi dans la home »). */
@@ -178,7 +187,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
       spec.layers.forEach(({ file, delay = 0 }, i) => {
         const files = typeof file === 'string' ? [file] : file
         const key = `${cue}:${i}`
-        const pick = takeOf(files, spec.turn ?? false, taken.get(key))
+        const pick = takeOf(files, taken.get(key))
         taken.set(key, pick)
         if (bus === 'world') voices += 1
         void load(files[pick]).then((buffer) => {
@@ -188,6 +197,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
           }
           const source = ctx.createBufferSource()
           source.buffer = buffer
+          source.playbackRate.value = pitchOf(spec.last)
           source.connect(out)
           if (bus === 'world') source.onended = () => (voices -= 1)
           source.start(Math.max(ctx.currentTime, now + delay))

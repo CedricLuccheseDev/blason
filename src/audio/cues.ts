@@ -33,7 +33,7 @@ export type Cue =
   | 'start'
 
 type Layer = {
-  /** Its file in public/sounds/, without the extension; a family of takes, the first the one heard unless the cue turns. */
+  /** Its file in public/sounds/, without the extension; or a family of takes, turned between, never the same twice running (« on verra si on tourne entre les samples de même famille », « les sons sont toujours les mêmes … on se lasse »). */
   file: string | ReadonlyArray<string>
   /** Seconds after the cue begins. */
   delay?: number
@@ -43,8 +43,6 @@ export type CueSpec = {
   layers: ReadonlyArray<Layer>
   /** Where it plays; the cues that tell the player something unless said. */
   bus?: Bus
-  /** Turns between its family's takes, never the same twice running (« on verra si on tourne entre les samples de même famille »). */
-  turn?: boolean
   /** Its loudness, 0 to 1. */
   gain: number
   /** Seconds before it may sound again; heard in between, it is dropped. */
@@ -57,12 +55,23 @@ export type CueSpec = {
 
 export const CUES: Record<Cue, CueSpec> = {
   /** My army leaves: a war horn. */
-  muster: { layers: [{ file: 'horn' }], gain: 0.7, again: 1 },
+  muster: {
+    layers: [{ file: ['horn-1', 'horn-2', 'horn-3', 'horn-4'] }],
+    gain: 0.7,
+    again: 1,
+  },
   /** An army or a coup comes for me: the tocsin, an alarm bell rung fast. */
-  alarm: { layers: [{ file: 'tocsin' }], gain: 0.8, again: 4 },
+  alarm: {
+    layers: [{ file: ['tocsin-1', 'tocsin-2', 'tocsin-3', 'tocsin-4'] }],
+    gain: 0.8,
+    again: 4,
+  },
   /** A herald's letter, an alliance offered or an offering given: parchment unfolded, a hand bell. */
   herald: {
-    layers: [{ file: 'parchment' }, { file: 'handbell', delay: 0.3 }],
+    layers: [
+      { file: ['parchment-1', 'parchment-2', 'parchment-3'] },
+      { file: ['handbell-1', 'handbell-2', 'handbell-3'], delay: 0.3 },
+    ],
     gain: 0.7,
     again: 2,
   },
@@ -76,22 +85,42 @@ export const CUES: Record<Cue, CueSpec> = {
   parting: { layers: [{ file: 'oud' }], gain: 0.6, again: 2 },
   /** A betrayal, cried to all: a sword drawn, a dark timpani stroke. */
   betrayal: {
-    layers: [{ file: 'sword' }, { file: 'timpani', delay: 0.12 }],
+    layers: [
+      { file: ['sword-1', 'sword-2', 'sword-3'] },
+      { file: ['timpani-1', 'timpani-2', 'timpani-3'], delay: 0.12 },
+    ],
     gain: 0.9,
     again: 2,
     cry: true,
   },
   /** A work of mine laid: two hammer blows on wood. */
-  build: { layers: [{ file: 'mallet' }], gain: 0.6, again: 0.5 },
+  build: {
+    layers: [{ file: ['mallet-1', 'mallet-2', 'mallet-3'] }],
+    gain: 0.6,
+    again: 0.5,
+  },
   /** A medieval fanfare. */
-  victory: { layers: [{ file: 'fanfare' }], gain: 0.9, again: 0, last: true },
+  victory: {
+    layers: [
+      {
+        file: ['fanfare-1', 'fanfare-2', 'fanfare-3', 'fanfare-4', 'fanfare-5'],
+      },
+    ],
+    gain: 0.9,
+    again: 0,
+    last: true,
+  },
   /** The knell, a tolling bell. */
-  defeat: { layers: [{ file: 'knell' }], gain: 0.9, again: 0, last: true },
+  defeat: {
+    layers: [{ file: ['knell-1', 'knell-2', 'knell-3', 'knell-4', 'knell-5'] }],
+    gain: 0.9,
+    again: 0,
+    last: true,
+  },
   /** Up close, two armies at grips: a clash of swords, now and then. */
   clash: {
     layers: [{ file: ['clash-1', 'clash-2', 'clash-3'] }],
     bus: 'world',
-    turn: true,
     gain: 0.7,
     again: 0.7,
   },
@@ -99,7 +128,6 @@ export const CUES: Record<Cue, CueSpec> = {
   volley: {
     layers: [{ file: ['volley-1', 'volley-2', 'volley-3'] }],
     bus: 'world',
-    turn: true,
     gain: 0.6,
     again: 0.8,
   },
@@ -121,7 +149,6 @@ export const CUES: Record<Cue, CueSpec> = {
   shout: {
     layers: [{ file: ['shout-1', 'shout-2', 'shout-3', 'shout-4'] }],
     bus: 'world',
-    turn: true,
     gain: 0.45,
     again: 1.6,
   },
@@ -129,7 +156,6 @@ export const CUES: Record<Cue, CueSpec> = {
   fall: {
     layers: [{ file: ['fall-1', 'fall-2', 'fall-3'] }],
     bus: 'world',
-    turn: true,
     gain: 0.5,
     again: 1,
   },
@@ -144,7 +170,6 @@ export const CUES: Record<Cue, CueSpec> = {
   torch: {
     layers: [{ file: ['torch-1', 'torch-2'] }],
     bus: 'world',
-    turn: true,
     gain: 0.6,
     again: 0.5,
   },
@@ -152,7 +177,6 @@ export const CUES: Record<Cue, CueSpec> = {
   hammer: {
     layers: [{ file: ['hammer-1', 'hammer-2', 'hammer-3'] }],
     bus: 'world',
-    turn: true,
     gain: 0.45,
     again: 0.9,
   },
@@ -166,7 +190,6 @@ export const CUES: Record<Cue, CueSpec> = {
   stone: {
     layers: [{ file: ['stone-1', 'stone-2', 'stone-3'] }],
     bus: 'world',
-    turn: true,
     gain: 0.8,
     again: 0.5,
   },

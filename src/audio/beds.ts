@@ -27,10 +27,8 @@ export type Bed =
   | 'riot'
 
 type BedSpec = {
-  /** Its takes, without the extension; the first the one heard unless the bed turns. */
+  /** Its takes, without the extension, one drawn each time it starts. */
   files: ReadonlyArray<string>
-  /** A take drawn for each game rather than the first. */
-  turn?: boolean
   /** Its loudness at its fullest, 0 to 1. */
   gain: number
   /** Nature 0, life 1, war 2: a rank gives way while a higher one sounds. */
@@ -39,7 +37,7 @@ type BedSpec = {
   band: readonly [number, number]
 }
 
-const BEDS: Record<Bed, BedSpec> = {
+export const BEDS: Record<Bed, BedSpec> = {
   sea: {
     files: ['sea-1', 'sea-2', 'sea-3'],
     gain: 0.8,
@@ -167,8 +165,8 @@ export function makeBeds(
   /** Its take fetched and looping, from a moment of its own, so that two never meet on a beat. */
   function start(bed: Bed, voice: Voice) {
     voice.started = true
-    const { files, turn } = BEDS[bed]
-    const pick = turn ? Math.floor(chance() * files.length) : 0
+    const { files } = BEDS[bed]
+    const pick = Math.floor(chance() * files.length)
     void load(files[pick]).then((buffer) => {
       if (!buffer || ctx.state === 'closed') return
       const source = ctx.createBufferSource()
