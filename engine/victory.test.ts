@@ -94,6 +94,9 @@ describe('the victory', () => {
 
   it('goes to the last lord standing, whatever his share', () => {
     const state = holding(10)
+    // Two sides at the start, each its standard planted.
+    state.players[0].standard = 0
+    state.players[1].standard = 999
     setOwner(state, 999, NEUTRAL)
     step(state)
     expect(state.players[1].alive).toBe(false)

@@ -150,7 +150,7 @@ export type Rules = {
   caravanGold: number
   allyTrade: number
   homeTrade: number
-  /** A piece of a lord's land under so many tiles, ringed by one other lord and the sea, passes to him as if ringed all round. */
+  /** A piece of land under so many tiles, free or a lord's, ringed by one lord and the sea, passes to him as if ringed all round. */
   seaWalled: number
   /** Share of the land that wins, in thousandths, and how it falls with time. */
   /** The land's roughness (rough.ts): at most so many tenths of a tile added to the order an army takes a tile in, smooth over a mesh of so many tiles. */

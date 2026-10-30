@@ -1,17 +1,17 @@
 import { TICKS_PER_SECOND } from './units'
 import { isAllied } from './diplomacy'
-import { NEUTRAL, SEA } from './types'
+import { SEA } from './types'
 import { seize, setOwner } from './land'
 import { rebelled } from './scars'
 import type { GameState } from './types'
 
 // Encircled land: a piece of a lord's land, or of the free land, that
 // touches one lord alone all round, no sea and no edge of the map, is his:
-// it passes to him whole, with its works, as on OpenFront. A piece of free
-// land is his even with the sea round the rest (« quand on entoure même par
-// de la mer des zones grises ça les prend automatiquement, sinon c'est trop
-// chiant d'aller récupérer les micro-parcelles »), and so is a small piece of
-// a lord's land, under so many tiles. A lord wholly ringed by one other loses
+// it passes to him whole, with its works, as on OpenFront. A small piece,
+// under so many tiles, free or a lord's, is his even with the sea round the
+// rest (« quand on entoure même par de la mer des zones grises ça les prend
+// automatiquement, sinon c'est trop chiant d'aller récupérer les
+// micro-parcelles »); a great free island is taken tile by tile. A lord wholly ringed by one other loses
 // everything. Allies never take each other's land
 // so, and land held by rebels is never taken so. Read once a second.
 
@@ -57,11 +57,10 @@ export function enclose(state: GameState): void {
   state.owner.forEach((owner, start) => {
     if (owner === SEA || seen[start]) return
     const piece = pieceOf(state, start, seen)
-    // The free land's sea is no wall: one lord beside it is enough; nor is
-    // it round a small piece of a lord's (« oui pour 3 »), never a whole
-    // coastal realm.
-    const small = piece.size < state.rules.seaWalled
-    if (owner === NEUTRAL || small) piece.borders.delete(SEA)
+    // The sea is no wall round a small piece, free or a lord's (« oui pour
+    // 3 »): one lord beside it is enough; never round a whole coastal realm,
+    // nor a great free island where one boat landed (« Ok », 30/10).
+    if (piece.size < state.rules.seaWalled) piece.borders.delete(SEA)
     if (piece.borders.size !== 1) return
     const tiles = Array.from(queue.subarray(0, piece.size))
     // Rebels are never encircled: they must be fought for.
