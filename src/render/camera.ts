@@ -14,6 +14,20 @@ const [FAR, CLOSE] = [0.5, 9]
 
 export type Box = { left: number; top: number; right: number; bottom: number }
 
+/** The part of the world on a screen so wide and high, in world units. */
+export function viewOf(
+  world: Container,
+  screen: { width: number; height: number },
+): Box {
+  const k = world.scale.x
+  return {
+    left: -world.x / k,
+    top: -world.y / k,
+    right: (screen.width - world.x) / k,
+    bottom: (screen.height - world.y) / k,
+  }
+}
+
 export function makeCamera(
   app: Application,
   world: Container,
@@ -154,15 +168,7 @@ export function makeCamera(
     level: () => world.scale.x / fitZoom(),
     zoom: () => world.scale.x,
     /** The part of the world on screen, in world units. */
-    view() {
-      const k = world.scale.x
-      return {
-        left: -world.x / k,
-        top: -world.y / k,
-        right: (app.screen.width - world.x) / k,
-        bottom: (app.screen.height - world.y) / k,
-      }
-    },
+    view: () => viewOf(world, app.screen),
     /** One frame of the smoothing towards the wheel's target. */
     step() {
       if (aim) {

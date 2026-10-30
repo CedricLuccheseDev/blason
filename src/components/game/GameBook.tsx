@@ -122,9 +122,9 @@ export function GameBook({
   )
   const kicker = lobby ? m.yours : m.going(running)
   /** The land's size and the lords it suits, and whether it suits this game's. */
-  function landLine({ land, bots, guests = 0 }: Book) {
+  function landLine({ land, bots: seated, guests = 0 }: Book) {
     const [least, most] = lordsFor(land)
-    const lords = bots + guests + 1
+    const lords = seated + guests + 1
     const line = m.landLine(m.sizes[sizeOf(land)], least, most)
     return lords >= least && lords <= most ? `${line}, ${m.suits}` : line
   }

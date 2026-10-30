@@ -73,24 +73,9 @@ export function makeSpectacle() {
         const { x, y } = siteOf(state, tile)
         return on(view, x, y)
       }
-      // One clash and one cry at most, from the armies fighting on screen.
-      const fighting = state.hosts.filter(
-        (h) =>
-          h.men > 0 && h.edge.length > 0 && h.closing <= 0 && seen(h.edge[0]),
-      )
-      if (fighting.length > 0) {
-        const odds = fighting.some((h) => h.fighting) ? ODDS.battle : ODDS.front
-        if (chance() < odds) hear('clash', any(fighting).edge[0])
-        if (chance() < ODDS.shout) hear('shout', any(fighting).edge[0])
-      }
+      fights(state, seen, hear)
       for (const host of lost) hear('fall', host.edge[0])
-      for (const work of state.works)
-        if (
-          work.work === 'castle' &&
-          shootsAt(state, work, state.tick) &&
-          underFire(state, work).length > 0
-        )
-          hear('volley', work.tile)
+      volleys(state, hear)
       const rising = state.works.filter(
         (w) => w.ready !== undefined && w.ready > state.tick && seen(w.tile),
       )
@@ -101,4 +86,28 @@ export function makeSpectacle() {
       return heard
     },
   }
+}
+
+type Hear = (cue: Cue, tile: number) => void
+
+/** One clash and one cry at most, from the armies fighting on screen. */
+function fights(state: GameState, seen: (tile: number) => boolean, hear: Hear) {
+  const fighting = state.hosts.filter(
+    (h) => h.men > 0 && h.edge.length > 0 && h.closing <= 0 && seen(h.edge[0]),
+  )
+  if (fighting.length === 0) return
+  const odds = fighting.some((h) => h.fighting) ? ODDS.battle : ODDS.front
+  if (chance() < odds) hear('clash', any(fighting).edge[0])
+  if (chance() < ODDS.shout) hear('shout', any(fighting).edge[0])
+}
+
+/** Each castle loosing at an army in its reach this tick. */
+function volleys(state: GameState, hear: Hear) {
+  for (const work of state.works)
+    if (
+      work.work === 'castle' &&
+      shootsAt(state, work, state.tick) &&
+      underFire(state, work).length > 0
+    )
+      hear('volley', work.tile)
 }

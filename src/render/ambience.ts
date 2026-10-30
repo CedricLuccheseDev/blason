@@ -118,18 +118,22 @@ function ground(state: GameState, terrain: Terrain, view: Box, t: Tallies) {
 const alongOf = (road: ReadonlyArray<number>, along: number) =>
   road[Math.min(road.length - 1, Math.floor(along / 1000))]
 
-/** What stands or moves on the screen, each where it is. */
-function elements(state: GameState, view: Box, rivers: Rivers, t: Tallies) {
-  const at = (bed: Bed, tile: number) => {
-    const { x, y } = siteOf(state, tile)
-    const across = acrossOf(view, x, y)
-    if (across !== null) add(t, bed, 1, across)
-  }
+/** The rivers' points on the screen, each where it is. */
+function streams(view: Box, rivers: Rivers, t: Tallies) {
   for (const course of rivers)
     for (const [x, y] of course) {
       const across = acrossOf(view, x, y)
       if (across !== null) add(t, 'river', 1, across)
     }
+}
+
+/** What stands or moves on the screen, each where it is. */
+function elements(state: GameState, view: Box, t: Tallies) {
+  const at = (bed: Bed, tile: number) => {
+    const { x, y } = siteOf(state, tile)
+    const across = acrossOf(view, x, y)
+    if (across !== null) add(t, bed, 1, across)
+  }
   for (const work of state.works) at(WORKS[work.work], work.tile)
   for (const caravan of state.caravans)
     at('caravan', alongOf(caravan.road, caravan.along))
@@ -151,7 +155,8 @@ export function bedsOf(
   const t = {} as Tallies
   for (const bed of BED_LIST) t[bed] = { n: 0, across: 0 }
   ground(state, terrain, view, t)
-  elements(state, view, rivers, t)
+  streams(view, rivers, t)
+  elements(state, view, t)
   const near = smoothstep(CLOSE[0], CLOSE[1], perTile)
   const heard = smoothstep(HEARD[0], HEARD[1], perTile)
   const points = COLUMNS * ROWS

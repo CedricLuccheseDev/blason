@@ -20,6 +20,16 @@ import type { Spot } from './cord'
  * that his name never lies over a village or a castle; it moves on smoothly
  * as the land grows or shrinks; the bigger the land, the bigger the words.
  */
+/** Where the lords are written, read once a tick for the names and their marks. */
+export function placesEachTick() {
+  let read = { tick: -1, places: new Map() as Placement }
+  return (state: GameState) => {
+    if (read.tick !== state.tick)
+      read = { tick: state.tick, places: tilePlaces(state) }
+    return read.places
+  }
+}
+
 export function tilePlaces(state: GameState): Placement {
   const { width, size: tile } = state.grid
   const seen = new Uint8Array(state.owner.length)

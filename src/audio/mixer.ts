@@ -14,7 +14,7 @@ import {
 import { makeMusic } from './music'
 import { makeRoom } from './room'
 import type { Hearing } from './beds'
-import type { Cue } from './cues'
+import type { Cue, CueSpec } from './cues'
 import type { Bus, Duck } from './mix'
 
 // The game's sound, by the browser's Web Audio, mixed as audio/mix.ts says:
@@ -67,10 +67,18 @@ function takeOf(files: ReadonlyArray<string>, last = -1) {
 /** How far a take may play above or below its pitch, so that one blow heard twice is never quite the same. */
 const SWAY = 0.03
 
-/** A take's pitch this time: swayed a little, the end's as recorded. */
-function pitchOf(last = false) {
-  return last ? 1 : 1 + (chance() * 2 - 1) * SWAY
-}
+/** A take's pitch this time, swayed a little. */
+const sway = () => 1 + (chance() * 2 - 1) * SWAY
+
+/** Every take of the cues a page plays: all of them in the game, the interface's at home. */
+const takesFor = (scope: Scope) =>
+  Object.values(CUES)
+    .filter((spec) => scope === 'game' || spec.bus === 'ui')
+    .flatMap((spec) =>
+      spec.layers.flatMap(({ file }) =>
+        typeof file === 'string' ? [file] : file,
+      ),
+    )
 
 /** The whole game's sound, or the home's: its interface's clicks alone, no beds and no music (« Les son de hud doivent être aussi dans la home »). */
 export type Scope = 'game' | 'home'
@@ -126,11 +134,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
       lowered.connect(send).connect(room)
       buses.set(bus, { input, duck: lowered })
     }
-    for (const spec of Object.values(CUES)) {
-      if (scope === 'home' && spec.bus !== 'ui') continue
-      for (const { file } of spec.layers)
-        for (const f of typeof file === 'string' ? [file] : file) void load(f)
-    }
+    for (const take of takesFor(scope)) void load(take)
     if (scope === 'home') return
     beds = makeBeds(ctx, inputOf('beds'), load)
     music = makeMusic(ctx, inputOf('music'))
@@ -162,6 +166,47 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
     }
   }
 
+  /** What a cue casts as it sounds: the end silences all but the music's end, a cry or an informing cue lowers what lies under it. */
+  function cast(spec: CueSpec, bus: Bus, now: number) {
+    if (spec.last) {
+      over = true
+      for (const b of ['cues', 'world', 'beds', 'ui'] as const)
+        buses.get(b)?.duck.gain.setTargetAtTime(0, now, FALL)
+      music?.end()
+    } else if (spec.cry) duck(DUCKS.cry, now)
+    else if (bus === 'cues') duck(DUCKS.cue, now)
+  }
+
+  /** One of a cue's layers: a take of its family, fetched and played into the cue's output after its delay. */
+  function sound(
+    cue: Cue,
+    i: number,
+    { file, delay = 0 }: CueSpec['layers'][number],
+    out: GainNode,
+    now: number,
+  ) {
+    const spec = CUES[cue]
+    const world = (spec.bus ?? 'cues') === 'world'
+    const files = typeof file === 'string' ? [file] : file
+    const key = `${cue}:${i}`
+    const pick = takeOf(files, taken.get(key))
+    taken.set(key, pick)
+    if (world) voices += 1
+    void load(files[pick]).then((buffer) => {
+      if (!buffer || !ctx) {
+        if (world) voices -= 1
+        return
+      }
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      // The end as recorded; every other take a little higher or lower.
+      source.playbackRate.value = spec.last ? 1 : sway()
+      source.connect(out)
+      if (world) source.onended = () => (voices -= 1)
+      source.start(Math.max(ctx.currentTime, now + delay))
+    })
+  }
+
   return {
     play(cue, pan = 0, level = 1) {
       if (!ctx || !master || muted || over || document.hidden) return
@@ -171,38 +216,14 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
       if (now - (last.get(cue) ?? -Infinity) < spec.again) return
       if (bus === 'world' && voices >= VOICES) return
       last.set(cue, now)
-      if (spec.last) {
-        over = true
-        for (const b of ['cues', 'world', 'beds', 'ui'] as const)
-          buses.get(b)?.duck.gain.setTargetAtTime(0, now, FALL)
-        music?.end()
-      } else if (spec.cry) duck(DUCKS.cry, now)
-      else if (bus === 'cues') duck(DUCKS.cue, now)
+      cast(spec, bus, now)
       const out = ctx.createGain()
       out.gain.value = spec.gain * level
       const place = ctx.createStereoPanner()
       place.pan.value = Math.max(-1, Math.min(1, pan))
       // A cry or the end is heard over the duck it casts.
       out.connect(place).connect(spec.cry || spec.last ? master : inputOf(bus))
-      spec.layers.forEach(({ file, delay = 0 }, i) => {
-        const files = typeof file === 'string' ? [file] : file
-        const key = `${cue}:${i}`
-        const pick = takeOf(files, taken.get(key))
-        taken.set(key, pick)
-        if (bus === 'world') voices += 1
-        void load(files[pick]).then((buffer) => {
-          if (!buffer || !ctx) {
-            if (bus === 'world') voices -= 1
-            return
-          }
-          const source = ctx.createBufferSource()
-          source.buffer = buffer
-          source.playbackRate.value = pitchOf(spec.last)
-          source.connect(out)
-          if (bus === 'world') source.onended = () => (voices -= 1)
-          source.start(Math.max(ctx.currentTime, now + delay))
-        })
-      })
+      spec.layers.forEach((layer, i) => sound(cue, i, layer, out, now))
     },
     hear(hearing) {
       if (!over) beds?.set(hearing)

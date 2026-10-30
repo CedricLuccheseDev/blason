@@ -1,5 +1,6 @@
 import { RULES, makeGrid, worldOf } from '../../engine'
 import type { Grid, Land, World } from '../../engine'
+import type { GameHooks } from './handle'
 
 // The next game's land, made ahead while the player is still on the home
 // page, so that the click on Play lands straight in the opening, as on
@@ -55,4 +56,14 @@ export function takeLand(seed: string | null, land: Land = STANDARD): Made {
   const made = prepared ?? makeLand(randomSeed())
   prepared = null
   return made
+}
+
+/** The land a game is played on: online the relay's, a save's own, else the one asked or the standard. */
+export function landAsked(
+  seed: string | null,
+  { online, save, land }: Pick<GameHooks, 'online' | 'save' | 'land'>,
+): { seed: string | null; land: Land } {
+  if (online) return online.setup
+  if (save) return { seed: save.seed, land: { kind: 'drawn', size: save.size } }
+  return { seed, land: land ?? STANDARD }
 }

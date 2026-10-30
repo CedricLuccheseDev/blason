@@ -6,7 +6,7 @@ import { writeFileSync } from 'node:fs'
 // great lakes poured in as water and its main rivers laid on it, from
 // Natural Earth (public domain), « Les fleuves rivières et lac sont de la
 // vrai eau ». Run once per map, or again to change its frame:
-// npx tsx scripts/atlas.ts europe -12 45 35 60
+// npm run atlas -- europe -12 45 35 60
 
 const [name = 'europe', west = '-12', east = '45', south = '35', north = '60'] =
   process.argv.slice(2)

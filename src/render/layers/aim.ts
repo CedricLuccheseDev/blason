@@ -1,5 +1,11 @@
 import { Container, Graphics } from 'pixi.js'
-import { NEUTRAL, barredBy, canBuild, canStart } from '../../../engine'
+import {
+  NEUTRAL,
+  barredBy,
+  canBuild,
+  canStart,
+  isFriendly,
+} from '../../../engine'
 import { canSend, courseNow, wayTo } from '../course'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
@@ -67,7 +73,13 @@ export function makeAim(state: GameState, me: number) {
         key,
         entry,
         road: road.length
-          ? drawRoad(state, road, (t) => state.owner[t] === me, 0)
+          ? // Straightened over the land it marches, mine and my allies'.
+            drawRoad(
+              state,
+              road,
+              (t) => isFriendly(state, me, state.owner[t]),
+              0,
+            )
           : [],
         way: way.length > 1 ? drawRoad(state, way, walked, 0) : [],
       }
@@ -91,7 +103,7 @@ export function makeAim(state: GameState, me: number) {
     for (let i = 1; i < points.length && drawn < DASHES; i++) {
       const [a, b] = [points[i - 1], points[i]]
       const d = Math.hypot(b.x - a.x, b.y - a.y)
-      if (!(d > 0)) continue
+      if (d <= 0) continue
       const at = (k: number) =>
         [a.x + ((b.x - a.x) * k) / d, a.y + ((b.y - a.y) * k) / d] as const
       const last = Math.ceil((along + d) / period)

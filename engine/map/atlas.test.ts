@@ -27,7 +27,7 @@ describe('a map of the Earth', () => {
     const a = generateWorld('atlas', { atlas: 'europe' })
     expect(a.size).toBe('large')
     expect(a.atlas).toBe('europe')
-    expect(generateWorld('atlas', { atlas: 'europe' }).land.length).toBe(
+    expect(generateWorld('atlas', { atlas: 'europe' }).land).toHaveLength(
       a.land.length,
     )
   })

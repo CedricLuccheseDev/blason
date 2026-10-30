@@ -2,10 +2,12 @@ import { isqrt } from '../numbers'
 import { MAP_SIZES } from '../rules'
 import { EUROPE } from './atlas/europe'
 import { raisePeaks } from './peaks'
+import { framed, openStraits, rangesOf, spacingOf } from './landmarks'
 import { keepLands } from './seas'
 import type { Cells } from './cells'
-import type { Ground, Plan } from './types'
+import type { Sheet, Strait } from './landmarks'
 import type { Point } from './points'
+import type { Ground, Plan } from './types'
 import type { MapSize } from '../rules'
 
 // The atlas: lands of the real Earth (« faire des maps de la vrai terre »),
@@ -19,21 +21,6 @@ import type { MapSize } from '../rules'
 // along their courses. A map more is a line here and its baked file.
 
 export type Atlas = 'europe'
-
-type Sheet = {
-  west: number
-  east: number
-  north: number
-  south: number
-  cols: number
-  rows: number
-  aspect: number
-  rivers: ReadonlyArray<ReadonlyArray<number>>
-  data: string
-}
-
-/** A strait, a segment along its water from one end to the other, in degrees: longitude, latitude, then the other end's. */
-type Strait = readonly [number, number, number, number]
 
 type Entry = {
   sheet: Sheet
@@ -111,7 +98,7 @@ function bytesOf(atlas: Atlas): Uint8Array {
 }
 
 /** Of its frame, how many in a thousand are sea. */
-export function seaShareOf(atlas: Atlas): number {
+function seaShareOf(atlas: Atlas): number {
   const bytes = bytesOf(atlas)
   const sea = bytes.reduce((n, b) => n + (b === 0 ? 1 : 0), 0)
   return Math.floor((sea * 1000) / bytes.length)
@@ -129,36 +116,6 @@ export function planOf(atlas: Atlas): Plan {
     // Its high mountains are its ranges' (rangesOf), not a share.
     peakShare: 0,
   }
-}
-
-/** How near a range's crest a cell's site lies to stand on it, in cells' spacings; how high its ground must be. */
-const CREST = 1.1
-const HIGH = 0.08
-
-/** Each cell's rise on a range: its height on a crest of the map's ranges where it is high enough, below naught off them. */
-function rangesOf(
-  atlas: Atlas,
-  cells: Cells,
-  width: number,
-  height: number,
-  ground: Array<number>,
-): Array<number> {
-  const { sheet, ranges } = ATLAS[atlas]
-  const at = (lon: number, lat: number): Point => [
-    ((lon - sheet.west) / (sheet.east - sheet.west)) * width,
-    ((sheet.north - lat) / (sheet.north - sheet.south)) * height,
-  ]
-  const reach = CREST * isqrt(Math.floor((width * height) / cells.sites.length))
-  const rise = ground.map(() => -1)
-  for (const line of ranges)
-    for (let k = 0; k + 3 < line.length; k += 2) {
-      const [a, b] = [at(line[k], line[k + 1]), at(line[k + 2], line[k + 3])]
-      cells.sites.forEach((site, c) => {
-        if (ground[c] < HIGH || apartSq(site, a, b) > reach * reach) return
-        rise[c] = 1 + ground[c]
-      })
-    }
-  return rise
 }
 
 /** The ground of a map of the atlas on these cells: each cell's height read where it stands on the Earth. */
@@ -192,7 +149,10 @@ export function atlasLand(atlas: Atlas) {
       raw[i] = level * level
       return b < 0.5
     })
-    openStraits(atlas, cells, width, height, wet)
+    const { sheet, straits, ranges } = ATLAS[atlas]
+    const frame = framed(sheet, width, height)
+    const spacing = spacingOf(cells, width, height)
+    openStraits(frame, straits, cells, spacing, wet)
     // The Earth's lands as they are, its islands apart: Great Britain,
     // Ireland, Sicily, Corsica, the Danish isles.
     const sea = keepLands(cells, wet, ISLET)
@@ -201,7 +161,7 @@ export function atlasLand(atlas: Atlas) {
       sea[c] ? -1 : Math.max(0.002, h / highest),
     )
     const side = isqrt(scale * 10000) / 100
-    const crest = rangesOf(atlas, cells, width, height, ground)
+    const crest = rangesOf(frame, ranges, cells, spacing, ground)
     const land = ground.filter((h) => h >= 0).length
     const share = Math.ceil(
       (crest.filter((r) => r > 0).length * 1000) / Math.max(1, land),
@@ -226,13 +186,13 @@ export function riversOf(
   width: number,
   height: number,
 ): { courses: Array<Array<Point>>; banks: Set<number> } {
-  const { west, east, north, south, rivers } = ATLAS[atlas].sheet
-  const at = (lon: number, lat: number): Point => [
-    ((lon / 10 - west) / (east - west)) * width,
-    ((north - lat / 10) / (north - south)) * height,
-  ]
-  const courses = rivers.map((r) =>
-    Array.from({ length: r.length / 2 }, (_, i) => at(r[2 * i], r[2 * i + 1])),
+  const { sheet } = ATLAS[atlas]
+  // Its rivers in tenths of a degree.
+  const at = framed(sheet, width, height)
+  const courses = sheet.rivers.map((r) =>
+    Array.from({ length: r.length / 2 }, (_, i) =>
+      at(r[2 * i] / 10, r[2 * i + 1] / 10),
+    ),
   )
   const nearest = nearestSite(cells, width)
   const banks = new Set<number>()
@@ -264,39 +224,4 @@ function nearestSite(cells: Cells, width: number) {
         }
     return best
   }
-}
-
-/** How near a strait a cell's site lies to be its water, in cells' spacings. */
-const STRAIT = 0.8
-
-/** The straits' cells made water, so that the shores either side never touch. */
-function openStraits(
-  atlas: Atlas,
-  cells: Cells,
-  width: number,
-  height: number,
-  wet: Array<boolean>,
-) {
-  const { sheet, straits } = ATLAS[atlas]
-  const at = (lon: number, lat: number): Point => [
-    ((lon - sheet.west) / (sheet.east - sheet.west)) * width,
-    ((sheet.north - lat) / (sheet.north - sheet.south)) * height,
-  ]
-  const reach =
-    STRAIT * isqrt(Math.floor((width * height) / cells.sites.length))
-  for (const [lon1, lat1, lon2, lat2] of straits) {
-    const [a, b] = [at(lon1, lat1), at(lon2, lat2)]
-    cells.sites.forEach((site, c) => {
-      if (apartSq(site, a, b) <= reach * reach) wet[c] = true
-    })
-  }
-}
-
-/** The square of how far a point lies from a segment. */
-function apartSq([x, y]: Point, a: Point, b: Point): number {
-  const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
-  const long = dx * dx + dy * dy || 1
-  const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / long))
-  const [px, py] = [a[0] + t * dx - x, a[1] + t * dy - y]
-  return px * px + py * py
 }

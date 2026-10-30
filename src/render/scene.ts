@@ -1,5 +1,8 @@
 import { Container, Graphics } from 'pixi.js'
-import { UNIT, canRenew } from '../../engine'
+import { UNIT } from '../../engine'
+import { viewOf } from './camera'
+import { cullable, group } from './groups'
+import { renewalsOf } from './renewals'
 import { makeLabels } from './layers/labels'
 import { landShape, makeSea } from './layers/lands'
 import { makePeaks } from './layers/peaks'
@@ -13,7 +16,7 @@ import { makePlan } from './layers/plan'
 import { strategicOf } from './ground/detail'
 import { makePlanted } from './layers/planted'
 import { makeMarks } from './marks'
-import { makeBadges, tilePlaces } from './places'
+import { makeBadges, placesEachTick } from './places'
 import { makeRegions } from './regions'
 import { makeTrade } from './trade'
 import { makeTidings } from './layers/tidings'
@@ -36,7 +39,6 @@ import type { Measure } from './perf'
 import type { GameState, World } from '../../engine'
 import type { Hand } from './hand'
 import type { Application } from 'pixi.js'
-import type { Placement } from './layers/labels'
 import type { Anchor } from './heralds'
 
 // The map, stacked so that what the game must make read stays above what
@@ -55,20 +57,6 @@ import type { Anchor } from './heralds'
 // it. Farther out than the whole land, the figures and the standards
 // shrink with it, as if the page were held farther away, a name never
 // under 16 pixels, and the standards' small writing fades out.
-
-/** Containers drawn as one render group, their batches kept until their own structure changes. */
-/** Every piece the layers hold may be left out of the drawing while it lies off the screen (pixi's culler, client.ts): a work, a man, a banner, a name. Marked each frame, the new ones with the rest. */
-function cullable(world: Container) {
-  for (const group of world.children)
-    for (const layer of group.children)
-      for (const piece of layer.children) piece.cullable = true
-}
-
-function group(...children: Array<Container>) {
-  const c = new Container({ isRenderGroup: true })
-  c.addChild(...children)
-  return c
-}
 
 /** The HUD's bottom row's height on screen, in pixels: the map's words fade under it. */
 const BOTTOM = 130
@@ -103,12 +91,7 @@ export function makeScene(
   const planted = makePlanted(me)
   const goals = makeGoals(me)
   const plan = makePlan(me)
-  // Where the lords are written, read once a tick for the names and their marks.
-  let read = { tick: -1, places: new Map() as Placement }
-  const placesOf = (s: GameState) => {
-    if (read.tick !== s.tick) read = { tick: s.tick, places: tilePlaces(s) }
-    return read.places
-  }
+  const placesOf = placesEachTick()
   const labels = makeLabels(
     me,
     names,
@@ -174,34 +157,19 @@ export function makeScene(
   app.stage.addChild(world)
 
   /** The part of the world on screen, in map units. */
-  const view = () => {
-    const k = world.scale.x
-    return {
-      left: -world.x / k,
-      top: -world.y / k,
-      right: (app.screen.width - world.x) / k,
-      bottom: (app.screen.height - world.y) / k,
-    }
-  }
+  const view = () => viewOf(world, app.screen)
 
   return {
     world,
     /** What the ear reads of the map (render/sound.ts): its ground, and the part of it on screen. */
     ear: { terrain: ground.terrain, rivers: land.rivers, view },
-    /**
-     * Where the HUD lays its pieces on the map this frame: the seal of each
-     * of my alliances in its last moments, when it asks to be renewed,
-     * beside my ally's name (at the heart of his land while it is not
-     * written); the heralds of the offers made to me.
-     */
+    /** Where the HUD lays its pieces on the map this frame: my alliances asking to be renewed (renewals.ts), the heralds of the offers made to me. */
     anchors(): Array<Anchor> {
-      const asking = state.alliances.flatMap((x): Array<Anchor> => {
-        if ((x.a !== me && x.b !== me) || !canRenew(state, x)) return []
-        const ally = x.a === me ? x.b : x.a
-        const at = badges.besideOf(ally) ?? placesOf(state).get(ally)
-        return at ? [{ key: `pact:${ally}`, kind: 'pact', lord: ally, at }] : []
-      })
-      return [...asking, ...envoys.anchors()]
+      const placeOf = (lord: number) => placesOf(state).get(lord)
+      return [
+        ...renewalsOf(state, me, badges.besideOf, placeOf),
+        ...envoys.anchors(),
+      ]
     },
     /** The lord whose land is lit, pointed at in the HUD's list; none. */
     light: lit.light,

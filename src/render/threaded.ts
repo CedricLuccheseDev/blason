@@ -15,8 +15,7 @@ import type { GameSetup, Grid } from '../../engine'
 
 /** The game asked to be played in the page (`?thread=off`), to tell whether a fault lies in the thread. */
 const inPage = () =>
-  new URLSearchParams(globalThis.location?.search ?? '').get('thread') ===
-  'off'
+  new URLSearchParams(location.search).get('thread') === 'off'
 
 export function startThreadedSession(
   grid: Grid,

@@ -1,5 +1,5 @@
-import { ARMIES, COUPS, WORKS } from '../../engine'
-import type { Army, Coup, Work } from '../../engine'
+import { ARMIES, COUPS, UNIT, WORKS, coupPrice, priceOf } from '../../engine'
+import type { Army, Coup, GameState, Work } from '../../engine'
 
 // The keyboard: 1 to 4 take an army in hand, 5 to 7 a work, 8, 9 and 0 a
 // coup, in the order the bar shows them, the tenth key being 0 as on the
@@ -27,3 +27,24 @@ export const WORK_KEYS: Partial<Record<string, Work>> = Object.fromEntries(
 export const COUP_KEYS: Partial<Record<string, Coup>> = Object.fromEntries(
   COUPS.map((coup, i) => [keyAt(ARMIES.length + WORKS.length + i + 1), coup]),
 )
+
+/** Whether a key may take what it names in hand: a work or a coup only if it can be paid, refused with its sound if not; anything to put down, or any other key. */
+export function affordable(
+  state: GameState,
+  me: number,
+  hand: Readonly<{ work: Work | null; coup: Coup | null }>,
+  refuse: () => void,
+) {
+  return (key: string) => {
+    if (me < 0) return true
+    const work = WORK_KEYS[key]
+    const coup = COUP_KEYS[key]
+    // Put down, it is let go whatever it costs.
+    let price = 0
+    if (work) price = hand.work === work ? 0 : priceOf(state, me, work)
+    else if (coup) price = hand.coup === coup ? 0 : coupPrice(state, me, coup)
+    if (price <= Math.floor(state.players[me].gold / UNIT)) return true
+    refuse()
+    return false
+  }
+}

@@ -108,7 +108,7 @@ const FAR_HZ = 700
 const NEAR_HZ = 14000
 
 /** A bed as the screen has it: how loud, 0 to 1, and from where, -1 (left) to 1 (right). */
-export type Heard = { level: number; pan: number }
+type Heard = { level: number; pan: number }
 
 /** Each bed as the screen has it, and how close the camera is, 0 (far) to 1 (up close). */
 export type Hearing = { beds: Record<Bed, Heard>; near: number }

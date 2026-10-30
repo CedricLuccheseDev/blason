@@ -1,16 +1,14 @@
-import { Application, CullerPlugin, extensions } from 'pixi.js'
-import { NO_ONE, UNIT, coupPrice, hostSetup, priceOf } from '../../engine'
+import { NO_ONE, hostSetup } from '../../engine'
 import { makeAiming } from './aiming'
 import { makePin } from './pin'
 import { makeCamera } from './camera'
-import { makeInput } from './input'
 import { makeHand } from './hand'
-import { COUP_KEYS, WORK_KEYS } from './keys'
-import { TONE } from './palette'
-import { STANDARD, takeLand } from './ahead'
-import { makeClick, makeKeys, menuFrom, seeking } from './clicks'
+import { landAsked, takeLand } from './ahead'
+import { makeApp } from './app'
+import { menuFrom, seeking } from './clicks'
+import { makeControls } from './controls'
 import { makePerf } from './perf'
-import { landBox, tileAt } from './marks'
+import { landBox } from './marks'
 import { makeScene } from './scene'
 import { openSession } from './sessions'
 import { standCamera } from './still'
@@ -21,15 +19,8 @@ import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
 import { makeRecord } from './record'
 import { makeSound } from './sound'
-import { bestQuality, governFrames } from './quality'
+import { governFrames } from './quality'
 import type { GameHandle, GameHooks } from './handle'
-import type { Land } from '../../engine'
-
-// What lies off the screen is left out of the drawing (« Le jeu ram quand
-// y'a beaucoup trop de bâtiments unités … faire du culling »): pixi's
-// culler, before each frame, against the screen, once for every game; the
-// scene says what may be left out (scene.ts).
-extensions.add(CullerPlugin)
 
 // The game on screen, the land taken bit by bit: the manuscript map
 // of the game, its lands spreading tile by tile as in OpenFront, with its
@@ -59,29 +50,10 @@ export async function mountGame(
   me: number,
   hooks: GameHooks,
 ): Promise<GameHandle> {
-  const app = new Application()
   const { save } = hooks
-  // Online, the relay says the land; a save says its own.
-  const online = hooks.online?.setup
-  const asked: { seed: string | null; land: Land } = online
-    ? online
-    : save
-      ? { seed: save.seed, land: { kind: 'drawn', size: save.size } }
-      : { seed, land: hooks.land ?? STANDARD }
+  const asked = landAsked(seed, hooks)
   const { land, grid } = takeLand(asked.seed, asked.land)
-  await app.init({
-    preference: 'webgl',
-    resizeTo: element,
-    background: TONE.edge,
-    antialias: true,
-    resolution: bestQuality().resolution,
-    autoDensity: true,
-    // The game reads its own gestures and has no filters: neither pixi's
-    // events, which test the whole map under every move, nor its filters,
-    // its DOM layer or its accessibility overlay are loaded.
-    skipExtensionImports: true,
-  })
-  element.appendChild(app.canvas)
+  const app = await makeApp(element)
   const session = openSession(
     grid,
     { seed: land.seed, land: asked.land },
@@ -97,45 +69,19 @@ export async function mountGame(
   const camera = makeCamera(app, scene.world, land, home)
   if (save) standCamera(camera, state, save)
 
-  const pick = (x: number, y: number) => tileAt(grid, x, y)
-
   const hand = makeHand()
   const aiming = makeAiming(app.canvas, state, me, scene.world)
   const pin = makePin(
     (tile, pinned) => aiming.at(tile, pinned, hand.hand),
     hooks.onAim,
   )
-  const click = makeClick(
-    state,
-    me,
-    session.send,
+  const controls = makeControls(app.canvas, scene.world, state, me, {
+    send: session.send,
     hand,
-    pin.dismisses,
+    pin,
     refresh,
-    sound.refuse,
-  )
-  const input =
-    me >= 0
-      ? makeInput(app.canvas, scene.world, pick, {
-          hover: pin.hover,
-          click,
-          menu: pin.open,
-          away: pin.close,
-        })
-      : null
-  /** What a key would take in hand: a work or a coup only if it can be paid, or to put it down. */
-  const allowed = (key: string) => {
-    const work = WORK_KEYS[key]
-    const coup = COUP_KEYS[key]
-    if ((!work && !coup) || me < 0) return true
-    if (hand.hand.work === work || hand.hand.coup === coup) return true
-    const gold = Math.floor(state.players[me].gold / UNIT)
-    const price = work ? priceOf(state, me, work) : coupPrice(state, me, coup!)
-    if (price <= gold) return true
-    sound.refuse()
-    return false
-  }
-  const onKey = makeKeys(pin.close, hand, refresh, sound.toggle, allowed)
+    sound,
+  })
   /** What is in hand changed: the figures and the aim again. */
   const handed = (change: () => void) => {
     change()
@@ -149,7 +95,6 @@ export async function mountGame(
     })
     pin.again()
   }
-  if (me >= 0) window.addEventListener('keydown', onKey)
 
   let drawn = false
   // A saved game stands its own camera: the player's land is not looked for.
@@ -235,8 +180,7 @@ export async function mountGame(
       aiming.destroy()
       frame.disconnect()
       governed()
-      input?.destroy()
-      window.removeEventListener('keydown', onKey)
+      controls.destroy()
       sound.destroy()
       session.stop?.()
       camera.destroy()
