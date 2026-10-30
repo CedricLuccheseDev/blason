@@ -46,6 +46,12 @@ export const TEXT: Record<Size, string> = {
 /** A drawn measure on the screen: its pixels at scale 1, grown by the HUD's scale. */
 export const scaled = (px: number): string => `calc(${px}px * var(--hud))`
 
+/** A drawing's box: drawn on `w` by `h` units, laid out at that size grown by the HUD's scale. */
+export const box = (w: number, h: number) => ({
+  viewBox: `0 0 ${w} ${h}`,
+  style: { width: scaled(w), height: scaled(h) },
+})
+
 /** An icon beside a figure, sized on its type. */
 export const ICON: Record<Size, number> = { s: 16, m: 18, l: 22, xl: 24 }
 

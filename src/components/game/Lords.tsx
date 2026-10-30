@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Act } from '../hud/Act'
-import { Shield, StandingBadge } from '../hud/Emblem'
+import { Shield } from '../hud/Emblem'
+import { StandingBadge } from '../hud/Standing'
 import { useCompact } from '../hud/useCompact'
 import { Figure } from '../hud/Figure'
 import { Inline, Panel } from '../hud/Layout'

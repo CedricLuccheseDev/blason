@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { ActMedallion, Shield, StandingBadge } from '../hud/Emblem'
+import { ActMedallion, Shield } from '../hud/Emblem'
+import { StandingBadge } from '../hud/Standing'
 import { Figure } from '../hud/Figure'
 import { Caption, Inline, Panel } from '../hud/Layout'
 import { Name } from '../hud/Text'

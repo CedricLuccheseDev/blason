@@ -1,4 +1,4 @@
-import { StandingBadge } from '../hud/Emblem'
+import { StandingBadge } from '../hud/Standing'
 import { useCompact } from '../hud/useCompact'
 import { Call, Word } from '../hud/Text'
 import { PLAYERS } from '~/render/palette'
