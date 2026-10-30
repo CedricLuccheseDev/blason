@@ -42,7 +42,23 @@ export const FALL = 0.08
 export const RISE = 0.6
 
 /** The world's sounds playing at once, at most: past them, a new one is dropped. */
-export const VOICES = 3
+export const VOICES = 5
+
+/**
+ * One room for the whole game, so that the sounds mingle rather than sit
+ * side by side (« Les sons doivent s'entremêler avec un mixage qui rend le
+ * tout bien »): a short open-air reverberation each bus sends a share of
+ * itself to, the world and the beds the most, the interface and the music
+ * none (the music has its own).
+ */
+export const ROOM = {
+  /** Seconds the reverberation lasts, and how much of each bus is sent to it. */
+  decay: 1.6,
+  sends: { cues: 0.05, world: 0.2, beds: 0.12, music: 0, ui: 0 } as Record<
+    Bus,
+    number
+  >,
+}
 
 /** The master's compressor: gentle, a limiter more than a colour. */
 export const COMPRESSOR = {

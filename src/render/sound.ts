@@ -4,6 +4,7 @@ import { heardIn, makeHearing } from './hearing'
 import { siteOf } from './marks'
 import { makeSpectacle } from './spectacle'
 import type { Container, Rectangle } from 'pixi.js'
+import type { Rivers } from './ambience'
 import type { Box } from './camera'
 import type { Terrain } from './ground/terrain'
 import type { GameState } from '../../engine'
@@ -22,7 +23,7 @@ const LEAN = 0.8
 const PRESSED = 'button, a, [role="button"]'
 
 /** What the ear reads of the map: its ground, and the part of it on screen. */
-export type Ear = { terrain: Terrain; view: () => Box }
+export type Ear = { terrain: Terrain; rivers: Rivers; view: () => Box }
 
 export function makeSound(
   state: GameState,
@@ -50,9 +51,13 @@ export function makeSound(
   /** Pixels a tile covers on screen. */
   const perTile = () => world.scale.x * state.grid.size
 
+  // What cannot be had now (aria-disabled, the bar's pieces short) knocks dull.
   function press(e: PointerEvent) {
-    if (e.target instanceof Element && e.target.closest(PRESSED))
-      mixer.play('press')
+    if (!(e.target instanceof Element)) return
+    const pressed = e.target.closest(PRESSED)
+    if (!pressed) return
+    const short = pressed.getAttribute('aria-disabled') === 'true'
+    mixer.play(short ? 'refused' : 'press')
   }
   window.addEventListener('pointerdown', press)
 
@@ -66,7 +71,7 @@ export function makeSound(
     /** Once a second: the news, and the beds as the screen has them. */
     news(news: Array<News>) {
       hear(heardIn(news))
-      mixer.hear(bedsOf(state, ear.terrain, ear.view(), perTile()))
+      mixer.hear(bedsOf(state, ear.terrain, ear.rivers, ear.view(), perTile()))
     },
     toggle: mixer.toggle,
     destroy() {

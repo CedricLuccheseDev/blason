@@ -46,7 +46,7 @@ describe('the world heard up close', () => {
     expect(clashes(ALL, 3)).toBe(0)
   })
 
-  it('hears a trebuchet’s stone where it came down', () => {
+  it('hears a trebuchet loosed, and its stone where it came down', () => {
     const state = game()
     const spectacle = makeSpectacle()
     const stone = {
@@ -58,7 +58,10 @@ describe('the world heard up close', () => {
       lands: 5,
     } as Strike
     state.strikes.push(stone)
-    expect(spectacle.watch(state, ALL, 30)).toEqual([])
+    // Loosed from its lord's border, then come down.
+    expect(spectacle.watch(state, ALL, 30)).toEqual([
+      { cue: 'launch', x: 2, y: 2, level: 1 },
+    ])
     state.strikes = []
     state.tick = 5
     expect(spectacle.watch(state, ALL, 30)).toEqual([

@@ -419,15 +419,21 @@ nothing clips when everything falls at once:
   hardly more;
 - **the world** heard up close: a clash of swords, a volley, a stone (in
   `cues.ts` too, on their bus), three at once at most;
-- **the beds** of the land (`beds.ts`): the sea, the wind, the woods, the
-  villages, long loops played on without a seam, each as loud as the share
-  of the screen it holds, their highs filtered away from afar;
+- **the beds** of the land (`beds.ts`): the sea, the wind, the rivers, the
+  woods, the villages, the markets, the castles, the caravans, the armies
+  marching, the battles' din, the burnt and the risen lands; long loops
+  played on without a seam, each as loud as what makes it holds of the
+  screen and from the side it lies on, each in its own band of the
+  spectrum, war over life over nature, their sum held under a ceiling, their
+  highs filtered away from afar, each fetched once first heard;
 - **the music** (`music.ts`): pieces of the period, streamed one after the
   other with a silence between;
 - **the interface**: a light wooden click on each piece of the HUD pressed.
 
-What tells comes first: a cue lowers the beds and the music a little while
-it passes, a cry to all lowers everything else, the end of the game silences
+All but the interface and the music send a share of themselves into one
+generated room (`room.ts`), a short open-air reverberation, so that the
+sounds mingle rather than sit side by side. What tells comes first: a cue
+lowers the beds and the music a little while it passes, a cry to all lowers everything else, the end of the game silences
 all but itself. Each sound is a family of takes, the first the one heard
 unless its entry turns between them, never the same twice running.
 `mixer.ts` plays it all after the player's first gesture (the browser allows
@@ -440,10 +446,16 @@ What the player hears is read in `src/render/`, never in the engine:
 him, a herald's letter, his alliances made or ended, any betrayal) and, each
 tick, his army leaving, his work laid, a caravan paying him (`arrivals.ts`,
 read alike by the map's "+" of gold) and the end of the game into cues, each
-from its tile; `ambience.ts` samples the screen once a second over the drawn
-ground (`ground/terrain.ts`) for the beds, `spectacle.ts` reads each tick the
-battles, the castles' volleys and the coups come down on screen, heard only
-coming closer, as the map's two scales would have it; `sound.ts` places each
+from its tile, and in the opening the standard planted, a drum for each of
+its last seconds and a horn as the game begins; `ambience.ts` samples the
+screen once a second over the drawn ground (`ground/terrain.ts`) and the
+rivers, and finds every element of the game on it, for the beds;
+`spectacle.ts` reads each tick the clashes and cries of the armies
+fighting, an army fallen, the castles' volleys, each coup as it sets out
+and comes down, a hammer on a work rising, all heard only coming closer, as
+the map's two scales would have it. Both are typed on the engine's lists
+(`Record<Work, Bed>`, `Record<Coup, …>`), so that a work, a scar or a coup
+more does not compile without its sound; `sound.ts` places each
 sound by where it falls across the screen, off it too, so that the ear tells
 where to look. The files come from Freesound and the music from Kevin
 MacLeod, under CC0 or CC BY; their sources and authors are listed in

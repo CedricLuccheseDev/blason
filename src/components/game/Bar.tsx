@@ -96,6 +96,7 @@ function Armies({
                   dim={a.men === 0 && !held}
                 />
               }
+              short={a.men === 0 && !held}
             />
           )
         })}
@@ -165,6 +166,7 @@ export function Bar({
                       dim={!w.can && !held}
                     />
                   }
+                  short={!w.can && !held}
                   figure={
                     <Figure icon="coins" size="m">
                       {count(w.price)}
@@ -196,6 +198,7 @@ export function Bar({
                       dim={!c.can && !held}
                     />
                   }
+                  short={!c.can && !held}
                   figure={
                     <Figure icon="coins" size="m">
                       {count(c.price)}

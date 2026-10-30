@@ -109,7 +109,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   quand la page est cachée. Ce que le joueur entend se lit dans le rendu : `render/hearing.ts` (les nouvelles de la
   seconde, et à chaque pas mon armée qui part, ma construction posée, une caravane qui me paie, `arrivals.ts`, lue aussi
   par le « + » d'or, et la fin), `render/ambience.ts` (les fonds selon ce qui est à l'écran, une fois par seconde),
-  `render/spectacle.ts` (de près seulement : batailles, flèches des châteaux, coups qui tombent), `render/sound.ts` place
+  `render/spectacle.ts` (de près seulement : chocs et cris des batailles, armée tombée, flèches des châteaux, chaque coup qui part et qui tombe, le marteau d'un chantier) ; chaque élément du jeu a son son (30/10, « Je veux que chaque élément du jeu a son son »), les tables typées sur les listes du moteur (`Record<Work, Bed>`, `Record<Coup, …>`) : une construction, une marque ou un coup de plus ne compile pas sans le sien ; les fonds chacun dans sa bande, la guerre sur la vie sur la nature, leur somme plafonnée, placés à gauche ou à droite, et une réverbération commune (`audio/room.ts`) pour que tout s'entremêle (« Les sons doivent s'entremêler avec un mixage qui rend le tout bien »), `render/sound.ts` place
   chaque son selon où il tombe sur l'écran, et le clic de bois sur chaque pièce du HUD pressée. Des prises de Freesound
   en CC0 ou CC BY et la musique en CC BY (`public/sounds/CREDITS.md`). Le réglage des volumes viendra dans une modale de
   réglages, avec le profil.

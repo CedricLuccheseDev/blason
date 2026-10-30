@@ -23,6 +23,15 @@ export type Cue =
   | 'volley'
   | 'stone'
   | 'press'
+  | 'refused'
+  | 'shout'
+  | 'fall'
+  | 'launch'
+  | 'torch'
+  | 'hammer'
+  | 'plant'
+  | 'tick'
+  | 'start'
 
 type Layer = {
   /** Its file in public/sounds/, without the extension; a family of takes, the first the one heard unless the cue turns. */
@@ -104,6 +113,58 @@ export const CUES: Record<Cue, CueSpec> = {
     gain: 0.6,
     again: 0.05,
   },
+  /** A piece of the HUD that cannot be had now, pressed: a dull knock. */
+  refused: {
+    layers: [{ file: 'refused-1' }],
+    bus: 'ui',
+    gain: 0.6,
+    again: 0.2,
+  },
+  /** Up close, the men of an army fighting: a cry now and then. */
+  shout: {
+    layers: [{ file: ['shout-1', 'shout-2', 'shout-3', 'shout-4'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.45,
+    again: 1.6,
+  },
+  /** Up close, an army fallen to its last man. */
+  fall: {
+    layers: [{ file: ['fall-1', 'fall-2', 'fall-3'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.5,
+    again: 1,
+  },
+  /** Up close, a trebuchet loosing its stone. */
+  launch: {
+    layers: [{ file: 'launch-1' }],
+    bus: 'world',
+    gain: 0.7,
+    again: 0.5,
+  },
+  /** Up close, a troublemaker setting out, his torch lit. */
+  torch: {
+    layers: [{ file: ['torch-1', 'torch-2'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.6,
+    again: 0.5,
+  },
+  /** Up close, a work rising: a blow of a hammer now and then. */
+  hammer: {
+    layers: [{ file: ['hammer-1', 'hammer-2', 'hammer-3'] }],
+    bus: 'world',
+    turn: true,
+    gain: 0.45,
+    again: 0.9,
+  },
+  /** My standard planted, or moved, in the opening: its cloth in the wind. */
+  plant: { layers: [{ file: 'plant-1' }], gain: 0.6, again: 0.3 },
+  /** The opening's last seconds, one stroke of a drum each. */
+  tick: { layers: [{ file: ['tick-1', 'tick-2'] }], gain: 0.5, again: 0.8 },
+  /** The opening over, the game begun: a long horn. */
+  start: { layers: [{ file: 'start-1' }], gain: 0.8, again: 5 },
   /** Up close, a trebuchet's stone come down. */
   stone: {
     layers: [{ file: ['stone-1', 'stone-2', 'stone-3'] }],

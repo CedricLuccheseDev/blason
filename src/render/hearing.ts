@@ -1,4 +1,4 @@
-import { NO_ONE, wonBy } from '../../engine'
+import { NO_ONE, TICKS_PER_SECOND, wonBy } from '../../engine'
 import { makeArrivals } from './arrivals'
 import type { Cue } from '../audio/cues'
 import type { GameState } from '../../engine'
@@ -9,7 +9,11 @@ import type { News, PactNews } from './news'
 // or a coup against him, a herald's letter, his alliances made or ended, a
 // betrayal cried to all; and each tick, so that they sound with the gesture,
 // his army leaving, his work laid, a caravan paying him, and the end of the
-// game, won or lost, or his own fall.
+// game, won or lost, or his own fall; in the opening, his standard planted,
+// a drum for each of its last seconds, and a horn as the game begins.
+
+/** The opening's last seconds, a drum's stroke each. */
+const LAST = 5
 
 /** A cue and the tile it comes from; -1 from nowhere in particular. */
 export type Heard = { cue: Cue; tile: number }
@@ -43,6 +47,25 @@ export function makeHearing(state: GameState, me: number) {
   let tick = state.tick
   let alive = me >= 0 && state.players[me].alive
   let ended = false
+  let standard = me >= 0 ? state.players[me].standard : -1
+
+  /** The opening heard: my standard planted or moved, its last seconds, its end. */
+  function opening(heard: Array<Heard>, before: number) {
+    const { openingTicks } = state.rules
+    const planted = state.players[me].standard
+    if (planted !== standard && planted >= 0 && state.tick <= openingTicks)
+      heard.push({ cue: 'plant', tile: planted })
+    standard = planted
+    const left = openingTicks - state.tick
+    if (
+      left > 0 &&
+      left <= LAST * TICKS_PER_SECOND &&
+      left % TICKS_PER_SECOND === 0
+    )
+      heard.push({ cue: 'tick', tile: -1 })
+    if (before < openingTicks && state.tick >= openingTicks)
+      heard.push({ cue: 'start', tile: -1 })
+  }
 
   /** The end, once: the game won or lost, or the player fallen before it. */
   function end(heard: Array<Heard>) {
@@ -66,6 +89,7 @@ export function makeHearing(state: GameState, me: number) {
           heard.push({ cue: 'build', tile: work.tile })
       const paid = arrivals.read(state, state.tick - tick).at(0)
       if (paid) heard.push({ cue: 'gold', tile: paid.tile })
+      opening(heard, tick)
       hosts = new Set(state.hosts)
       works = new Set(state.works)
       tick = state.tick

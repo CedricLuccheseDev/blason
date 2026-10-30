@@ -1,8 +1,18 @@
 import { makeBeds } from './beds'
 import { chance } from './chance'
 import { CUES } from './cues'
-import { COMPRESSOR, DUCKS, FALL, LEVELS, RISE, VOICES, gainOf } from './mix'
+import {
+  COMPRESSOR,
+  DUCKS,
+  FALL,
+  LEVELS,
+  RISE,
+  ROOM,
+  VOICES,
+  gainOf,
+} from './mix'
 import { makeMusic } from './music'
+import { makeRoom } from './room'
 import type { Hearing } from './beds'
 import type { Cue } from './cues'
 import type { Bus, Duck } from './mix'
@@ -91,11 +101,17 @@ export function makeMixer(): Mixer {
     master = ctx.createGain()
     master.gain.value = muted ? 0 : 1
     master.connect(squeeze)
+    const room = makeRoom(ctx, ROOM.decay)
+    room.connect(master)
     for (const [bus, db] of Object.entries(LEVELS) as Array<[Bus, number]>) {
       const input = ctx.createGain()
       input.gain.value = gainOf(db)
       const lowered = ctx.createGain()
       input.connect(lowered).connect(master)
+      // A share of each bus into the one room, after its duck.
+      const send = ctx.createGain()
+      send.gain.value = ROOM.sends[bus]
+      lowered.connect(send).connect(room)
       buses.set(bus, { input, duck: lowered })
     }
     for (const spec of Object.values(CUES))

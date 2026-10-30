@@ -22,6 +22,7 @@ export function Piece({
   hint,
   figure,
   held,
+  short = false,
   onClick,
 }: Readonly<{
   emblem: ReactNode
@@ -31,6 +32,8 @@ export function Piece({
   hint: ReadonlyArray<string>
   figure?: ReactNode
   held: boolean
+  /** What cannot be had now (no man to raise, not the gold): said to the ear as a refusal (render/sound.ts). */
+  short?: boolean
   onClick: () => void
 }>) {
   return (
@@ -38,6 +41,7 @@ export function Piece({
       <button
         type="button"
         aria-pressed={held}
+        aria-disabled={short || undefined}
         aria-label={name}
         onClick={onClick}
         className={PIECE}
