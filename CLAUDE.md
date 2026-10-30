@@ -232,7 +232,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 
 ## Surface de jeu
 
-- **Joué d'abord sur ordinateur**, dans le navigateur ; livré en PWA ; le mobile viendra ensuite.
+- **Joué d'abord sur ordinateur**, dans le navigateur ; livré en PWA, installée en plein écran (`display: fullscreen`, la carte sous l'encoche par `viewport-fit=cover`, 30/10 « Sur mobile y'a toujours les dead zone en haut et en bas ») ; le mobile viendra ensuite.
 - **La direction artistique, actée** (Concept, section 3) : une carte dessinée à l'encre sur un
   manuscrit (parchemin, lavis de la couleur de chaque seigneur, lignes de côte, cadre et page autour,
   jamais de fond noir ou gris), et une interface faite d'objets de ce monde (écu, parchemins, rubans,

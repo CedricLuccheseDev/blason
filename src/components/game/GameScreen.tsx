@@ -140,9 +140,13 @@ export function GameScreen({
   }, [me, level, online, save, size, seed])
 
   // touch-none: the fingers belong to the game, which pinches its own map
-  // sharp; the browser zooming the page would only blur it.
+  // sharp; the browser zooming the page would only blur it. Pinned to the
+  // four edges rather than given a height: in an app laid on a phone's home
+  // screen, iOS counts 100dvh short of its bars, and the map left bands of
+  // page under them (« Sur mobile y'a toujours les dead zone en haut et en
+  // bas »).
   return (
-    <main className="hud relative h-dvh w-full touch-none overflow-hidden bg-vellum select-none">
+    <main className="hud fixed inset-0 touch-none overflow-hidden bg-vellum select-none">
       <div
         ref={host}
         className="absolute inset-0"
