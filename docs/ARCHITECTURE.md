@@ -243,6 +243,15 @@ orders. It decides nothing about the rules.
   behind, so that no army goes out of a click meant to put it away).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
+- The simulation runs in its own thread wherever the browser gives one,
+  so that no step however heavy, nor a bot thinking long, ever holds a frame
+  back: `sim.worker.ts` plays the session there, alone or online, and after
+  each step sends what moved (`mirror.ts`: the tiles that changed hands, and
+  each list of what lives on the land, each thing under a number of its
+  own); `threaded.ts` keeps the session's contract in the page, its state a
+  mirror on which each step is laid in place, every army, work or caravan
+  the same object from one step to the next, as the drawing and the sound
+  know them by it. The page keeps the clock and the relay's line.
 - A saved game (`save.ts`) is a game's state at a tick as plain data, less
   what the seed makes again (the land and its tiles, the rules, whatever the
   game has not changed since it began): the arrays over every tile kept as

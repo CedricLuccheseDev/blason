@@ -225,6 +225,7 @@ export async function mountGame(
       input?.destroy()
       window.removeEventListener('keydown', onKey)
       sound.destroy()
+      session.stop?.()
       camera.destroy()
       // The textures stay: the fonts' and the stamps' are shared with the
       // next game on the page, which a destroyed one would break.

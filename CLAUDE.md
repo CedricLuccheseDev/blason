@@ -88,7 +88,9 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   (`npm run census -- [graine]`) : une partie de bots, et toutes les trois minutes la terre, les constructions,
   les paysans et l'or du premier et du seigneur médian ; on y règle les chiffres (`LAND=… VILLAGE=…` pour en essayer d'autres).
 - `src/render/` : le rendu (PixiJS) et les gestes, qui ne décident rien. `client.ts` monte une partie, `session.ts`
-  la fait tourner dans la page, `scene.ts` empile les calques ; chaque terre tracée en lignes autour de ses tuiles et
+  la fait tourner (dans son propre fil, 30/10 « go la simulation dans un fil a part » : `sim.worker.ts` y joue la session,
+  `threaded.ts` en tient le contrat dans la page, `mirror.ts` y pose après chaque pas ce qui a bougé, chaque chose restant
+  le même objet ; dans la page faute de fil), `scene.ts` empile les calques ; chaque terre tracée en lignes autour de ses tuiles et
   repassée à la plume (`regions.ts`, `trace.ts`, `pen.ts`, le ruban `layers/borders.ts`), comme les planches ; la
   carte gagne du détail en zoomant, par paliers de pixels par tuile (`ground/detail.ts`) : le décor (`ground/`,
   collines, bois, champs, rivières) peint par morceaux de seize tuiles gardés par palier et multiplié dans le lavis,
