@@ -14,12 +14,15 @@ export function LandPlate({
   seed,
   land,
   label,
+  whole = false,
   children,
 }: Readonly<{
   seed: string | null
   land: Land
   /** What the land is, for whoever cannot see it. */
   label: string
+  /** The whole land in the sea round it, as a list of maps shows it; else covering the plate. */
+  whole?: boolean
   children?: ReactNode
 }>) {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -37,7 +40,7 @@ export function LandPlate({
     void import('~/render/sketch').then(({ sketchGame }) => {
       if (!live) return
       stop = whenIdle(() => {
-        sketchGame(element, seed, land)
+        sketchGame(element, seed, land, whole)
         setDrawn(seed)
       }, 1000)
     })
@@ -45,7 +48,7 @@ export function LandPlate({
       live = false
       stop()
     }
-  }, [seed, landKey])
+  }, [seed, landKey, whole])
 
   const shown = seed !== null && drawn === seed
   return (

@@ -25,9 +25,13 @@ applies each rule is named beside it.
   piece through them. On the map, a range is washed in stone and ringed in
   ink, a mount on each of its cells; a pass is the gap the range leaves
   (`src/render/layers/peaks.ts`).
-- **Maps of the real Earth** (`engine/map/atlas.ts`): Europe first, its
-  ground baked from the world's heights, its great lakes and main rivers
-  real; each map has its own size and the lords it suits, its islands kept
+- **Maps of the real Earth** (`engine/map/atlas.ts`): the British Isles
+  (small), France (middling), the Mediterranean and Europe (large), the
+  World (huge), each ground baked from the world's heights, its great lakes
+  and main rivers real; a map of some lands only, as France or the British
+  Isles, draws its neighbours' land **dead**: dulled, no one's, no army
+  enters it nor any work stands there, as the high mountains (country
+  outlines from Natural Earth, public domain); each map has its own size and the lords it suits, its islands kept
   apart and its straits open (an island is reached by boat), its high
   mountains on the real ranges. Every piece of land the water touches is in
   the game, the islands with the rest; only a piece the high mountains close

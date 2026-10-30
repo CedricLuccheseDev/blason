@@ -22,6 +22,7 @@ import type { GameSetup, GameState, Grid } from './types'
 function reachedLand(grid: Grid): Array<boolean> {
   const piece = new Int32Array(grid.land.length).fill(-1)
   const wet = new Set<number>()
+  const sizes = new Map<number, number>()
   let main = -1
   let most = 0
   grid.land.forEach((on, start) => {
@@ -35,12 +36,19 @@ function reachedLand(grid: Grid): Array<boolean> {
         piece[n] = start
         queue.push(n)
       }
+    sizes.set(start, queue.length)
     if (queue.length > most) [main, most] = [start, queue.length]
   })
   return grid.land.map(
-    (on, tile) => on && (piece[tile] === main || wet.has(piece[tile])),
+    (on, tile) =>
+      on &&
+      (piece[tile] === main ||
+        (wet.has(piece[tile]) && (sizes.get(piece[tile]) ?? 0) >= ISLE)),
   )
 }
+
+/** The fewest tiles an island keeps to be in the game: a speck the water touches, a shore's crumb cut off by the dead land, is not. */
+const ISLE = 20
 
 /**
  * A new game, as its setup says, a lord a seat, but for the empty ones: no

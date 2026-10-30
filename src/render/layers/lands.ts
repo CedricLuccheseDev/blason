@@ -1,4 +1,12 @@
-import { Container, Graphics, GraphicsContext } from 'pixi.js'
+import {
+  Container,
+  FillPattern,
+  Graphics,
+  GraphicsContext,
+  Matrix,
+  Texture,
+} from 'pixi.js'
+import { css } from '../art/ink'
 import { mixColor } from '../ease'
 import { chain, flatten, simplify } from '../geometry'
 import { TONE } from '../palette'
@@ -73,7 +81,9 @@ export function makeSea(world: World) {
  * straight, the same line seen from both, so that no crack opens between
  * them (only the coast is seen); its coast and the frame as drawn.
  */
-export function plainCells(land: World['land']): Array<Array<Point>> {
+export function plainCells(
+  land: ReadonlyArray<{ outline: Array<Point> }>,
+): Array<Array<Point>> {
   const at = ([x, y]: Point) => `${x},${y}`
   const cells = new Map<string, number>()
   const sides = new Set<string>()
@@ -110,3 +120,45 @@ export function landShape(world: World): GraphicsContext {
     cap: 'round',
   })
 }
+
+/** The dead land's parchment: the page dulled, as a land beyond the game is drawn on an old map (« Il faut instaurer des dead space »), and hatched, lest it read as sea (« On dirait que c'est de la mer alors que nan »). */
+const DEAD = mixColor(TONE.page, TONE.ink, 0.16)
+const HATCH = mixColor(DEAD, TONE.ink, 0.3)
+/** The hatching's tile, in pixels of its texture, and in map units. */
+const [TILE, SPAN] = [16, 7]
+
+/** The hatching: a stroke across each tile, joined from one to the next. */
+function hatching(): FillPattern {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = TILE
+  const g = canvas.getContext('2d')
+  if (g) {
+    g.fillStyle = css(DEAD)
+    g.fillRect(0, 0, TILE, TILE)
+    g.strokeStyle = css(HATCH)
+    g.lineWidth = 2
+    g.beginPath()
+    for (const k of [-TILE, 0, TILE]) {
+      g.moveTo(k, TILE)
+      g.lineTo(k + TILE, 0)
+    }
+    g.stroke()
+  }
+  const pattern = new FillPattern(Texture.from(canvas), 'repeat')
+  pattern.setTransform(new Matrix().scale(SPAN / TILE, SPAN / TILE))
+  return pattern
+}
+
+/** The dead land, others' than the map's own (atlas.ts): drawn, dulled and hatched, bare, no lord's wash ever over it. */
+function deadShape(world: World): GraphicsContext {
+  const shape = new GraphicsContext()
+  if (world.dead.length === 0) return shape
+  for (const cell of plainCells(world.dead)) shape.poly(flatten(cell))
+  return shape.fill(hatching())
+}
+
+/** The land's parchment under the lords' washes, and the dead land beside it. */
+export const landLayers = (world: World, shape: GraphicsContext) => [
+  new Graphics(shape),
+  new Graphics(deadShape(world)),
+]

@@ -16,7 +16,11 @@ export const bookEn = {
     standard: 'A middling land',
     large: 'A great land',
     huge: 'A vast land',
+    britain: 'The British Isles',
+    france: 'France',
+    mediterranean: 'The Mediterranean',
     europe: 'Europe',
+    world: 'The World',
   },
   landLine: (size: string, least: number, most: number) =>
     `${size}, for ${least} to ${most} lords`,
@@ -92,7 +96,11 @@ export const bookFr: BookMessages = {
     standard: 'Une terre moyenne',
     large: 'Une grande terre',
     huge: 'Une terre immense',
+    britain: 'Les îles Britanniques',
+    france: 'La France',
+    mediterranean: 'La Méditerranée',
     europe: 'L’Europe',
+    world: 'Le monde',
   },
   landLine: (size: string, least: number, most: number) =>
     `${size}, pour ${least} à ${most} seigneurs`,

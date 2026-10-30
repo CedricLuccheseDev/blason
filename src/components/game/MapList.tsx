@@ -55,7 +55,12 @@ export function MapList({
             className={`hud-press text-left outline-offset-2 ${chosen ? 'outline-2 outline-gilt' : 'opacity-75 hover:opacity-100'} ${onPick ? 'cursor-pointer' : ''}`}
           >
             <Stack gap="hair">
-              <LandPlate seed={book.seed} land={land} label={m.lands[key]}>
+              <LandPlate
+                seed={book.seed}
+                land={land}
+                label={m.lands[key]}
+                whole
+              >
                 {suits && (
                   <span className="absolute top-1 right-1">
                     <Tag>

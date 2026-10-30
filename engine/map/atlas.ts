@@ -1,14 +1,13 @@
 import { isqrt } from '../numbers'
 import { MAP_SIZES } from '../rules'
-import { EUROPE } from './atlas/europe'
 import { raisePeaks } from './peaks'
-import { framed, openStraits, rangesOf, spacingOf } from './landmarks'
+import { deadOf, framed, openStraits, rangesOf, spacingOf } from './landmarks'
 import { keepLands } from './seas'
+import { ATLAS } from './earth'
+import type { Atlas } from './earth'
 import type { Cells } from './cells'
-import type { Sheet, Strait } from './landmarks'
 import type { Point } from './points'
 import type { Ground, Plan } from './types'
-import type { MapSize } from '../rules'
 
 // The atlas: lands of the real Earth (« faire des maps de la vrai terre »),
 // their ground baked from the world's heights (atlas/, scripts/atlas.ts).
@@ -18,64 +17,11 @@ import type { MapSize } from '../rules'
 // it as on an invented land and reads each cell's height there instead of
 // raising one: the sea and the great lakes where the Earth has them, its
 // islands apart, the high mountains on the real ranges, its main rivers
-// along their courses. A map more is a line here and its baked file.
+// along their courses. A map more is an entry in earth.ts and its baked
+// file.
 
-export type Atlas = 'europe'
-
-type Entry = {
-  sheet: Sheet
-  /** The straits kept open, narrower than the cells: the shores either side never touch (« l'irlande est connecté a l'angleterre pareille pour le danemark et la suede », « l'espagne et le maroc aussi », « la corse la sardaigne l'italie »). */
-  straits: ReadonlyArray<Strait>
-  /** Its own size, the invented lands' measure (MAP_SIZES): no other of it. */
-  size: MapSize
-  /** The lords it suits, from the fewest to the most. */
-  lords: readonly [number, number]
-  /** Its high ranges, each a line along its crest, in degrees, longitude then latitude (« sur la map europe y'a pas les pyrénées »): the high mountains stand along them, where the land is high enough. */
-  ranges: ReadonlyArray<ReadonlyArray<number>>
-}
-
-export const ATLAS: Readonly<Record<Atlas, Entry>> = {
-  europe: {
-    sheet: EUROPE,
-    size: 'large',
-    lords: [12, 20],
-    ranges: [
-      [-1.8, 43.1, 0, 42.8, 1.5, 42.6, 2.9, 42.45], // the Pyrenees
-      [
-        5.6, 44.1, 6.9, 44.6, 7, 45.8, 8, 46.3, 9.5, 46.5, 11, 46.9, 12.5, 47,
-        14, 47.3, 15.5, 47.5,
-      ], // the Alps
-      [
-        8.8, 44.3, 11, 44, 12.6, 43.2, 13.5, 42.3, 14.5, 41.3, 15.8, 40.3, 16.2,
-        39.3,
-      ], // the Apennines
-      [14.5, 45.6, 16.5, 44, 18.5, 43, 19.8, 42.5], // the Dinaric Alps
-      [
-        17.5, 49.4, 19.5, 49.3, 21.5, 49.2, 23.5, 48.3, 25, 47.5, 25.6, 46.2,
-        25, 45.4, 23, 45.4, 22.4, 44.8,
-      ], // the Carpathians
-      [22.5, 43.4, 24.5, 42.8, 26.5, 42.7], // the Balkan
-      [37.5, 44, 40.5, 43.3, 43.5, 42.7, 45, 42.3], // the Caucasus
-      [29.5, 37, 32, 36.8, 35, 37.5, 38, 38, 41, 38.6], // the Taurus
-      [-1, 35.3, 2, 36.2, 6, 36.4, 9, 36.6], // the Tell Atlas
-    ],
-    straits: [
-      [0.4, 50.4, 2.3, 51.4], // the Pas-de-Calais
-      [-6.4, 55.5, -5.2, 54.5], // the North Channel
-      [-5.9, 52.3, -5.4, 51.6], // St George's Channel
-      [12.6, 56.2, 12.8, 55.2], // the Sund
-      [10.9, 55.9, 11.1, 55.0], // the Great Belt
-      [9.7, 55.7, 9.9, 55.1], // the Little Belt
-      [8.9, 41.4, 9.5, 41.3], // Bonifacio
-      [9.9, 43.3, 9.9, 42.0], // the Tuscan sea
-      [15.7, 38.3, 15.5, 37.9], // Messina
-      [-6.2, 35.95, -5.2, 36.05], // Gibraltar
-      [28.9, 40.9, 29.2, 41.3], // the Bosporus
-      [26.1, 40.0, 26.8, 40.5], // the Dardanelles
-      [36.5, 45.5, 36.6, 45.1], // Kerch
-    ],
-  },
-}
+export type { Atlas } from './earth'
+export { ATLAS } from './earth'
 
 /** The maps of the atlas, the smallest first. */
 export const ATLAS_MAPS: ReadonlyArray<Atlas> = (
@@ -153,6 +99,7 @@ export function atlasLand(atlas: Atlas) {
     const frame = framed(sheet, width, height)
     const spacing = spacingOf(cells, width, height)
     openStraits(frame, straits, cells, spacing, wet)
+    const dead = deadOf(ATLAS[atlas].sheet, cells, width, height)
     // The Earth's lands as they are, its islands apart: Great Britain,
     // Ireland, Sicily, Corsica, the Danish isles.
     const sea = keepLands(cells, wet, ISLET)
@@ -175,7 +122,7 @@ export function atlasLand(atlas: Atlas) {
       side,
       false,
     )
-    return { water: sea, peaks, heights: ground, passes }
+    return { water: sea, peaks, heights: ground, passes, dead }
   }
 }
 

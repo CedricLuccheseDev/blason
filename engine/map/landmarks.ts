@@ -5,7 +5,7 @@ import type { Point } from './points'
 // What a map of the atlas lays on its frame from the Earth's degrees
 // (atlas.ts): the straits kept open between shores that must not touch, and
 // the high ranges the mountains stand along, each cell judged by how near
-// its site lies to their lines.
+// its site lies to their lines; and the dead land, others' than its own.
 
 /** A map's frame on the Earth, in degrees, and its baked ground. */
 export type Sheet = {
@@ -18,6 +18,8 @@ export type Sheet = {
   aspect: number
   rivers: ReadonlyArray<ReadonlyArray<number>>
   data: string
+  /** Its dead points, a bit each, eight to a byte, in base 64: the land of others than its own lands (scripts/atlas.ts); none on a map whose land is all its own. */
+  dead?: string
 }
 
 /** A strait, a segment along its water from one end to the other, in degrees: longitude, latitude, then the other end's. */
@@ -87,4 +89,22 @@ function apartSq([x, y]: Point, a: Point, b: Point): number {
   const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / long))
   const [px, py] = [a[0] + t * dx - x, a[1] + t * dy - y]
   return px * px + py * py
+}
+
+/** Each cell's death: whether the point nearest its site is dead, the land of another than the map's own (« Il faut instaurer des dead space »); none on a map all its own. */
+export function deadOf(
+  sheet: Sheet,
+  cells: Cells,
+  width: number,
+  height: number,
+): Array<boolean> | undefined {
+  const { cols, rows, dead } = sheet
+  if (!dead) return undefined
+  const bits = Uint8Array.from(atob(dead), (ch) => ch.charCodeAt(0))
+  return cells.sites.map(([x, y]) => {
+    const c = Math.min(cols - 1, Math.round((x / width) * (cols - 1)))
+    const r = Math.min(rows - 1, Math.round((y / height) * (rows - 1)))
+    const i = r * cols + c
+    return (bits[i >> 3] & (1 << (i & 7))) !== 0
+  })
 }

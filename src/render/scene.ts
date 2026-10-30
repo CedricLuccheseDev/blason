@@ -4,7 +4,7 @@ import { viewOf } from './camera'
 import { cullable, group } from './groups'
 import { renewalsOf } from './renewals'
 import { makeLabels } from './layers/labels'
-import { landShape, makeSea } from './layers/lands'
+import { landLayers, landShape, makeSea } from './layers/lands'
 import { makePeaks } from './layers/peaks'
 import { REACH, makePage } from './layers/page'
 import { makePaper } from './layers/paper'
@@ -116,7 +116,7 @@ export function makeScene(
   // hidden, a seal drawn again) rebuilds its own group's batches, never the
   // washes', the borders' or the decoration's, which change a few times a
   // second at most.
-  const below = [page.container, sea.container, new Graphics(shape)]
+  const below = [page.container, sea.container, ...landLayers(land, shape)]
   if (page.compass) below.push(page.compass)
   world.addChild(
     group(...below),

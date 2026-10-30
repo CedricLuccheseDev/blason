@@ -86,6 +86,7 @@ function figures(world: World) {
       ],
       sea: world.map.sea,
       peaks: [],
+      dead: world.map.dead,
     },
     world.width,
     world.height,

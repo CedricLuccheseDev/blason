@@ -39,23 +39,32 @@ export function sketchGame(
   canvas: HTMLCanvasElement,
   seed: string,
   land: Land,
+  /** The whole land in the sea round it, as a list of maps shows it; else covering the canvas. */
+  whole = false,
 ): void {
   const world = landAhead(seed, land)
   const ratio = Math.min(SHARPEST, window.devicePixelRatio || 1)
   canvas.width = Math.round(canvas.clientWidth * ratio)
   canvas.height = Math.round(canvas.clientHeight * ratio)
   const g = canvas.getContext('2d')
-  if (g) sketch(g, world, ratio)
+  if (g) sketch(g, world, ratio, whole)
 }
 
-function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
+function sketch(
+  g: CanvasRenderingContext2D,
+  world: World,
+  ratio: number,
+  whole: boolean,
+) {
   const { width, height } = g.canvas
   g.fillStyle = css(TONE.seaWash)
   g.fillRect(0, 0, width, height)
   // The land covering the canvas, in its middle: on a card of another
   // shape, cut at its sides rather than floating in the sea (« grossis en
-  // hauteur l'area partie publique »).
-  const scale = Math.max(width / world.width, height / world.height)
+  // hauteur l'area partie publique »); or whole, in a list of maps, a tall
+  // one between two bands of sea.
+  const fit = whole ? Math.min : Math.max
+  const scale = fit(width / world.width, height / world.height)
   const [dx, dy] = [width - world.width * scale, height - world.height * scale]
   const at = new DOMMatrix([scale, 0, 0, scale, dx / 2, dy / 2])
   g.setTransform(at)
@@ -79,6 +88,12 @@ function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
   const land = cells(world.land)
   g.fillStyle = css(TONE.page)
   g.fill(land)
+  // The dead land, others' than the map's own, dulled (layers/lands.ts),
+  // its coast's ink telling it from the sea.
+  if (world.dead.length > 0) {
+    g.fillStyle = css(mixColor(TONE.page, TONE.ink, 0.22))
+    g.fill(cells(world.dead))
+  }
   // The darker lands washed in, kept within the coast.
   g.save()
   g.clip(land)
@@ -156,7 +171,7 @@ function trace(path: Path2D, line: ReadonlyArray<Point>) {
 }
 
 /** Cells of land as one shape, filled at once so that no seam shows between two. */
-function cells(land: World['land']): Path2D {
+function cells(land: ReadonlyArray<{ outline: Array<Point> }>): Path2D {
   const path = new Path2D()
   for (const { outline } of land) {
     trace(path, outline)

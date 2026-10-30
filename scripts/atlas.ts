@@ -5,13 +5,28 @@ import { writeFileSync } from 'node:fs'
 // degrees, written as an engine module of bytes (engine/map/atlas/); its
 // great lakes poured in as water and its main rivers laid on it, from
 // Natural Earth (public domain), « Les fleuves rivières et lac sont de la
-// vrai eau ». Run once per map, or again to change its frame:
+// vrai eau ». Run once per map, or again to change its frame, the last
+// figure the minutes between two points (12 unless said; the whole world
+// at 30, lest its file weigh megabytes):
 // npm run atlas -- europe -12 45 35 60
+// npm run atlas -- world -180 180 -56 72 30
+// A map of some lands only names them last, by their codes in Natural
+// Earth's countries (public domain): the land of others is drawn, and dead,
+// no one's to take (« Il faut instaurer des dead space … Sinon la France y'a
+// pas que la France »):
+// npm run atlas -- france -5.5 9.8 41.3 51.5 6 FRA
 
-const [name = 'europe', west = '-12', east = '45', south = '35', north = '60'] =
-  process.argv.slice(2)
+const [
+  name = 'europe',
+  west = '-12',
+  east = '45',
+  south = '35',
+  north = '60',
+  minutes = '12',
+  only = '',
+] = process.argv.slice(2)
 /** The heights' grid is one arc-minute: so many minutes a point. */
-const STRIDE = 12
+const STRIDE = Number(minutes)
 /** The height the bytes reach, in metres: higher is as high. */
 const TOP = 4000
 /** The rivers and lakes kept, by Natural Earth's rank: the greater, the lower. */
@@ -109,6 +124,56 @@ const bytes = lats.flatMap((la) =>
     )
   }),
 )
+// The land of the lands named alive, a point beyond their outline along it
+// too (their coasts drawn coarser than the heights); the rest of the land
+// dead. None named, all of it alive.
+const named = only.split(',').filter(Boolean)
+const countries = named.length
+  ? (
+      (await (
+        await fetch(`${EARTH}ne_50m_admin_0_countries.geojson`)
+      ).json()) as {
+        features: Array<Feature & { properties: { ADM0_A3: string } }>
+      }
+    ).features
+      .filter((f) => named.includes(f.properties.ADM0_A3))
+      .flatMap(partsOf)
+  : []
+const [cols, rows_] = [lons.length, lats.length]
+const alive = lats.flatMap((la) =>
+  lons.map((lo) =>
+    countries.some((ring) => within([Number(lo), Number(la)], ring)),
+  ),
+)
+const dead = named.length
+  ? bytes.map((b, i) => {
+      if (b === 0) return false
+      const [c, r] = [i % cols, Math.floor(i / cols)]
+      for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+          const [cc, rr] = [c + dc, r + dr]
+          if (
+            cc >= 0 &&
+            cc < cols &&
+            rr >= 0 &&
+            rr < rows_ &&
+            alive[rr * cols + cc]
+          )
+            return false
+        }
+      return true
+    })
+  : null
+/** The dead points, a bit each, eight to a byte, in the bytes' order. */
+const deadBits = dead
+  ? Buffer.from(
+      Array.from({ length: Math.ceil(dead.length / 8) }, (_, k) =>
+        dead
+          .slice(k * 8, k * 8 + 8)
+          .reduce((byte, on, j) => byte | (on ? 1 << j : 0), 0),
+      ),
+    ).toString('base64')
+  : null
 // The main rivers within the frame, cut where they leave it, in tenths of a degree.
 const rivers = (await features('rivers_lake_centerlines'))
   .flatMap(partsOf)
@@ -127,7 +192,7 @@ const lines = b64.match(/.{1,76}/g) ?? []
 const Name = name.toUpperCase()
 writeFileSync(
   `engine/map/atlas/${name}.ts`,
-  `// ${name}'s ground: ETOPO 2022 (NOAA, public domain), one point every 0.2
+  `// ${name}'s ground: ETOPO 2022 (NOAA, public domain), one point every ${STRIDE / 60}
 // degrees, its great lakes and main rivers from Natural Earth (public
 // domain), baked by scripts/atlas.ts. A byte a point, west to east, north to
 // south: 0 the sea or a lake, else 1 + 253 times the square root of the
@@ -148,7 +213,14 @@ export const ${Name} = {
 ${rivers.map((r) => `    [${r.join(', ')}],`).join('\n')}
   ],
   data:
-${lines.map((l) => `  '${l}'`).join(' +\n')},
+${lines.map((l) => `  '${l}'`).join(' +\n')},${
+    deadBits
+      ? `
+  /** The land of other lands than ${named.join(', ')}, drawn and dead: a bit a point, eight to a byte. */
+  dead:
+${(deadBits.match(/.{1,76}/g) ?? []).map((l) => `  '${l}'`).join(' +\n')},`
+      : ''
+  }
 }
 `,
 )
