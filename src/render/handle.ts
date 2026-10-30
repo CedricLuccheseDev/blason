@@ -1,8 +1,33 @@
 import type { Heralds } from './heralds'
-import type { Army, Book, Coup, Work } from '../../engine'
+import type { Aim } from './aiming'
+import type { News } from './news'
+import type { Online } from './online'
+import type { Save } from './save'
+import type { Summary } from './summary'
+import type { Army, Book, Coup, Level, MapSize, Work } from '../../engine'
 
 // What the page holds of a game on screen (client.ts): its orders, its
 // camera, and where the HUD lays its pieces on the map.
+
+/** What the page gives a game it mounts: where it tells what happens, and what the game is. */
+export type GameHooks = {
+  onSummary: (summary: Summary) => void
+  /** The pointer over land a click would strike, or another lord's land right clicked, for his menu; none elsewhere. */
+  onAim: (aim: Aim | null) => void
+  /** What happened in the last second that the player should read. */
+  onNews?: (news: Array<News>) => void
+  names: Array<string>
+  /** The bots' level, chosen at the home; normal if none. */
+  level?: Level
+  /** The land's size; standard if none. Online, the relay's. */
+  size?: MapSize
+  /** A game online (online.ts): its land, its turns and my seat come from the relay. */
+  online?: Online
+  /** The host's game, held while he sets it in his book (« créer une partie »), its land the one asked. */
+  book?: Book
+  /** A saved game (save.ts), held still at its tick: its land, my seat and the camera come from it. */
+  save?: Save
+}
 
 export type GameHandle = {
   destroy: () => void

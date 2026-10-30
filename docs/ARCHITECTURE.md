@@ -6,7 +6,8 @@ simulation:
 ```
 src/routes, src/components   the pages and the HUD (React)
         |
-   src/render                the map on screen (PixiJS), the session, the gestures
+   src/render                the map on screen (PixiJS), the session, the gestures,
+                             what the player hears (played by src/audio)
         |
    engine/index.ts           the engine's contract
         |
@@ -403,6 +404,26 @@ orders. It decides nothing about the rules.
   land nearest his own, with its gold), his alliances offered to him, made
   or come to their end unbroken (there too, though the map shows them), and
   any lord who broke an alliance.
+
+## The sound
+
+`src/audio/` plays the game's sounds with the browser's Web Audio, and knows
+nothing of the game: `cues.ts` is the table of cues (each made of one or two
+files in `public/sounds/`, its loudness, how soon it may sound again, whether
+it is a cry to all that lowers the others, or the end that silences them for
+good), and `mixer.ts` plays them, fetched once after the player's first
+gesture (the browser allows no sound before), placed left or right, muted by
+M and remembered, silent while the page is hidden. A cue more is an entry in
+the table and its file.
+
+What the player hears is read in `src/render/`, never in the engine:
+`hearing.ts` turns the news of the second (`news.ts`: an army or a coup at
+him, a herald's letter, his alliances made or ended, any betrayal) and, each
+tick, his army leaving, his work laid, a caravan paying him (`arrivals.ts`,
+read alike by the map's "+" of gold) and the end of the game into cues, each
+from its tile; `sound.ts` places them by where the tile falls across the
+screen, off it too, so that the ear tells where to look. The files and their
+sources are listed in `public/sounds/CREDITS.md`.
 
 ## The interface
 

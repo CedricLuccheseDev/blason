@@ -18,14 +18,9 @@ import { makeNotes } from './notes'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
+import { makeSound } from './sound'
 import { bestQuality, governFrames } from './quality'
-import type { GameHandle } from './handle'
-import type { Aim } from './aiming'
-import type { News } from './news'
-import type { Book, Level, MapSize } from '../../engine'
-import type { Summary } from './summary'
-import type { Online } from './online'
-import type { Save } from './save'
+import type { GameHandle, GameHooks } from './handle'
 
 // The game on screen, the land taken bit by bit: the manuscript map
 // of the game, its lands spreading tile by tile as in OpenFront, with its
@@ -53,24 +48,7 @@ export async function mountGame(
   element: HTMLElement,
   seed: string | null,
   me: number,
-  hooks: {
-    onSummary: (summary: Summary) => void
-    /** The pointer over land a click would strike, or another lord's land right clicked, for his menu; none elsewhere. */
-    onAim: (aim: Aim | null) => void
-    /** What happened in the last second that the player should read. */
-    onNews?: (news: Array<News>) => void
-    names: Array<string>
-    /** The bots' level, chosen at the home; normal if none. */
-    level?: Level
-    /** The land's size; standard if none. Online, the relay's. */
-    size?: MapSize
-    /** A game online (online.ts): its land, its turns and my seat come from the relay. */
-    online?: Online
-    /** The host's game, held while he sets it in his book (« créer une partie »), its land the one asked. */
-    book?: Book
-    /** A saved game (save.ts), held still at its tick: its land, my seat and the camera come from it. */
-    save?: Save
-  },
+  hooks: GameHooks,
 ): Promise<GameHandle> {
   const app = new Application()
   const { save } = hooks
@@ -97,6 +75,7 @@ export async function mountGame(
   const { state } = session
   const scene = makeScene(app, land, me, state, hooks.names)
   const heralds = makeHeralds(scene.world, () => app.screen)
+  const sound = makeSound(state, me, scene.world, () => app.screen)
 
   const home = () => (me < 0 ? null : landBox(state, me))
   const camera = makeCamera(app, scene.world, land, home)
@@ -120,7 +99,7 @@ export async function mountGame(
           away: pin.close,
         })
       : null
-  const onKey = makeKeys(pin.close, hand, refresh)
+  const onKey = makeKeys(pin.close, hand, refresh, sound.toggle)
   /** What is in hand changed: the figures and the aim again. */
   const handed = (change: () => void) => {
     change()
@@ -141,7 +120,14 @@ export async function mountGame(
   const notes = makeNotes(state)
   const earnings = makeEarnings(me)
   const play = (ms: number, most?: number) =>
-    session.advance(ms, () => earnings.watch(state), most)
+    session.advance(
+      ms,
+      () => {
+        earnings.watch(state)
+        sound.tick()
+      },
+      most,
+    )
   // Stepped down and up with the frames; nothing drawn while hidden
   // (quality.ts): a game alone waits, one online plays the relay's turns on.
   // A saved game, held still, is drawn at its best.
@@ -191,6 +177,7 @@ export async function mountGame(
       refresh()
       const fresh = news.read()
       notes.tell(fresh, now)
+      sound.news(fresh)
       if (fresh.length > 0) hooks.onNews?.(fresh)
     }
     perf.mark()
@@ -210,6 +197,7 @@ export async function mountGame(
       governed()
       input?.destroy()
       window.removeEventListener('keydown', onKey)
+      sound.destroy()
       camera.destroy()
       // The textures stay: the fonts' and the stamps' are shared with the
       // next game on the page, which a destroyed one would break.

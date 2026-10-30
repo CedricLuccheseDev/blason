@@ -8,7 +8,8 @@ import {
 } from '../../../engine'
 import { TONE } from '../palette'
 import { siteOf } from '../marks'
-import type { Caravan, GameState } from '../../../engine'
+import { makeArrivals } from '../arrivals'
+import type { GameState } from '../../../engine'
 
 // What the player's works bring, written where they bring it: a "+" of gold
 // rises from a market when a caravan arrives there, a "+" of peasants from
@@ -60,8 +61,7 @@ const SEAL = 10
 export function makeTidings(me: number) {
   const container = new Container()
   const live: Array<Tiding> = []
-  /** Each caravan out at the last tick, and how far it was. */
-  let seen = new Map<Caravan, number>()
+  const arrivals = makeArrivals(me)
   let tick = -1
   let lastVillages = 0
   /** The births not yet written, in peasants, and the village the next share goes to first. */
@@ -90,24 +90,6 @@ export function makeTidings(me: number) {
       life: gold ? GOLD_LIFE : LIFE,
       rise: gold ? GOLD_RISE : RISE,
     })
-  }
-
-  /** The caravans gone since the last tick that had reached the end of their road. */
-  function arrivals(state: GameState, ticks: number) {
-    const out = new Set(state.caravans)
-    for (const [caravan, along] of seen) {
-      if (out.has(caravan)) continue
-      const last = caravan.road.length - 1
-      if (along + state.rules.caravanPace * ticks < last * 1000) continue
-      // Under a whole coin, nothing to say (« j'ai des +0 avec les marchands »);
-      // between two markets of mine, said once, where it arrives.
-      const whole = Math.floor(caravan.gold / UNIT)
-      if (whole < 1) continue
-      const gold = `+${whole}`
-      if (caravan.to === me) say(state, caravan.road[last], gold, GOLD)
-      else if (caravan.owner === me) say(state, caravan.road[0], gold, GOLD)
-    }
-    seen = new Map(state.caravans.map((c) => [c, c.along]))
   }
 
   /** Over each of my villages, what it fed in the last seconds, while my peasants grow. */
@@ -215,7 +197,8 @@ export function makeTidings(me: number) {
     draw(state: GameState, zoom: number) {
       const seconds = performance.now() / 1000
       if (me >= 0 && state.tick !== tick) {
-        arrivals(state, state.tick - tick)
+        for (const { tile, gold } of arrivals.read(state, state.tick - tick))
+          say(state, tile, `+${gold}`, GOLD)
         tick = state.tick
         births(state, seconds)
         losses(state, seconds)

@@ -33,15 +33,18 @@ export function makeClick(
   }
 }
 
-/** What a key does: Escape closes the right click's menu; a digit takes an army, a work or a coup in hand, the figures read again. */
+/** What a key does: Escape closes the right click's menu; M mutes or brings back the sound; a digit takes an army, a work or a coup in hand, the figures read again. */
 export function makeKeys(
   close: () => void,
   hand: Pick<ReturnType<typeof makeHand>, 'key'>,
   refresh: () => void,
+  /** M: the sound muted or back. */
+  mute: () => void,
 ) {
   return (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === 'Escape') close()
+    if (e.key.toLowerCase() === 'm') mute()
     if (hand.key(keyOf(e))) refresh()
   }
 }
