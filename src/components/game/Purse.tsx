@@ -78,7 +78,7 @@ function Earned({ earned }: Readonly<{ earned: number }>) {
           }`}
         >
           <span className="hud-enter inline-block">
-            <Figure size="s" tone="thrive">
+            <Figure size="s" tone="gain">
               +{count(amount)}
             </Figure>
           </span>
@@ -139,7 +139,7 @@ export function Purse({
             {count(me.peasants)}
             <span
               className={`transition-colors duration-(--duration-hud-enter) ease-hud ${
-                shrunk ? 'text-gules' : 'opacity-70'
+                shrunk ? 'hud-loss' : ''
               }`}
             >
               {' '}
@@ -147,7 +147,7 @@ export function Purse({
             </span>
           </Figure>
         </Hint>
-        <Figure size="s" tone={me.growth < 0 ? 'gules' : 'thrive'}>
+        <Figure size="s" tone={me.growth < 0 ? 'loss' : 'gain'}>
           {me.growth > 0 && `+${me.growth}/s`}
           {/* Too many for the villages: the sickness takes them. */}
           {me.growth < 0 && `\u2212${-me.growth}/s`}

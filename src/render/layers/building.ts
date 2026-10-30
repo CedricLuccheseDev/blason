@@ -60,13 +60,13 @@ export function makeBuilding(me: number) {
         const size = R_WORK * workPx(zoom, mine)
         const r = Math.max(R_LEAST, Math.min(R, size)) * s * beat
         const ring = RING * r
-        // The band filling from the bottom in the lord's colour as it is
-        // built, round a parchment disc and its hourglass.
+        // The disc filling from the bottom in the lord's colour as it is
+        // built, its hourglass over it, as the alliances' gauges (« les
+        // jauges ne sont pas comme celle de l'alliance »).
         drawGauge(g, x, y, [r - ring, r], done, playerColor(work.owner), {
           width: 1.4 * s,
           alpha,
         })
-        g.circle(x, y, r - ring).fill({ color: TONE.parchment, alpha })
         hourglass(g, x, y, (r - ring) * 1.1)
         g.fill({ color: TONE.gold, alpha }).stroke({
           width: 1.1 * s,

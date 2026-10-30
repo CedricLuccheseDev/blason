@@ -157,12 +157,15 @@ export function makeBadges(state: GameState, me: number) {
         if (mark?.icons !== key) {
           mark?.g.destroy({ children: true })
           const g = container.addChild(new Container())
+          // The gauge under, the drawing over it, bare, where time runs;
+          // a teammate's links, for good, on their own disc.
+          const ring = g.addChild(new Graphics())
+          const team = isTeammate(state, me, lord)
           icons.forEach((icon, k) => {
             const one = g.addChild(new Graphics())
-            drawIcon(one, icon)
+            drawIcon(one, icon, !(icon === 'links' && team))
             one.position.set(k * 50, 0)
           })
-          const ring = g.addChild(new Graphics())
           mark = { icons: key, g, ring, rings: '' }
           drawn.set(lord, mark)
         }
@@ -174,7 +177,8 @@ export function makeBadges(state: GameState, me: number) {
         const s = BADGE / (2 * RING) / zoom
         mark.g.scale.set(s)
         const [x, y] = [
-          name.x + name.half + (BADGE / 2 - 6) / zoom,
+          // Clear of the name (« espace un peu du nom »).
+          name.x + name.half + (BADGE / 2 + 6) / zoom,
           name.y - 12 / zoom,
         ]
         mark.g.position.set(x, y)

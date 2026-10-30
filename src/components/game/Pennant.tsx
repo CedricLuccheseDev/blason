@@ -142,7 +142,11 @@ export function Pennant({
         <span className={flip ? '-mr-3' : '-ml-3'}>
           <Tag>
             <Word className={ill ? 'text-gules' : ''}>{text}</Word>
-            {gold !== undefined && <Figure icon="coins">{count(gold)}</Figure>}
+            {gold !== undefined && (
+              <Figure icon="coins" tone="gain">
+                {count(gold)}
+              </Figure>
+            )}
           </Tag>
         </span>
       </div>

@@ -93,7 +93,7 @@ function CoupHalf({
     <Stack gap="hair">
       <Inline>
         <CoupEmblem icon={COUP_MARKS[coup.coup]} size="xs" />
-        <Figure icon="coins" size="m" tone={coup.can ? 'ink' : 'gules'}>
+        <Figure icon="coins" size="m" tone={coup.can ? 'info' : 'loss'}>
           {count(price)}
         </Figure>
       </Inline>

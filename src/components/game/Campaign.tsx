@@ -66,7 +66,9 @@ export function Campaign({
             className="hud-press pointer-events-auto flex cursor-pointer flex-col items-center"
           >
             <Banner color={hex(me.color)} mark={ARMY_MARKS[host.army]} />
-            <Figure size="s">{count(host.men)}</Figure>
+            <Figure icon="soldier" size="s">
+              {count(host.men)}
+            </Figure>
           </button>
         ))}
       </Inline>

@@ -7,7 +7,7 @@ import type { GameState } from '../../../engine'
 
 // Over each village, a small seal says where the army it levies is: ready to
 // march, a chevron raised; out, crossed swords in red. The player's own ready
-// villages in gold, at every zoom, so that he sees at once where he can levy
+// villages in his own colour, at every zoom, so that he sees at once where he can levy
 // (« on voit mal quand nos villages sont prêts à envoyer nos troupes »); the
 // other lords' in their colour, a matter of the close game, coming as one
 // zooms in (art/works.ts). Hung where the village is drawn, never too small
@@ -35,7 +35,7 @@ function swords(g: Graphics, x: number, y: number, k: number) {
     .lineTo(x - r, y + r)
 }
 
-/** One village's seal at (x, y): out, red with its swords; ready, the chevron, in gold for mine, its lord's colour for another's. */
+/** One village's seal at (x, y): out, red with its swords; ready, the chevron, in its lord's colour, mine too. */
 function seal(
   on: Graphics,
   x: number,
@@ -43,8 +43,9 @@ function seal(
   k: number,
   { owner, own, away }: { owner: number; own: boolean; away: boolean },
 ) {
-  let fill = away ? TONE.fight : playerColor(owner)
-  if (own && !away) fill = TONE.gold
+  // Mine in my own colour, as my shield (« les blasons pour dire qu'il peut
+  // envoyer doit etre de la meme couleur que le blason du joueur »).
+  const fill = away ? TONE.fight : playerColor(owner)
   on.circle(x, y, R * k * (own ? 1.25 : 1))
     .fill(fill)
     .stroke({ width: 0.6 * k, color: TONE.ink })

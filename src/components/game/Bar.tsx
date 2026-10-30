@@ -79,7 +79,11 @@ function Armies({
               onClick={() => onArmy(a.army)}
               figure={
                 a.share === null ? (
-                  <Figure icon="coins" size="m">
+                  <Figure
+                    icon="coins"
+                    size="m"
+                    tone={a.men === 0 && !held ? 'loss' : 'info'}
+                  >
                     {count(a.gold ?? 0)}
                   </Figure>
                 ) : (
@@ -168,7 +172,11 @@ export function Bar({
                   }
                   short={!w.can && !held}
                   figure={
-                    <Figure icon="coins" size="m">
+                    <Figure
+                      icon="coins"
+                      size="m"
+                      tone={!w.can && !held ? 'loss' : 'info'}
+                    >
                       {count(w.price)}
                     </Figure>
                   }
@@ -200,7 +208,11 @@ export function Bar({
                   }
                   short={!c.can && !held}
                   figure={
-                    <Figure icon="coins" size="m">
+                    <Figure
+                      icon="coins"
+                      size="m"
+                      tone={!c.can && !held ? 'loss' : 'info'}
+                    >
                       {count(c.price)}
                     </Figure>
                   }

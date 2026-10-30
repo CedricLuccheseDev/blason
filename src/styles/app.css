@@ -35,6 +35,9 @@
   --color-gilt-deep: #946512;
   --color-gules: #b3302a;
   --color-thrive: #2f7d3f;
+  /* A figure's growth and fall afloat on the map, lighter so as to read in the ink cut round them. */
+  --color-thrive-light: #7fd38b;
+  --color-gules-light: #ff7b66;
   --color-shade: #d9c49a;
   --color-shade-deep: #b89f6e;
   --color-gilt-light: #f4d277;
@@ -326,12 +329,30 @@
     /* Alegreya's space is narrow: "285 / 300" would read as one figure. */
     word-spacing: 0.12em;
   }
+  /* A figure says what it is by its colour (« quand on affiche des nombres
+     chiffre, les mettres d'une police couleur differente vert rouge gris en
+     fonction de si c'est une croissance décroissance information »): what
+     grows in green, what falls in red, what only informs in the words' own
+     colour, white on the map and ink on a sheet (« le gris c'est pas beau
+     au final c'était mieux en blanc »); its icon, drawn in currentColor, in
+     the same (Figure.tsx). */
+  .hud-gain {
+    color: var(--hud-gain, var(--color-thrive));
+  }
+  .hud-loss {
+    color: var(--hud-loss, var(--color-gules));
+  }
+  .hud-info {
+    color: var(--hud-ink, var(--color-quill));
+  }
 }
 
 @layer utilities {
   /* norm-ok: a piece of the HUD floating on the map, no sheet under it: its words and figures in the map's lettering, parchment cut round in ink, its tones kept; its drawings cut round too. */
   .hud-afloat {
     --hud-ink: var(--color-vellum);
+    --hud-gain: var(--color-thrive-light);
+    --hud-loss: var(--color-gules-light);
   }
   .hud-afloat .text-quill {
     color: var(--color-vellum);

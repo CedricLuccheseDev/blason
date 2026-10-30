@@ -40,11 +40,10 @@ const styleOf = (fill: number, size = 16) =>
     fill,
     stroke: { color: TONE.ink, width: (size / 5) * SHARP, join: 'round' },
   })
-/** A caravan's gold, a few times a minute a market: larger, to be seen. */
-const GOLD = styleOf(TONE.gold, 22)
-/** A light green, read on the ink of its stroke; the sick in red. */
-const PEASANTS = styleOf(0x8fd19e)
-const SICK = styleOf(TONE.fight)
+/** What grows in green, what falls in red, as every figure of the game (« vert rouge gris en fonction de si c'est une croissance décroissance »): a caravan's gold larger, a few times a minute a market, to be seen; the peasants born; the sick. */
+const GOLD = styleOf(TONE.gainLight, 22)
+const PEASANTS = styleOf(TONE.gainLight)
+const SICK = styleOf(TONE.lossLight)
 
 type Tiding = {
   text: BitmapText

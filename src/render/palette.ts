@@ -57,6 +57,9 @@ export const TONE = {
   parchment: 0xf1e8d2,
   gain: 0x2f9e44,
   loss: 0xd6332b,
+  /** A figure's growth and fall afloat on the map, light to read in its ink (the HUD's --color-thrive-light, --color-gules-light). */
+  gainLight: 0x7fd38b,
+  lossLight: 0xff7b66,
   white: 0xffffff,
   stone: 0xd9d1be,
   stoneDark: 0xb7ad97,

@@ -64,7 +64,9 @@ function Course({ deeds }: Readonly<{ deeds: Deeds }>) {
     <Stack gap="hair">
       <Heading>{t.title}</Heading>
       <Line name={<Note>{t.played}</Note>}>
-        <Figure size="m">{minutes(deeds.seconds)}</Figure>
+        <Figure icon="hourglass" size="m">
+          {minutes(deeds.seconds)}
+        </Figure>
       </Line>
       <Line name={<Note>{t.widest}</Note>}>
         <Figure size="m">{t.land(deeds.share, count(deeds.tiles))}</Figure>
