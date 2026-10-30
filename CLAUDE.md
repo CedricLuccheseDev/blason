@@ -61,7 +61,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   millièmes, `UNIT`, jamais l'horloge, 10 pas par seconde). Son seul contrat est `engine/index.ts` : hors du moteur,
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ; `map/atlas.ts`
-    l'atlas, les cartes de la vraie Terre (30/10, « faire des maps de la vrai terre », l'Europe d'abord) : leur sol cuit des
+    l'atlas (sa table dans `map/earth.ts` ; les terres de légende, Terre du Milieu et Westeros, dessinées de notre main par `scripts/legend.ts`, 30/10), les cartes de la vraie Terre (30/10, « faire des maps de la vrai terre », l'Europe d'abord) : leur sol cuit des
     hauteurs du monde (ETOPO 2022, NOAA) et leurs grands lacs et fleuves (Natural Earth), domaine public, par
     `scripts/atlas.ts` dans `map/atlas/` ; chacune sa propre taille et les seigneurs qu'elle sied (« chaque carte a sa propre
     taille »), ses îles gardées à part et ses détroits ouverts, nommés (« l'irlande est connecté a l'angleterre … »), ses
