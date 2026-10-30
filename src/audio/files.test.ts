@@ -18,7 +18,7 @@ const credits = readFileSync('public/sounds/CREDITS.md', 'utf8')
 
 describe('the sound files', () => {
   it.each(takes)('%s is there and credited', (take) => {
-    expect(existsSync(`public/sounds/${take}.mp3`)).toBe(true)
-    expect(credits).toContain(`\`${take}.mp3\``)
+    expect(existsSync(`public/sounds/${take}.ogg`)).toBe(true)
+    expect(credits).toContain(`\`${take}.ogg\``)
   })
 })

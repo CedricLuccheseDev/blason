@@ -49,7 +49,7 @@ export function makeMusic(ctx: AudioContext, out: AudioNode) {
     if (over) return
     const piece = queue.shift() ?? PIECES[0]
     if (queue.length === 0) queue = drawn().filter((p) => p !== piece)
-    audio.src = `/sounds/${piece}.mp3`
+    audio.src = `/sounds/${piece}.ogg`
     if (!document.hidden) void audio.play().catch(() => undefined)
   }
 

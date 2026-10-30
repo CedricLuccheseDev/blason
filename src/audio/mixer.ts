@@ -102,7 +102,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
   function load(file: string): Promise<AudioBuffer | null> {
     const known = buffers.get(file)
     if (known) return known
-    const loading = fetch(`/sounds/${file}.mp3`)
+    const loading = fetch(`/sounds/${file}.ogg`)
       .then((r) => r.arrayBuffer())
       .then((bytes) => ctx?.decodeAudioData(bytes) ?? null)
       .catch(() => null)
