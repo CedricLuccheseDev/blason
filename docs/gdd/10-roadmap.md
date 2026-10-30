@@ -1,0 +1,33 @@
+# 10 — Open questions and roadmap
+
+What is undecided, each with whoever answers it, and what comes next in the
+order the owner set (30/10). A question closes by becoming a record.
+
+## Open questions
+
+| | Question | Who | Revisit when |
+|---|---|---|---|
+| Q1 | Works cost twice with each one built: should the price stop rising (a ceiling), as the coups stop at eight times? | Cédric | the census shows a lord unable to build after 15 min |
+| Q2 | The World map (694 000 tiles) on a weak machine: is the game still fluid, in the worker, at 10 steps a second? | Claude, measured | before the World goes into the public rotation on prod |
+| Q3 | The legends (Middle-earth, Westeros) are drawn by our hand, but their names and shapes belong to others: keep them in a public repository? | Cédric | before the repository is made public |
+| Q4 | Warships: take or sink merchant ships, perhaps carry armies by sea? | Cédric, after a proposal | after the map thumbnails |
+| Q5 | How Blason earns its keep, if it does (cosmetic shields, nothing that wins)? | Cédric | with accounts and rankings |
+| Q6 | The woods slow armies to 60 % of their pace: the right figure? | Cédric, in play | after a few games on wooded maps |
+| Q7 | Volumes per bus in a settings sheet, with the profile? | Cédric | with accounts |
+| Q8 | This methodology itself: does it suit the team's colleagues as written here? | Cédric, with the colleagues | their first reading |
+
+## Next (in this order)
+
+1. **Map thumbnails** drawn once, as light images (`public/lands/*.webp`),
+   instead of being drawn in the browser; the British Isles' stroke and the
+   pale frame bands (the Mediterranean) fixed on the way.
+2. **Warships** (Q4), proposed as a record first.
+3. Then, without order yet: the market's « + » of gold that sometimes does not
+   show; the World's data loaded only by who plays it; rivers and lakes on the
+   random lands; works upgraded in levels; accounts, profiles and rankings
+   (Convex).
+
+## History
+
+- 2026-10-30: the GDD written from the Concept, the rules and the code, in
+  ten sections; every record Accepted reflects what the dev build plays today.

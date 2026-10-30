@@ -87,13 +87,15 @@ play needs the relay beside it (`npm run relay`).
 - `src/content/`: the journal's posts
 - `scripts/`: the arena and the style checks
 - `design/mockups/`: the sources of the design boards
-- `docs/`: the architecture and the rules
+- `docs/`: the architecture, the rules and the game design document
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md): how the simulation, the rendering and
   the HUD fit together, and why.
 - [Rules](docs/RULES.md): the game as it plays today, with its numbers.
+- [Game design](docs/gdd/README.md): every design decision, why it was
+  taken, and how it is validated.
 - [Contributing](CONTRIBUTING.md): the workflow, the checks and the
   conventions.
 

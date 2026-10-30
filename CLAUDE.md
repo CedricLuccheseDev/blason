@@ -22,7 +22,7 @@ rangé, documenté en anglais (`README.md`, `docs/`, `CONTRIBUTING.md`), sous li
 
 Ces documents font foi : une règle se discute et se valide avant d'y être inscrite, et n'est codée
 qu'ensuite. Le code ne tranche rien seul. Le dépôt en porte la version publique, en anglais :
-`docs/RULES.md` (les règles et leurs chiffres) et `docs/ARCHITECTURE.md` ; une règle qui change les met à jour
+`docs/gdd/` (le GDD, 30/10 : chaque décision en fiche Pourquoi / Comment / Quoi, sa preuve et sa validation), `docs/RULES.md` (les règles et leurs chiffres) et `docs/ARCHITECTURE.md` ; une règle qui change les met à jour
 dans le même commit.
 
 ## Comment on travaille
