@@ -86,7 +86,7 @@ export type Rules = {
   mercenaryPrice: number
   /** Tiles an army takes each tick at most, once at the front: its pace, whatever its size. */
   paceTiles: number
-  /** How fast each army goes, on the march and at the front, in percent of the host's pace: a raid rides, the levy plods. */
+  /** How fast each army goes, on the march and at the front, in percent of the host's pace: a raid rides half again as fast, the levy at half the pace (« Essaye le -50 +50% », 30/10). */
   armySpeed: Readonly<Record<Army, number>>
   /** How far an army marches each tick from its village to the front, in thousandths of a tile. */
   marchPace: number
@@ -229,7 +229,7 @@ export const RULES: Rules = {
   },
   mercenaryPrice: 2000,
   paceTiles: 3,
-  armySpeed: { raid: 125, host: 100, ban: 75, mercenaries: 100 },
+  armySpeed: { raid: 150, host: 100, ban: 50, mercenaries: 100 },
   marchPace: 600,
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
   leastCost: 100,

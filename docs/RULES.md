@@ -115,10 +115,10 @@ leaves it gives his seat back to its bot.
 
 ## War
 
-- Three armies, which differ by their size and their pace: the **raid**
-  takes 10 % of the peasants and goes a quarter faster, the **host** 25 % at
-  the common pace, the **levy** 50 % and goes a quarter slower, on the march
-  and at the front alike (keys 1 to 3; the mercenaries, below, key 4).
+- Three armies, which differ by their size and their pace: the **small
+  troop** (`raid`) takes 10 % of the peasants and goes half again as fast, the
+  **troop** (`host`) 25 % at the common pace, the **large troop** (`ban`) 50 %
+  and goes at half the pace, on the march and at the front alike (keys 1 to 3; the mercenaries, below, key 4).
 - A left click on another's land, or on free land, raises the army in hand
   at one of the lord's free **villages**, the nearest by the march to where it
   enters (below): each village levies one army at a time from its people, so

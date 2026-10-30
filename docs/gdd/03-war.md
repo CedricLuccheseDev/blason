@@ -25,8 +25,8 @@ How land changes hands. Figures: `docs/RULES.md` (War).
   soonest to the click, then a front that takes tiles towards it.
 
 #### What?
-- Raid 10 % of the peasants, a quarter faster; host 25 %; levy 50 %, a
-  quarter slower; mercenaries bought with gold at a market. One army a village
+- Small troop 10 % of the peasants, 50 % faster; troop 25 %; large troop
+  50 %, 50 % slower (tried on 30/10, « Essaye le -50 +50% »); mercenaries bought with gold at a market. One army a village
   (or market) at a time. Combat table in `RULES.md`.
 - Acceptance: Given every village's army out, When the player clicks an
   enemy's land, Then no army leaves and the cursor shows the army's seal
