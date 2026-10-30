@@ -1,6 +1,6 @@
 {
   "name": "blason",
-  "version": "0.5.41",
+  "version": "0.5.42",
   "description": "A medieval real-time strategy game in the browser: twenty lords, a land drawn anew each game.",
   "license": "AGPL-3.0-only",
   "repository": {
@@ -22,6 +22,7 @@
     "norm": "node scripts/norm-check.mjs $(git ls-files 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css')",
     "arena": "tsx scripts/arena.ts",
     "atlas": "tsx scripts/atlas.ts",
+    "legend": "tsx scripts/legend.ts",
     "maquette": "tsx scripts/maquette.ts",
     "planches": "node design/maquette/planches.mjs",
     "census": "tsx scripts/census.ts",

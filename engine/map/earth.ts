@@ -2,16 +2,26 @@ import { BRITAIN } from './atlas/britain'
 import { EUROPE } from './atlas/europe'
 import { FRANCE } from './atlas/france'
 import { MEDITERRANEAN } from './atlas/mediterranean'
+import { MIDDLE } from './atlas/middle'
+import { WESTEROS } from './atlas/westeros'
 import { WORLD } from './atlas/world'
 import type { Sheet, Strait } from './landmarks'
 import type { MapSize } from '../rules'
 
 // The maps of the Earth (atlas.ts reads them): each its sheet, baked from
 // the world's heights (atlas/, scripts/atlas.ts), its own size and the lords
-// it suits, its high ranges and the straits kept open. A map more is an
-// entry here and its baked file.
+// it suits, its high ranges and the straits kept open; and the lands of
+// legend, drawn by our own hand (scripts/legend.ts), their frames as degrees.
+// A map more is an entry here and its baked file.
 
-export type Atlas = 'britain' | 'france' | 'mediterranean' | 'europe' | 'world'
+export type Atlas =
+  | 'britain'
+  | 'france'
+  | 'mediterranean'
+  | 'europe'
+  | 'world'
+  | 'middle'
+  | 'westeros'
 
 type Entry = {
   sheet: Sheet
@@ -158,5 +168,34 @@ export const ATLAS: Readonly<Record<Atlas, Entry>> = {
       [43.2, 12.8, 43.5, 12.5], // the Bab-el-Mandeb
       [1.0, 50.6, 2.0, 51.2], // the Pas-de-Calais
     ],
+  },
+  middle: {
+    sheet: MIDDLE,
+    size: 'large',
+    lords: [10, 24],
+    ranges: [
+      [562, 740, 576, 650, 562, 550, 550, 470, 540, 428, 520, 380, 502, 348],
+      [420, 225, 470, 260, 510, 298, 560, 300, 610, 285, 648, 276],
+      [690, 310, 760, 320, 840, 330, 900, 320],
+      [690, 305, 700, 240, 706, 180, 760, 168, 830, 170, 890, 180],
+      [570, 708, 640, 720, 720, 714, 780, 704],
+      [200, 720, 206, 620, 216, 542, 238, 470],
+      [830, 630, 872, 636],
+      [430, 708, 482, 720],
+    ],
+    straits: [],
+  },
+  westeros: {
+    sheet: WESTEROS,
+    size: 'large',
+    lords: [10, 24],
+    ranges: [
+      [70, 938, 200, 936, 300, 939, 452, 942],
+      [72, 988, 112, 970, 146, 954],
+      [396, 526, 436, 548, 458, 508],
+      [150, 204, 220, 214, 290, 209, 330, 198],
+      [120, 530, 150, 480, 140, 430],
+    ],
+    straits: [],
   },
 }
