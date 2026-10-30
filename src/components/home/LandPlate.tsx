@@ -8,13 +8,16 @@ import { TONE } from '~/render/palette'
 // The land of a game to come, as its card shows it: drawn from its seed
 // once the browser has a moment (render/sketch.ts), the very land the game
 // will have. A new seed, and the land drawn fades out, the new one in once
-// made; what is laid on the plate (its title, its clock) stays.
+// made; what is laid on the plate (its title, its clock) stays. A map of the
+// atlas in the book's list is a picture drawn once (`npm run plates`): the
+// list no longer builds every map to draw its card.
 
 export function LandPlate({
   seed,
   land,
   label,
   whole = false,
+  picture,
   children,
 }: Readonly<{
   seed: string | null
@@ -23,6 +26,8 @@ export function LandPlate({
   label: string
   /** The whole land in the sea round it, as a list of maps shows it; else covering the plate. */
   whole?: boolean
+  /** The land drawn once, its picture's address: shown as it is, nothing drawn. */
+  picture?: string
   children?: ReactNode
 }>) {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -34,7 +39,7 @@ export function LandPlate({
   // of work, is made when the browser has a moment.
   useEffect(() => {
     const element = canvas.current
-    if (!seed || !element) return
+    if (!seed || !element || picture) return
     let live = true
     let stop = () => {}
     void import('~/render/sketch').then(({ sketchGame }) => {
@@ -48,20 +53,29 @@ export function LandPlate({
       live = false
       stop()
     }
-  }, [seed, landKey, whole])
+  }, [seed, landKey, whole, picture])
 
-  const shown = seed !== null && drawn === seed
+  const [loaded, setLoaded] = useState<string | null>(null)
+  const shown = picture
+    ? loaded === picture
+    : seed !== null && drawn === seed
+  const fading = `absolute inset-0 size-full transition-opacity duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none ${shown ? 'opacity-100' : 'opacity-0'}`
   return (
     <div
       className="relative aspect-[3/2] max-h-[56dvh] w-full overflow-hidden border border-quill max-sm:max-h-none"
       style={{ background: hex(TONE.seaWash) }}
     >
-      <canvas
-        ref={canvas}
-        role="img"
-        aria-label={label}
-        className={`absolute inset-0 size-full transition-opacity duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none ${shown ? 'opacity-100' : 'opacity-0'}`}
-      />
+      {picture ? (
+        <img
+          src={picture}
+          alt={label}
+          decoding="async"
+          onLoad={() => setLoaded(picture)}
+          className={`${fading} object-cover`}
+        />
+      ) : (
+        <canvas ref={canvas} role="img" aria-label={label} className={fading} />
+      )}
       {children}
     </div>
   )

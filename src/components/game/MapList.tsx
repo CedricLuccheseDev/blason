@@ -27,6 +27,9 @@ const real = (maps: ReadonlyArray<Atlas>) =>
 
 /** The seed a map of the atlas is drawn with on its card: any will do, the same each time. */
 const ATLAS_SEED = 'atlas'
+/** A map of the atlas's card, drawn once with that seed (`npm run plates`). */
+const pictureOf = (land: Land) =>
+  land.kind === 'real' ? `/lands/${land.map}.webp` : undefined
 
 /** A land's name in the list. */
 const keyOf = (land: Land) => (land.kind === 'real' ? land.map : land.size)
@@ -121,12 +124,13 @@ function Card({
       className={`hud-press text-left outline-offset-2 ${chosen ? 'outline-2 outline-gilt' : 'opacity-75 hover:opacity-100'} ${onPick ? 'cursor-pointer' : ''}`}
     >
       <Stack gap="hair">
-        {/* A map of the atlas is the same whatever the seed: drawn once, never again as another random land is drawn (« quand on fait clique une autre y'a toutes les map qui rechargent »). */}
+        {/* A map of the atlas is the same whatever the seed: a picture drawn once, never again as another random land is drawn (« quand on fait clique une autre y'a toutes les map qui rechargent »). */}
         <LandPlate
           seed={land.kind === 'real' ? ATLAS_SEED : book.seed}
           land={land}
           label={name}
           whole
+          picture={pictureOf(land)}
         >
           {suits && (
             <span className="absolute top-1 right-1">

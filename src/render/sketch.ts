@@ -32,6 +32,10 @@ const SHORES = [
 const [LINE, INK] = [0.8, 1.3]
 /** Pixels of the page a pixel of the darker lands spans, stretched: how soft their edges. */
 const SOFT = 3
+/** How much of the card a map in a list covers at least, its land cut at its sides if need be. */
+const COVER = 0.85
+/** Pixels of the page over which a map in a list fades into the sea at its frame. */
+const FADE = 14
 /** Canvas pixels drawn per pixel of the page, at most. */
 const SHARPEST = 2
 
@@ -65,17 +69,33 @@ function sketch(
   // hauteur l'area partie publique »); or, in a list of maps, its land in
   // play whole and in the middle, the rest of the map round it as far as
   // the card goes (« fais pas les rectangles sur les maps … rend ça mieux »).
+  // In a list, as little as may be past the map's frame: a land cut by the
+  // frame showed a straight edge there and a pale band beyond (« problème de
+  // trait », « bandes claires »). The map covers most of the card, a land of
+  // another shape cut a little at its sides, and fades into the sea at its
+  // frame (FADE).
   const frame = whole
     ? boundsOf(world)
     : { x: 0, y: 0, w: world.width, h: world.height }
-  const fit = whole ? Math.min : Math.max
-  const scale = fit(width / frame.w, height / frame.h)
+  const cover = Math.max(width / world.width, height / world.height)
+  const scale = whole
+    ? Math.max(cover * COVER, Math.min(width / frame.w, height / frame.h))
+    : cover
+  const within = (middle: number, half: number, side: number) =>
+    Math.min(Math.max(middle, half), side - half)
   const [dx, dy] = [
-    width / 2 - (frame.x + frame.w / 2) * scale,
-    height / 2 - (frame.y + frame.h / 2) * scale,
+    width / 2 -
+      within(frame.x + frame.w / 2, width / 2 / scale, world.width) * scale,
+    height / 2 -
+      within(frame.y + frame.h / 2, height / 2 / scale, world.height) * scale,
   ]
   const at = new DOMMatrix([scale, 0, 0, scale, dx, dy])
   g.setTransform(at)
+  // Nothing drawn past the frame: the lines along a shore the frame cuts
+  // came round its ends there.
+  g.beginPath()
+  g.rect(0, 0, world.width, world.height)
+  g.clip()
   /** A pixel of the page, in the map's units. */
   const px = ratio / scale
   const coast = new Path2D()
@@ -117,6 +137,27 @@ function sketch(
   // land, a land that runs to it is cut there, not in the open sea. In a
   // list of maps, none: the map runs on to the card's edge.
   if (!whole) g.strokeRect(0, 0, world.width, world.height)
+  else fade(g, world, FADE * px)
+}
+
+/** The map's frame dissolved into the sea round it, over `soft` of the map's units: no land cut straight. */
+function fade(g: CanvasRenderingContext2D, world: World, soft: number) {
+  const { width: w, height: h } = world
+  const sea = css(TONE.seaWash)
+  const clear = css(TONE.seaWash, 0)
+  const sides: Array<[number, number, number, number]> = [
+    [0, 0, soft, 0],
+    [w, 0, w - soft, 0],
+    [0, 0, 0, soft],
+    [0, h, 0, h - soft],
+  ]
+  for (const [x0, y0, x1, y1] of sides) {
+    const wash = g.createLinearGradient(x0, y0, x1, y1)
+    wash.addColorStop(0, sea)
+    wash.addColorStop(1, clear)
+    g.fillStyle = wash
+    g.fillRect(0, 0, w, h)
+  }
 }
 
 /** The land in play's bounds, a little sea round it, within the map's frame: what a card of a list shows whole. */

@@ -660,7 +660,11 @@ the game being planted now: the very land it is played on, made from the
 relay's seed when the browser has a moment and drawn small on a canvas
 (`sketch.ts`), as the map shows it from afar at the opening, the sea's wash
 and its shore lines, the land's parchment, its woods, hills and mountains a
-shade darker, the coast in ink. Its title, the time left to join it and the
+shade darker, the coast in ink. The book's list of maps draws its random
+lands the same way, but a map of the atlas is the same whatever the seed:
+`npm run plates` (`scripts/plates.mjs`) draws each once in a headless Chrome
+and keeps it light in `public/lands/<map>.webp`, the map faded into the sea
+at its frame, never cut straight there. Its title, the time left to join it and the
 seats taken lie on it as a map's cartouches, and Play at its corner, or a
 click anywhere on the land, goes straight into its opening, to plant a
 standard: there is no room to wait in
