@@ -30,7 +30,11 @@ const STRAY = 5
 const keyOf = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`)
 
 /** A caravan's way as drawn, and the length of its road it was drawn for. */
-type Way = { length: number; path: Array<Spot> }
+type Way = {
+  length: number
+  path: Array<Spot>
+  paved: Map<string, Array<Spot>>
+}
 
 export function makeTrade(stamps: Stamps, me: number) {
   const container = new Container()
@@ -48,6 +52,7 @@ export function makeTrade(stamps: Stamps, me: number) {
   /** The network's roads as drawn, by their two markets. */
   let paved = new Map<string, Array<Spot>>()
   let laid: Array<Link> | null = null
+  let paveTick = -Infinity
   const ways = new WeakMap<Caravan, Way>()
 
   /** The network paved again, when its roads changed. */
@@ -107,7 +112,11 @@ export function makeTrade(stamps: Stamps, me: number) {
   /** A caravan's way, stretch by stretch from market to market, drawn once (again if it was taken). */
   function wayOf(state: GameState, caravan: Caravan): Array<Spot> {
     const known = ways.get(caravan)
-    if (known?.length === caravan.road.length) return known.path
+    // Drawn again once the network is paved anew: a caravan never keeps a
+    // track of its own beside the road it takes (« bug des caravanes qui
+    // prennent pas la route »).
+    if (known?.length === caravan.road.length && known.paved === paved)
+      return known.path
     const markets = new Set(
       state.works.filter((w) => w.work === 'market').map((w) => w.tile),
     )
@@ -119,7 +128,7 @@ export function makeTrade(stamps: Stamps, me: number) {
       path.push(...(path.length ? part.slice(1) : part))
       from = i
     })
-    ways.set(caravan, { length: caravan.road.length, path })
+    ways.set(caravan, { length: caravan.road.length, path, paved })
     return path
   }
 
@@ -142,7 +151,12 @@ export function makeTrade(stamps: Stamps, me: number) {
       stones.visible = STONE * zoom >= 1
       boldRoads(zoom, strategic)
       const seconds = performance.now() / 1000
-      if (state.tick % 10 === 0) pave(state)
+      // Once a second, or as soon after as a frame comes: a slow frame
+      // steps over several ticks, and the network fell behind its caravans.
+      if (state.tick < paveTick || state.tick - paveTick >= 10) {
+        paveTick = state.tick
+        pave(state)
+      }
       state.caravans.forEach((caravan, n) => {
         sprites[n] ??= container.addChild(new Sprite())
         const sprite = sprites[n]

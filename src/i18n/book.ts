@@ -59,6 +59,21 @@ export const bookEn = {
     return `${company.slice(0, -1).join(', ')} and ${company.at(-1)}`
   },
   guest: 'a friend',
+  randomLands: 'Random lands',
+  earthLands: 'The Earth',
+  legendLands: 'Legends',
+  random: {
+    small: 'Small',
+    standard: 'Middling',
+    large: 'Great',
+    huge: 'Vast',
+  },
+  reroll: 'Click: another',
+  cardLine: (size: string, least: number, most: number) =>
+    `${size} · ${least} to ${most} lords`,
+  copyLink: 'Copy the link',
+  linkCopied: 'Link copied',
+  short: (s: number) => `${s} s`,
   invite: 'Invite',
   copy: 'Copy',
   copied: 'Copied',
@@ -140,6 +155,21 @@ export const bookFr: BookMessages = {
     return `${company.slice(0, -1).join(', ')} et ${company.at(-1)}`
   },
   guest: 'un ami',
+  randomLands: 'Aléatoires',
+  earthLands: 'La Terre',
+  legendLands: 'Légendes',
+  random: {
+    small: 'Petite',
+    standard: 'Moyenne',
+    large: 'Grande',
+    huge: 'Immense',
+  },
+  reroll: 'Clic : une autre',
+  cardLine: (size: string, least: number, most: number) =>
+    `${size} · ${least} à ${most} seigneurs`,
+  copyLink: 'Copier le lien',
+  linkCopied: 'Lien copié',
+  short: (s: number) => `${s} s`,
   invite: 'Inviter',
   copy: 'Copier',
   copied: 'Copié',

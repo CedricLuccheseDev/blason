@@ -107,8 +107,37 @@ function sketch(
   g.strokeStyle = css(TONE.ink)
   g.stroke(coast)
   // The map's edge, as its frame's inner rule: on a card wider than the
-  // land, a land that runs to it is cut there, not in the open sea.
-  g.strokeRect(0, 0, world.width, world.height)
+  // land, a land that runs to it is cut there, not in the open sea. Whole on
+  // a card of a list, no rule: the land fades into the sea round it (« fais
+  // pas les rectangles sur les maps … rend ça mieux »).
+  if (whole) fade(g, world, at)
+  else g.strokeRect(0, 0, world.width, world.height)
+}
+
+/** The map's four edges faded into the sea's wash, a tenth of its shorter side deep. */
+function fade(g: CanvasRenderingContext2D, world: World, at: DOMMatrix) {
+  const { width, height } = world
+  const deep = Math.min(width, height) * 0.1
+  const sea = css(TONE.seaWash)
+  const clear = css(TONE.seaWash, 0)
+  g.save()
+  g.setTransform(at)
+  const edges: Array<
+    [number, number, number, number, number, number, number, number]
+  > = [
+    [0, 0, 0, deep, 0, 0, width, deep],
+    [0, height, 0, height - deep, 0, height - deep, width, deep],
+    [0, 0, deep, 0, 0, 0, deep, height],
+    [width, 0, width - deep, 0, width - deep, 0, deep, height],
+  ]
+  for (const [x0, y0, x1, y1, rx, ry, rw, rh] of edges) {
+    const ramp = g.createLinearGradient(x0, y0, x1, y1)
+    ramp.addColorStop(0, sea)
+    ramp.addColorStop(1, clear)
+    g.fillStyle = ramp
+    g.fillRect(rx, ry, rw, rh)
+  }
+  g.restore()
 }
 
 /** The high mountains, as the map draws them small (layers/peaks.ts): their ground in stone, and on each of their cells a mount in ink, `px` a pixel of the page in the map's units. */

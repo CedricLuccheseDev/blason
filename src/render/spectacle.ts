@@ -27,7 +27,7 @@ const COUPS: Record<Coup, { launch: Cue; land: Cue }> = {
 }
 
 /** The pixels a tile covers over which the world comes to be heard: from mid distance (« On entend pas les bruits des armées tout ça quand on zoom »). */
-const HEARD = [5, 12] as const
+const HEARD = [5, 30] as const
 /** The chances, each tick, of a clash, a cry, a hammer's blow, an oar's stroke from what is on screen: now and then, never in time; two armies at grips more than one taking a land. */
 const ODDS = { battle: 0.3, front: 0.12, shout: 0.05, hammer: 0.08, oars: 0.1 }
 
@@ -62,7 +62,9 @@ export function makeSpectacle() {
     watch(state: GameState, view: Box, perTile: number): Array<Spectacle> {
       const { out, down } = strikes(state)
       const lost = fallen(state)
-      const level = smoothstep(HEARD[0], HEARD[1], perTile)
+      // Rising slowly as the camera comes down, its full voice only up close
+      // (« on entend trop fort les sons très vite avec le zoom »).
+      const level = smoothstep(HEARD[0], HEARD[1], perTile) ** 2
       if (level === 0) return []
       const heard: Array<Spectacle> = []
       const hear = (cue: Cue, tile: number) => {

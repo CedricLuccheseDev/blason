@@ -195,6 +195,39 @@ if (dead) {
       for (const i of piece) dead[i] = true
   })
 }
+// And a crumb of dead land against the lands named, a bay their outline
+// drew as sea, lives with them (« pourquoi y'a une zone morte ? en corse »):
+// a neighbour's land is far wider, an island apart touches nothing of theirs.
+if (dead) {
+  const seen = new Uint8Array(dead.length)
+  dead.forEach((d, start) => {
+    if (!d || seen[start]) return
+    const piece = [start]
+    let touches = false
+    seen[start] = 1
+    for (let k = 0; k < piece.length; k++) {
+      const i = piece[k]
+      const [c, r] = [i % cols, Math.floor(i / cols)]
+      for (const [cc, rr] of [
+        [c - 1, r],
+        [c + 1, r],
+        [c, r - 1],
+        [c, r + 1],
+      ]) {
+        if (cc < 0 || cc >= cols || rr < 0 || rr >= rows_) continue
+        const j = rr * cols + cc
+        if (bytes[j] === 0) continue
+        if (!dead[j]) touches = true
+        else if (!seen[j]) {
+          seen[j] = 1
+          piece.push(j)
+        }
+      }
+    }
+    if (touches && piece.length < 3 * CRUMB)
+      for (const i of piece) dead[i] = false
+  })
+}
 /** The dead points, a bit each, eight to a byte, in the bytes' order. */
 const deadBits = dead
   ? Buffer.from(

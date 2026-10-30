@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Act, Tap } from '../hud/Act'
-import { Figure } from '../hud/Figure'
+import { Act } from '../hud/Act'
 import { Inline, Line, Stack } from '../hud/Layout'
-import { Call, Note, Title, Word } from '../hud/Text'
+import { Note, Title } from '../hud/Text'
 import { Shield } from '../hud/Emblem'
 import { hex } from './format'
 import type { ReactNode } from 'react'
@@ -11,50 +10,19 @@ import { Flourish } from '~/components/home/Ornaments'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
-// The pieces of the book of the game (GameBook.tsx): a setting turned by
-// its arrows, a page's head, the lords seated by team, and the book's
-// button over the camera's.
+// The pieces of the book of the game (GameBook.tsx): a setting's line, a
+// page's head, the lords seated by team, the link to invite friends, and
+// the book's button over the camera's.
 
-/** The next value of a list, a step forward or back, kept at its ends. */
-export function stepped<T>(list: ReadonlyArray<T>, value: T, by: 1 | -1): T {
-  const at = Math.max(0, list.indexOf(value))
-  return list[Math.max(0, Math.min(list.length - 1, at + by))]
-}
-
-/** A line of the book: its name, then its value (Line, the HUD's line of a list). */
-const Row = ({
-  name,
-  children,
-}: Readonly<{ name: string; children: ReactNode }>) => (
-  <Line name={<Note>{name}</Note>}>{children}</Line>
-)
-
-/** One setting: its name, and its value between two arrows; read only for whoever may not change it. */
+/** One setting: its name, and its control (Choices.tsx), or its value for whoever reads it only. */
 export function Setting({
   name,
-  value,
-  onStep,
-}: Readonly<{
-  name: string
-  value: string
-  onStep?: (by: 1 | -1) => void
-}>) {
-  const m = useMessages().book
-  const arrow = (by: 1 | -1) =>
-    onStep && (
-      <Tap
-        label={`${name} : ${by < 0 ? m.less : m.more}`}
-        onClick={() => onStep(by)}
-      >
-        <Call className="text-current">{by < 0 ? '‹' : '›'}</Call>
-      </Tap>
-    )
+  children,
+}: Readonly<{ name: string; children: ReactNode }>) {
   return (
-    <Row name={name}>
-      {arrow(-1)}
-      <Word className="flex-1 text-center">{value}</Word>
-      {arrow(1)}
-    </Row>
+    <Line name={<Note>{name}</Note>}>
+      <span className="flex flex-1 justify-end">{children}</span>
+    </Line>
   )
 }
 
@@ -163,24 +131,22 @@ export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
   )
 }
 
-/** The room's code, to give friends, and a click to copy it (« quand on host y'a pas de code »). */
+/** The room's link, to give friends: a click copies it, and whoever opens it sits in the game at once (« au lieu d'un code fais copier un lien c'est mieux »). */
 export function Invite({ code }: Readonly<{ code: string }>) {
   const m = useMessages().book
   const [copied, setCopied] = useState(false)
   const copy = () => {
+    const link = `${location.origin}/play?room=${code}`
     void navigator.clipboard
-      .writeText(code)
+      .writeText(link)
       .then(() => setCopied(true))
       .catch(() => setCopied(false))
   }
   return (
-    <Row name={m.invite}>
-      <span className="flex-1 text-center tracking-widest">
-        <Figure size="l">{code}</Figure>
-      </span>
-      <Tap onClick={copy}>
-        <Note className="text-current">{copied ? m.copied : m.copy}</Note>
-      </Tap>
-    </Row>
+    <Setting name={m.invite}>
+      <Act tone={copied ? 'pact' : 'plain'} onClick={copy}>
+        {copied ? m.linkCopied : m.copyLink}
+      </Act>
+    </Setting>
   )
 }

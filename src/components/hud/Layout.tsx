@@ -161,16 +161,20 @@ export function Veil({
   )
 }
 
-/** Two pages side by side, a fold between them; one under the other on a phone. */
+/** Two pages side by side, a fold between them; one under the other on a phone. `fill`: in a sheet of a fixed height, they take what it leaves and each page scrolls within it (« il faut que la modal ne bouge pas en taille il faut scroller »), the two together on a phone. */
 export function Spread({
   left,
   right,
-}: Readonly<{ left: ReactNode; right: ReactNode }>) {
+  fill = false,
+}: Readonly<{ left: ReactNode; right: ReactNode; fill?: boolean }>) {
+  const page = `flex min-w-0 flex-col gap-3 ${fill ? 'sm:min-h-0 sm:overflow-y-auto sm:pr-2' : ''}`
   return (
-    <div className="grid gap-6 sm:grid-cols-[1fr_auto_1fr]">
-      <div className="flex min-w-0 flex-col gap-3">{left}</div>
+    <div
+      className={`grid gap-6 sm:grid-cols-[1fr_auto_1fr] ${fill ? 'min-h-0 flex-1 overflow-y-auto sm:overflow-visible' : ''}`}
+    >
+      <div className={page}>{left}</div>
       <span aria-hidden="true" className="w-px bg-quill/35 max-sm:hidden" />
-      <div className="flex min-w-0 flex-col gap-3">{right}</div>
+      <div className={page}>{right}</div>
     </div>
   )
 }

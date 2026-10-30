@@ -57,7 +57,7 @@ const COLUMNS = 16
 const ROWS = 10
 /** The pixels a tile covers over which the land comes close (ground/detail.ts's levels), and over which its life is heard (as spectacle.ts's world). */
 const CLOSE = [9, 26] as const
-const HEARD = [5, 14] as const
+const HEARD = [5, 32] as const
 /** Tiles from the shore within which the sea is heard whole: the waves break there. */
 const SURF = 3
 /** River points on screen for a river heard at its fullest. */
@@ -158,7 +158,8 @@ export function bedsOf(
   streams(view, rivers, t)
   elements(state, view, t)
   const near = smoothstep(CLOSE[0], CLOSE[1], perTile)
-  const heard = smoothstep(HEARD[0], HEARD[1], perTile)
+  // Slowly, as the camera comes down (« il faut faire mieux progressif »).
+  const heard = smoothstep(HEARD[0], HEARD[1], perTile) ** 2
   const points = COLUMNS * ROWS
   const share = {
     sea: Math.min(1, (t.sea.n / points) * 2) * (0.4 + 0.6 * near),

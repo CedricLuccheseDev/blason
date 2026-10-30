@@ -19,6 +19,7 @@ import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
 import { makeRecord } from './record'
 import { makeSound } from './sound'
+import { makeSpending } from './spending'
 import { governFrames } from './quality'
 import type { GameHandle, GameHooks } from './handle'
 
@@ -100,6 +101,7 @@ export async function mountGame(
   // A saved game stands its own camera: the player's land is not looked for.
   let found = Boolean(save)
   let reported = -1
+  const spending = makeSpending(state, me)
   const news = makeNews(state, me)
   const notes = makeNotes(state)
   const earnings = makeEarnings(me)
@@ -151,6 +153,10 @@ export async function mountGame(
     // not begin a second.
     const beat = Math.floor(state.tick / 10)
     const over = state.winner !== NO_ONE
+    // What I spent, at once: a work laid, an army raised, a coup launched
+    // (« quand je construit un batiment le panel en bas ne se met pas a jour
+    // immédiatement sur l'argent »).
+    if (spending.changed()) refresh()
     if (beat !== reported || (over && !announced)) {
       reported = beat
       announced = over
