@@ -32,8 +32,6 @@ const SHORES = [
 const [LINE, INK] = [0.8, 1.3]
 /** Pixels of the page a pixel of the darker lands spans, stretched: how soft their edges. */
 const SOFT = 3
-/** How much of the card a map in a list covers at least, its land cut at its sides if need be. */
-const COVER = 0.85
 /** Pixels of the page over which a map in a list fades into the sea at its frame. */
 const FADE = 14
 /** Canvas pixels drawn per pixel of the page, at most. */
@@ -69,20 +67,20 @@ function sketch(
   // hauteur l'area partie publique »); or, in a list of maps, its land in
   // play whole and in the middle, the rest of the map round it as far as
   // the card goes (« fais pas les rectangles sur les maps … rend ça mieux »).
-  // In a list, as little as may be past the map's frame: a land cut by the
-  // frame showed a straight edge there and a pale band beyond (« problème de
-  // trait », « bandes claires »). The map covers most of the card, a land of
-  // another shape cut a little at its sides, and fades into the sea at its
-  // frame (FADE).
+  // In a list, the land whole, never cut (« je veux la map complète »), as
+  // little as may be past the map's frame: a land cut by the frame showed a
+  // straight edge there and a pale band beyond (« problème de trait »,
+  // « bandes claires »); it fades into the sea at its frame (FADE).
   const frame = whole
     ? boundsOf(world)
     : { x: 0, y: 0, w: world.width, h: world.height }
   const cover = Math.max(width / world.width, height / world.height)
   const scale = whole
-    ? Math.max(cover * COVER, Math.min(width / frame.w, height / frame.h))
+    ? Math.min(width / frame.w, height / frame.h)
     : cover
+  // The land's middle, moved for the card to show as little past the frame as may be.
   const within = (middle: number, half: number, side: number) =>
-    Math.min(Math.max(middle, half), side - half)
+    2 * half >= side ? side / 2 : Math.min(Math.max(middle, half), side - half)
   const [dx, dy] = [
     width / 2 -
       within(frame.x + frame.w / 2, width / 2 / scale, world.width) * scale,
