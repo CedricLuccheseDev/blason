@@ -29,7 +29,7 @@ const inkWidth = (zoom: number) => Math.min(3, Math.max(1.5, 1.1 * zoom)) / zoom
 const coastWidth = (zoom: number) =>
   Math.min(2.6, Math.max(1.3, 1.5 * zoom)) / zoom
 
-type Drawn = { rim: Graphics | null; ink: Ribbon; free: boolean }
+type Drawn = { rim: Graphics; ink: Ribbon }
 
 export function makeBorders(
   world: World,
@@ -51,30 +51,26 @@ export function makeBorders(
   function draw(key: number) {
     const old = drawn.get(key)
     if (old) {
-      old.rim?.destroy()
+      old.rim.destroy()
       old.ink.mesh.destroy()
       drawn.delete(key)
     }
     const loops = outline(key)
-    if (loops.length === 0) return
-    const free = key < 0
+    if (loops.length === 0 || key < 0) return
     const ink = makeRibbon(
       loops.map((l) => alongBorder([...l, l[0]])),
       TONE.ink,
-      free ? 0.45 : 0.85,
+      0.85,
     )
-    ink.widen(width * (free ? 0.7 : 1))
+    ink.widen(width)
     inks.addChild(ink.mesh)
-    let rim: Graphics | null = null
-    if (!free) {
-      rim = rims.addChild(new Graphics())
-      for (const { by, width: w, alpha } of RIM) {
-        for (const loop of loops)
-          rim.poly(flatten(simplifyLoop(inside(loop, by), SOFT)))
-        rim.stroke({ width: w, color: playerColor(key), alpha, join: 'round' })
-      }
+    const rim = rims.addChild(new Graphics())
+    for (const { by, width: w, alpha } of RIM) {
+      for (const loop of loops)
+        rim.poly(flatten(simplifyLoop(inside(loop, by), SOFT)))
+      rim.stroke({ width: w, color: playerColor(key), alpha, join: 'round' })
     }
-    drawn.set(key, { rim, ink, free })
+    drawn.set(key, { rim, ink })
   }
 
   return {
@@ -88,7 +84,7 @@ export function makeBorders(
       for (const key of traced ?? []) draw(key)
       if (!widened && Math.abs(zoom / zoomed - 1) < 0.03) return
       zoomed = zoom
-      for (const d of drawn.values()) d.ink.widen(width * (d.free ? 0.7 : 1))
+      for (const d of drawn.values()) d.ink.widen(width)
       coast.widen(coastWidth(zoom))
     },
   }
