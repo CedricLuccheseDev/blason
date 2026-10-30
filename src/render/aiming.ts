@@ -1,6 +1,7 @@
 import { UNIT, barredBy, coupPrice, launchSite } from '../../engine'
 import { courseNow } from './course'
 import { siteOf } from './marks'
+import { onCanvas } from './input'
 import type { Container } from 'pixi.js'
 import type { Army, Coup, GameState } from '../../engine'
 import type { Hand } from './hand'
@@ -38,8 +39,9 @@ export function makeAiming(
 ) {
   const pointer = { x: 0, y: 0 }
   const onPointer = (e: PointerEvent) => {
-    pointer.x = e.offsetX
-    pointer.y = e.offsetY
+    const { x, y } = onCanvas(canvas, e)
+    pointer.x = x
+    pointer.y = y
   }
   canvas.addEventListener('pointermove', onPointer)
   canvas.addEventListener('pointerdown', onPointer)

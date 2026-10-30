@@ -98,6 +98,20 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const words =
     dropIn === null ? m.race.toWin(needed) : m.race.dropsIn(minutes(dropIn))
   const figure = dropIn === null ? m.game.percent(needed) : minutes(dropIn)
+  // What is left to win: the words, or their figure alone where the room is short.
+  const short = step || compact
+  const left = (
+    <span title={short ? words : undefined}>
+      <Inline gap="hair">
+        {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
+        {short ? (
+          <Figure size="s">{figure}</Figure>
+        ) : (
+          <Note className="whitespace-nowrap">{words}</Note>
+        )}
+      </Inline>
+    </span>
+  )
   return (
     <div ref={room} className="flex w-full min-w-0 justify-center">
       <div ref={piece} className="w-max">
@@ -106,24 +120,30 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <Panel gap="hair" className="w-80 items-center max-sm:w-auto">
-            <div className="w-full max-sm:w-56">
-              <Track summary={summary} />
-            </div>
-            <Inline gap="part">
-              <Figure size="l">{minutes(summary.seconds)}</Figure>
-              <span title={step ? words : undefined}>
-                <Inline gap="hair">
-                  {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
-                  {step ? (
-                    <Figure size="s">{figure}</Figure>
-                  ) : (
-                    <Note className="whitespace-nowrap">{words}</Note>
-                  )}
-                </Inline>
-              </span>
-            </Inline>
-          </Panel>
+          {compact ? (
+            // On a phone, one line: the time, the track, the hourglass and its
+            // figure; the words in the hint (« on peut réduire la section en
+            // haut centré elle est trop grosse »).
+            <Panel>
+              <Inline gap="part">
+                <Figure size="m">{minutes(summary.seconds)}</Figure>
+                <div className="w-36">
+                  <Track summary={summary} />
+                </div>
+                {left}
+              </Inline>
+            </Panel>
+          ) : (
+            <Panel gap="hair" className="w-80 items-center">
+              <div className="w-full">
+                <Track summary={summary} />
+              </div>
+              <Inline gap="part">
+                <Figure size="l">{minutes(summary.seconds)}</Figure>
+                {left}
+              </Inline>
+            </Panel>
+          )}
         </Hint>
       </div>
     </div>

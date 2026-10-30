@@ -95,7 +95,15 @@ export async function mountGame(
     (tile, pinned) => aiming.at(tile, pinned, hand.hand),
     hooks.onAim,
   )
-  const click = makeClick(state, me, session.send, hand, pin.dismisses, refresh)
+  const click = makeClick(
+    state,
+    me,
+    session.send,
+    hand,
+    pin.dismisses,
+    refresh,
+    sound.refuse,
+  )
   const input =
     me >= 0
       ? makeInput(app.canvas, scene.world, pick, {

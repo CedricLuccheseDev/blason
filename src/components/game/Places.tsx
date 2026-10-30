@@ -1,4 +1,4 @@
-import { GAP, Inline, MARGIN, Panel, Stack } from '../hud/Layout'
+import { GAP, Inline, MARGIN, Stack } from '../hud/Layout'
 import { BookButton, HomeMark } from './BookParts'
 import { Banner } from './Banner'
 import { Bar } from './Bar'
@@ -47,13 +47,11 @@ export function Places({
 }>) {
   return (
     <div
-      className={`pointer-events-none absolute inset-0 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
+      className={`pointer-events-none absolute top-[env(safe-area-inset-top)] right-[env(safe-area-inset-right)] bottom-[env(safe-area-inset-bottom)] left-[env(safe-area-inset-left)] grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
     >
       <Inline className="self-start">
         {/* Upright on a phone the race needs the top's width: the game's mark comes down to its initial (BookParts.tsx), the way home kept. */}
-        <Panel className="h-11 justify-center max-sm:min-w-11 max-sm:items-center">
-          <HomeMark onHome={onHome} />
-        </Panel>
+        <HomeMark onHome={onHome} />
         {onBook && (
           <span className="pointer-events-auto">
             <BookButton onOpen={onBook} />

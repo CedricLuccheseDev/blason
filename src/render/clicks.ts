@@ -1,6 +1,7 @@
 import { canStart } from '../../engine'
 import { keyOf } from './keys'
 import { tilePlaces } from './places'
+import { canSend } from './course'
 import type { GameState, Order } from '../../engine'
 import type { makeHand } from './hand'
 import type { Spot } from './roads'
@@ -19,6 +20,8 @@ export function makeClick(
   /** Whether this click only closes the right click's menu. */
   dismisses: () => boolean,
   refresh: () => void,
+  /** An army asked for that cannot go: no village free, or no man to raise. */
+  refuse: () => void,
 ) {
   return (tile: number) => {
     if (tile < 0 || me < 0 || dismisses()) return
@@ -28,7 +31,19 @@ export function makeClick(
       return
     }
     const held = hand.holding()
-    send(hand.order(me, tile))
+    const order = hand.order(me, tile)
+    // Said, not silently dropped: on a phone no aim shows beforehand that
+    // nothing can go (« quand on simple clic dans un territoire d'un autre
+    // joueur ça attaque pas », its village's army out).
+    if (
+      order.type === 'attack' &&
+      state.owner[tile] !== me &&
+      !canSend(state, me, order.army)
+    ) {
+      refuse()
+      return
+    }
+    send(order)
     if (held) refresh()
   }
 }

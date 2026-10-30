@@ -22,8 +22,8 @@ applies each rule is named beside it.
   (as much land is left to play as on today's maps), cut by **passes** a few
   tiles wide, the ranges' fronts and chokepoints; the land is always one
   piece through them. On the map, a range is washed in stone and ringed in
-  ink, a mount on each of its cells, and each pass marked by two strokes
-  facing each other (`src/render/layers/peaks.ts`).
+  ink, a mount on each of its cells; a pass is the gap the range leaves
+  (`src/render/layers/peaks.ts`).
 - A map has a **size** (`MAP_SIZES`): standard, large (twice the land) or
   huge (four times), chosen by `/play?size=large` or `huge` until the home
   offers it. Its tiles and cells keep their size: a larger land has more of

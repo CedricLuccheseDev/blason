@@ -9,6 +9,19 @@ const SLOP = 6
 /** How long a finger rests before its press is the right button's. */
 const LONG_PRESS_MS = 500
 
+/**
+ * Where a pointer is on the canvas, in its pixels: from the screen's
+ * coordinates, not offsetX/Y, which a phone may give as naught or stale
+ * around a long press: the aim ran to the top left corner (« les traits qui
+ * vont jusqu'en haut a gauche … quand on reste appuyé sur mobile ») and the
+ * lord's menu opened elsewhere than the finger (« ca met la popup pas au bon
+ * endroit »).
+ */
+export function onCanvas(canvas: HTMLCanvasElement, e: PointerEvent) {
+  const box = canvas.getBoundingClientRect()
+  return { x: e.clientX - box.left, y: e.clientY - box.top }
+}
+
 export function makeInput(
   canvas: HTMLCanvasElement,
   view: Container,
@@ -26,16 +39,8 @@ export function makeInput(
   let press: { x: number; y: number } | null = null
   let long: ReturnType<typeof setTimeout> | undefined
 
-  // From the screen's coordinates, not offsetX/Y, which a phone may give as
-  // naught around a long press: the aim then ran to the top left corner
-  // (« les traits qui vont jusqu'en haut a gauche … quand on reste appuyé
-  // sur mobile »).
   function tileAt(e: PointerEvent): number {
-    const box = canvas.getBoundingClientRect()
-    const { x, y } = view.toLocal({
-      x: e.clientX - box.left,
-      y: e.clientY - box.top,
-    })
+    const { x, y } = view.toLocal(onCanvas(canvas, e))
     return pick(x, y)
   }
 

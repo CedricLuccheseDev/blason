@@ -1,12 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import {
-  barredBy,
-  canBuild,
-  canStart,
-  freeWorks,
-  menFor,
-} from '../../../engine'
-import { courseNow } from '../course'
+import { barredBy, canBuild, canStart } from '../../../engine'
+import { canSend, courseNow } from '../course'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
@@ -45,10 +39,7 @@ export function makeAim(state: GameState, me: number) {
   const color = playerColor(me)
   let read = { key: '', entry: -1, road: [] as Array<At> }
 
-  /** Whether a click would send the army: a village (or a market) with none out, and men to raise (« si tu peux pas envoyer d'armée ne met pas le chemin du village »). */
-  const sendable = (army: Army) =>
-    freeWorks(state, me, 0, state.rules.raisedAt[army]).length > 0 &&
-    menFor(state, me, army) > 0
+  const sendable = (army: Army) => canSend(state, me, army)
 
   /** Where an army would enter, and the road it would march there from its free village or, for mercenaries, its free market, as drawn: the engine's own course, the one the click sends it by (courseFor); nothing if no army can leave. Read again only when the pointer, the land or the army in hand changes. */
   function entryAt(tile: number, army: Army) {

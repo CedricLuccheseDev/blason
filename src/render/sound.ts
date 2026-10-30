@@ -64,6 +64,8 @@ export function makeSound(
       hear(heardIn(news))
       mixer.hear(bedsOf(state, ear.terrain, ear.rivers, ear.view(), perTile()))
     },
+    /** An order refused before it is sent: the dull knock of the HUD's refusals. */
+    refuse: () => mixer.play('refused'),
     toggle: mixer.toggle,
     destroy() {
       stopPresses()

@@ -9,8 +9,9 @@ import type { Point, World } from '../../../engine'
 // maps draw a range. Their ground washed in stone and ringed in ink on its
 // outer edge alone; on each of their cells a mount standing in the map's
 // light, its flank on the right in shadow and hatched, the lower ones laid
-// over the higher; and at each pass, where the land goes through, two short
-// strokes facing each other. Drawn once, in map units.
+// over the higher. A pass is the gap the range leaves, no sign on it: two
+// strokes facing each other read as brackets (« Y'a des parenthèses sur la
+// carte »). Drawn once, in map units.
 
 /** A mount against its cell's width: its half width, its height. */
 const [HALF, HIGH] = [0.48, 0.8]
@@ -79,20 +80,6 @@ function mount(
   })
 }
 
-/** A pass: two short strokes bowed away from each other, across the way through. */
-function pass(g: Graphics, [x, y]: Point, size: number) {
-  for (const side of [-1, 1]) {
-    const sx = x + side * size * 0.45
-    g.moveTo(sx, y - size * 0.6).quadraticCurveTo(
-      sx + side * size * 0.35,
-      y,
-      sx,
-      y + size * 0.6,
-    )
-  }
-  g.stroke({ width: size * 0.16, color: TONE.ink, cap: 'round' })
-}
-
 export function makePeaks(world: World) {
   const container = new Container()
   const g = container.addChild(new Graphics())
@@ -102,13 +89,11 @@ export function makePeaks(world: World) {
   for (const [a, b] of rim(world.peaks)) g.moveTo(...a).lineTo(...b)
   g.stroke({ width: 1.6, color: TONE.ink, join: 'round', cap: 'round' })
   const cells = world.peaks.map(({ outline }) => bounds(outline))
-  const width = cells.reduce((sum, c) => sum + c.width, 0) / cells.length
   // The lower ones last, laid over those behind them.
   for (const c of [...cells].sort((p, q) => p.y - q.y)) {
     const h = hash(c.x, c.y, 7)
     const size = c.width * (0.85 + h * 0.3)
     mount(g, c.x, c.y + size * HIGH * 0.35, size * HALF, size * HIGH, h)
   }
-  for (const at of world.passes) pass(g, at, width * 0.5)
   return { container }
 }

@@ -150,20 +150,16 @@ export function BookButton({ onOpen }: Readonly<{ onOpen: () => void }>) {
 /** The game's name top left, its mark in IM Fell on a sheet, the way back to the home (« met dans le header en haut à gauche, au moins le logo du jeu »). */
 export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
   const m = useMessages().book
+  // The HUD's one button, as the book's and the lords' beside it (« il faut
+  // un seul type visuel »), its word the game's mark.
   return (
-    <button
-      type="button"
-      onClick={onHome}
-      aria-label={m.home}
-      title={m.home}
-      className="hud-press pointer-events-auto cursor-pointer"
-    >
+    <Act tone="plain" label={m.home} onClick={onHome}>
       {/* norm-ok: wordmark, not copy. Upright on a phone, its initial alone: the race needs the width, and the way home stays (« Y'a plus le bouton logo »). */}
       <span className="hud-word font-mark text-hud-xl leading-none text-quill">
         <span className="max-sm:hidden">Blason</span>
         <span className="sm:hidden">B</span>
       </span>
-    </button>
+    </Act>
   )
 }
 

@@ -1,4 +1,4 @@
-import { courseFor } from '../../engine'
+import { courseFor, freeWorks, menFor } from '../../engine'
 import type { Army, GameState } from '../../engine'
 
 // The course under the pointer, worked out once a tick: the aim draws its
@@ -21,3 +21,8 @@ export function courseNow(
     last = { key, course: courseFor(state, player, tile, army) }
   return last.course
 }
+
+/** Whether a click would send the army: a village (or a market) with none out, and men to raise (« si tu peux pas envoyer d'armée ne met pas le chemin du village »). */
+export const canSend = (state: GameState, player: number, army: Army) =>
+  freeWorks(state, player, 0, state.rules.raisedAt[army]).length > 0 &&
+  menFor(state, player, army) > 0
