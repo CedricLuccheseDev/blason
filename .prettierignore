@@ -2,3 +2,6 @@
 design/maquette/captures/
 design/maquette/maquette.html
 public/saves/
+
+# The atlas's maps, baked by scripts/atlas.ts, never hand-edited.
+engine/map/atlas/

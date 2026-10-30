@@ -31,6 +31,8 @@ const STRIDE = Number(minutes)
 const TOP = 4000
 /** The rivers and lakes kept, by Natural Earth's rank: the greater, the lower. */
 const RANK = 7
+/** The fewest points a piece of the lands named keeps to live. */
+const CRUMB = 8
 /** How far a river may stray from its drawn line once simplified, in degrees. */
 const STRAY = 0.06
 const EARTH =
@@ -131,7 +133,7 @@ const named = only.split(',').filter(Boolean)
 const countries = named.length
   ? (
       (await (
-        await fetch(`${EARTH}ne_50m_admin_0_countries.geojson`)
+        await fetch(`${EARTH}ne_10m_admin_0_countries.geojson`)
       ).json()) as {
         features: Array<Feature & { properties: { ADM0_A3: string } }>
       }
@@ -164,6 +166,35 @@ const dead = named.length
       return true
     })
   : null
+// A crumb of the lands named, a few points along their outline cut off in
+// the land of others (their outline coarser than the heights), dies with it.
+if (dead) {
+  const seen = new Uint8Array(dead.length)
+  dead.forEach((d, start) => {
+    if (d || bytes[start] === 0 || seen[start]) return
+    const piece = [start]
+    seen[start] = 1
+    for (let k = 0; k < piece.length; k++) {
+      const i = piece[k]
+      const [c, r] = [i % cols, Math.floor(i / cols)]
+      for (const [cc, rr] of [
+        [c - 1, r],
+        [c + 1, r],
+        [c, r - 1],
+        [c, r + 1],
+      ]) {
+        const j = rr * cols + cc
+        if (cc < 0 || cc >= cols || rr < 0 || rr >= rows_) continue
+        if (seen[j] || dead[j] || bytes[j] === 0) continue
+        seen[j] = 1
+        piece.push(j)
+      }
+    }
+    // An island of the lands named lives, however small: its points lie within them.
+    if (piece.length < CRUMB && !piece.some((i) => alive[i]))
+      for (const i of piece) dead[i] = true
+  })
+}
 /** The dead points, a bit each, eight to a byte, in the bytes' order. */
 const deadBits = dead
   ? Buffer.from(

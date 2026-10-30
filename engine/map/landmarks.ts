@@ -98,13 +98,22 @@ export function deadOf(
   width: number,
   height: number,
 ): Array<boolean> | undefined {
-  const { cols, rows, dead } = sheet
+  const { cols, rows, dead, data } = sheet
   if (!dead) return undefined
   const bits = Uint8Array.from(atob(dead), (ch) => ch.charCodeAt(0))
+  const ground = Uint8Array.from(atob(data), (ch) => ch.charCodeAt(0))
+  // Of the four points round its site, the land ones vote: a cell on the
+  // coast, its nearest point in the sea, dies with the land beside it.
   return cells.sites.map(([x, y]) => {
-    const c = Math.min(cols - 1, Math.round((x / width) * (cols - 1)))
-    const r = Math.min(rows - 1, Math.round((y / height) * (rows - 1)))
-    const i = r * cols + c
-    return (bits[i >> 3] & (1 << (i & 7))) !== 0
+    const u = (x / width) * (cols - 1)
+    const v = (y / height) * (rows - 1)
+    let vote = 0
+    for (const r of [Math.floor(v), Math.ceil(v)])
+      for (const c of [Math.floor(u), Math.ceil(u)]) {
+        const i = Math.min(rows - 1, r) * cols + Math.min(cols - 1, c)
+        if (ground[i] === 0) continue
+        vote += (bits[i >> 3] & (1 << (i & 7))) !== 0 ? 1 : -1
+      }
+    return vote > 0
   })
 }

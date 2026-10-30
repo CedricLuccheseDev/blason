@@ -121,9 +121,9 @@ export function landShape(world: World): GraphicsContext {
   })
 }
 
-/** The dead land's parchment: the page dulled, as a land beyond the game is drawn on an old map (« Il faut instaurer des dead space »), and hatched, lest it read as sea (« On dirait que c'est de la mer alors que nan »). */
-const DEAD = mixColor(TONE.page, TONE.ink, 0.16)
-const HATCH = mixColor(DEAD, TONE.ink, 0.3)
+/** The dead land: dark, brown-black, as a land beyond the game is inked out on an old map (« Il faut instaurer des dead space », « il faut mettre en marron noir les lands dead »), and hatched a shade lighter, lest it read as sea. */
+export const DEAD = mixColor(TONE.ink, TONE.page, 0.12)
+const HATCH = mixColor(DEAD, TONE.page, 0.14)
 /** The hatching's tile, in pixels of its texture, and in map units. */
 const [TILE, SPAN] = [16, 7]
 

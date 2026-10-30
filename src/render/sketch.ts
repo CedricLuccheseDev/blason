@@ -1,5 +1,6 @@
 import { landAhead } from './ahead'
 import { css } from './art/ink'
+import { DEAD } from './layers/lands'
 import { mixColor } from './ease'
 import { chain, simplify } from './geometry'
 import { TONE } from './palette'
@@ -88,10 +89,9 @@ function sketch(
   const land = cells(world.land)
   g.fillStyle = css(TONE.page)
   g.fill(land)
-  // The dead land, others' than the map's own, dulled (layers/lands.ts),
-  // its coast's ink telling it from the sea.
+  // The dead land, others' than the map's own, brown-black (layers/lands.ts).
   if (world.dead.length > 0) {
-    g.fillStyle = css(mixColor(TONE.page, TONE.ink, 0.22))
+    g.fillStyle = css(DEAD)
     g.fill(cells(world.dead))
   }
   // The darker lands washed in, kept within the coast.
