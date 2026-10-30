@@ -7,10 +7,14 @@ import type { News } from './news'
 // where), for the HUD to write there a few seconds (Pennant.tsx): a lord
 // biting the player's border, a coup falling on his land, his troublemaker
 // stopped, a land risen, an offering given him. A betrayal is not here: it
-// is cried to all under the race.
+// is cried to all under the race; nor an alliance offered me, which the
+// herald's letter already brings (« y'a 2x propose une alliance »).
 
 /** Seconds a piece of news stays on the map. */
 const LIFE = 4
+
+/** News a herald's letter already brings to the map (Heralds.tsx). */
+const lettered = (n: News) => n.kind === 'pact' && n.how === 'offered'
 
 type Note = {
   id: number
@@ -27,7 +31,7 @@ export function makeNotes(state: GameState) {
     /** The news just read; those with a place are laid there from `now`, in seconds. */
     tell(news: Array<News>, now: number) {
       for (const n of news)
-        if ('tile' in n && n.tile >= 0)
+        if ('tile' in n && n.tile >= 0 && !lettered(n))
           live.push({
             id: next++,
             news: n,
