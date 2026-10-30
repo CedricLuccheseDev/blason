@@ -154,7 +154,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/components/game/` : le HUD de la partie, **sans fond depuis le 29/10** (« le HUD repensé », Concept) : six
   places à une seule marge (`Places.tsx`), le nom du jeu en haut à gauche, la course et le temps dessous en haut au
   centre (`Race.tsx`), les royaumes en haut à droite, les cinq premiers et moi, tous au clic (`Realms.tsx`), moi en
-  bas à gauche (`Purse.tsx`), toutes les actions sur une ligne en bas au centre (`Bar.tsx`), mes campagnes en bas à
+  bas à gauche (`Purse.tsx`), toutes les actions sur une ligne en bas au centre, chaque famille nommée au-dessus (`Bar.tsx` ; faute de place, les coups, puis les bâtiments, puis les armées rangés chacun derrière une face, un tiroir qui s'ouvre au survol ou au doigt, `BarDrawer.tsx`, 30/10 « si ya la place met tout en ligne sinon range »), le navire de guerre parmi les armées en sceau d'or, mes campagnes en bas à
   droite (`Campaign.tsx`) ; tout flotte en lettres de la carte, claires cernées d'encre (`.hud-afloat`, `--hud-ink`),
   et le haut ou le bas de l'écran ne s'assombrit que quand la souris s'en approche (`Shades.tsx`). Ce qui suit
   décrit les pièces d'avant, dont le dessin a changé : (la liste des seigneurs en haut à gauche, en bandes : tous ceux encore

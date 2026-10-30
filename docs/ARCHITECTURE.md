@@ -561,13 +561,16 @@ to the player's capital while it stands (`HeraldLetter.tsx`,
 `layers/pacts.ts`); either waiting at the screen's edge
 with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
-bar at the bottom, tight, with the purse in it, then the four armies as seals
-in a row, the mercenaries' in gold, paid in gold, each with its figure under
-it as a work has its price (the share of the peasants a levy takes, the
-mercenaries' gold), and only the one in hand named under the row with its
-men, then the works and the coups as their
-emblems and their prices alone, their names under the pointer, what cannot be
-paid at half ink, keys 1 to 9 then 0 (`Bar.tsx`, its pieces `BarPiece.tsx`);
+bar at the bottom, its three families each named over it (armies, buildings,
+strikes): the four armies as seals in a row, the levies' share by the
+peasants' icon, the mercenaries' and the warship's in gold, paid in gold
+(key B); the works as medallions and the coups as lozenges, each with its
+price, its name under the pointer, what cannot be paid at half ink, keys 1 to
+9 then 0. Short of room it folds a family at a time behind one face, the
+strikes first, then the buildings, then the armies: a drawer the pointer, a
+click or a tap lifts above it, its pieces named in it (`Bar.tsx`, its
+families `BarGroups.tsx`, the drawer `BarDrawer.tsx`, its pieces
+`BarPiece.tsx`, the seals' marks `seals.ts`);
 the cartouche beside the pointer, what a left click sends, the army in hand
 and its men, and over another lord's land that a right click opens the rest
 (`Cursor.tsx`); a right click there opens his menu beside the pointer, as a

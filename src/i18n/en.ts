@@ -34,9 +34,9 @@ export const en = {
       market: 'not enough gold',
     },
     armies: {
-      raid: 'Raid',
-      host: 'Host',
-      ban: 'Levy',
+      raid: 'Small troop',
+      host: 'Troop',
+      ban: 'Large troop',
       mercenaries: 'Mercenaries',
     },
     works: {
@@ -46,10 +46,11 @@ export const en = {
     },
     coups: {
       troublemaker: 'Troublemaker',
-      archers: 'Archers',
+      archers: 'Volley',
       trebuchet: 'Trebuchet',
     },
     warship: 'Warship',
+    families: { armies: 'Armies', works: 'Buildings', coups: 'Strikes' },
     launch: 'click: launch',
     campaign: 'On campaign',
     seek: (army: string) => `See: ${army}`,

@@ -35,9 +35,9 @@ export const fr: Messages = {
       market: 'pas assez d’or',
     },
     armies: {
-      raid: 'Chevauchée',
-      host: 'Ost',
-      ban: 'Arrière-ban',
+      raid: 'Petite troupe',
+      host: 'Troupe',
+      ban: 'Grande troupe',
       mercenaries: 'Mercenaires',
     },
     works: {
@@ -47,10 +47,11 @@ export const fr: Messages = {
     },
     coups: {
       troublemaker: 'Causeur de troubles',
-      archers: 'Archers',
+      archers: 'Volée de flèches',
       trebuchet: 'Trébuchet',
     },
     warship: 'Navire de guerre',
+    families: { armies: 'Armées', works: 'Bâtiments', coups: 'Coups' },
     launch: 'clic : lancer',
     campaign: 'En campagne',
     seek: (army: string) => `Voir : ${army}`,

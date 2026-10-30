@@ -1,7 +1,7 @@
 import { Figure } from '../hud/Figure'
 import { Inline } from '../hud/Layout'
 import { Glyph } from './svg/marks'
-import { ARMY_MARKS } from './Bar'
+import { ARMY_MARKS } from './seals'
 import { count, hex } from './format'
 import type { Mark } from './svg/marks'
 import type { Summary } from '~/render/client'
