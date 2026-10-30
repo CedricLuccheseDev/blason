@@ -65,6 +65,24 @@ export const en = {
     fallen: 'Your realm has fallen',
     playAgain: 'Play again',
     watchEnd: 'Watch the end',
+    deeds: {
+      title: 'Your course',
+      played: 'Time played',
+      widest: 'Land at its widest',
+      land: (share: number, tiles: string) =>
+        `${share}\u202f% · ${tiles} tiles`,
+      place: 'Your place',
+      rank: (place: number, of: number) => {
+        // 1st, 2nd, 3rd, then th, and 11th to 13th.
+        const teen = place % 100 >= 11 && place % 100 <= 13
+        const tail = teen
+          ? 'th'
+          : (['th', 'st', 'nd', 'rd'][place % 10] ?? 'th')
+        return `${place}${tail} of ${of}`
+      },
+      peasants: 'Peasants at their most',
+      gold: 'Gold gained',
+    },
     colors: {
       azure: 'Azure',
       gules: 'Gules',

@@ -18,6 +18,7 @@ import { makeNotes } from './notes'
 import { summarize } from './summary'
 import { makeEarnings } from './earnings'
 import { makeHeralds } from './heralds'
+import { makeRecord } from './record'
 import { makeSound } from './sound'
 import { bestQuality, governFrames } from './quality'
 import type { GameHandle, GameHooks } from './handle'
@@ -121,7 +122,10 @@ export async function mountGame(
   }
   /** The figures and the aim again: when what is in hand changed, and once a second, the land, or in the opening the standards, having moved under the pointer. */
   function refresh() {
-    hooks.onSummary(summarize(state, me, hand.hand, earnings.total()))
+    hooks.onSummary({
+      ...summarize(state, me, hand.hand, earnings.total()),
+      record: record.read(earnings.total()),
+    })
     pin.again()
   }
   if (me >= 0) window.addEventListener('keydown', onKey)
@@ -133,6 +137,7 @@ export async function mountGame(
   const news = makeNews(state, me)
   const notes = makeNotes(state)
   const earnings = makeEarnings(me)
+  const record = makeRecord(state, me)
   const play = (ms: number, most?: number) =>
     session.advance(
       ms,

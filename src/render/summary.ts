@@ -26,6 +26,7 @@ import type { Lord } from './standings'
 import type { Army, Coup, GameState, Work } from '../../engine'
 import type { Hand } from './hand'
 import type { Heraldry } from './palette'
+import type { Deeds } from './record'
 
 // What the HUD shows, read from the state once a second, as
 // every figure of the game: they step, they do not run.
@@ -43,6 +44,8 @@ export type Summary = {
   winner: Heraldry | null
   /** Whether the player's side won: himself, or his team. */
   won: boolean
+  /** His course through the game, told at the end (record.ts); none in a summary read alone. */
+  record?: Deeds
   me:
     | (Seat & {
         /** His peasants and what his land and villages feed, his land's part apart and his villages counted, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */

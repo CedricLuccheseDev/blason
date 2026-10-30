@@ -66,6 +66,18 @@ export const fr: Messages = {
     fallen: 'Ton royaume est tombé',
     playAgain: 'Rejouer',
     watchEnd: 'Regarder la fin',
+    deeds: {
+      title: 'Ton parcours',
+      played: 'Temps de jeu',
+      widest: 'Terre au plus haut',
+      land: (share: number, tiles: string) =>
+        `${share}\u202f% · ${tiles} tuiles`,
+      place: 'Ta place',
+      rank: (place: number, of: number) =>
+        `${place}${place === 1 ? 're' : 'e'} sur ${of}`,
+      peasants: 'Paysans au plus haut',
+      gold: 'L’or gagné',
+    },
     colors: {
       azure: 'Azur',
       gules: 'Gueules',
