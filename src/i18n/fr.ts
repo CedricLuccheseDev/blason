@@ -64,6 +64,7 @@ export const fr: Messages = {
     winner: 'remporte la partie',
     fallen: 'Ton royaume est tombé',
     playAgain: 'Rejouer',
+    quit: 'Quitter',
     watchEnd: 'Regarder la fin',
     deeds: {
       title: 'Ton parcours',

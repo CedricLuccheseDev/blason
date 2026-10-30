@@ -14,7 +14,8 @@ import { useMessages } from '~/i18n'
  * les stats de la partie »): the winner, or my fall, then my course through
  * the game in ruled lines, as the book's settings are (« Mon parcours »):
  * the time played, my land at its widest, my place, my peasants at their
- * most, the gold I gained; then play again, or, fallen, watch the end.
+ * most, the gold I gained; then play again, leave for the home page (« il
+ * faut le bouton quitter »), or, fallen, watch the end.
  */
 export function Moment({
   summary,
@@ -46,6 +47,11 @@ export function Moment({
           >
             {m.game.playAgain}
           </Link>
+          {!online && (
+            <Link to="/" reloadDocument className={actClass('plain')}>
+              {m.game.quit}
+            </Link>
+          )}
           {fallen && !winner && (
             <Act tone="plain" onClick={watch}>
               {m.game.watchEnd}

@@ -170,6 +170,9 @@ leaves it gives his seat back to its bot.
   | an army in the field                   | a man (1 for 1)                |
   | an army defending under its own castle | two men (2 for 1)              |
 
+  A lord's tile costs at least a tenth of a man however thin his land
+  (`leastCost`), so that an army never runs on without end against a lord
+  with no men left; the free land costs only what its villagers hold.
   The army fights until it cannot pay the next tile, then its survivors go
   home.
 

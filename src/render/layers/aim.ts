@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import { barredBy, canBuild, canStart } from '../../../engine'
-import { canSend, courseNow } from '../course'
+import { NEUTRAL, barredBy, canBuild, canStart } from '../../../engine'
+import { canSend, courseNow, wayTo } from '../course'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
@@ -37,7 +37,12 @@ export function makeAim(state: GameState, me: number) {
   const coups = makeCoupAim(state, me)
   container.addChild(coups.container)
   const color = playerColor(me)
-  let read = { key: '', entry: -1, road: [] as Array<At> }
+  let read = {
+    key: '',
+    entry: -1,
+    road: [] as Array<At>,
+    way: [] as Array<At>,
+  }
 
   const sendable = (army: Army) => canSend(state, me, army)
 
@@ -47,26 +52,46 @@ export function makeAim(state: GameState, me: number) {
     if (key !== read.key) {
       const course = sendable(army) ? courseNow(state, me, tile, army) : null
       const road = course?.road ?? []
+      const entry = course?.entry ?? -1
+      // From the border to the tile, the way it takes over the land, round
+      // the mountains, as drawn.
+      const through = course?.through === true
+      const way = entry < 0 ? [] : wayTo(state, entry, tile, through)
+      const target = state.owner[tile]
+      const walked = (t: number) =>
+        state.owner[t] === target || (through && state.owner[t] === NEUTRAL)
       read = {
         key,
-        entry: course?.entry ?? -1,
+        entry,
         road: road.length
           ? drawRoad(state, road, (t) => state.owner[t] === me, 0)
           : [],
+        way: way.length > 1 ? drawRoad(state, way, walked, 0) : [],
       }
     }
     return read
   }
 
-  function line(a: At, b: At, zoom: number) {
-    const d = Math.hypot(b.x - a.x, b.y - a.y)
-    const step = 7 / zoom
-    for (let s = 0; s + step / 2 < d; s += step) {
-      const t0 = s / d
-      const t1 = Math.min(1, (s + step / 2) / d)
-      marks
-        .moveTo(a.x + (b.x - a.x) * t0, a.y + (b.y - a.y) * t0)
-        .lineTo(a.x + (b.x - a.x) * t1, a.y + (b.y - a.y) * t1)
+  /** A dotted line along a path, its dashes some seven pixels apart on screen, their rhythm kept from one stretch to the next, however short. */
+  function path(points: Array<At>, zoom: number) {
+    const period = 7 / zoom
+    const dash = period / 2
+    let along = 0
+    for (let i = 1; i < points.length; i++) {
+      const [a, b] = [points[i - 1], points[i]]
+      const d = Math.hypot(b.x - a.x, b.y - a.y)
+      const at = (k: number) =>
+        [a.x + ((b.x - a.x) * k) / d, a.y + ((b.y - a.y) * k) / d] as const
+      let k = 0
+      while (k < d) {
+        const phase = (along + k) % period
+        if (phase < dash) {
+          const end = Math.min(d, k + dash - phase)
+          marks.moveTo(...at(k)).lineTo(...at(end))
+          k = end
+        } else k += period - phase
+      }
+      along += d
     }
     marks.stroke({ width: 2.2 / zoom, color, cap: 'round' })
   }
@@ -119,14 +144,14 @@ export function makeAim(state: GameState, me: number) {
   }
 
   function strike(tile: number, army: Army, zoom: number) {
-    const { entry, road } = entryAt(tile, army)
+    const { entry, road, way } = entryAt(tile, army)
     if (entry < 0) return
     const e = siteOf(state, entry)
     const p = siteOf(state, tile)
-    // From the village or the market to the border, the road the army would walk, then on to the tile aimed at.
-    for (let i = 1; i < road.length; i++) line(road[i - 1], road[i], zoom)
-    if (road.length > 0) line(road[road.length - 1], e, zoom)
-    line(e, p, zoom)
+    // From the village or the market to the border, the road the army would
+    // walk, then on to the tile aimed at by the way it takes over the land.
+    if (road.length > 0) path([...road, e], zoom)
+    path(way.length > 1 ? way : [e, p], zoom)
     marks
       .circle(e.x, e.y, 7 / zoom)
       .fill(color)

@@ -63,6 +63,7 @@ export const en = {
     winner: 'wins the game',
     fallen: 'Your realm has fallen',
     playAgain: 'Play again',
+    quit: 'Leave',
     watchEnd: 'Watch the end',
     deeds: {
       title: 'Your course',

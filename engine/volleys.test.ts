@@ -130,9 +130,11 @@ describe("the castles' arrows", () => {
   })
 
   it('fall as the game goes on an army biting the land in the zone', () => {
-    // Lord 1 has no peasants: his land costs nothing to take, so that the
-    // army loses men to the arrows alone. His castle is done at tick 103.
+    // Lord 1 has no peasants and no tile has a least cost here: his land
+    // costs nothing to take, so that the army loses men to the arrows alone.
+    // His castle is done at tick 103.
     const state = playing(field(60))
+    state.rules = { ...state.rules, leastCost: 0 }
     hold(state, 0, span(0, 20))
     hold(state, 1, span(20, 60))
     muster(state, 0, 19)

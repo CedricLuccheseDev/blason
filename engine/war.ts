@@ -142,7 +142,9 @@ function fight(state: GameState, host: Host, tile: number): boolean {
   const holder = state.owner[tile]
   const { castle, peasants } = state.rules.combat
   const rate = walled(state, tile, holder) ? castle : peasants
-  const cost = Math.floor((held * rate) / 100)
+  // A lord's land never for nothing, however thin; the free land as it holds.
+  const least = holder >= 0 ? state.rules.leastCost : 0
+  const cost = Math.max(least, Math.floor((held * rate) / 100))
   const paid = Math.min(cost, host.men)
   const killed = rate === 0 ? held : Math.floor((paid * 100) / rate)
   if (holder >= 0) {

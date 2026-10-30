@@ -79,26 +79,44 @@ export function simplify(
   if (n < 3) return [...line]
   const keep = new Uint8Array(n)
   keep[0] = keep[n - 1] = 1
-  const stack: Array<[number, number]> = [[0, n - 1]]
-  for (let span = stack.pop(); span; span = stack.pop()) {
-    const [a, b] = span
-    const [ax, ay] = line[a]
-    const [bx, by] = line[b]
-    const length = Math.hypot(bx - ax, by - ay)
-    let [far, gap] = [-1, within]
+  // Plain numbers all through, no list made a point: it runs on every
+  // outline several times a second, and its garbage made the page stutter.
+  const stack = new Int32Array(2 * n)
+  let top = 0
+  stack[top++] = 0
+  stack[top++] = n - 1
+  while (top > 0) {
+    const b = stack[--top]
+    const a = stack[--top]
+    const ax = line[a][0]
+    const ay = line[a][1]
+    const dx = line[b][0] - ax
+    const dy = line[b][1] - ay
+    const length = Math.sqrt(dx * dx + dy * dy)
+    let far = -1
+    let gap = within
     for (let i = a + 1; i < b; i++) {
-      const [x, y] = line[i]
+      const x = line[i][0]
+      const y = line[i][1]
       const d =
         length > 0
-          ? Math.abs((bx - ax) * (ay - y) - (ax - x) * (by - ay)) / length
-          : Math.hypot(x - ax, y - ay)
-      if (d > gap) [far, gap] = [i, d]
+          ? Math.abs(dx * (ay - y) - (ax - x) * dy) / length
+          : Math.sqrt((x - ax) * (x - ax) + (y - ay) * (y - ay))
+      if (d > gap) {
+        far = i
+        gap = d
+      }
     }
     if (far < 0) continue
     keep[far] = 1
-    stack.push([a, far], [far, b])
+    stack[top++] = a
+    stack[top++] = far
+    stack[top++] = far
+    stack[top++] = b
   }
-  return line.filter((_, i) => keep[i] === 1)
+  const kept: Array<Point> = []
+  for (let i = 0; i < n; i++) if (keep[i] === 1) kept.push(line[i])
+  return kept
 }
 
 /** A loop with fewer points, none of those left out farther than `within` from it. */

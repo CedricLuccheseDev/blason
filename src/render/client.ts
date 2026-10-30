@@ -1,10 +1,11 @@
 import { Application, CullerPlugin, extensions } from 'pixi.js'
-import { NO_ONE, hostSetup } from '../../engine'
+import { NO_ONE, UNIT, coupPrice, hostSetup, priceOf } from '../../engine'
 import { makeAiming } from './aiming'
 import { makePin } from './pin'
 import { makeCamera } from './camera'
 import { makeInput } from './input'
 import { makeHand } from './hand'
+import { COUP_KEYS, WORK_KEYS } from './keys'
 import { TONE } from './palette'
 import { STANDARD, takeLand } from './ahead'
 import { makeClick, makeKeys, menuFrom, seeking } from './clicks'
@@ -122,7 +123,19 @@ export async function mountGame(
           away: pin.close,
         })
       : null
-  const onKey = makeKeys(pin.close, hand, refresh, sound.toggle)
+  /** What a key would take in hand: a work or a coup only if it can be paid, or to put it down. */
+  const allowed = (key: string) => {
+    const work = WORK_KEYS[key]
+    const coup = COUP_KEYS[key]
+    if ((!work && !coup) || me < 0) return true
+    if (hand.hand.work === work || hand.hand.coup === coup) return true
+    const gold = Math.floor(state.players[me].gold / UNIT)
+    const price = work ? priceOf(state, me, work) : coupPrice(state, me, coup!)
+    if (price <= gold) return true
+    sound.refuse()
+    return false
+  }
+  const onKey = makeKeys(pin.close, hand, refresh, sound.toggle, allowed)
   /** What is in hand changed: the figures and the aim again. */
   const handed = (change: () => void) => {
     change()

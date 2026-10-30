@@ -55,12 +55,16 @@ export function makeKeys(
   refresh: () => void,
   /** M: the sound muted or back. */
   mute: () => void,
+  /** Whether what a key takes in hand can be had now; refused with its knock, else (« j'ai cliqué sur le clavier ça a selectionné la construction alors que j'ai pas les sous »). */
+  allowed: (key: string) => boolean,
 ) {
   return (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === 'Escape') close()
     if (e.key.toLowerCase() === 'm') mute()
-    if (hand.key(keyOf(e))) refresh()
+    const key = keyOf(e)
+    if (!allowed(key)) return
+    if (hand.key(key)) refresh()
   }
 }
 

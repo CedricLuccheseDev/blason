@@ -10,7 +10,8 @@ import {
 } from './art/works'
 import { playerColor } from './palette'
 import type { Box } from './camera'
-import type { GameState, Grid } from '../../engine'
+import type { Lod } from './art/works'
+import type { GameState, Grid, Work } from '../../engine'
 
 // What stands on the land, drawn at its scale as on the boards: the lords'
 // works, each at the level of detail its size on screen allows
@@ -27,10 +28,30 @@ export function makeMarks(state: GameState, me: number) {
   const at = (tile: number) => siteOf(state, tile)
   let key = ''
   let seen = { tick: -1, zoom: 0 }
+  /** Each work's level of detail as drawn, changed only once the zoom has clearly crossed its threshold. */
+  const levels = new WeakMap<Sprite, Lod>()
+  /** The textures to draw ahead, by work and colour, one each time the page has a moment: none is drawn while zooming (« quand je zoom dezoom ça blink ça saute »). */
+  const ahead: Array<[Work, number]> = []
+  const warmed = new Set<string>()
+  let warming = false
+  function warm() {
+    const next = ahead.shift()
+    if (!next) {
+      warming = false
+      return
+    }
+    for (const lod of [0, 1, 2] as const) workTexture(next[0], next[1], lod)
+    setTimeout(warm, 0)
+  }
 
   function redraw() {
     works.removeChildren().forEach((c) => c.destroy())
     for (const work of state.works) {
+      const known = `${work.work}:${work.owner}`
+      if (!warmed.has(known)) {
+        warmed.add(known)
+        ahead.push([work.work, playerColor(work.owner)])
+      }
       const { x, y } = at(work.tile)
       const drawn = works.addChild(new Sprite())
       drawn.anchor.set(-BOX.left / BOX.width, -BOX.top / BOX.height)
@@ -49,6 +70,10 @@ export function makeMarks(state: GameState, me: number) {
       if (now !== key) {
         key = now
         redraw()
+        if (!warming && ahead.length) {
+          warming = true
+          setTimeout(warm, 0)
+        }
       }
       // Another's work, from afar, as much as shows of it; a work being
       // built stands pale until it is done (layers/building.ts).
@@ -60,7 +85,8 @@ export function makeMarks(state: GameState, me: number) {
         const shown = mine ? 1 : workShown(work.work, px)
         drawn.visible = shown > 0
         if (!drawn.visible) return
-        const lod = workLod(workPx(zoom, mine))
+        const lod = steady(levels.get(drawn), workPx(zoom, mine))
+        levels.set(drawn, lod)
         drawn.texture = workTexture(work.work, playerColor(work.owner), lod)
         drawn.scale.set(
           (workScale(zoom, mine) * BOX.width) / drawn.texture.width,
@@ -69,6 +95,14 @@ export function makeMarks(state: GameState, me: number) {
       })
     },
   }
+}
+
+/** A level of detail held until the size on screen has gone a tenth past the threshold, so that a work does not flip between two looks as the zoom glides by it. */
+function steady(held: Lod | undefined, px: number): Lod {
+  const wanted = workLod(px)
+  if (held === undefined || wanted === held) return wanted
+  const step = wanted > held ? 1.1 : 0.9
+  return workLod(px / step) === wanted ? wanted : held
 }
 
 /** A tile's middle, in map units. */

@@ -24,12 +24,15 @@ const LISTS = [
 
 type List = (typeof LISTS)[number]
 
-/** A step's moves: its tick and winner, the tiles that changed hands as pairs (tile, owner), and each list, each thing as [its number, its fields]. */
+/** A thing as sent: its number, its fields that changed or are plain, and the names of the others it still has as last sent. */
+type Sent = [number, Record<string, unknown>, Array<string>]
+
+/** A step's moves: its tick and winner, the tiles that changed hands as pairs (tile, owner), and each list, each thing as sent. */
 export type Delta = {
   tick: number
   winner: number
   owner: Int32Array
-  lists: Record<List, Array<[number, object]>>
+  lists: Record<List, Array<Sent>>
 }
 
 /** In the thread: what moved since the last step, read off the game. */
@@ -45,9 +48,36 @@ export function makeDiffer(state: GameState) {
     }
     return id
   }
-  /** A thing's fields as the page reads them. */
-  const fieldsOf = (list: List, thing: object): object =>
-    list === 'hosts' ? { ...thing, queue: [] } : thing
+  /** Each thing's lists and parts as last sent, written out: one unchanged is not sent again (a road of hundreds of tiles, ten times a second, was garbage for the page to clear, and it stuttered). */
+  const written = new WeakMap<object, Map<string, string>>()
+  /** A thing's fields as the page reads them: its plain values, its lists and parts only when they changed, and the names of those kept. */
+  function fieldsOf(list: List, thing: object): Sent {
+    const id = idOf(thing)
+    let known = written.get(thing)
+    if (!known) {
+      known = new Map()
+      written.set(thing, known)
+    }
+    const fields: Record<string, unknown> = {}
+    const kept: Array<string> = []
+    for (const [key, value] of Object.entries(thing)) {
+      if (list === 'hosts' && key === 'queue') {
+        fields.queue = []
+        continue
+      }
+      if (value === null || typeof value !== 'object') {
+        fields[key] = value
+        continue
+      }
+      const text = JSON.stringify(value)
+      if (known.get(key) === text) kept.push(key)
+      else {
+        known.set(key, text)
+        fields[key] = value
+      }
+    }
+    return [id, fields, kept]
+  }
 
   return {
     /** The game made anew in place (a host's launch, a game begun again): every tile and thing sent again. */
@@ -63,10 +93,9 @@ export function makeDiffer(state: GameState) {
       })
       const lists = {} as Delta['lists']
       for (const list of LISTS)
-        lists[list] = (state[list] as Array<object>).map((thing) => [
-          idOf(thing),
+        lists[list] = (state[list] as Array<object>).map((thing) =>
           fieldsOf(list, thing),
-        ])
+        )
       return {
         tick: state.tick,
         winner: state.winner,
@@ -90,15 +119,16 @@ export function makeMirror(state: GameState) {
         state.owner[owner[i]] = owner[i + 1]
       const seen = new Set<number>()
       for (const list of LISTS) {
-        const items = delta.lists[list].map(([id, fields]) => {
+        const items = delta.lists[list].map(([id, fields, kept]) => {
           seen.add(id)
           const known = things.get(id)
           if (!known) {
-            things.set(id, fields as Record<string, unknown>)
+            things.set(id, fields)
             return fields
           }
           for (const key of Object.keys(known))
-            if (!(key in fields)) Reflect.deleteProperty(known, key)
+            if (!(key in fields) && !kept.includes(key))
+              Reflect.deleteProperty(known, key)
           return Object.assign(known, fields)
         })
         ;(state as Record<List, unknown>)[list] = items
