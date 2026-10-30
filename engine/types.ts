@@ -154,6 +154,18 @@ export type Caravan = {
   stops?: Array<number>
 }
 
+/** A merchant ship from one lord's port to another's, by its way over the water (ships.ts). */
+export type Ship = {
+  owner: number
+  /** Its port, and the port it sails to: their tiles. */
+  from: number
+  to: number
+  /** The water's tiles of its way, and how far along it is, in thousandths of a tile. */
+  way: Array<number>
+  along: number
+  gold: number
+}
+
 export type GameState = {
   /** What the game was made of, never changed: its seed, its opening (in the rules) and its teams are laid below, where the rules read them. */
   setup: GameSetup
@@ -170,6 +182,7 @@ export type GameState = {
   requests: Array<Request>
   offerings: Array<Offering>
   caravans: Array<Caravan>
+  ships: Array<Ship>
   strikes: Array<Strike>
   scars: Array<Scar>
   /** Each seat's team, as the setup gives it, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */

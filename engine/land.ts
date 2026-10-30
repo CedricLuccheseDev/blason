@@ -91,6 +91,7 @@ export function createGame(
     requests: [],
     offerings: [],
     caravans: [],
+    ships: [],
     strikes: [],
     scars: [],
     teams: setup.seats.map((seat) => seat.team),

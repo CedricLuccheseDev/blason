@@ -12,6 +12,7 @@ export type Cue =
   | 'muster'
   | 'embark'
   | 'oars'
+  | 'sail'
   | 'alarm'
   | 'herald'
   | 'pact'
@@ -203,6 +204,13 @@ export const CUES: Record<Cue, CueSpec> = {
     bus: 'world',
     gain: 0.4,
     again: 1.4,
+  },
+  /** Up close, a merchant ship at sea: its wood creaking now and then. */
+  sail: {
+    layers: [{ file: 'creak-1' }],
+    bus: 'world',
+    gain: 0.35,
+    again: 3,
   },
   /** Up close, a trebuchet's stone come down. */
   stone: {

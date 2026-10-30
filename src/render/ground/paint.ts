@@ -135,7 +135,7 @@ function fields(
 
 /** The woods' mass: a round of wash on each of their tiles, overlapping into one shape with a soft edge, under their trees. */
 function canopy(p: Pen, ground: Ground, span: Span, color: number) {
-  const { grid, terrain, weights } = ground
+  const { grid, terrain } = ground
   const k = grid.size
   const g = p.g
   g.beginPath()
@@ -150,7 +150,9 @@ function canopy(p: Pen, ground: Ground, span: Span, color: number) {
       c++
     ) {
       const t = r * grid.width + c
-      if (terrain.biome[t] !== FOREST || weights.deco[t] <= 0) continue
+      // The wash runs to the border, as the land does: the trees alone
+      // stand back from it (« y'a des coupures aux frontiere c'est bizarre »).
+      if (terrain.biome[t] !== FOREST) continue
       const [x, y] = [(c + 0.5) * k, (r + 0.5) * k]
       const rad = k * (0.78 + 0.12 * hash(c, r, 19))
       g.moveTo(x + rad, y)

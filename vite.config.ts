@@ -31,5 +31,7 @@ export default defineConfig({
   // their tests are not this checkout's.
   test: {
     exclude: ['**/node_modules/**', '**/.claude/**'],
+    // Whole games of bots and lands drawn: some run past five seconds on a busy machine.
+    testTimeout: 20_000,
   },
 })

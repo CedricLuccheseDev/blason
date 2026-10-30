@@ -4,6 +4,7 @@ import { TONE } from '../palette'
 import { sharpest } from '../quality'
 import { castleFar, castleNear } from './castle'
 import { marketFar, marketNear } from './market'
+import { portFar, portNear } from './port'
 import { villageFar, villageNear } from './village'
 import type { Graphics } from 'pixi.js'
 import type { Detail } from './house'
@@ -24,8 +25,11 @@ import type { Work } from '../../../engine'
 
 export type Lod = 0 | Detail
 
+/** What a work is drawn as: itself, or a market on the coast as a port. */
+export type Look = Work | 'port'
+
 const ART: Record<
-  Work,
+  Look,
   {
     far: (p: Pen, color: number) => void
     near: (p: Pen, color: number, lod: Detail) => void
@@ -34,6 +38,7 @@ const ART: Record<
   village: { far: villageFar, near: villageNear },
   castle: { far: castleFar, near: castleNear },
   market: { far: marketFar, near: marketNear },
+  port: { far: portFar, near: portNear },
 }
 
 /** A work's span on the map, in map units, and the size on screen from which it stands at the map's scale, in pixels. */
@@ -99,7 +104,7 @@ export const textureOf = (canvas: HTMLCanvasElement) =>
 const made = new Map<string, Texture>()
 
 /** A work in a lord's colour at a level of detail, drawn the first time it is asked for; the texture spans BOX. */
-export function workTexture(work: Work, color: number, lod: Lod): Texture {
+export function workTexture(work: Look, color: number, lod: Lod): Texture {
   const key = `${work}:${color}:${lod}`
   let texture = made.get(key)
   if (!texture) {
@@ -116,7 +121,7 @@ export function workTexture(work: Work, color: number, lod: Lod): Texture {
 /** A work's silhouette laid in a graphics, centred on (0, 0) at the map's scale: the ghost of a work about to be built. */
 export function drawWork(
   g: Graphics,
-  work: Work,
+  work: Look,
   color: number = TONE.stoneDark,
 ): void {
   g.texture(

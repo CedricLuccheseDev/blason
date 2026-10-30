@@ -18,6 +18,7 @@ const LISTS = [
   'requests',
   'offerings',
   'caravans',
+  'ships',
   'strikes',
   'scars',
 ] as const

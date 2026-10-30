@@ -29,7 +29,14 @@ const COUPS: Record<Coup, { launch: Cue; land: Cue }> = {
 /** The pixels a tile covers over which the world comes to be heard: from mid distance (« On entend pas les bruits des armées tout ça quand on zoom »). */
 const HEARD = [5, 30] as const
 /** The chances, each tick, of a clash, a cry, a hammer's blow, an oar's stroke from what is on screen: now and then, never in time; two armies at grips more than one taking a land. */
-const ODDS = { battle: 0.3, front: 0.12, shout: 0.05, hammer: 0.08, oars: 0.1 }
+const ODDS = {
+  battle: 0.3,
+  front: 0.12,
+  shout: 0.05,
+  hammer: 0.08,
+  oars: 0.1,
+  sail: 0.04,
+}
 
 const on = (view: Box, x: number, y: number) =>
   x >= view.left && x <= view.right && y >= view.top && y <= view.bottom
@@ -88,6 +95,18 @@ export function makeSpectacle() {
       )
       if (rowing.length > 0 && chance() < ODDS.oars)
         hear('oars', positionOf(any(rowing)))
+      const sailing = state.ships.filter((s) =>
+        seen(s.way[Math.min(s.way.length - 1, Math.floor(s.along / 1000))]),
+      )
+      if (sailing.length > 0 && chance() < ODDS.sail) {
+        const ship = any(sailing)
+        hear(
+          'sail',
+          ship.way[
+            Math.min(ship.way.length - 1, Math.floor(ship.along / 1000))
+          ],
+        )
+      }
       for (const strike of out) hear(COUPS[strike.coup].launch, strike.from)
       for (const strike of down) hear(COUPS[strike.coup].land, strike.target)
       return heard

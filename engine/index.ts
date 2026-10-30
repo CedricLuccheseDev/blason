@@ -35,6 +35,7 @@ export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
 export type {
   Caravan,
+  Ship,
   GameSetup,
   GameState,
   Grid,
@@ -59,6 +60,7 @@ export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 export { courseFor, entryFor } from './course'
 export { afloat } from './crossing'
 export { relayGold } from './relays'
+export { isPort } from './ships'
 export { canBuild, priceOf } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'

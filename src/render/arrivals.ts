@@ -1,5 +1,5 @@
 import { UNIT, relayGold } from '../../engine'
-import type { Caravan, GameState } from '../../engine'
+import type { Caravan, GameState, Ship } from '../../engine'
 
 // The caravans that paid the player since the last reading: gone from the
 // roads having reached the end of theirs, his market at one end, worth a
@@ -12,6 +12,24 @@ export type Arrival = { tile: number; gold: number }
 
 export function makeArrivals(me: number) {
   let seen = new Map<Caravan, number>()
+  let sailing = new Map<Ship, number>()
+
+  /** The ships come in since the last reading that paid the player: said on his port. */
+  function landed(state: GameState, ticks: number, arrived: Array<Arrival>) {
+    const out = new Set(state.ships)
+    for (const [ship, along] of sailing) {
+      if (out.has(ship)) continue
+      if (along + state.rules.shipPace * ticks < (ship.way.length - 1) * 1000)
+        continue
+      const gold = Math.floor(ship.gold / UNIT)
+      if (gold < 1) continue
+      const port = state.works.find((w) => w.tile === ship.to)
+      if (port?.owner === me) arrived.push({ tile: ship.to, gold })
+      else if (ship.owner === me) arrived.push({ tile: ship.from, gold })
+    }
+    sailing = new Map(state.ships.map((s) => [s, s.along]))
+  }
+
   /** The relays each caravan had paid at the last reading. */
   const stopped = new WeakMap<Caravan, number>()
 
@@ -49,6 +67,7 @@ export function makeArrivals(me: number) {
       }
       seen = new Map(state.caravans.map((c) => [c, c.along]))
       relays(state, arrived)
+      landed(state, ticks, arrived)
       return arrived
     },
   }

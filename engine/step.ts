@@ -1,6 +1,7 @@
 import { TICKS_PER_SECOND } from './units'
 import { fingerprint } from './numbers'
 import { moveCaravans, sendCaravans } from './caravans'
+import { moveShips, sendShips } from './ships'
 import {
   ally,
   breakAlliance,
@@ -56,6 +57,7 @@ function judge(state: GameState): void {
     lord.alive = false
     state.hosts = state.hosts.filter((host) => host.owner !== id)
     state.caravans = state.caravans.filter((c) => c.owner !== id)
+    state.ships = state.ships.filter((s) => s.owner !== id)
     state.alliances = state.alliances.filter((x) => x.a !== id && x.b !== id)
   })
   // A side is a team, its members' land together, or a lord alone; the one
@@ -166,6 +168,8 @@ export function step(state: GameState, orders: Array<Order> = []) {
     enclose(state)
     sendCaravans(state)
     moveCaravans(state)
+    sendShips(state)
+    moveShips(state)
     expireDiplomacy(state)
     judge(state)
   }

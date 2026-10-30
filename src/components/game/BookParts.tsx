@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Act } from '../hud/Act'
 import { GAP, Stack } from '../hud/Layout'
-import { Fine, Note, Title } from '../hud/Text'
+import { Fine, Name, Note, Title } from '../hud/Text'
 import { Shield } from '../hud/Emblem'
 import { Icon } from '../hud/Figure'
 import type { IconName } from '../hud/Figure'
 import { hex } from './format'
 import type { ReactNode } from 'react'
 import { LEVELS } from '../../../engine'
-import type { Book } from '../../../engine'
+import type { Book, Level } from '../../../engine'
 import { Flourish } from '~/components/home/Ornaments'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
@@ -54,21 +54,16 @@ export function Head({
   )
 }
 
-// norm-ok: a seat's small controls, a bot's level and the way to another team, form controls of the book.
-const CHIP =
-  'hud-press flex items-center rounded-sm border border-quill/30 px-1'
-
 /** The numerals of the teams. */
 const NUMERALS = ['I', 'II', 'III', 'IV']
 
 /**
- * The lords in play (« fais plutot une grille avec les noms comme ça on voit
- * bien quand un joueur a rejoins », « range mieux les équipes, et il faut
- * pouvoir les bouger, et il faut choisir le niveau des bots par bot »): with
- * teams, a box for each, a lord dragged from one to another or sent on by
- * his arrow; without, a fixed grid of every seat, the free ones faded. Me,
- * the friends by their names, the bots marked as such, each its level a
- * click away. The host's to change; read only for a guest.
+ * The lords in play, simply (« c'est trop le bordel les seigneurs … cherche
+ * un systeme simplifié et fais un beau layout »): the persons by their names
+ * on a line, me first, a friend as he comes; then the lords by team, a shield
+ * each, a bot's level in its dots under it, a click on it the next level, a
+ * shield dragged to another team (« il faut pouvoir les bouger »). Without
+ * teams, one band of shields. The host's to change; read only for a guest.
  */
 export function Seats({
   book,
@@ -82,53 +77,43 @@ export function Seats({
   const m = useMessages()
   const guests = book.guests ?? 0
   const lords = 1 + guests + book.bots
-  const teams = book.teams >= 2 ? book.teams : 0
+  const teams = book.teams >= 2 ? book.teams : 1
   const teamOf = (i: number) => {
     const moved = book.teamOf?.[i]
     return moved !== undefined && moved < teams ? moved : i % teams
   }
-  const move = (i: number, team: number) => {
-    const teamOfAll = Array.from({ length: PLAYERS.length }, (_, k) =>
-      k === i ? team : teamOf(k),
-    )
-    onChange?.({ ...book, teamOf: teamOfAll })
-  }
+  const all = Array.from({ length: PLAYERS.length }, (_, k) => k)
+  const move = (i: number, team: number) =>
+    onChange?.({
+      ...book,
+      teamOf: all.map((k) => (k === i ? team : teamOf(k))),
+    })
   const level = (i: number) => {
-    const now = book.levels?.[i] ?? book.level
-    const next = LEVELS[(LEVELS.indexOf(now) + 1) % LEVELS.length]
-    const levels = Array.from(
-      { length: PLAYERS.length },
-      (_, k) => book.levels?.[k] ?? book.level,
-    )
-    levels[i] = next
+    const levels = all.map((k) => book.levels?.[k] ?? book.level)
+    levels[i] = LEVELS[(LEVELS.indexOf(levels[i]) + 1) % LEVELS.length]
     onChange?.({ ...book, levels })
   }
-  const botAt = (i: number) => guests < i && i < lords
-  const seat = (i: number) => (
-    <SeatLine
-      key={i}
-      i={i}
-      book={book}
-      who={whoOf(i, guests, names, m)}
-      bot={botAt(i)}
-      onLevel={onChange && (() => level(i))}
-      onMove={
-        onChange && teams ? () => move(i, (teamOf(i) + 1) % teams) : undefined
-      }
-    />
-  )
-  if (!teams)
-    return (
-      <ul className={`grid grid-cols-2 ${GAP.hair}`}>
-        {PLAYERS.map((_, i) =>
-          i < lords ? seat(i) : <FreeSeat key={i} i={i} />,
-        )}
-      </ul>
-    )
-  const seated = Array.from({ length: lords }, (_, i) => i)
+  const seated = all.slice(0, lords)
+  const persons = seated.slice(0, 1 + guests)
   return (
     <Stack gap="part">
-      <div className={`grid grid-cols-2 ${GAP.part}`}>
+      <ul className={`flex flex-wrap items-center ${GAP.line}`}>
+        {persons.map((i) => (
+          <li key={i} className={`flex items-center ${GAP.hair}`}>
+            <Shield color={hex(PLAYERS[i].color)} size="s" />
+            <Name>
+              {i === 0 ? names[0] || m.book.you : names[i] || m.book.guest}
+            </Name>
+          </li>
+        ))}
+        <li className={`flex items-center text-lead-deep ${GAP.hair}`}>
+          <Icon name="bot" size={18} />
+          <Fine>{m.book.botsCount(book.bots)}</Fine>
+        </li>
+      </ul>
+      <div
+        className={`grid ${teams > 1 ? 'grid-cols-2' : 'grid-cols-1'} ${GAP.part}`}
+      >
         {Array.from({ length: teams }, (_, t) => (
           <section
             key={t}
@@ -140,101 +125,75 @@ export function Seats({
             className="border-t border-gilt/60"
           >
             <Stack gap="hair">
-              <span className={`flex items-center text-gilt-deep ${GAP.hair}`}>
-                <Icon name="banner" size={16} />
-                <Fine>{m.book.team(NUMERALS[t])}</Fine>
-              </span>
-              <ul className={`flex flex-col ${GAP.hair}`}>
-                {seated.filter((i) => teamOf(i) === t).map(seat)}
+              {teams > 1 && (
+                <span
+                  className={`flex items-center text-gilt-deep ${GAP.hair}`}
+                >
+                  <Icon name="banner" size={16} />
+                  <Fine>{m.book.team(NUMERALS[t])}</Fine>
+                </span>
+              )}
+              <ul className={`flex flex-wrap ${GAP.hair}`}>
+                {seated
+                  .filter((i) => teamOf(i) === t)
+                  .map((i) => (
+                    <SeatShield
+                      key={i}
+                      i={i}
+                      bot={i > guests}
+                      level={book.levels?.[i] ?? book.level}
+                      onLevel={onChange && (() => level(i))}
+                      moving={onChange !== undefined && teams > 1}
+                    />
+                  ))}
               </ul>
             </Stack>
           </section>
         ))}
       </div>
-      <Fine className="text-center">
-        {m.book.freeSeats(PLAYERS.length - lords)}
-      </Fine>
     </Stack>
   )
 }
 
-/** Who sits a seat, by his name. */
-function whoOf(
-  i: number,
-  guests: number,
-  names: Array<string>,
-  m: ReturnType<typeof useMessages>,
-) {
-  if (i === 0) return names[0] || m.book.you
-  if (i <= guests) return names[i] || m.book.guest
-  return m.game.colors[PLAYERS[i].key]
-}
-
-/** A lord's line: his shield, his name, a bot's level, and for the host the way to another team. */
-function SeatLine({
+/** A lord's shield in the book: a bot's level in dots under it, a click the next; dragged, another team. */
+function SeatShield({
   i,
-  book,
-  who,
   bot,
+  level,
   onLevel,
-  onMove,
+  moving,
 }: Readonly<{
   i: number
-  book: Book
-  who: string
   bot: boolean
+  level: Level
   onLevel?: () => void
-  onMove?: () => void
+  moving: boolean
 }>) {
-  const m = useMessages().book
-  const level = book.levels?.[i] ?? book.level
+  const m = useMessages()
+  const name = m.game.colors[PLAYERS[i].key]
+  const said = bot ? `${name}, ${m.book.level1[level]}` : name
   return (
     <li
-      draggable={onMove !== undefined}
+      draggable={moving}
       onDragStart={(e) => e.dataTransfer.setData('text/plain', String(i))}
-      className={`flex min-w-0 items-center ${GAP.hair} ${onMove ? 'cursor-grab' : ''}`}
+      className={moving ? 'cursor-grab' : ''}
     >
-      <Shield color={hex(PLAYERS[i].color)} size="s" />
-      {bot && (
-        <span title={m.bot} className="text-lead-deep">
-          <Icon name="bot" size={16} />
+      <button
+        type="button"
+        title={bot && onLevel ? `${said} · ${m.book.nextLevel}` : said}
+        aria-label={said}
+        disabled={!bot || !onLevel}
+        onClick={onLevel}
+        className="hud-press flex cursor-pointer flex-col items-center disabled:cursor-default"
+      >
+        <Shield color={hex(PLAYERS[i].color)} size="s" />
+        <span aria-hidden="true" className="flex h-2 items-center gap-px">
+          {bot &&
+            LEVELS.slice(0, LEVELS.indexOf(level) + 1).map((l) => (
+              <span key={l} className="size-1 rounded-full bg-quill" /> // norm-ok: a level dot, round as a die pip.
+            ))}
         </span>
-      )}
-      <Fine className="min-w-0 flex-1 truncate">{who}</Fine>
-      {bot && (
-        <button
-          type="button"
-          disabled={!onLevel}
-          title={m.nextLevel}
-          onClick={onLevel}
-          className={`${CHIP} ${GAP.hair} ${onLevel ? 'cursor-pointer hover:bg-shade' : ''}`}
-        >
-          <Icon name="crown" size={14} />
-          <Fine>{m.level1[level]}</Fine>
-        </button>
-      )}
-      {onMove && (
-        <button
-          type="button"
-          title={m.moveTeam}
-          aria-label={m.moveTeam}
-          onClick={onMove}
-          className={`${CHIP} cursor-pointer border-transparent text-gilt-deep hover:bg-shade`}
-        >
-          <Icon name="banner" size={14} />
-        </button>
-      )}
-    </li>
-  )
-}
-
-/** A seat no one sits, faded: the grid keeps its place. */
-function FreeSeat({ i }: Readonly<{ i: number }>) {
-  const m = useMessages().book
-  return (
-    <li className={`flex min-w-0 items-center opacity-35 ${GAP.hair}`}>
-      <Shield color={hex(PLAYERS[i].color)} size="s" />
-      <Fine className="truncate">{m.free}</Fine>
+      </button>
     </li>
   )
 }

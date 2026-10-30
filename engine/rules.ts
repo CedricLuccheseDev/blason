@@ -152,6 +152,11 @@ export type Rules = {
   /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent; between two markets of one lord, so much, paid once. */
   caravanGold: number
   /** A village within so many tiles of a caravan's road is a relay (« les villages sur les chemins des marchands comme sur openfront »): once a caravan, it pays its lord and the caravan's so much, in thousandths, as OpenFront's stations do: the same lord's less, allies' more. */
+  /** A port may send a ship so often, which sails so many thousandths of a tile a tick; with so many of its lord's at sea, it sends one time in two; it brings each port so much gold a tile of its way, in thousandths (ships.ts). */
+  shipTicks: number
+  shipPace: number
+  shipCrowd: number
+  shipGold: number
   relayReach: number
   relayGold: { self: number; other: number; ally: number }
   allyTrade: number
@@ -254,6 +259,10 @@ export const RULES: Rules = {
   caravanCrowd: 6,
   tradeRange: 40,
   caravanGold: 150,
+  shipTicks: 15 * SECOND,
+  shipPace: 800,
+  shipCrowd: 4,
+  shipGold: 150,
   relayReach: 2,
   relayGold: { self: 1000, other: 2500, ally: 3500 },
   allyTrade: 200,

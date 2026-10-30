@@ -291,6 +291,14 @@ made to you, the seal of an alliance to renew:
 - It makes one journey at 4 tiles a second. Arriving, it pays both markets
   0.15 gold for each tile of its road, twice as much between allies; between
   two markets of one lord, half as much, paid once.
+- **Ports and merchant ships** (`engine/ships.ts`, as OpenFront's): a market
+  laid on the coast is a port, no button more. Every 15 seconds a port may
+  send a ship to a port of another lord the same water reaches, never one at
+  war with its own, the far ones and the allies' more often (fewer the more
+  ships its lord has at sea: with 4 out, one time in two). It sails the
+  shortest way over the water at 8 tiles a second and, arriving, pays both
+  ports 0.15 gold a tile of its way, twice as much between allies. Nothing
+  takes it yet; the warships will.
 - **Relays** (`engine/relays.ts`, as OpenFront's stations): each village
   within 2 tiles of its road, once a caravan, pays its own lord and the
   caravan's (the same lord once): 3.5 gold between allies, 2.5 between other
