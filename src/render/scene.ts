@@ -9,6 +9,8 @@ import { makeStamps } from './textures'
 import { makeArmies } from './armies'
 import { makeAim } from './layers/aim'
 import { makeGoals } from './layers/goals'
+import { makePlan } from './layers/plan'
+import { strategicOf } from './ground/detail'
 import { makePlanted } from './layers/planted'
 import { makeMarks } from './marks'
 import { makeBadges, tilePlaces } from './places'
@@ -100,6 +102,7 @@ export function makeScene(
   const aim = makeAim(state, me)
   const planted = makePlanted(me)
   const goals = makeGoals(me)
+  const plan = makePlan(me)
   // Where the lords are written, read once a tick for the names and their marks.
   let read = { tick: -1, places: new Map() as Placement }
   const placesOf = (s: GameState) => {
@@ -144,6 +147,7 @@ export function makeScene(
       lit.container,
       scars.container,
       marks.container,
+      plan.container,
       life.container,
       allies.container,
       raids.container,
@@ -234,15 +238,20 @@ export function makeScene(
       m('ground', () => ground.draw(seen, zoom, now))
       m('borders', () => borders.update(retraced, zoom))
       m('lit', () => lit.draw(zoom, retraced))
+      // How much the map is the strategist's: the drawn works fade for the flat icons.
+      const strategic = strategicOf(zoom * state.grid.size)
+      marks.container.alpha = 1 - strategic
+      marks.container.visible = strategic < 1
       m('marks', () => marks.update(zoom))
+      m('plan', () => plan.draw(state, zoom, strategic))
       m('life', () => life.draw(state, seen, zoom, now))
       m('allies', () => allies.draw(state, zoom, traced, now))
       m('scars', () => scars.draw(state, zoom))
       m('raids', () => raids.draw(state, zoom, traced))
       m('building', () => building.draw(state, zoom))
       m('seals', () => seals.draw(state, zoom))
-      m('trade', () => trade.draw(state, zoom, between))
-      m('armies', () => armies.draw(state, zoom, seen, between, far))
+      m('trade', () => trade.draw(state, zoom, between, strategic))
+      m('armies', () => armies.draw(state, zoom, seen, between, far, strategic))
       m('volleys', () => volleys.draw(state, zoom, seen, between))
       m('strikes', () => strikes.draw(state, zoom, between))
       m('tidings', () => tidings.draw(state, zoom))

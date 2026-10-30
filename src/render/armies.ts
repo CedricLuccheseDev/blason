@@ -193,8 +193,15 @@ export function makeArmies(me: number) {
     flagOf: (from: number) => flags.flagOf(armies, from),
     /** The army to grow, by the village or market it left from; none. */
     light: flags.light,
-    /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
-    draw(state: GameState, zoom: number, view: Box, between = 0, far = 1) {
+    /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen; `strategic`, how much the map is the strategist's, where an army is its standard alone (ground/detail.ts). */
+    draw(
+      state: GameState,
+      zoom: number,
+      view: Box,
+      between = 0,
+      far = 1,
+      strategic = 0,
+    ) {
       const seconds = performance.now() / 1000
       const dt = Math.min(0.1, seconds - last)
       last = seconds
@@ -214,8 +221,17 @@ export function makeArmies(me: number) {
         zoom,
       )
       roads.draw(state, marches, zoom)
-      troops.draw(sides(), lines(), seconds, view)
-      fallen.draw(seconds)
+      // From afar the men fade out, their standards stay (« les etendard
+      // sans l'armée »); not drawn at all once gone.
+      const men = 1 - strategic
+      troops.container.alpha = men
+      fallen.container.alpha = men
+      troops.container.visible = men > 0
+      fallen.container.visible = men > 0
+      if (men > 0) {
+        troops.draw(sides(), lines(), seconds, view)
+        fallen.draw(seconds)
+      }
       flags.place(armies, zoom / far, legible(far), seconds)
     },
   }

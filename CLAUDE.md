@@ -93,7 +93,10 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   carte gagne du détail en zoomant, par paliers de pixels par tuile (`ground/detail.ts`) : le décor (`ground/`,
   collines, bois, champs, rivières) peint par morceaux de seize tuiles gardés par palier et multiplié dans le lavis,
   les constructions à trois niveaux (`art/works.ts`) et leur vie (`layers/life.ts`) ; la carte dézoomée est celle du
-  stratège, acté le 29/10 (« map dézoomée = map stratégique : tout doit être compréhensible super rapidement et
+  stratège (30/10, « il faut quelle soit une map stratégique … uniquement des icons flat bien visible, les etendard sans
+  l'armée, les chemins des marchands + visibles … une transition douce entre les 2 » : `ground/detail.ts` `strategicOf`,
+  de 5 à 9 pixels la tuile, les constructions en icônes plates `layers/plan.ts`, les armées réduites à leurs étendards,
+  les routes en traits gras, en fondu avec la carte dessinée), acté le 29/10 (« map dézoomée = map stratégique : tout doit être compréhensible super rapidement et
   facilement, et aéré ; map zoomée = map micro-gestion et spectacle, on peut s'amuser plus mais il faut que ça reste
   lisible ») : les constructions y rétrécissent plus vite que la carte en petites marques, celles des autres
   s'effacent (leurs marchés d'abord, les routes en tiennent lieu), les sceaux des villages et les chantiers des

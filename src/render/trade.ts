@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
 import { tradeLinks } from '../../engine'
 import { STONE, drawPaving } from './art/paving'
-import { playerColor } from './palette'
+import { TONE, playerColor } from './palette'
 import { drawRoad, pointOn } from './roads'
 import type { Spot } from './roads'
 import type { Stamps } from './textures'
@@ -22,6 +22,8 @@ const DRAWN = 16
 
 /** How many times a road's corners are smoothed, and how far it wanders aside, in map units. */
 const ROUNDS = 3
+/** A road's width on the strategist's map, in pixels on screen. */
+const BOLD = 2.6
 const STRAY = 5
 
 /** A road's key: its two markets, whichever way it is walked. */
@@ -36,6 +38,12 @@ export function makeTrade(stamps: Stamps, me: number) {
   const roads = new Container()
   const bands = roads.addChild(new Container())
   const stones = roads.addChild(new Container())
+  /** The roads on the strategist's map: a bold line each, as wide on screen at any zoom (« les chemins des marchands + visibles »). */
+  const bold = roads.addChild(new Graphics())
+  let boldAt: { zoom: number; paved: Map<string, Array<Spot>> | null } = {
+    zoom: 0,
+    paved: null,
+  }
   const sprites: Array<Sprite> = []
   /** The network's roads as drawn, by their two markets. */
   let paved = new Map<string, Array<Spot>>()
@@ -64,6 +72,28 @@ export function makeTrade(stamps: Stamps, me: number) {
       )
       paved.set(keyOf(a, b), path)
     }
+  }
+
+  /** The bold roads, drawn again only when the zoom moved or the network changed. */
+  function boldRoads(zoom: number, strategic: number) {
+    bold.visible = strategic > 0
+    if (!bold.visible) return
+    bold.alpha = strategic
+    const moved = Math.abs(zoom - boldAt.zoom) > boldAt.zoom * 0.04
+    if (!moved && boldAt.paved === paved) return
+    boldAt = { zoom, paved }
+    bold.clear()
+    for (const path of paved.values()) {
+      path.forEach(({ x, y }, i) =>
+        i === 0 ? bold.moveTo(x, y) : bold.lineTo(x, y),
+      )
+    }
+    bold.stroke({
+      width: BOLD / zoom,
+      color: TONE.goldDeep,
+      join: 'round',
+      cap: 'round',
+    })
   }
 
   /** A stretch of a caravan's road as drawn: the network's road between two markets, else a track of its own. */
@@ -107,9 +137,10 @@ export function makeTrade(stamps: Stamps, me: number) {
   return {
     container,
     roads,
-    /** At so many pixels per map unit. */
-    draw(state: GameState, zoom: number, between = 0) {
+    /** At so many pixels per map unit; `strategic`, how much the map is the strategist's (ground/detail.ts). */
+    draw(state: GameState, zoom: number, between = 0, strategic = 0) {
       stones.visible = STONE * zoom >= 1
+      boldRoads(zoom, strategic)
       const seconds = performance.now() / 1000
       if (state.tick % 10 === 0) pave(state)
       state.caravans.forEach((caravan, n) => {

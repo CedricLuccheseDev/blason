@@ -40,3 +40,17 @@ const motion =
     : window.matchMedia('(prefers-reduced-motion: reduce)')
 /** Whether the player asked for the map to keep still. */
 export const still = () => motion?.matches ?? false
+
+/** The pixels a tile covers over which the map turns from the strategist's to the drawn one. */
+const STRATEGIC = [5, 9] as const
+
+/**
+ * How much the map is the strategist's, 1 from afar to 0 up close (« la vue
+ * dézoomée … il faut quelle soit une map stratégique … uniquement des icons
+ * flat bien visible, les etendard sans l'armée, les chemins des marchands +
+ * visibles … faire une transition douce entre les 2 »): the works as flat
+ * icons (layers/plan.ts), the armies as their standards alone, the roads
+ * bold; the drawn map fading in as these fade out.
+ */
+export const strategicOf = (perTile: number) =>
+  1 - smoothstep(STRATEGIC[0], STRATEGIC[1], perTile)
