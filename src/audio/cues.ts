@@ -16,7 +16,6 @@ export type Cue =
   | 'parting'
   | 'betrayal'
   | 'build'
-  | 'gold'
   | 'victory'
   | 'defeat'
   | 'clash'
@@ -84,8 +83,6 @@ export const CUES: Record<Cue, CueSpec> = {
   },
   /** A work of mine laid: two hammer blows on wood. */
   build: { layers: [{ file: 'mallet' }], gain: 0.6, again: 0.5 },
-  /** A caravan come to my market: a pile of coins. */
-  gold: { layers: [{ file: 'coins' }], gain: 0.5, again: 3 },
   /** A medieval fanfare. */
   victory: { layers: [{ file: 'fanfare' }], gain: 0.9, again: 0, last: true },
   /** The knell, a tolling bell. */

@@ -4,8 +4,8 @@ import type { Caravan, GameState } from '../../engine'
 // The caravans that paid the player since the last reading: gone from the
 // roads having reached the end of theirs, his market at one end, worth a
 // whole coin at least (« j'ai des +0 avec les marchands »). Said where his
-// market is, once for a caravan between two markets of his. The "+" of gold
-// on the map and the coins heard read them alike.
+// market is, once for a caravan between two markets of his. Read by the
+// "+" of gold on the map.
 
 export type Arrival = { tile: number; gold: number }
 

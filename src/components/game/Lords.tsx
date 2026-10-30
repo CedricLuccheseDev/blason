@@ -74,9 +74,10 @@ export function Lords({
       gap="hair"
       // Open on a phone, it stands where its shield was, top right, over
       // the map, never past the screen: its lines scroll within it.
+      scroll={compact}
       className={`w-full ${
         compact
-          ? 'absolute top-0 right-0 z-30 max-h-[calc(100dvh-1.5rem)] w-72 overflow-y-auto'
+          ? 'absolute top-0 right-0 z-30 max-h-[calc(100dvh-1.5rem)] w-72'
           : ''
       }`}
     >

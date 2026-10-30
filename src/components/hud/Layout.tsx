@@ -79,18 +79,31 @@ export function Inline(props: Flow) {
 export function Panel({
   page = false,
   gap = 'line',
+  scroll = false,
   className = '',
   children,
 }: Readonly<{
   page?: boolean
   gap?: Gap
+  /** Taller than the screen may hold: its words scroll within it, its edge and its gold rule standing still (a sheet that scrolled took its rule with it, and the rule ran out half way, « la stroke or »). */
+  scroll?: boolean
   className?: string
   children: ReactNode
 }>) {
   const inside = page ? 'px-6 py-5 max-sm:px-4' : 'px-3 py-2'
+  if (!scroll)
+    return (
+      <Sheet className={`flex flex-col ${GAPS[gap]} ${inside} ${className}`}>
+        {children}
+      </Sheet>
+    )
   return (
-    <Sheet className={`flex flex-col ${GAPS[gap]} ${inside} ${className}`}>
-      {children}
+    <Sheet className={`flex flex-col ${className}`}>
+      <div
+        className={`flex min-h-0 flex-col overflow-y-auto ${GAPS[gap]} ${inside}`}
+      >
+        {children}
+      </div>
     </Sheet>
   )
 }

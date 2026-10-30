@@ -103,8 +103,9 @@ export function GameBook({
     <Veil onClose={onClose}>
       <Panel
         page
+        scroll
         gap="piece"
-        className="relative max-h-full w-full max-w-[calc(820px*var(--hud))] overflow-y-auto"
+        className="relative max-h-full w-full max-w-[calc(820px*var(--hud))]"
       >
         {!lobby && !guest && (
           <span className="absolute top-2 right-3">

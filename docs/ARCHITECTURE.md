@@ -415,7 +415,7 @@ nothing clips when everything falls at once:
 
 - **the cues** that tell the player something (`cues.ts`): his army leaving,
   an army at him, a herald's letter, his alliances, a betrayal cried to all,
-  his work laid, gold come in, the end. Short hits, a second or so, the end
+  his work laid, the end. Short hits, a second or so, the end
   hardly more;
 - **the world** heard up close: a clash of swords, a volley, a stone (in
   `cues.ts` too, on their bus), three at once at most;
@@ -444,8 +444,7 @@ table and its files.
 What the player hears is read in `src/render/`, never in the engine:
 `hearing.ts` turns the news of the second (`news.ts`: an army or a coup at
 him, a herald's letter, his alliances made or ended, any betrayal) and, each
-tick, his army leaving, his work laid, a caravan paying him (`arrivals.ts`,
-read alike by the map's "+" of gold) and the end of the game into cues, each
+tick, his army leaving, his work laid and the end of the game into cues, each
 from its tile, and in the opening the standard planted, a drum for each of
 its last seconds and a horn as the game begins; `ambience.ts` samples the
 screen once a second over the drawn ground (`ground/terrain.ts`) and the

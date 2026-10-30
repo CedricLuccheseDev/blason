@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { UNIT, botsSetup, createGame } from '../../engine'
+import { botsSetup, createGame } from '../../engine'
 import { heardIn, makeHearing } from './hearing'
 import type { Host } from '../../engine'
 
@@ -42,24 +42,6 @@ describe('what the player hears', () => {
       { cue: 'build', tile: 3 },
     ])
     expect(hearing.watch()).toEqual([])
-  })
-
-  it('hears a caravan pay him at his market', () => {
-    const state = game()
-    const hearing = makeHearing(state, 0)
-    const road = [6, 5, 4]
-    state.caravans.push({
-      owner: 1,
-      to: 0,
-      via: [],
-      road,
-      along: 1900,
-      gold: 3 * UNIT,
-    })
-    expect(hearing.watch()).toEqual([])
-    state.caravans = []
-    state.tick += 1
-    expect(hearing.watch()).toEqual([{ cue: 'gold', tile: 4 }])
   })
 
   it('hears the end once: the knell for his fall, nothing after', () => {
