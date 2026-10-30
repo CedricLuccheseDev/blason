@@ -32,8 +32,9 @@ export type Heraldry = (typeof PLAYERS)[number]['key']
 export const TONE = {
   ink: 0x2b1e12,
   page: 0xefe3c4,
-  seaWash: 0xcdd6c2,
-  seaLine: 0x8fa39a,
+  // A little bluer, for the land to stand out (« L'eau fais la + bleu un peu pour le contraste »).
+  seaWash: 0xbccfd9,
+  seaLine: 0x7c98ab,
   gold: 0xd9a41e,
   goldLight: 0xf4d277,
   goldDeep: 0x946512,
