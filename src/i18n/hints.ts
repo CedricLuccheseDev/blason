@@ -35,6 +35,8 @@ export const hintsEn = {
     archers: 'A volley: −30 % of an army',
     trebuchet: 'Its flaming stone burns the works where it falls',
   },
+  warship:
+    'Click the water: it sails from your nearest port and patrols there; takes merchant ships, sinks boats',
   race: {
     title: 'The race',
     line: (needed: number) => `Hold ${needed} % of the land`,
@@ -77,6 +79,8 @@ export const hintsFr: HintsMessages = {
     archers: 'Une volée : −30 % d’une armée',
     trebuchet: 'Son boulet enflammé brûle les constructions',
   },
+  warship:
+    'Clic sur l’eau : il part de ton port le plus proche et y patrouille ; prend les marchands, coule les barques',
   race: {
     title: 'La course',
     line: (needed: number) => `Tenir ${needed} % de la terre`,

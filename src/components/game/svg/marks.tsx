@@ -145,6 +145,14 @@ const MORE = {
     { d: 'M11 12 H21 M17.5 12 V15.5 M20.5 12 V14.5', open: true },
   ],
   plus: [{ d: 'M12 4.5 V19.5 M4.5 12 H19.5', open: true }],
+  // A warship: a hull, a sail and its pennant, over the waves.
+  warship: [
+    { d: 'M2 13.5 H22 L18.5 19 H5.5 Z' },
+    { d: 'M12 13.5 V2', open: true },
+    { d: 'M12 2 L16.5 3.3 L12 4.6 Z' },
+    { d: 'M7 5.8 Q12 4.8 17 5.8 V11.5 Q12 12.5 7 11.5 Z' },
+    { d: 'M3 21.8 Q5.5 20.6 8 21.8 Q10.5 23 13 21.8 Q15.5 20.6 18 21.8', open: true },
+  ],
   // The whole land raised: the peasant's fork, never a village's house.
   pitchfork: [
     {

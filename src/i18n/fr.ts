@@ -50,6 +50,7 @@ export const fr: Messages = {
       archers: 'Archers',
       trebuchet: 'Trébuchet',
     },
+    warship: 'Navire de guerre',
     launch: 'clic : lancer',
     campaign: 'En campagne',
     seek: (army: string) => `Voir : ${army}`,

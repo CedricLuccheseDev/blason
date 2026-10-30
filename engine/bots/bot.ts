@@ -1,4 +1,5 @@
 import { drawInt } from '../numbers'
+import { navy } from './fleet'
 import { apart, around } from '../grid'
 import { capOf, worksOf } from '../land'
 import { canStart, hasPicked, spotFor } from '../opening'
@@ -176,6 +177,8 @@ export function createBot(
     }
     const built = construct(state, me, fronts, thrift)
     if (built.length) return built
+    const fitted = navy(state, me)
+    if (fitted.length) return fitted
     const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
     if (state.tick < rest || !full) return []
     if (!armed(state, me)) return []

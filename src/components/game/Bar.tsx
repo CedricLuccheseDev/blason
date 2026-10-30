@@ -7,7 +7,7 @@ import { count, hex } from './format'
 import { Divide, Piece } from './BarPiece'
 import type { Army, Coup, Work } from '../../../engine'
 import type { Summary } from '~/render/client'
-import { keyAt } from '~/render/keys'
+import { FLEET_KEY, keyAt } from '~/render/keys'
 import { useMessages } from '~/i18n'
 
 /** The drawing pressed in each army's seal: its men, one, two or three, as its share grows; the mercenaries a man and his gold. */
@@ -130,11 +130,13 @@ export function Bar({
   onArmy,
   onWork,
   onCoup,
+  onFleet,
 }: Readonly<{
   summary: Summary
   onArmy: (army: Army) => void
   onWork: (work: Work | null) => void
   onCoup: (coup: Coup | null) => void
+  onFleet: (fleet: boolean) => void
 }>) {
   const m = useMessages()
   const compact = useCompact()
@@ -186,6 +188,7 @@ export function Bar({
                 />
               )
             })}
+            <Fleet summary={summary} onFleet={onFleet} />
           </div>
           {!rows && <Divide close={close} />}
           <div className={`flex items-start ${gap}`}>
@@ -228,5 +231,31 @@ export function Bar({
         </div>
       </div>
     </div>
+  )
+}
+
+/** The warship, after the works as one of them, by its key B: fitted out at a port, its price doubling with each afloat; at half ink with no port or not the gold. */
+function Fleet({
+  summary,
+  onFleet,
+}: Readonly<{ summary: Summary; onFleet: (fleet: boolean) => void }>) {
+  const m = useMessages()
+  const { held, can, price } = summary.fleet
+  const short = !can && !held
+  return (
+    <Piece
+      k={FLEET_KEY.toUpperCase()}
+      name={m.game.warship}
+      hint={[m.hints.warship]}
+      held={held}
+      onClick={() => (can || held) && onFleet(!held)}
+      emblem={<WorkEmblem icon="warship" size="s" held={held} dim={short} />}
+      short={short}
+      figure={
+        <Figure icon="coins" size="m" tone={short ? 'loss' : 'info'}>
+          {count(price)}
+        </Figure>
+      }
+    />
   )
 }

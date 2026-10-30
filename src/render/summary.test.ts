@@ -6,7 +6,7 @@ import type { GameState, Grid } from '../../engine'
 // What the bar reads of the armies: the four in their order, the three levied
 // from the peasants at a village, the mercenaries hired for gold at a market.
 
-const hand = { army: 'host', work: null, coup: null } as const
+const hand = { army: 'host', work: null, coup: null, fleet: false, ship: null } as const
 
 /** Lord 0 on the left of a row, a village on his first tile and a market on his fifth; lord 1 beside him. A village feeds 100 and the land none: a full company is 25 men. */
 function realm(gold: number): GameState {

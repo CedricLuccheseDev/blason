@@ -13,6 +13,9 @@ export type Cue =
   | 'embark'
   | 'oars'
   | 'sail'
+  | 'gun'
+  | 'hull'
+  | 'prize'
   | 'alarm'
   | 'herald'
   | 'pact'
@@ -211,6 +214,27 @@ export const CUES: Record<Cue, CueSpec> = {
     bus: 'world',
     gain: 0.35,
     again: 3,
+  },
+  /** Up close, a warship's shot. */
+  gun: {
+    layers: [{ file: ['gun-1', 'gun-2', 'gun-3'] }],
+    bus: 'world',
+    gain: 0.6,
+    again: 0.4,
+  },
+  /** Up close, a warship hit, or sunk: its hull cracking. */
+  hull: {
+    layers: [{ file: ['hull-1', 'hull-2'] }],
+    bus: 'world',
+    gain: 0.6,
+    again: 0.4,
+  },
+  /** Up close, a merchant ship taken by a warship: the ship's bell. */
+  prize: {
+    layers: [{ file: ['shipbell-1', 'shipbell-2'] }],
+    bus: 'world',
+    gain: 0.5,
+    again: 1.5,
   },
   /** Up close, a trebuchet's stone come down. */
   stone: {

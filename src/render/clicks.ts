@@ -1,4 +1,4 @@
-import { canStart } from '../../engine'
+import { apart, canStart, whereIs } from '../../engine'
 import { keyOf } from './keys'
 import { tilePlaces } from './places'
 import { canSend } from './course'
@@ -10,13 +10,30 @@ import type { Spot } from './roads'
 // standard, only where it may stand (the last one sent is the one a lone
 // player keeps when the opening begins again online); after it, what is in
 // hand, an army or a work or a coup, the figures read again when it was a
-// work or a coup put down.
+// work or a coup put down. A click by one of my warships picks it, to send
+// by the next click on the water.
+
+/** How near a warship a click picks it, in tiles. */
+const PICK = 2
+
+/** My warship nearest a tile, within reach of a click; none. */
+function warshipAt(state: GameState, me: number, tile: number) {
+  let [best, near] = [null as number | null, PICK * PICK + 1]
+  for (const ship of state.warships) {
+    if (ship.owner !== me) continue
+    const gap = apart(state.grid, whereIs(ship), tile)
+    if (gap < near) [best, near] = [ship.id, gap]
+  }
+  return best
+}
 
 export function makeClick(
   state: GameState,
   me: number,
   send: (order: Order) => void,
-  hand: Pick<ReturnType<typeof makeHand>, 'holding' | 'order'>,
+  hand: Pick<ReturnType<typeof makeHand>, 'holding' | 'order' | 'pick'> & {
+    hand: { ship: number | null; work: unknown; coup: unknown; fleet: boolean }
+  },
   /** Whether this click only closes the right click's menu. */
   dismisses: () => boolean,
   refresh: () => void,
@@ -31,6 +48,13 @@ export function makeClick(
       return
     }
     const held = hand.holding()
+    const { work, coup, fleet } = hand.hand
+    const ship = !work && !coup && !fleet ? warshipAt(state, me, tile) : null
+    if (ship !== null && ship !== hand.hand.ship) {
+      hand.pick(ship)
+      refresh()
+      return
+    }
     const order = hand.order(me, tile)
     // Said, not silently dropped: on a phone no aim shows beforehand that
     // nothing can go (« quand on simple clic dans un territoire d'un autre

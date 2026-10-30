@@ -1,9 +1,18 @@
-import { ARMIES, COUPS, UNIT, WORKS, coupPrice, priceOf } from '../../engine'
+import {
+  ARMIES,
+  COUPS,
+  UNIT,
+  WORKS,
+  coupPrice,
+  priceOf,
+  warshipPrice,
+} from '../../engine'
 import type { Army, Coup, GameState, Work } from '../../engine'
 
 // The keyboard: 1 to 4 take an army in hand, 5 to 7 a work, 8, 9 and 0 a
 // coup, in the order the bar shows them, the tenth key being 0 as on the
-// keyboard's top row; one more army, work or coup takes the next key. A
+// keyboard's top row; one more army, work or coup takes the next key. B a
+// warship, the digits all taken (« bateau », and boat). A
 // digit is read by its place on the keyboard, not by what it types: on a
 // French keyboard the key 1 types "&" unless shifted.
 
@@ -24,6 +33,9 @@ export const WORK_KEYS: Partial<Record<string, Work>> = Object.fromEntries(
   WORKS.map((work, i) => [keyAt(ARMIES.length + i + 1), work]),
 )
 
+/** The key that takes a warship to fit out in hand. */
+export const FLEET_KEY = 'b'
+
 export const COUP_KEYS: Partial<Record<string, Coup>> = Object.fromEntries(
   COUPS.map((coup, i) => [keyAt(ARMIES.length + WORKS.length + i + 1), coup]),
 )
@@ -32,7 +44,7 @@ export const COUP_KEYS: Partial<Record<string, Coup>> = Object.fromEntries(
 export function affordable(
   state: GameState,
   me: number,
-  hand: Readonly<{ work: Work | null; coup: Coup | null }>,
+  hand: Readonly<{ work: Work | null; coup: Coup | null; fleet: boolean }>,
   refuse: () => void,
 ) {
   return (key: string) => {
@@ -43,6 +55,8 @@ export function affordable(
     let price = 0
     if (work) price = hand.work === work ? 0 : priceOf(state, me, work)
     else if (coup) price = hand.coup === coup ? 0 : coupPrice(state, me, coup)
+    else if (key.toLowerCase() === FLEET_KEY)
+      price = hand.fleet ? 0 : warshipPrice(state, me)
     if (price <= Math.floor(state.players[me].gold / UNIT)) return true
     refuse()
     return false

@@ -4,14 +4,16 @@ import { smoothstep } from './ease'
 import { siteOf } from './marks'
 import type { Cue } from '../audio/cues'
 import type { Box } from './camera'
-import type { Coup, GameState, Host, Strike } from '../../engine'
+import { whereIs } from '../../engine'
+import type { Coup, GameState, Host, Ship, Strike } from '../../engine'
 
 // The world heard up close (Concept, « La carte qu'on entend »), read each
 // tick, over the beds of render/ambience.ts: an army fighting, a clash of
 // swords now and then, more often where two armies are at grips than where
 // one takes a land, and its men's cries; an army fallen to its last man; a
 // castle's volley as it is loosed; each coup as it sets out and as it comes
-// down; a work rising, a blow of a hammer. Only what is on screen, and only
+// down; a work rising, a blow of a hammer; a warship's shot, a hull struck,
+// a merchant ship taken, its bell. Only what is on screen, and only
 // coming closer: from afar the map is the strategist's, and these are its
 // spectacle. Heard by all, as they are seen by all. Typed on the coups, so
 // that a coup more does not compile without its sounds.
@@ -47,6 +49,31 @@ const any = <T>(list: ReadonlyArray<T>): T =>
 export function makeSpectacle() {
   let flying = new Set<Strike>()
   let hosts = new Set<Host>()
+  /** Each warship's reload and hull as last read, by its number. */
+  let fleet = new Map<number, { reload: number; hull: number; tile: number }>()
+  let trading = new Set<Ship>()
+
+  /** The warships' shots and hits since the last tick, and the merchant ships taken: gone before the end of their way. */
+  function sea(state: GameState) {
+    const shots: Array<number> = []
+    const hits: Array<number> = []
+    const now = new Map<number, { reload: number; hull: number; tile: number }>()
+    for (const ship of state.warships) {
+      const tile = whereIs(ship)
+      const was = fleet.get(ship.id)
+      if (was && ship.reload !== was.reload) shots.push(tile)
+      if (was && ship.hull < was.hull) hits.push(tile)
+      now.set(ship.id, { reload: ship.reload, hull: ship.hull, tile })
+    }
+    for (const [id, was] of fleet) if (!now.has(id)) hits.push(was.tile)
+    fleet = now
+    const sailing = new Set(state.ships)
+    const taken = [...trading]
+      .filter((s) => !sailing.has(s) && s.along < (s.way.length - 1) * 1000)
+      .map((s) => s.way[Math.floor(s.along / 1000)])
+    trading = sailing
+    return { shots, hits, taken }
+  }
 
   /** The coups set out and come down since the last tick. */
   function strikes(state: GameState) {
@@ -69,6 +96,7 @@ export function makeSpectacle() {
     watch(state: GameState, view: Box, perTile: number): Array<Spectacle> {
       const { out, down } = strikes(state)
       const lost = fallen(state)
+      const { shots, hits, taken } = sea(state)
       // Rising slowly as the camera comes down, its full voice only up close
       // (« on entend trop fort les sons très vite avec le zoom »).
       const level = smoothstep(HEARD[0], HEARD[1], perTile) ** 2
@@ -107,6 +135,9 @@ export function makeSpectacle() {
           ],
         )
       }
+      for (const tile of shots) hear('gun', tile)
+      for (const tile of hits) hear('hull', tile)
+      for (const tile of taken) hear('prize', tile)
       for (const strike of out) hear(COUPS[strike.coup].launch, strike.from)
       for (const strike of down) hear(COUPS[strike.coup].land, strike.target)
       return heard

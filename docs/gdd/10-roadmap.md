@@ -17,12 +17,15 @@ order the owner set (30/10). A question closes by becoming a record.
 
 ## Next (in this order)
 
-1. **Warships** (D-WAR-8).
-2. **Prettier mountains, more contrast**: « le jeu est très pastel blanc, ça
+1. **Prettier mountains, more contrast**: « le jeu est très pastel blanc, ça
    manque de contrastes ».
+2. **The home's public card**: the map sharp in its section, the rest of
+   the same land filling the screen behind, blurred.
 3. **Profiles, friends, Elo, statistics, customisation**: the accounts'
    brick (Convex).
-4. Then, without order yet: the market's « + » of gold that sometimes does not
+4. **Optimisation**: the techniques of games (ECS and others) for a game
+   fluid on any device.
+5. Then, without order yet: the market's « + » of gold that sometimes does not
    show; the World's data loaded only by who plays it; rivers and lakes on the
    random lands; works upgraded in levels; accounts, profiles and rankings
    (Convex).

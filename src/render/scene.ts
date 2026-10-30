@@ -21,6 +21,7 @@ import { makeBadges, placesEachTick } from './places'
 import { makeRegions } from './regions'
 import { makeTrade } from './trade'
 import { makeFleets } from './layers/fleets'
+import { makeWakes } from './layers/wakes'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
@@ -87,7 +88,9 @@ export function makeScene(
   lines.mask = lines.addChild(new Graphics(shape))
   const marks = makeMarks(state, me)
   const life = makeLife(ground.fieldsNear)
-  const armies = makeArmies(me, (x, y) => {
+  // The wakes of every boat, the armies' and the ships', under them all.
+  const wakes = makeWakes()
+  const armies = makeArmies(me, wakes, (x, y) => {
     const t = tileAt(state.grid, x, y)
     return t >= 0 && ground.terrain.biome[t] === FOREST
   })
@@ -108,7 +111,7 @@ export function makeScene(
   const pacts = makePacts(me, labels.nameOf)
   const envoys = makeEnvoys(state, me, labels.nameOf)
   const trade = makeTrade(makeStamps(app.renderer), me)
-  const fleets = makeFleets(me)
+  const fleets = makeFleets(me, wakes)
   const tidings = makeTidings(me)
   const allies = makeAllies(me, regions.outline)
   const lit = makeLit(regions.outline)
@@ -143,6 +146,7 @@ export function makeScene(
       pacts.container,
       page.frame,
       trade.container,
+      wakes.graphics,
       fleets.container,
       // A village's seal and a work's gauge over the caravans passing by
       // (« attentions aux couche le marchand passe par dessus »).
@@ -226,7 +230,7 @@ export function makeScene(
       m('building', () => building.draw(state, zoom))
       m('seals', () => seals.draw(state, zoom))
       m('trade', () => trade.draw(state, zoom, between, strategic))
-      m('fleets', () => fleets.draw(state, between))
+      m('fleets', () => fleets.draw(state, between, hand.ship))
       m('armies', () => armies.draw(state, zoom, seen, between, far, strategic))
       m('volleys', () => volleys.draw(state, zoom, seen, between))
       m('strikes', () => strikes.draw(state, zoom, between))

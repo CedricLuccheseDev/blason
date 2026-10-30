@@ -90,6 +90,7 @@ export function Places({
               onArmy={game.choose}
               onWork={game.hold}
               onCoup={game.aim}
+              onFleet={game.fit}
             />
           )}
         </div>

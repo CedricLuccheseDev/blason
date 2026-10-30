@@ -199,6 +199,7 @@ export async function mountGame(
     choose: (next) => handed(() => hand.choose(next)),
     hold: (next) => handed(() => hand.hold(next)),
     aim: (next) => handed(() => hand.aim(next)),
+    fit: (next) => handed(() => hand.fit(next)),
     leave: pin.leave,
     zoom: (step) => camera.zoomBy(step),
     home: () => camera.home(),

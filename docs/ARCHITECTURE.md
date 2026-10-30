@@ -91,26 +91,28 @@ can tune them without touching the code. The rules themselves are described in
 
 ### The modules
 
-| Module                   | Responsibility                                                                                      |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                     |
-| `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes |
-| `grid.ts`                | The land cut into tiles of four map units                                                           |
-| `setup.ts`               | What a game is made of: the presets, a setup read from the wire, the land drawn for it              |
-| `land.ts`                | A new game from its setup; the land in the game, the peasants, the men holding a tile               |
-| `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given |
-| `muster.ts`              | Raising an army: the free villages, the march out of them and its pace, where an army stands        |
-| `course.ts`              | An army's course: the border tile that brings it soonest to the click, its village and its road     |
-| `war.ts`                 | Armies: their march, how they spread, what each tile costs                                          |
-| `battle.ts`              | Battles between armies that meet, by the combat table                                               |
-| `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone           |
-| `enclosure.ts`           | Encircled land passing to the lord all round it                                                     |
-| `heap.ts`                | The heap that orders the tiles an army strikes next                                                 |
-| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time               |
-| `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                            |
-| `caravans.ts`            | The merchants' roads and what they pay                                                              |
-| `step.ts`                | The tick, validation of orders, victory                                                             |
-| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `levels.ts`               |
+| Module                   | Responsibility                                                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                                |
+| `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes            |
+| `grid.ts`                | The land cut into tiles of four map units                                                                      |
+| `setup.ts`               | What a game is made of: the presets, a setup read from the wire, the land drawn for it                         |
+| `land.ts`                | A new game from its setup; the land in the game, the peasants, the men holding a tile                          |
+| `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given            |
+| `muster.ts`              | Raising an army: the free villages, the march out of them and its pace, where an army stands                   |
+| `course.ts`              | An army's course: the border tile that brings it soonest to the click, its village and its road                |
+| `war.ts`                 | Armies: their march, how they spread, what each tile costs                                                     |
+| `battle.ts`              | Battles between armies that meet, by the combat table                                                          |
+| `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone                      |
+| `enclosure.ts`           | Encircled land passing to the lord all round it                                                                |
+| `heap.ts`                | The heap that orders the tiles an army strikes next                                                            |
+| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time                          |
+| `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                                       |
+| `caravans.ts`            | The merchants' roads and what they pay                                                                         |
+| `ships.ts`               | Ports and the merchant ships between them                                                                      |
+| `warships.ts`            | Warships: fitted out at the nearest port, patrolling, taking ships, sinking boats, fighting                    |
+| `step.ts`                | The tick, validation of orders, victory                                                                        |
+| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `fleet.ts` for warships, `levels.ts` |
 
 ### The map
 

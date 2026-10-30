@@ -35,6 +35,8 @@ export type GameHandle = {
   hold: (work: Work | null) => void
   /** A coup taken in hand, or put down. */
   aim: (coup: Coup | null) => void
+  /** A warship to fit out taken in hand, or put down. */
+  fit: (fleet: boolean) => void
   /** The pointer gone far from the right click's menu: it closes, and a click on the map just after only finishes closing it. */
   leave: () => void
   /** From the right click's menu: the army in hand sent at the land right clicked, as a left click there would. */

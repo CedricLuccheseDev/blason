@@ -3,6 +3,7 @@ import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
 import { afloatOf, makeBoats } from './layers/boats'
+import type { makeWakes } from './layers/wakes'
 import { makeFallen } from './layers/fallen'
 import { linesOf, makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
@@ -62,6 +63,7 @@ const enlist = (host: Host): Army => ({
 
 export function makeArmies(
   me: number,
+  wakes: ReturnType<typeof makeWakes>,
   underWoods?: (x: number, y: number) => boolean,
 ) {
   warmFigures()
@@ -69,7 +71,7 @@ export function makeArmies(
   const roads = makeRoads()
   const fallen = makeFallen(0.2)
   const troops = makeTroops(underWoods)
-  const boats = makeBoats()
+  const boats = makeBoats(wakes)
   const warning = makeWarning(me)
   container.addChild(
     warning.container,

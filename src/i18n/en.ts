@@ -49,6 +49,7 @@ export const en = {
       archers: 'Archers',
       trebuchet: 'Trebuchet',
     },
+    warship: 'Warship',
     launch: 'click: launch',
     campaign: 'On campaign',
     seek: (army: string) => `See: ${army}`,

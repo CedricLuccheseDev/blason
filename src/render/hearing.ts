@@ -51,6 +51,7 @@ export function makeHearing(state: GameState, me: number) {
   /** My armies at sea at the last reading: one taking to the water is heard once. */
   let sailing = new Set<Host>()
   let works = new Set(state.works)
+  let fleet = new Set(state.warships)
   let tick = state.tick
   let alive = me >= 0 && state.players[me].alive
   let ended = false
@@ -101,6 +102,11 @@ export function makeHearing(state: GameState, me: number) {
       for (const work of state.works)
         if (work.owner === me && work.ready !== undefined && !works.has(work))
           heard.push({ cue: 'build', tile: work.tile })
+      // My warship fitted out: the oars from its port.
+      for (const ship of state.warships)
+        if (ship.owner === me && !fleet.has(ship))
+          heard.push({ cue: 'embark', tile: ship.way[0] })
+      fleet = new Set(state.warships)
       opening(heard, tick)
       hosts = new Set(state.hosts)
       works = new Set(state.works)

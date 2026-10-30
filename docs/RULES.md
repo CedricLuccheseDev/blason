@@ -297,8 +297,19 @@ made to you, the seal of an alliance to renew:
   war with its own, the far ones and the allies' more often (fewer the more
   ships its lord has at sea: with 4 out, one time in two). It sails the
   shortest way over the water at 8 tiles a second and, arriving, pays both
-  ports 0.15 gold a tile of its way, twice as much between allies. Nothing
-  takes it yet; the warships will.
+  ports 0.15 gold a tile of its way, twice as much between allies.
+- **Warships** (`engine/warships.ts`, as OpenFront's): taken from the bar
+  (key B) and a click on the water, one is fitted out at the lord's port
+  nearest that point by sea and sails there, 6 tiles a second; with no port
+  of his reaching it, nothing is built nor paid. It costs 200 gold, doubled
+  with each of his afloat, three times at most. It patrols within 12 tiles of
+  its point, and a click on it then on the water sends it elsewhere on the
+  same water. Every 2 seconds it shoots at what of a lord not its ally lies
+  within 3 tiles: a warship first, which sinks at its fourth shot; then an
+  army's boat crossing, sunk with its men; then a merchant ship not bound for
+  its own lord's port, taken, its gold for him. Within its patrol it makes for
+  the nearest of them. Bots fit one out now and then, one for 600 tiles
+  beyond the first, three at most, off an enemy's port.
 - **Relays** (`engine/relays.ts`, as OpenFront's stations): each village
   within 2 tiles of its road, once a caravan, pays its own lord and the
   caravan's (the same lord once): 3.5 gold between allies, 2.5 between other

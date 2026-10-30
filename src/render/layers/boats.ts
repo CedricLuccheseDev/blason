@@ -4,6 +4,7 @@ import { playerColor } from '../palette'
 import type { GraphicsContext } from 'pixi.js'
 import type { Front, Spot } from '../fronts'
 import type { Host } from '../../../engine'
+import type { makeWakes } from './wakes'
 
 // The armies at sea, each a boat where its head is on its road over the
 // water (crossing.ts), turned the way it sails; its men, gone aboard, are
@@ -20,7 +21,7 @@ export type Afloat = {
   alpha: number
 }
 
-export function makeBoats() {
+export function makeBoats(wakes: ReturnType<typeof makeWakes>) {
   const container = new Container()
   const drawings = new Map<number, GraphicsContext>()
   const boats = new Map<object, Graphics>()
@@ -40,7 +41,9 @@ export function makeBoats() {
     container,
     draw(afloat: Array<Afloat>) {
       const seen = new Set<object>()
+      const now = performance.now()
       for (const { key, at, facing, color, alpha } of afloat) {
+        if (alpha > 0.5) wakes.pass(key, at.x, at.y, now)
         seen.add(key)
         let boat = boats.get(key)
         if (!boat) {
