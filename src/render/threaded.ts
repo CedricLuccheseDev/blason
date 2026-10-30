@@ -13,13 +13,18 @@ import type { GameSetup, Grid } from '../../engine'
 // whoever listens, as a step played here would be. None where the browser
 // gives no thread: the game is then played in the page, as before.
 
+/** The game asked to be played in the page (`?thread=off`), to tell whether a fault lies in the thread. */
+const inPage = () =>
+  new URLSearchParams(globalThis.location?.search ?? '').get('thread') ===
+  'off'
+
 export function startThreadedSession(
   grid: Grid,
   setup: GameSetup,
   me: number,
   { held = false, online }: { held?: boolean; online?: Online } = {},
 ): Session | null {
-  if (typeof Worker === 'undefined') return null
+  if (typeof Worker === 'undefined' || inPage()) return null
   let worker: Worker
   try {
     worker = new Worker(new URL('./sim.worker.ts', import.meta.url), {
