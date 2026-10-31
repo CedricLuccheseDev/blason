@@ -1,12 +1,13 @@
+import { Icon } from '../hud/Figure'
 import { Countdown } from './Countdown'
 import { LandPlate } from './LandPlate'
 import { RoomTrouble, Seats } from './Seats'
 import { atPublic } from './useRoom'
-import { useUpcoming } from './useUpcoming'
-import { Icon } from '../hud/Figure'
+import { publicLand } from './useUpcoming'
 import type { ReactNode } from 'react'
+import type { Drawn } from './HomeLand'
 import type { Room, RoomActions } from './useRoom'
-import type { Land } from '../../../engine'
+import type { Heard } from './useUpcoming'
 import { Act } from '~/components/hud/Act'
 import { Inline, Panel, Stack } from '~/components/hud/Layout'
 import { Heading, Note } from '~/components/hud/Text'
@@ -42,15 +43,20 @@ export function PublicCard({
   room,
   rooms,
   online,
+  heard,
+  land: behind,
 }: Readonly<{
   room: Room
   rooms: RoomActions
   /** Whether a relay is there to play online at all. */
   online: boolean
+  /** The public game as the relay told it last (useUpcoming.ts). */
+  heard: Heard
+  /** Its land drawn behind the page, which the card is a window on; none yet. */
+  land: Drawn | null
 }>) {
   const m = useMessages()
   const t = m.home
-  const heard = useUpcoming()
   const game = heard.lost ? null : heard.game
   const here = atPublic(room)
   const entering = here && room.status === 'joining'
@@ -61,10 +67,7 @@ export function PublicCard({
   if (failed) status = <RoomTrouble room={room} />
   else if (!online) status = <p className="hud-note">{t.room.unavailable}</p>
   else if (heard.lost) status = <p className="hud-note">{t.public.lost}</p>
-  // The public games turn through every map (server/rooms.ts): its own, or a random land at its size.
-  const land: Land = game?.map
-    ? { kind: 'real', map: game.map }
-    : { kind: 'drawn', size: game?.size ?? 'standard' }
+  const land = publicLand(game)
   const landName =
     land.kind === 'real' ? m.book.lands[land.map] : m.book.random[land.size]
   let word = t.public.play
@@ -72,7 +75,12 @@ export function PublicCard({
   else if (failed) word = t.room.retry
   return (
     <Panel gap="part">
-      <LandPlate seed={game?.seed ?? null} land={land} label={t.public.land}>
+      <LandPlate
+        seed={game?.seed ?? null}
+        land={land}
+        label={t.public.land}
+        through={behind}
+      >
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}
         {(ready || failed) && (
           <button

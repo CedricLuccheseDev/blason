@@ -233,8 +233,8 @@ orders. It decides nothing about the rules.
 
 - `client.ts` mounts a game in a page element: the land (`ahead.ts` makes the
   next one while the home is read, and keeps the public game's, which
-  `sketch.ts` draws small on the home's card, for that game when it
-  begins), the session, the scene, the camera, the input, and the handle the
+  `sketch.ts` draws over the whole home, blurred, its card a sharp window
+  on it (`HomeLand.tsx`), for that game when it begins), the session, the scene, the camera, the input, and the handle the
   React screen drives. What the player holds in
   hand, an army, a work or a coup, and the order a click sends with it, is
   `hand.ts` (the keys 1 to 9 then 0, `keys.ts`). What the pointer aims at, where

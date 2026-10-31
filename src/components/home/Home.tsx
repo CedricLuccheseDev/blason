@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Dialog } from './Dialog'
 import { Foot } from './Foot'
+import { HomeLand } from './HomeLand'
 import { whenIdle } from './idle'
 import { Journal } from './Journal'
 import { Lord, Title } from './Masthead'
@@ -10,6 +11,8 @@ import { PrivateRoom } from './PrivateRoom'
 import { PublicCard } from './PublicCard'
 import { usePresses } from './usePresses'
 import { atPrivate, atPublic, useRoom } from './useRoom'
+import { publicLand, useUpcoming } from './useUpcoming'
+import type { Drawn } from './HomeLand'
 import type { Entry } from './Journal'
 import { Act } from '~/components/hud/Act'
 import { GAP, Stack } from '~/components/hud/Layout'
@@ -18,8 +21,9 @@ import { useMessages } from '~/i18n'
 import { relayUrl } from '~/render/link'
 import { holdOnline } from '~/render/online'
 
-// The home, as OpenFront's, on the game's page without its map: its frame
-// and a faint compass rose. The name of the game; under it the public game
+// The home, as OpenFront's, on the game's page: its frame and a faint
+// compass rose over the public game's land, blurred behind the whole page,
+// of which the game's card is a sharp window (HomeLand.tsx). The name of the game; under it the public game
 // being planted, its land the biggest thing there and Play on it, then two
 // short buttons: create a game, straight into it, its book open (solo is a
 // game created with no guest: « créer une partie doit envoyer directement
@@ -51,6 +55,9 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
     void navigate({ to: '/play', search: { online: true } })
   })
   useGameAhead()
+  const heard = useUpcoming()
+  const upcoming = heard.lost ? null : heard.game
+  const [behind, setBehind] = useState<Drawn | null>(null)
   // Back home, the last game online is let go of.
   useEffect(() => holdOnline(null), [])
 
@@ -70,6 +77,11 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
 
   return (
     <main className="hud relative flex min-h-dvh w-full flex-col bg-vellum select-none">
+      <HomeLand
+        seed={upcoming?.seed ?? null}
+        land={publicLand(upcoming)}
+        onDrawn={setBehind}
+      />
       <Frame />
       <Rose className="absolute top-8 right-8 size-28 opacity-25 max-sm:top-6 max-sm:right-6 max-sm:size-14" />
       {/* norm-ok: the home's page, its column and the journal's beside it, its room round them as drawn (the HUD's bricks lay what is inside). */}
@@ -79,7 +91,13 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
         </div>
         <nav aria-label={t.menu} className="min-w-0">
           <Stack gap="part">
-            <PublicCard room={room} rooms={rooms} online={online} />
+            <PublicCard
+              room={room}
+              rooms={rooms}
+              online={online}
+              heard={heard}
+              land={behind?.seed === upcoming?.seed ? behind : null}
+            />
             <div className={`grid sm:grid-cols-2 ${GAP.line}`}>
               <Act tone="plain" onClick={create}>
                 <Icon name="plus" size={18} />

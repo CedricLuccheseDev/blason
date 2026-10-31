@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { readUpcoming } from '../../../net/protocol'
 import type { Upcoming } from '../../../net/protocol'
+import type { Land } from '../../../engine'
 import { upcomingUrl } from '~/render/link'
 
 // The public game in its opening as the relay tells it (GET /public,
@@ -60,4 +61,11 @@ export function useUpcoming(): Heard {
   }, [])
 
   return heard
+}
+
+/** The public game's land: the public games turn through every map (server/rooms.ts), its own, or a random land at its size. */
+export function publicLand(game: Upcoming | null): Land {
+  return game?.map
+    ? { kind: 'real', map: game.map }
+    : { kind: 'drawn', size: game?.size ?? 'standard' }
 }
