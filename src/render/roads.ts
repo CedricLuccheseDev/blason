@@ -135,6 +135,24 @@ function wander(
 /** How far from the water a built road keeps when it may, in tiles; how far it is pushed aside at most. */
 const [SHORE, PUSH] = [1.6, 0.9]
 
+/** Where the water near a point pushes it, in tiles: away from each water tile within the shore's reach, the nearer the more. */
+function pushOf(state: GameState, cx: number, cy: number): [number, number] {
+  const { width, height, water } = state.grid
+  const reach = Math.ceil(SHORE)
+  let [px, py] = [0, 0]
+  for (let y = Math.floor(cy) - reach; y <= Math.floor(cy) + reach; y++)
+    for (let x = Math.floor(cx) - reach; x <= Math.floor(cx) + reach; x++) {
+      const off = x < 0 || y < 0 || x >= width || y >= height
+      if (off || !water[y * width + x]) continue
+      const [dx, dy] = [cx - (x + 0.5), cy - (y + 0.5)]
+      const d = Math.hypot(dx, dy) || 1
+      if (d >= SHORE) continue
+      px += (dx / d) * (SHORE - d)
+      py += (dy / d) * (SHORE - d)
+    }
+  return [px, py]
+}
+
 /**
  * A built road kept off the water's edge (« les chemins des marchands
  * collent trop proche » of the rivers): the shortest way from tile to tile
@@ -143,26 +161,15 @@ const [SHORE, PUSH] = [1.6, 0.9]
  * a tile the road may not cross.
  */
 function ashore(state: GameState, line: Array<Spot>, open: Open): Array<Spot> {
-  const { size, width, height, water } = state.grid
-  const reach = Math.ceil(SHORE)
+  const { size, width } = state.grid
   return line.map((p, i) => {
     if (i === 0 || i === line.length - 1) return p
     const [cx, cy] = [p.x / size, p.y / size]
-    let [px, py] = [0, 0]
-    for (let y = Math.floor(cy) - reach; y <= Math.floor(cy) + reach; y++)
-      for (let x = Math.floor(cx) - reach; x <= Math.floor(cx) + reach; x++) {
-        if (x < 0 || y < 0 || x >= width || y >= height) continue
-        if (!water[y * width + x]) continue
-        const [dx, dy] = [cx - (x + 0.5), cy - (y + 0.5)]
-        const d = Math.hypot(dx, dy) || 1
-        if (d >= SHORE) continue
-        px += (dx / d) * (SHORE - d)
-        py += (dy / d) * (SHORE - d)
-      }
+    const [px, py] = pushOf(state, cx, cy)
     const push = Math.hypot(px, py)
     if (push === 0) return p
-    const by = Math.min(PUSH, push) / push
-    for (let k = by; k > 0.1; k /= 2) {
+    // As far as it may go, less if that would put it off its ground.
+    for (let k = Math.min(PUSH, push) / push; k > 0.1; k /= 2) {
       const [x, y] = [cx + px * k, cy + py * k]
       if (open(Math.floor(y) * width + Math.floor(x)))
         return { x: x * size, y: y * size }
