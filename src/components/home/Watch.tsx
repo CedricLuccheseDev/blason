@@ -153,7 +153,7 @@ export function Watch() {
               {room.public ? 'Public game' : `Private ${room.code}`}
             </Heading>
             <Fine>
-              {`${room.land} · ${room.started ? `turn ${room.turn}` : 'lobby'} · ${time(room.ageS)} old · ${room.seated} persons, ${room.bots} bots`}
+              {`${room.land} · ${room.started ? 'turn ' + room.turn : 'lobby'} · ${time(room.ageS)} old · ${room.seated} persons, ${room.bots} bots`}
             </Fine>
             {room.players.map((p) => (
               <Line key={p.seat} name={<Name>{p.name}</Name>}>

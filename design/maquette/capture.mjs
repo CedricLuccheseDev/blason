@@ -211,8 +211,7 @@ async function capture(context, room, moment, size, first) {
   await page.waitForFunction(
     ([map, ready]) =>
       ready
-        ? document.querySelector(ready) &&
-          (!map || document.querySelector(map))
+        ? document.querySelector(ready) && (!map || document.querySelector(map))
         : location.search.includes('save=') &&
           document.querySelector(map) &&
           document.querySelectorAll('main > *').length > 3,

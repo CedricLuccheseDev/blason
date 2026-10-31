@@ -151,7 +151,10 @@ const MORE = {
     { d: 'M12 13.5 V2', open: true },
     { d: 'M12 2 L16.5 3.3 L12 4.6 Z' },
     { d: 'M7 5.8 Q12 4.8 17 5.8 V11.5 Q12 12.5 7 11.5 Z' },
-    { d: 'M3 21.8 Q5.5 20.6 8 21.8 Q10.5 23 13 21.8 Q15.5 20.6 18 21.8', open: true },
+    {
+      d: 'M3 21.8 Q5.5 20.6 8 21.8 Q10.5 23 13 21.8 Q15.5 20.6 18 21.8',
+      open: true,
+    },
   ],
   // The whole land raised: the peasant's fork, never a village's house.
   pitchfork: [

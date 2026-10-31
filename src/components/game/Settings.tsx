@@ -82,7 +82,10 @@ function Sheet() {
   // The book's hierarchy (BookSettings.tsx): the sheet's title over a gold
   // rule, then each setting alike, its name small above, its control under it.
   return (
-    <Panel gap="part" className="w-[calc(320px*var(--hud))] max-w-[calc(100vw-24px)]">
+    <Panel
+      gap="part"
+      className="w-[calc(320px*var(--hud))] max-w-[calc(100vw-24px)]"
+    >
       <Caption>
         <Heading>{m.title}</Heading>
       </Caption>

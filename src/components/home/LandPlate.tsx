@@ -56,9 +56,7 @@ export function LandPlate({
   }, [seed, landKey, whole, picture])
 
   const [loaded, setLoaded] = useState<string | null>(null)
-  const shown = picture
-    ? loaded === picture
-    : seed !== null && drawn === seed
+  const shown = picture ? loaded === picture : seed !== null && drawn === seed
   const fading = `absolute inset-0 size-full transition-opacity duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none ${shown ? 'opacity-100' : 'opacity-0'}`
   return (
     <div

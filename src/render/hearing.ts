@@ -84,20 +84,25 @@ export function makeHearing(state: GameState, me: number) {
     heard.push({ cue: wonBy(state, me) ? 'victory' : 'defeat', tile: -1 })
   }
 
+  /** My armies raised, and those taking to the water. */
+  function armies(heard: Array<Heard>) {
+    for (const host of state.hosts)
+      if (host.owner === me && !hosts.has(host))
+        heard.push({ cue: 'muster', tile: host.from })
+    const afloatNow = new Set(
+      state.hosts.filter((h) => h.owner === me && afloat(state, h)),
+    )
+    for (const host of afloatNow)
+      if (!sailing.has(host))
+        heard.push({ cue: 'embark', tile: positionOf(host) })
+    sailing = afloatNow
+  }
+
   return {
     watch(): Array<Heard> {
       if (me < 0) return []
       const heard: Array<Heard> = []
-      for (const host of state.hosts)
-        if (host.owner === me && !hosts.has(host))
-          heard.push({ cue: 'muster', tile: host.from })
-      const afloatNow = new Set(
-        state.hosts.filter((h) => h.owner === me && afloat(state, h)),
-      )
-      for (const host of afloatNow)
-        if (!sailing.has(host))
-          heard.push({ cue: 'embark', tile: positionOf(host) })
-      sailing = afloatNow
+      armies(heard)
       // Laid, not taken: a work taken from another stands already.
       for (const work of state.works)
         if (work.owner === me && work.ready !== undefined && !works.has(work))

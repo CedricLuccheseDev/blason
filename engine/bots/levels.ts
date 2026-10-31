@@ -35,7 +35,7 @@ export const SKILLS: Readonly<Record<Level, Skill>> = {
     thrift: -10,
     slips: 25,
     hunters: 1,
-    pause: [30, 80],
+    pause: [20, 60],
   },
   normal: {
     every: 10,
@@ -45,7 +45,7 @@ export const SKILLS: Readonly<Record<Level, Skill>> = {
     thrift: 0,
     slips: 0,
     hunters: 1,
-    pause: [10, 40],
+    pause: [5, 20],
   },
   hard: {
     every: 10,
@@ -55,6 +55,6 @@ export const SKILLS: Readonly<Record<Level, Skill>> = {
     thrift: 20,
     slips: 0,
     hunters: 2,
-    pause: [3, 15],
+    pause: [2, 8],
   },
 }

@@ -99,8 +99,7 @@ export function drawWarship(g: Graphics, color: number): void {
     .lineTo(12.6, -2.2)
     .stroke({ ...ink, width: 0.4 })
   // The guns' ports along the side.
-  for (const x of [-6, -2, 2, 6])
-    g.rect(x - 0.7, -4.2, 1.4, 1.2).fill(TONE.ink)
+  for (const x of [-6, -2, 2, 6]) g.rect(x - 0.7, -4.2, 1.4, 1.2).fill(TONE.ink)
   // The masts.
   g.moveTo(-1, -5)
     .lineTo(-1, -22)

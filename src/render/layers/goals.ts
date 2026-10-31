@@ -45,9 +45,7 @@ export function makeGoals(me: number) {
     container,
     draw(state: GameState, zoom: number) {
       const going = new Set(
-        me < 0
-          ? []
-          : state.hosts.filter((h) => h.owner === me && h.men > 0),
+        me < 0 ? [] : state.hosts.filter((h) => h.owner === me && h.men > 0),
       )
       for (const [host, goal] of goals)
         if (!going.has(host)) {

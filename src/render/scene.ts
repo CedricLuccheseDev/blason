@@ -1,12 +1,11 @@
-import { Container, Graphics } from 'pixi.js'
+import { Container } from 'pixi.js'
 import { UNIT } from '../../engine'
 import { viewOf } from './camera'
 import { cullable, group } from './groups'
 import { renewalsOf } from './renewals'
 import { makeLabels } from './layers/labels'
-import { landLayers, landShape, makeSea } from './layers/lands'
-import { makePeaks } from './layers/peaks'
-import { REACH, makePage } from './layers/page'
+import { landLayers } from './layers/lands'
+import { REACH } from './layers/page'
 import { makePaper } from './layers/paper'
 import { makeStamps } from './textures'
 import { makeArmies } from './armies'
@@ -18,7 +17,6 @@ import { makePlanted } from './layers/planted'
 import { makeMarks, tileAt } from './marks'
 import { FOREST } from './ground/terrain'
 import { makeBadges, placesEachTick } from './places'
-import { makeRegions } from './regions'
 import { makeTrade } from './trade'
 import { makeFleets } from './layers/fleets'
 import { makeWakes } from './layers/wakes'
@@ -35,8 +33,7 @@ import { makeScars } from './layers/scars'
 import { makeRoom } from './layers/room'
 import { makeStrikes } from './layers/strikes'
 import { makeVolleys } from './layers/volleys'
-import { makeBorders } from './layers/borders'
-import { makeGround } from './layers/ground'
+import { makeBase } from './base'
 import { makeLife } from './layers/life'
 import { groundOf } from './clearance'
 import type { Measure } from './perf'
@@ -72,21 +69,9 @@ export function makeScene(
   state: GameState,
   names: Array<string>,
 ) {
-  const page = makePage(land)
-  const sea = makeSea(land)
-  const peaks = makePeaks(land)
-  const regions = makeRegions(state, me)
-  const shape = landShape(land)
-  const ground = makeGround(land, state, shape)
-  const borders = makeBorders(land, regions.outline)
-  // The land's one shape, laid bare and clipped to twice: the washes with
-  // the ground's tones, then the borders over the decoration.
-  const washed = new Container()
-  washed.addChild(regions.container, ground.tinted)
-  washed.mask = washed.addChild(new Graphics(shape))
-  const lines = new Container()
-  lines.addChild(regions.stone, borders.container)
-  lines.mask = lines.addChild(new Graphics(shape))
+  const base = makeBase(land, state, me)
+  const { page, sea, peaks, regions, shape, ground, borders } = base
+  const { washed, lines, coast } = base
   const marks = makeMarks(state, me)
   const life = makeLife(ground.fieldsNear)
   // The wakes of every boat, the armies' and the ships', under them all.
@@ -122,10 +107,6 @@ export function makeScene(
   const scars = makeScars()
   const room = makeRoom(state, me)
   const strikes = makeStrikes(me)
-  // The coast's line, but across the rivers' mouths, open water (« ça fait une coupure bizarre »).
-  const coast = new Container()
-  coast.addChild(borders.coast, ground.riverCut)
-  coast.setMask({ mask: ground.riverCut, inverse: true })
   const world = new Container()
   // Each layer its own render group: what moves each frame (a man shown or
   // hidden, a seal drawn again) rebuilds its own group's batches, never the

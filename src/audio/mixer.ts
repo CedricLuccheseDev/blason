@@ -13,7 +13,12 @@ import {
 import { makeMusic } from './music'
 import { makeRoom } from './room'
 import { sway, takeOf, takesFor } from './takes'
-import { gainOfVolume, listenSound, soundSettings, toggleMuted } from './settings'
+import {
+  gainOfVolume,
+  listenSound,
+  soundSettings,
+  toggleMuted,
+} from './settings'
 import type { Hearing } from './beds'
 import type { Cue, CueSpec } from './cues'
 import type { Bus, Duck } from './mix'

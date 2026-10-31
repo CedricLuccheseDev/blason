@@ -33,6 +33,7 @@ where to strike, build and ally decided it.
 - Links: P1–P4
 
 #### Why?
+
 - Need: a direction every decision can be judged against, for a team.
 - Intended outcome: « un jeu qui prend plusieurs briques des rts complexes,
   mais en simplifié rapide et fun. Et agréable visuellement » (Cédric,
@@ -45,10 +46,12 @@ where to strike, build and ally decided it.
   from bricks meeting, not from any one being deep.
 
 #### How?
+
 - Each rule offers one clear choice (where, when, with whom) and resolves
   itself; the player never manages a unit by hand.
 
 #### What?
+
 - A rule or a screen enters only if it can be told in one sentence and read
   on the map without a tooltip.
 - Acceptance: Given a new player, When he plays his first game, Then he can
@@ -57,6 +60,7 @@ where to strike, build and ally decided it.
   peasants and gold.
 
 #### Validation
+
 - Riskiest hypothesis: simplified bricks still add up to depth.
 - Method: playtests with new and seasoned players; the arena for pace.
 - Confidence: Preliminary (played on dev by the team).
@@ -66,10 +70,12 @@ where to strike, build and ally decided it.
 ## The pillars
 
 ### P1 — The great strategy games' bricks, made simple and fast
+
 Peasants and gold, levies and mercenaries, works laid freely, alliances and
 betrayal, trade and ports, naval crossings: each kept to its one decision.
 
 ### P2 — Read at a glance, at two scales
+
 « map dézoomée = map stratégique : tout doit être compréhensible super
 rapidement … map zoomée = map micro-gestion et spectacle » (29/10). From
 afar only what decides; up close detail and life. Icons over words (« j'aime
@@ -77,15 +83,18 @@ pas les textes tout seul ça fais pas jeu vidéo », 30/10); figures coloured by
 what they say.
 
 ### P3 — A manuscript map that lives
+
 Ink on parchment, each lord's wash, an interface of objects of this world
 (shields, seals, ribbons), never web panels; « Je veux que le jeu soit
 vivant » (30/10): every element has its sound, the land its beds and music.
 
 ### P4 — Play together, now
+
 One click from the home into the public game, no waiting room; private rooms
 by a link; bots to fill a game alone; the same game on every machine.
 
 ## What Blason is not
+
 - Not a copy of OpenFront: it is read for its mechanisms, never copied
   (AGPL-3.0, built from zero).
 - Not a game of units: no selecting soldiers, no formations to command.

@@ -6,7 +6,8 @@ import { standing } from './land'
 import { afloat } from './crossing'
 import { positionOf } from './muster'
 import { isPort } from './ships'
-import type { GameState, Grid, Warship } from './types'
+import { wayFrom } from './seaways'
+import type { GameState, Warship } from './types'
 
 // The warships, as OpenFront's (« fais comme open front tu choisi une
 // position sur l'eau et il part du port le plus proche »): taken from the bar
@@ -17,63 +18,6 @@ import type { GameState, Grid, Warship } from './types'
 // allies': a warship, which sinks at its last hull; the boat of an army
 // crossing, which sinks with its men; a merchant ship, taken, its gold for
 // its lord.
-
-/** Each map's search buffers, made once and marked anew each search, so that a search makes no garbage. */
-const BUFFERS = new WeakMap<
-  Grid,
-  { marks: Int32Array; next: Int32Array; queue: Int32Array; round: number }
->()
-
-function buffersOf(grid: Grid) {
-  let buffers = BUFFERS.get(grid)
-  if (!buffers) {
-    const n = grid.water.length
-    buffers = {
-      marks: new Int32Array(n),
-      next: new Int32Array(n),
-      queue: new Int32Array(n),
-      round: 0,
-    }
-    BUFFERS.set(grid, buffers)
-  }
-  return buffers
-}
-
-/**
- * The way over the water to a tile of it, from the first tile a search out
- * from there finds that `start` accepts: that tile first, the goal last.
- * None if the water joins none, or none within `most` tiles searched.
- */
-function wayFrom(
-  grid: Grid,
-  goal: number,
-  start: (tile: number) => boolean,
-  most = Infinity,
-): Array<number> | null {
-  if (!grid.water[goal]) return null
-  const buffers = buffersOf(grid)
-  const round = (buffers.round += 1)
-  const { marks, next, queue } = buffers
-  marks[goal] = round
-  next[goal] = -1
-  queue[0] = goal
-  let size = 1
-  for (let i = 0; i < size && i < most; i++) {
-    const at = queue[i]
-    if (start(at)) {
-      const way = [at]
-      for (let t = next[at]; t >= 0; t = next[t]) way.push(t)
-      return way
-    }
-    eachAround(grid, at, (n) => {
-      if (!grid.water[n] || marks[n] === round) return
-      marks[n] = round
-      next[n] = at
-      queue[size++] = n
-    })
-  }
-  return null
-}
 
 /** The water tile a warship is on. */
 export const whereIs = (ship: Warship) =>
@@ -117,8 +61,9 @@ export function launchWarship(
   const way = wayFrom(state.grid, tile, besidePort(state, lord))
   if (!way) return
   player.gold -= price
+  state.warshipsBuilt += 1
   state.warships.push({
-    id: (state.warshipsBuilt += 1),
+    id: state.warshipsBuilt,
     owner: lord,
     post: tile,
     way,
@@ -159,8 +104,7 @@ function fire(state: GameState, ship: Warship): void {
   const here = whereIs(ship)
   const near = (tile: number) => within(state, here, tile, reach)
   const enemy = state.warships.find(
-    (s) =>
-      s.hull > 0 && foe(state, ship.owner, s.owner) && near(whereIs(s)),
+    (s) => s.hull > 0 && foe(state, ship.owner, s.owner) && near(whereIs(s)),
   )
   const boat = state.hosts.find(
     (h) =>
@@ -203,8 +147,10 @@ function nextAim(state: GameState, ship: Warship): number {
       within(state, ship.post, t, patrol) && !within(state, here, t, reach),
   )
   if (prey.length > 0)
-    return prey.reduce((a, b) =>
-      apart(state.grid, here, b) < apart(state.grid, here, a) ? b : a,
+    return prey.reduce(
+      (a, b) =>
+        apart(state.grid, here, b) < apart(state.grid, here, a) ? b : a,
+      prey[0],
     )
   const { width } = state.grid
   const [x, y] = [ship.post % width, Math.floor(ship.post / width)]
@@ -235,7 +181,12 @@ export function sailWarships(state: GameState): void {
     if (aim < 0 || !state.grid.water[aim]) continue
     const here = whereIs(ship)
     // Never further than its patrol's square, searched: a spot behind a cape is let be.
-    const way = wayFrom(state.grid, aim, (t) => t === here, 16 * patrol * patrol)
+    const way = wayFrom(
+      state.grid,
+      aim,
+      (t) => t === here,
+      16 * patrol * patrol,
+    )
     if (way && way.length > 1) Object.assign(ship, { way, along: 0 })
   }
 }

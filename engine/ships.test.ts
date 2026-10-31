@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from './land'
-import { RULES } from './rules'
+import { RULES, WORKS } from './rules'
 import { isPort, moveShips, sendShips } from './ships'
 import { canBuild, roomFor } from './works'
-import { WORKS } from './rules'
 import { hold, setupOf } from './testing'
 import type { Grid } from './types'
 

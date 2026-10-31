@@ -49,8 +49,9 @@ function game() {
 
 /** A warship of a lord's lying at a tile, its way ended there. */
 function afloat(state: GameState, owner: number, tile: number): Warship {
+  state.warshipsBuilt += 1
   const ship: Warship = {
-    id: (state.warshipsBuilt += 1),
+    id: state.warshipsBuilt,
     owner,
     post: tile,
     way: [tile],

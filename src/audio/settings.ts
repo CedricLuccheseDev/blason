@@ -6,7 +6,7 @@
 // sheet. It knows nothing of the game.
 
 export type Volume = 'all' | 'music' | 'beds' | 'effects'
-export type Volumes = Readonly<Record<Volume, number>>
+type Volumes = Readonly<Record<Volume, number>>
 export type SoundSettings = Readonly<{ volumes: Volumes; muted: boolean }>
 
 /** Where they are kept; the mute where it was before the volumes came. */

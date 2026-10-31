@@ -31,4 +31,3 @@ export const takesFor = (scope: Scope) =>
         typeof file === 'string' ? [file] : file,
       ),
     )
-

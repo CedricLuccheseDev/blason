@@ -42,8 +42,8 @@ function seasOf(grid: Grid) {
     if (!wet || sea[start] >= 0) return
     const queue = [start]
     sea[start] = count
-    for (let k = 0; k < queue.length; k++)
-      eachAround(grid, queue[k], (n) => {
+    for (const at of queue)
+      eachAround(grid, at, (n) => {
         if (!grid.water[n] || sea[n] >= 0) return
         sea[n] = count
         queue.push(n)

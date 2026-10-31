@@ -9,7 +9,6 @@ import {
   sizeOf,
 } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
-import type { Land } from '../engine'
 import { isMove, tell } from './checks'
 import { unwatch, watch } from './watch'
 import {
@@ -21,6 +20,7 @@ import {
   seated,
   started,
 } from './room'
+import type { Land } from '../engine'
 import type { Player, Room } from './room'
 import type { Lobby, ToRelay, Upcoming } from '../net/protocol'
 

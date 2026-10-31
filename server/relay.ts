@@ -25,7 +25,8 @@ const http = createServer((req, res) => {
   // The watcher's census (/admin on the site), behind its key: none set,
   // none told.
   if (path === '/admin' && req.method === 'GET') {
-    const key = new URL(req.url ?? '/', 'http://relay').searchParams.get('key')
+    // The request's own path and query, read against any base: none is fetched.
+    const key = new URL(req.url ?? '/', 'https://relay').searchParams.get('key')
     const admin = process.env.ADMIN_KEY
     if (!admin || key !== admin) {
       res.writeHead(404, { 'access-control-allow-origin': '*' }).end()

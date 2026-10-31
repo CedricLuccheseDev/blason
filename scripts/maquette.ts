@@ -185,7 +185,13 @@ const write = (text: string) => process.stdout.write(`${text}\n`)
 /** A save read back must be the game it was made from, and show the same HUD. */
 function check(name: string, state: GameState, grid: Grid, save: Save) {
   const back = restoreGame(grid, JSON.parse(JSON.stringify(save)) as Save)
-  const hand = { army: 'host', work: null, coup: null, fleet: false, ship: null } as const
+  const hand = {
+    army: 'host',
+    work: null,
+    coup: null,
+    fleet: false,
+    ship: null,
+  } as const
   const same =
     stateHash(back) === stateHash(state) &&
     JSON.stringify(summarize(back, save.me, hand)) ===

@@ -11,15 +11,15 @@ import {
   fedByLand,
   freeWorks,
   hasPicked,
+  isPort,
   menFor,
   nextDrop,
   offeringOf,
   priceOf,
-  isPort,
-  warshipPrice,
   sicknessOf,
   standing,
   victoryShare,
+  warshipPrice,
   wonBy,
 } from '../../engine'
 import { PLAYERS } from './palette'

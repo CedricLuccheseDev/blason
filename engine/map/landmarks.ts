@@ -136,18 +136,30 @@ export function reviveCrumbs(
   const seen = new Uint8Array(dead.length)
   dead.forEach((d, start) => {
     if (!d || seen[start] || sea[start]) return
-    const piece = [start]
-    let touches = false
-    seen[start] = 1
-    for (let k = 0; k < piece.length && piece.length < CRUMB; k++)
-      for (const n of cells.neighbors[piece[k]]) {
-        if (sea[n]) continue
-        if (!dead[n]) touches = true
-        else if (!seen[n]) {
-          seen[n] = 1
-          piece.push(n)
-        }
-      }
+    const { piece, touches } = crumbOf(cells, dead, sea, seen, start)
     if (touches && piece.length < CRUMB) for (const c of piece) dead[c] = false
   })
+}
+
+/** The piece of dead cells from one, searched no further than a crumb, and whether it touches land in play. */
+function crumbOf(
+  cells: Cells,
+  dead: Array<boolean>,
+  sea: Array<boolean>,
+  seen: Uint8Array,
+  start: number,
+) {
+  const piece = [start]
+  let touches = false
+  seen[start] = 1
+  for (let k = 0; k < piece.length && piece.length < CRUMB; k++)
+    for (const n of cells.neighbors[piece[k]]) {
+      if (sea[n]) continue
+      if (!dead[n]) touches = true
+      else if (!seen[n]) {
+        seen[n] = 1
+        piece.push(n)
+      }
+    }
+  return { piece, touches }
 }

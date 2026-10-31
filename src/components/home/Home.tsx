@@ -75,10 +75,7 @@ export function Home({ entries }: Readonly<{ entries: Array<Entry> }>) {
 
   return (
     <main className="hud relative flex min-h-dvh w-full flex-col bg-vellum select-none">
-      <HomeLand
-        seed={upcoming?.seed ?? null}
-        land={publicLand(upcoming)}
-      />
+      <HomeLand seed={upcoming?.seed ?? null} land={publicLand(upcoming)} />
       <Frame />
       <Rose className="absolute top-8 right-8 size-28 opacity-25 max-sm:top-6 max-sm:right-6 max-sm:size-14" />
       {/* norm-ok: the home's page, its column and the journal's beside it, its room round them as drawn (the HUD's bricks lay what is inside). */}

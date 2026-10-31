@@ -1,10 +1,9 @@
-import { afloat, positionOf, shootsAt, underFire } from '../../engine'
+import { afloat, positionOf, shootsAt, underFire, whereIs } from '../../engine'
 import { chance } from '../audio/chance'
 import { smoothstep } from './ease'
 import { siteOf } from './marks'
 import type { Cue } from '../audio/cues'
 import type { Box } from './camera'
-import { whereIs } from '../../engine'
 import type { Coup, GameState, Host, Ship, Strike } from '../../engine'
 
 // The world heard up close (Concept, « La carte qu'on entend »), read each
