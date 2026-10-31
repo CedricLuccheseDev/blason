@@ -15,8 +15,8 @@ import type { GameState, Point } from '../../engine'
 // borders' ink (layers/borders.ts), the green of the allies and the red of
 // the wars, and its keys to the ground's decoration (ground/decor.ts).
 
-const WASH = 0.5
-const MY_WASH = 0.74
+const WASH = 0.64
+const MY_WASH = 0.84
 const FREE = 0xdccb9e
 const FREE_WASH = 0.42
 /** How much stone tints the land a castle holds. */

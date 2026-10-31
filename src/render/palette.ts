@@ -37,8 +37,8 @@ export const TONE = {
   ink: 0x2b1e12,
   page: 0xefe3c4,
   // A little bluer, for the land to stand out (« L'eau fais la + bleu un peu pour le contraste »).
-  seaWash: 0xbccfd9,
-  seaLine: 0x7c98ab,
+  seaWash: 0xa6bfd0,
+  seaLine: 0x5f7f96,
   gold: 0xd9a41e,
   goldLight: 0xf4d277,
   goldDeep: 0x946512,
@@ -66,7 +66,9 @@ export const TONE = {
   gainLight: 0x7fd38b,
   lossLight: 0xff7b66,
   white: 0xffffff,
-  stone: 0xd9d1be,
+  stone: 0xc9bea4,
+  snow: 0xfbf8ef,
+  stoneShade: 0x8f8268,
   stoneDark: 0xb7ad97,
   /** A castle's rampart round the land it holds. */
   lead: 0x8d8574,
