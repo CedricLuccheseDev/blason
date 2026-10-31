@@ -83,6 +83,7 @@ describe('a saved game', () => {
     expect(Object.keys(save.state)).not.toContain('realm')
     expect(text).toContain('"owner":{"$runs"')
     expect(text).toContain('"road":{"$path"')
-    expect(text.length).toBeLessThan(80_000)
+    // Some 81 000 since the roads keep off the water, a little longer (31/10).
+    expect(text.length).toBeLessThan(85_000)
   })
 })

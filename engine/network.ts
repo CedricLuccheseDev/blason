@@ -1,4 +1,5 @@
 import { apart, around } from './grid'
+import { pop, push } from './heap'
 import { standing } from './land'
 import type { GameState } from './types'
 
@@ -32,17 +33,45 @@ function reach(state: GameState, from: number): Map<number, number> {
   return before
 }
 
+/** What a step of a road costs: a step, more for a turn, more by the water. */
+const [STEP, TURN, SHORE] = [10, 6, 12]
+
+/** Whether a tile lies by the water, the sea's, a lake's or a river's. */
+const byWater = (state: GameState, t: number) =>
+  around(state.grid, t).some((n) => state.grid.water[n])
+
+/**
+ * The roads from a market over its range, as OpenFront's railways: in long
+ * straight runs across and down, few turns, a step off the water where the
+ * land allows (« des chemins verticaux horizontaux comme openfront », « les
+ * chemins des marchands collent trop proche » of the rivers), the cheapest
+ * way to each tile, so that a road drawn on its own tiles reads as one, and
+ * a village by it is a relay where it seems to be.
+ */
 function walk(state: GameState, from: number): Map<number, number> {
   const r = state.rules.tradeRange
   const before = new Map<number, number>([[from, -1]])
-  const queue = [from]
-  for (const t of queue)
-    for (const n of around(state.grid, t)) {
-      if (before.has(n) || !state.grid.land[n]) continue
-      if (apart(state.grid, from, n) > r * r) continue
-      before.set(n, t)
-      queue.push(n)
-    }
+  const cost = new Map<number, number>([[from, 0]])
+  const done = new Set<number>()
+  const queue: Array<[number, number]> = [[0, from]]
+  /** A step from a tile to the next, kept if it is the cheapest way there yet. */
+  const step = (t: number, n: number, paid: number) => {
+    if (done.has(n) || !state.grid.land[n]) return
+    if (apart(state.grid, from, n) > r * r) return
+    const back = before.get(t) ?? -1
+    const turn = back >= 0 && n - t !== t - back ? TURN : 0
+    const c = paid + STEP + turn + (byWater(state, n) ? SHORE : 0)
+    if (c >= (cost.get(n) ?? Infinity)) return
+    cost.set(n, c)
+    before.set(n, t)
+    push(queue, [c, n])
+  }
+  for (let next = pop(queue); next; next = pop(queue)) {
+    const [paid, t] = next
+    if (done.has(t)) continue
+    done.add(t)
+    for (const n of around(state.grid, t)) step(t, n, paid)
+  }
   return before
 }
 

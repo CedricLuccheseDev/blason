@@ -20,11 +20,11 @@ import type { Caravan, GameState, Link } from '../../engine'
 const TALL = 5
 const DRAWN = 16
 
-/** How many times a road's corners are smoothed, and how far it wanders aside, in map units. */
+/** How many times a road's corners are smoothed, and how far it wanders aside, in map units: within its own tile, so that it keeps to it. */
 const ROUNDS = 3
+const STRAY = 1.6
 /** A road's width on the strategist's map, in pixels on screen. */
 const BOLD = 2.6
-const STRAY = 5
 
 /** A road's key: its two markets, whichever way it is walked. */
 const keyOf = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`)

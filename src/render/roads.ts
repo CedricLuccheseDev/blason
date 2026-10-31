@@ -2,9 +2,10 @@ import { siteOf } from './marks'
 import type { GameState } from '../../engine'
 
 // The roads as they are drawn. The simulation walks a road from tile to
-// tile, in steps across and down; a man or a wagon walks it in straight
-// lines, from each turn on to the farthest point of the road he can see
-// without leaving the ground the road may cross; a built road wanders a
+// tile, in steps across and down; a man walks it in straight lines, from
+// each turn on to the farthest point of the road he can see without leaving
+// the ground the road may cross; a built road, the merchants', keeps to its
+// own tiles in runs across and down, as OpenFront's railways, wanders a
 // little aside, as roads of old, and its corners are smoothed; at an even
 // pace: as many points as the road has tiles,
 // evenly spaced, so that what the simulation counts in tiles moves smoothly.
@@ -42,6 +43,15 @@ function straighten(state: GameState, road: Array<number>, open: Open) {
     turns.push(road[to])
     from = to
   }
+  return turns.map((t) => siteOf(state, t))
+}
+
+/** A built road on its own tiles, as OpenFront's railways: its runs across and down, a point at each turn (« des chemins verticaux horizontaux comme openfront »). */
+function runs(state: GameState, road: Array<number>) {
+  const turns = [road[0]]
+  for (let i = 1; i < road.length - 1; i++)
+    if (road[i] - road[i - 1] !== road[i + 1] - road[i]) turns.push(road[i])
+  turns.push(road[road.length - 1])
   return turns.map((t) => siteOf(state, t))
 }
 
@@ -187,7 +197,9 @@ export function drawRoad(
   stray = 0,
 ): Array<Spot> {
   if (road.length < 2) return road.map((t) => siteOf(state, t))
-  const line = straighten(state, road, open)
+  // A built road on its tiles, so that a village by it is a relay where it
+  // seems to be; a march, a man's way, pulled straight.
+  const line = stray > 0 ? runs(state, road) : straighten(state, road, open)
   const bent =
     stray > 0 ? ashore(state, wander(state, line, open, stray), open) : line
   return resample(round(bent, rounds), road.length)
