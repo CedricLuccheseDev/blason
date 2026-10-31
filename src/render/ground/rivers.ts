@@ -36,24 +36,30 @@ const STRETCHES = 3
 /** How far past its mouth a river runs on under the land's clip, in map units: enough to meet a slanting coast. */
 const PAST = 3 * RULES.tileSize
 
-/** Whether a river ends in another, as a tributary: its last point on, or by, another's course. */
-function joins(river: Array<Point>, rivers: Array<Array<Point>>): boolean {
-  const [x, y] = river[river.length - 1]
-  const near = (RULES.tileSize * 1.5) ** 2
-  return rivers.some(
-    (other) =>
-      other !== river &&
-      other.some(([ox, oy]) => (ox - x) ** 2 + (oy - y) ** 2 <= near),
-  )
+/** The coast's points by squares of a tile and a half: where to look for the coast near a point. */
+function coastNear(coast: Array<Array<Point>>) {
+  const side = RULES.tileSize * 1.5
+  const keyOf = (x: number, y: number) =>
+    `${Math.floor(x / side)},${Math.floor(y / side)}`
+  const squares = new Set<string>()
+  for (const run of coast) for (const [x, y] of run) squares.add(keyOf(x, y))
+  /** Whether the coast passes in the square of a point or one beside it. */
+  return ([x, y]: Point) => {
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++)
+        if (squares.has(keyOf(x + dx * side, y + dy * side))) return true
+    return false
+  }
 }
 
 /** A river run on a little past its last point, the way it was going; not a tributary, which would come out across the river it joins. */
 function onward(
   river: Array<Point>,
-  rivers: Array<Array<Point>>,
+  byCoast: (p: Point) => boolean,
 ): Array<Point> {
   const n = river.length
-  if (n < 2 || joins(river, rivers)) return river
+  // A river ending by the sea's or a lake's coast runs into it; else into another river.
+  if (n < 2 || !byCoast(river[n - 1])) return river
   const [[ax, ay], [bx, by]] = [river[n - 2], river[n - 1]]
   const on = PAST / (Math.hypot(bx - ax, by - ay) || 1)
   return [...river, [bx + (bx - ax) * on, by + (by - ay) * on]]
@@ -86,6 +92,8 @@ export function makeRivers(
   rivers: Array<Array<Point>>,
   /** The land's shape: the rivers are not drawn past the coast. */
   land: GraphicsContext,
+  /** The coast's runs, the sea's and the lakes': a river ending by them runs into them. */
+  coast: Array<Array<Point>>,
 ) {
   const container = new Container()
   // Each river run on past its mouth and cut by the land's shape: at the
@@ -93,7 +101,8 @@ export function makeRivers(
   // banks under all the water, so that a river joining another opens into it.
   const shore = container.addChild(new Container())
   shore.mask = shore.addChild(new Graphics(land))
-  const courses = rivers.map((river) => onward(river, rivers))
+  const byCoast = coastNear(coast)
+  const courses = rivers.map((river) => onward(river, byCoast))
   const banks = shore.addChild(new Graphics())
   // As the coast's ribbon.
   banks.alpha = 0.85

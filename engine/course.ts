@@ -3,9 +3,10 @@ import { isqrt } from './numbers'
 import { apart, eachAround } from './grid'
 import { isAllied } from './diplomacy'
 import { NEUTRAL } from './types'
-import { freeWorks, marchOut, menFor, paceOf, walkers } from './muster'
+import { freeWorks, marchOut, menFor, paceOf } from './muster'
 import { landingOf, sailTo } from './crossing'
 import { standing } from './land'
+import { borderOf, nearestOf, reachable, roundabout } from './frontline'
 import type { Army, Work } from './rules'
 import type { GameState } from './types'
 
@@ -57,89 +58,6 @@ export type Course = {
   from: number
   road: Array<number>
   through: boolean
-}
-
-/**
- * The tiles from which the tile aimed at is reached over the land of these
- * owners, no high mountain nor sea crossed (« bug on peut pas traverser les
- * montagnes »: the army entered where a range stood between it and the
- * click, and the aim drew its line across).
- */
-function reachable(
-  state: GameState,
-  tile: number,
-  owners: ReadonlySet<number>,
-): (t: number) => boolean {
-  const { seen, queue } = buffersOf(state)
-  const round = (seen.round += 1)
-  const { marks } = seen
-  let size = 0
-  marks[tile] = round
-  queue[size++] = tile
-  const visit = (n: number) => {
-    if (marks[n] === round || !owners.has(state.owner[n])) return
-    marks[n] = round
-    queue[size++] = n
-  }
-  for (let i = 0; i < size; i++) eachAround(state.grid, queue[i], visit)
-  return (t) => marks[t] === round
-}
-
-/**
- * Each map's search buffers, made once and marked anew each search, never
- * cleared: a search over a great map's free land, under the pointer each
- * tick, made two arrays as large as the map every time, and their garbage
- * brought the page down (« sur europe au bout de 10s », « ça plante »).
- * A search's answer holds only until the next one.
- */
-const BUFFERS = new WeakMap<
-  GameState['grid'],
-  { seen: { marks: Int32Array; round: number }; queue: Int32Array }
->()
-
-function buffersOf(state: GameState) {
-  let buffers = BUFFERS.get(state.grid)
-  if (!buffers) {
-    const n = state.owner.length
-    buffers = {
-      seen: { marks: new Int32Array(n), round: 0 },
-      queue: new Int32Array(n),
-    }
-    BUFFERS.set(state.grid, buffers)
-  }
-  return buffers
-}
-
-/**
- * The border an army may enter by: the target's tiles beside land the lord's
- * armies walk, from which the tile aimed at is reached (`reach`), each with
- * how far it is from it (the square of the distance).
- */
-function borderOf(
-  state: GameState,
-  player: number,
-  target: number,
-  tile: number,
-  reach: (t: number) => boolean,
-) {
-  const walks = walkers(state, player)
-  const { owner } = state
-  const gaps = new Map<number, number>()
-  const mark = (t: number) => {
-    if (owner[t] === target && reach(t) && !gaps.has(t))
-      gaps.set(t, apart(state.grid, t, tile))
-  }
-  for (let t = 0; t < owner.length; t++)
-    if (owner[t] >= 0 && walks[owner[t]]) eachAround(state.grid, t, mark)
-  return gaps
-}
-
-/** The tile of a border nearest the tile aimed at, the first on a tie; -1 for none. */
-function nearestOf(gaps: Map<number, number>) {
-  let [nearest, near] = [-1, Infinity]
-  for (const [t, gap] of gaps)
-    if (gap < near || (gap === near && t < nearest)) [nearest, near] = [t, gap]
-  return nearest
 }
 
 /**
@@ -226,9 +144,12 @@ export function courseFor(
   // A long way round by the land, the sea perhaps sooner (« il faut y aller
   // a la mer dans ce cas la »): sought only when the land's road goes far
   // round, as a search over the water costs.
+  // Round a river or a range, its band would stop at the water: the boat,
+  // if there is one (« normalement il faut pouvoir traverser les fleuves »).
+  const round = roundabout(state, best.entry, tile)
   if (
-    road.length * road.length * 4 <=
-    apart(state.grid, road[0], tile) * 9 + 64
+    !round &&
+    road.length * road.length * 4 <= apart(state.grid, road[0], tile) * 9 + 64
   )
     return byLand
   const sea = overWater(state, player, tile, sites, free.length > 0)
@@ -236,7 +157,7 @@ export function courseFor(
   const sail =
     marchTime(state, army, sea.road.length) +
     crossTime(state, army, wide, apart(state.grid, sea.entry, tile))
-  return sail < best.time ? sea : byLand
+  return round || sail < best.time ? sea : byLand
 }
 
 /**

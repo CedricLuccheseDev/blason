@@ -28,7 +28,7 @@ export function makeGround(
   /** The blooms and the tones, which the scene clips to the coast with the washes. */
   const tinted = new Container()
   tinted.addChild(makeBlooms(world), makeTones(grid, terrain))
-  const rivers = makeRivers(world.rivers, shape)
+  const rivers = makeRivers(world.rivers, shape, world.coast)
   const decor = makeDecor({ grid, terrain })
   container.addChild(decor.container)
   let laid: { links: Array<Link> | null; works: string } = {

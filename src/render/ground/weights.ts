@@ -76,7 +76,11 @@ export function weigh(
   for (let t = 0; t < deco.length; t++) {
     if (!grid.land[t] || roads[t]) continue
     const edge = sat((border[t] - 0.5) / 1.5)
-    const coast = sat((terrain.shore[t] + 0.8) / 1.2)
+    // A bank clear of trees along every water, the rivers' and the sea's: a
+    // tree's crown spills over its tile, and those by the water passed under
+    // the river's drawing, cut short (« les arbres passent en dessous le
+    // fleuve, ça fait cheap »).
+    const coast = sat(terrain.shore[t] - 1)
     deco[t] = edge * open[t] * coast
   }
   return { deco, border }
