@@ -5,7 +5,6 @@ import {
   canBuild,
   canStart,
   isFriendly,
-  isPort,
 } from '../../../engine'
 import { canSend, courseNow, wayTo } from '../course'
 import { drawRoad } from '../roads'
@@ -131,7 +130,7 @@ export function makeAim(state: GameState, me: number) {
         .circle(p.x, p.y, reach(state) * state.grid.size)
         .fill({ color: tone, alpha: 0.1 })
         .stroke({ width: 1.6 / zoom, color: tone })
-    drawWork(ghost, isPort(state, { work, tile }) ? 'port' : work)
+    drawWork(ghost, work)
     ghost.tint = ok ? 0xffffff : TONE.fight
     ghost.position.set(p.x, p.y)
     ghost.visible = true

@@ -1,5 +1,4 @@
 import { drawInt } from '../numbers'
-import { navy } from './fleet'
 import { apart, around } from '../grid'
 import { capOf, worksOf } from '../land'
 import { canStart, hasPicked, spotFor } from '../opening'
@@ -7,6 +6,8 @@ import { NEUTRAL } from '../types'
 import { hired } from '../armies'
 import { menFor } from '../muster'
 import { canBuild, priceOf } from '../works'
+import { byWater } from '../ships'
+import { navy } from './fleet'
 import { TALK_EVERY, talk } from './talk'
 import { attack, canHire, war } from './war'
 import { SKILLS } from './levels'
@@ -86,9 +87,14 @@ function placeFor(
 ): number {
   let best = -1
   let score = -Infinity
+  // A port only by the water: drawn among its shore, not the whole map.
+  const shore = work === 'port' ? shoreOf(state, me) : null
   for (let k = 0; k < 60; k++) {
-    const t = drawInt(state.seed, state.owner.length, 'site', me, state.tick, k)
-    if (!canBuild(state, me, t, work)) continue
+    const t = shore
+      ? (shore[drawInt(state.seed, shore.length, 'shore', me, state.tick, k)] ??
+        -1)
+      : drawInt(state.seed, state.owner.length, 'site', me, state.tick, k)
+    if (t < 0 || !canBuild(state, me, t, work)) continue
     const near = borders.reduce(
       (m, b) => Math.min(m, apart(state.grid, b, t)),
       1e12,
@@ -100,6 +106,15 @@ function placeFor(
     }
   }
   return best
+}
+
+/** The lord's tiles by the water, where a port may stand. */
+function shoreOf(state: GameState, me: number): Array<number> {
+  const shore: Array<number> = []
+  state.owner.forEach((o, t) => {
+    if (o === me && byWater(state.grid, t)) shore.push(t)
+  })
+  return shore
 }
 
 /** A bot builds as a player would, at the measure of its land: beyond its first two works, one for so many tiles it holds, those it took with the land counted. */
@@ -128,6 +143,9 @@ function construct(
     if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
     const roll = drawInt(state.seed, 100, 'work', me, state.tick)
     if (roll >= 45) work = 'market'
+    // A port, one at first, more as the land grows, if it has a shore.
+    const ports = 1 + Math.floor(state.players[me].tiles / (4 * ROOM))
+    if (roll >= 85 && worksOf(state, me, 'port') < ports) work = 'port'
     if (enemies.length && roll < 25) work = 'castle'
   }
   if (state.players[me].gold < (priceOf(state, me, work) + 40) * 1000) return []

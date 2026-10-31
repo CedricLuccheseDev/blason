@@ -70,7 +70,7 @@ export function makeHand() {
         return true
       }
       const army = ARMY_KEYS[key]
-      const work = WORK_KEYS[key]
+      const work = WORK_KEYS[key.toLowerCase()]
       const coup = COUP_KEYS[key]
       const fleet = key.toLowerCase() === FLEET_KEY
       if (army) this.choose(army)

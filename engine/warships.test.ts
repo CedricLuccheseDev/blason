@@ -34,8 +34,8 @@ function game() {
   const west = Array.from({ length: 240 }, (_, t) => t).filter((t) => t % 20 < 4)
   hold(state, 0, west)
   hold(state, 1, west.map((t) => t + 16))
-  state.works.push({ work: 'market', tile: at(3, 5), owner: 0 })
-  state.works.push({ work: 'market', tile: at(16, 5), owner: 1 })
+  state.works.push({ work: 'port', tile: at(3, 5), owner: 0 })
+  state.works.push({ work: 'port', tile: at(16, 5), owner: 1 })
   for (const lord of state.players) lord.gold = 1000 * UNIT
   return state
 }

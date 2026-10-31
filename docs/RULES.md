@@ -221,12 +221,16 @@ leaves it gives his seat back to its bot.
 
 ## Works
 
-Three works, placed anywhere on one's own land (keys 5 to 7), at least 4
-tiles from any other work so that none lies on another; castles stand at
-least 10 tiles from one another (`engine/works.ts`):
+Four works, placed anywhere on one's own land (keys 5 to 7, and P the
+port), at least 4 tiles from any other work so that none lies on another;
+castles stand at least 10 tiles from one another; a port only on a tile by
+the water (`engine/works.ts`). With one in hand, the tiles it may stand on
+are lit and the rest darkened (`roomFor`):
 
 - the **village** feeds 60 more peasants and levies the armies, one at a time;
 - the **market** sends the caravans that bring the gold;
+- the **port** sends the merchant ships, to other lords' ports only, and fits
+  out the warships;
 - the **castle**: the land within 12 tiles of it fights as the combat table
   says, one for one; it sends no army, but its archers shoot into that land:
   every 3 seconds, from the moment it stands, it looses a volley at each
@@ -236,13 +240,13 @@ least 10 tiles from one another (`engine/works.ts`):
 
 The first village and market cost nothing, so that a lord can always start
 again from nothing; then each costs double the one before (100 gold for the
-second). A castle costs 200 gold, then double. Three doublings at most. A
+second). A castle costs 200 gold, a port 150, then double. Three doublings at most. A
 work is taken with its tile, and stands idle 8 seconds before it serves its
 new lord, as a work being built does (`seizedTicks`): no levy, no trade, no
 volley, so that a fight does not turn at once on what it took.
 
 A work takes time to build, and serves only once done: 10 seconds for a
-village or a market, 20 for a castle.
+village, a market or a port, 20 for a castle.
 
 ## Alliances and traitors
 
@@ -291,8 +295,9 @@ made to you, the seal of an alliance to renew:
 - It makes one journey at 4 tiles a second. Arriving, it pays both markets
   0.15 gold for each tile of its road, twice as much between allies; between
   two markets of one lord, half as much, paid once.
-- **Ports and merchant ships** (`engine/ships.ts`, as OpenFront's): a market
-  laid on the coast is a port, no button more. Every 15 seconds a port may
+- **Ports and merchant ships** (`engine/ships.ts`, as OpenFront's): the port
+  is a work of its own, by the water, never a market: markets trade by
+  caravan with markets, ports by ship with ports. Every 15 seconds a port may
   send a ship to a port of another lord the same water reaches, never one at
   war with its own, the far ones and the allies' more often (fewer the more
   ships its lord has at sea: with 4 out, one time in two). It sails the

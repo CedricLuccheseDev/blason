@@ -31,7 +31,7 @@ export function navy(state: GameState, me: number): Array<Order> {
   if (afloat >= Math.min(MOST, 1 + Math.floor(lord.tiles / ROOM))) return []
   if (drawInt(state.seed, 100, 'navy', me, state.tick) >= NERVE) return []
   if (lord.gold < (warshipPrice(state, me) + 150) * 1000) return []
-  const ports = state.works.filter((w) => isPort(state, w))
+  const ports = state.works.filter((w) => isPort(w))
   const own = ports.filter((w) => w.owner === me)
   if (own.length === 0) return []
   const theirs = ports.filter(

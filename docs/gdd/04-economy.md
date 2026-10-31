@@ -78,17 +78,20 @@ Peasants make armies; gold makes works and mercenaries. Figures:
 #### Validation
 - Confidence: Untested in play.
 
-## D-ECO-5: Ports, markets on the coast
+## D-ECO-5: Ports, a work of their own
 
-- Status: Accepted
+- Status: Accepted (replaces « a market on the coast is a port »)
 - Owner: Cédric
-- Updated: 2026-10-30
+- Updated: 2026-10-31
 #### Why?
-- Outcome: « si tu pose le marché sur terre c'est un marché ou sur la cote ça
-  devient un port », « ça évite de faire 2 boutons ».
+- Outcome: « Dans la boîte a construction rajoute port, sors le de marché. Et
+  ne relié pas les ports avec les marchés fait exactement comme openfront,
+  illumine les endroits où tu peux poser, ou assombrie le reste ».
 #### What?
-- A market laid on a tile by the water is a port: drawn as a quay with a cog,
-  trading by land as any market and by sea (D-ECO-6).
+- The port, built only by the water (key P, 150 gold, doubling): drawn as a
+  quay with a cog; it trades by sea with other lords' ports (D-ECO-6) and
+  fits out the warships; markets trade by caravan with markets alone.
+- With a work in hand, the tiles it may stand on lit, the rest darkened.
 
 ## D-ECO-6: Merchant ships
 

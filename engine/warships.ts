@@ -93,7 +93,7 @@ export function warshipPrice(state: GameState, lord: number): number {
 function besidePort(state: GameState, lord: number): (tile: number) => boolean {
   const ports = new Set(
     state.works
-      .filter((w) => w.owner === lord && standing(state, w) && isPort(state, w))
+      .filter((w) => w.owner === lord && standing(state, w) && isPort(w))
       .map((w) => w.tile),
   )
   return (tile) => {

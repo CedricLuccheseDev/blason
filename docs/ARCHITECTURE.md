@@ -109,7 +109,7 @@ can tune them without touching the code. The rules themselves are described in
 | `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time                          |
 | `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                                       |
 | `caravans.ts`            | The merchants' roads and what they pay                                                                         |
-| `ships.ts`               | Ports and the merchant ships between them                                                                      |
+| `ships.ts`               | Ports (a work by the water) and the merchant ships between them                                                |
 | `warships.ts`            | Warships: fitted out at the nearest port, patrolling, taking ships, sinking boats, fighting                    |
 | `step.ts`                | The tick, validation of orders, victory                                                                        |
 | `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `fleet.ts` for warships, `levels.ts` |

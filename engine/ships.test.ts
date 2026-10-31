@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { createGame } from './land'
 import { RULES } from './rules'
 import { isPort, moveShips, sendShips } from './ships'
+import { canBuild, roomFor } from './works'
+import { WORKS } from './rules'
 import { hold, setupOf } from './testing'
 import type { Grid } from './types'
 
@@ -35,16 +37,34 @@ function game() {
 }
 
 describe('the merchant ships', () => {
-  it('make a market on the coast a port, one inland a market', () => {
+  it('stand only by the water, a work of their own, never a market', () => {
     const state = game()
-    expect(isPort(state, { work: 'market', tile: 19 })).toBe(true)
-    expect(isPort(state, { work: 'market', tile: 17 })).toBe(false)
+    expect(isPort({ work: 'port' })).toBe(true)
+    expect(isPort({ work: 'market' })).toBe(false)
+    expect(canBuild(state, 0, 19, 'port')).toBe(true)
+    expect(canBuild(state, 0, 17, 'port')).toBe(false)
+  })
+
+  it('light, for each work, the very tiles it may be built on', () => {
+    const state = game()
+    state.works.push({ work: 'castle', tile: 18, owner: 0 })
+    state.works.push({ work: 'port', tile: 25, owner: 1 })
+    for (const work of WORKS) {
+      const room = roomFor(state, 0, work)
+      state.owner.forEach((_, t) =>
+        expect([work, t, room[t] === 1]).toEqual([
+          work,
+          t,
+          canBuild(state, 0, t, work),
+        ]),
+      )
+    }
   })
 
   it('sail from port to port over the water and pay both', () => {
     const state = game()
-    state.works.push({ work: 'market', tile: 19, owner: 0 })
-    state.works.push({ work: 'market', tile: 24, owner: 1 })
+    state.works.push({ work: 'port', tile: 19, owner: 0 })
+    state.works.push({ work: 'port', tile: 24, owner: 1 })
     for (let t = 0; t < state.rules.shipTicks && !state.ships.length; t++) {
       sendShips(state)
       state.tick++

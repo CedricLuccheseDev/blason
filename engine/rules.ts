@@ -8,8 +8,8 @@ import { TICKS_PER_SECOND } from './units'
 /** The armies a lord may send: three levied at a village, a share of his peasants; the mercenaries hired at a market for gold. */
 export type Army = 'raid' | 'host' | 'ban' | 'mercenaries'
 
-/** What a lord may build anywhere on his land, one thing a place. */
-export type Work = 'village' | 'market' | 'castle'
+/** What a lord may build on his land, one thing a place: anywhere, but a port only by the water. */
+export type Work = 'village' | 'market' | 'castle' | 'port'
 
 /** The coups that may turn a game, each its own deed: take land, kill troops, ruin an economy. */
 export type Coup = 'archers' | 'troublemaker' | 'trebuchet'
@@ -35,7 +35,12 @@ export const ARMIES: ReadonlyArray<Army> = [
   'ban',
   'mercenaries',
 ]
-export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
+export const WORKS: ReadonlyArray<Work> = [
+  'village',
+  'market',
+  'castle',
+  'port',
+]
 export const COUPS: ReadonlyArray<Coup> = [
   'archers',
   'troublemaker',
@@ -243,11 +248,12 @@ export const RULES: Rules = {
   castleRadius: 12,
   volleyTicks: 3 * SECOND,
   volleyToll: 5,
-  workPrice: { village: 100, market: 100, castle: 200 },
+  workPrice: { village: 100, market: 100, castle: 200, port: 150 },
   buildTicks: {
     village: 10 * SECOND,
     market: 10 * SECOND,
     castle: 20 * SECOND,
+    port: 10 * SECOND,
   },
   seizedTicks: 8 * SECOND,
   firstFree: ['village', 'market'],

@@ -5,8 +5,9 @@ import { standing } from './land'
 import type { GameState, Grid, Ship } from './types'
 
 // The merchant ships, as OpenFront's (« il faut faire les bateaux marchands
-// comme sur openfront »): a market laid on the coast is a port (« si tu pose
-// le marché sur terre c'est un marché ou sur la cote ça devient un port »),
+// comme sur openfront »): the port, a work of its own built by the water
+// (« Dans la boîte a construction rajoute port, sors le de marché. Et ne
+// relié pas les ports avec les marchés fait exactement comme openfront »),
 // and now and then a port sends a ship to a port of another lord the same
 // water reaches, never one at war with its own, the far ones and the
 // allies' more often, less often the more ships its lord has at sea. It
@@ -14,8 +15,8 @@ import type { GameState, Grid, Ship } from './types'
 // more the longer its way, twice as much between allies. Nothing takes it
 // yet: the warships will.
 
-/** Whether a tile lies by the water, the sea's or a lake's. */
-function byWater(grid: Grid, tile: number): boolean {
+/** Whether a tile lies by the water, the sea's or a lake's: where a port may stand. */
+export function byWater(grid: Grid, tile: number): boolean {
   let wet = false
   eachAround(grid, tile, (n) => {
     if (grid.water[n]) wet = true
@@ -23,9 +24,8 @@ function byWater(grid: Grid, tile: number): boolean {
   return wet
 }
 
-/** Whether a work is a port: a market on the coast. */
-export const isPort = (state: GameState, w: { work: string; tile: number }) =>
-  w.work === 'market' && byWater(state.grid, w.tile)
+/** Whether a work is a port. */
+export const isPort = (w: { work: string }) => w.work === 'port'
 
 /** Each map's water in its seas, a number each, and the ways found between ports, kept: the water never changes. */
 const SEAS = new WeakMap<
@@ -117,9 +117,7 @@ function sends(state: GameState, lord: number, port: number): boolean {
 /** Each port sends a ship now and then, each at its own moment, to a port drawn by lot. */
 export function sendShips(state: GameState) {
   const { shipTicks, shipGold } = state.rules
-  const ports = state.works.filter(
-    (w) => standing(state, w) && isPort(state, w),
-  )
+  const ports = state.works.filter((w) => standing(state, w) && isPort(w))
   if (ports.length < 2) return
   const wars = warsOf(state)
   for (const from of ports) {
@@ -162,7 +160,7 @@ export function moveShips(state: GameState) {
     if (!state.players[ship.owner].alive) return false
     ship.along += state.rules.shipPace
     if (ship.along < (ship.way.length - 1) * 1000) return true
-    const port = state.works.find((w) => w.tile === ship.to && isPort(state, w))
+    const port = state.works.find((w) => w.tile === ship.to && isPort(w))
     if (!port) return false
     state.players[ship.owner].gold += ship.gold
     if (port.owner !== ship.owner) state.players[port.owner].gold += ship.gold

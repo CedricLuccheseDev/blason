@@ -63,7 +63,7 @@ export { afloat } from './crossing'
 export { relayGold } from './relays'
 export { isPort } from './ships'
 export { warshipPrice, whereIs } from './warships'
-export { canBuild, priceOf } from './works'
+export { canBuild, priceOf, roomFor } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'
 export {

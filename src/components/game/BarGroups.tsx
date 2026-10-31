@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import type { Army, Coup, Work } from '../../../engine'
 import type { Summary } from '~/render/client'
 import type { useMessages } from '~/i18n'
-import { FLEET_KEY, keyAt } from '~/render/keys'
+import { FLEET_KEY, coupKey, keyAt, workKey } from '~/render/keys'
 
 // The bar's three families, each its pieces and the face it folds behind
 // when the bar lacks room (Bar.tsx): the armies, and the warship with them
@@ -127,7 +127,6 @@ export function armies(summary: Summary, m: Messages, acts: Acts): Family {
 
 /** The works as gilt medallions, each with its price; folded, behind a castle's medallion and the family's word. */
 export function works(summary: Summary, m: Messages, acts: Acts): Family {
-  const first = summary.armies.length + 1
   return {
     label: m.game.families.works,
     held: summary.work !== null,
@@ -138,13 +137,13 @@ export function works(summary: Summary, m: Messages, acts: Acts): Family {
       </>
     ),
     pieces: (named) =>
-      summary.works.map((w, i) => {
+      summary.works.map((w) => {
         const held = summary.work === w.work
         const short = !w.can && !held
         return (
           <Piece
             key={w.work}
-            k={keyAt(first + i)}
+            k={workKey(w.work).toUpperCase()}
             name={m.game.works[w.work]}
             hint={[m.hints.works[w.work]]}
             held={held}
@@ -163,7 +162,6 @@ export function works(summary: Summary, m: Messages, acts: Acts): Family {
 
 /** The coups as lozenges ringed in gules, each with its price; folded, behind the trebuchet's lozenge and the family's word. */
 export function coups(summary: Summary, m: Messages, acts: Acts): Family {
-  const first = summary.armies.length + summary.works.length + 1
   return {
     label: m.game.families.coups,
     held: summary.coup !== null,
@@ -178,13 +176,13 @@ export function coups(summary: Summary, m: Messages, acts: Acts): Family {
       </>
     ),
     pieces: (named) =>
-      summary.coups.map((c, i) => {
+      summary.coups.map((c) => {
         const held = summary.coup === c.coup
         const short = !c.can && !held
         return (
           <Piece
             key={c.coup}
-            k={keyAt(first + i)}
+            k={coupKey(c.coup)}
             name={m.game.coups[c.coup]}
             hint={[m.hints.coups[c.coup]]}
             held={held}

@@ -32,6 +32,7 @@ import { makeEnvoys } from './envoys'
 import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
 import { makeScars } from './layers/scars'
+import { makeRoom } from './layers/room'
 import { makeStrikes } from './layers/strikes'
 import { makeVolleys } from './layers/volleys'
 import { makeBorders } from './layers/borders'
@@ -119,6 +120,7 @@ export function makeScene(
   const building = makeBuilding(me)
   const seals = makeLevySeals(me)
   const scars = makeScars()
+  const room = makeRoom(state, me)
   const strikes = makeStrikes(me)
   const world = new Container()
   // Each layer its own render group: what moves each frame (a man shown or
@@ -138,6 +140,7 @@ export function makeScene(
       peaks.container,
       lit.container,
       scars.container,
+      room.sprite,
       marks.container,
       plan.container,
       life.container,
@@ -217,6 +220,7 @@ export function makeScene(
       m('ground', () => ground.draw(seen, zoom, now))
       m('borders', () => borders.update(retraced, zoom))
       m('lit', () => lit.draw(zoom, retraced))
+      m('room', () => room.draw(hand.work))
       // How much the map is the strategist's: the drawn works fade for the flat icons.
       const strategic = strategicOf(zoom * state.grid.size)
       marks.container.alpha = 1 - strategic

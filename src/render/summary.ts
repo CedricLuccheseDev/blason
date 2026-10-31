@@ -222,7 +222,7 @@ function fleetOf(
   gold: number,
 ): Summary['fleet'] {
   const price = me >= 0 ? warshipPrice(state, me) : 0
-  const port = state.works.some((w) => w.owner === me && isPort(state, w))
+  const port = state.works.some((w) => w.owner === me && isPort(w))
   return {
     held: hand.fleet,
     picked: hand.ship !== null,

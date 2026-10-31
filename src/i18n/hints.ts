@@ -29,6 +29,7 @@ export const hintsEn = {
     village: '+60 peasants, levies armies',
     market: 'A caravan every 10 s, paid on arrival; hires mercenaries',
     castle: 'Holds its land, shoots',
+    port: 'By the water: merchant ships to the other lords’ ports; fits out the warships',
   },
   coups: {
     troublemaker: 'Raises an enemy land',
@@ -73,6 +74,7 @@ export const hintsFr: HintsMessages = {
     market:
       'Une caravane toutes les 10 s, payée à l’arrivée ; engage les mercenaires',
     castle: 'Tient sa terre, tire des flèches',
+    port: 'Au bord de l’eau : des bateaux marchands vers les ports des autres ; arme les navires de guerre',
   },
   coups: {
     troublemaker: 'Soulève une terre ennemie',

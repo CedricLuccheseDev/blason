@@ -43,6 +43,7 @@ export const en = {
       village: 'Village',
       market: 'Market',
       castle: 'Castle',
+      port: 'Port',
     },
     coups: {
       troublemaker: 'Troublemaker',

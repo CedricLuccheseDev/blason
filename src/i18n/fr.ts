@@ -44,6 +44,7 @@ export const fr: Messages = {
       village: 'Village',
       market: 'Marché',
       castle: 'Château',
+      port: 'Port',
     },
     coups: {
       troublemaker: 'Causeur de troubles',

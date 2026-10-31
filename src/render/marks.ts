@@ -1,5 +1,5 @@
 import { Container, Sprite } from 'pixi.js'
-import { isPort, standing } from '../../engine'
+import { standing } from '../../engine'
 import {
   BOX,
   workLod,
@@ -65,9 +65,7 @@ export function makeMarks(state: GameState, me: number) {
         if (!drawn.visible) return
         const lod = steady(levels.get(drawn), workPx(zoom, mine))
         levels.set(drawn, lod)
-        // A market on the coast is drawn as a port (« sur la cote ça devient un port »).
-        const look = isPort(state, work) ? 'port' : work.work
-        drawn.texture = workTexture(look, playerColor(work.owner), lod)
+        drawn.texture = workTexture(work.work, playerColor(work.owner), lod)
         drawn.scale.set(
           (workScale(zoom, mine) * BOX.width) / drawn.texture.width,
         )
