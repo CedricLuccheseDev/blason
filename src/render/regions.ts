@@ -47,14 +47,18 @@ export function makeRegions(state: GameState, me: number) {
   washes.sortableChildren = true
   /** The castles' stone, laid over the ground's decoration with the borders. */
   const stone = new Graphics()
-  // Each tile under the sea near a shore takes the nearest land's region, so the washes reach the coast and the coast clips them.
+  // Each tile under the sea near a shore takes the nearest land's region, so
+  // the washes reach the coast and the coast clips them; not a river's,
+  // whose two banks would meet across it and their borders run over it
+  // (« y'a des frontières qui traversent le fleuve »).
   const shore = grid.land.map((l, t) => (l ? t : -1))
+  const river = (t: number) => grid.river?.[t] === true
   let ring = shore.flatMap((s, t) => (s >= 0 ? [t] : []))
   for (let depth = 0; depth < 4; depth++) {
     const next: Array<number> = []
     for (const t of ring)
       for (const n of [t - 1, t + 1, t - width, t + width]) {
-        if (n < 0 || n >= shore.length || shore[n] >= 0) continue
+        if (n < 0 || n >= shore.length || shore[n] >= 0 || river(n)) continue
         shore[n] = shore[t]
         next.push(n)
       }

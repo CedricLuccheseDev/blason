@@ -73,8 +73,10 @@ export function makeGrid(
       water.push(site?.water ?? false)
       wood.push(site !== null && 'wood' in site && site.wood === true)
     }
+  const river = land.map(() => false)
   for (const t of riverTiles(rivers, cols, rows, size))
-    if (land[t]) [land[t], water[t], wood[t]] = [false, true, false]
+    if (land[t])
+      [land[t], water[t], wood[t], river[t]] = [false, true, false, true]
   return {
     width: cols,
     height: rows,
@@ -82,6 +84,7 @@ export function makeGrid(
     land,
     water,
     wood,
+    river,
     area: land.filter(Boolean).length,
   }
 }

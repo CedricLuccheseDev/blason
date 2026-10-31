@@ -17,6 +17,8 @@ export type Grid = {
   water: Array<boolean>
   /** The woods' tiles, which slow the armies; none on a test's land. */
   wood?: Array<boolean>
+  /** The rivers' tiles, water as the sea's (map/streams.ts), told apart for the drawing; none on a test's land. */
+  river?: Array<boolean>
   /** Tiles of land in all. */
   area: number
 }

@@ -132,6 +132,45 @@ function wander(
   })
 }
 
+/** How far from the water a built road keeps when it may, in tiles; how far it is pushed aside at most. */
+const [SHORE, PUSH] = [1.6, 0.9]
+
+/**
+ * A built road kept off the water's edge (« les chemins des marchands
+ * collent trop proche » of the rivers): the shortest way from tile to tile
+ * runs along the bank, where the river's drawing covers it; each point
+ * pushed away from the water tiles near it, the nearer the more, never onto
+ * a tile the road may not cross.
+ */
+function ashore(state: GameState, line: Array<Spot>, open: Open): Array<Spot> {
+  const { size, width, height, water } = state.grid
+  const reach = Math.ceil(SHORE)
+  return line.map((p, i) => {
+    if (i === 0 || i === line.length - 1) return p
+    const [cx, cy] = [p.x / size, p.y / size]
+    let [px, py] = [0, 0]
+    for (let y = Math.floor(cy) - reach; y <= Math.floor(cy) + reach; y++)
+      for (let x = Math.floor(cx) - reach; x <= Math.floor(cx) + reach; x++) {
+        if (x < 0 || y < 0 || x >= width || y >= height) continue
+        if (!water[y * width + x]) continue
+        const [dx, dy] = [cx - (x + 0.5), cy - (y + 0.5)]
+        const d = Math.hypot(dx, dy) || 1
+        if (d >= SHORE) continue
+        px += (dx / d) * (SHORE - d)
+        py += (dy / d) * (SHORE - d)
+      }
+    const push = Math.hypot(px, py)
+    if (push === 0) return p
+    const by = Math.min(PUSH, push) / push
+    for (let k = by; k > 0.1; k /= 2) {
+      const [x, y] = [cx + px * k, cy + py * k]
+      if (open(Math.floor(y) * width + Math.floor(x)))
+        return { x: x * size, y: y * size }
+    }
+    return p
+  })
+}
+
 /** A road's tiles as it is drawn: straight over open tiles, wandering so far aside if it is a built road, smoothed so many times, as many points as it has tiles. */
 export function drawRoad(
   state: GameState,
@@ -142,7 +181,8 @@ export function drawRoad(
 ): Array<Spot> {
   if (road.length < 2) return road.map((t) => siteOf(state, t))
   const line = straighten(state, road, open)
-  const bent = stray > 0 ? wander(state, line, open, stray) : line
+  const bent =
+    stray > 0 ? ashore(state, wander(state, line, open, stray), open) : line
   return resample(round(bent, rounds), road.length)
 }
 
