@@ -133,9 +133,8 @@ export const fr: Messages = {
   settings: {
     open: 'Réglages',
     title: 'Réglages',
-    sound: 'Les volumes',
     volumes: {
-      all: 'Tout',
+      all: 'Volume général',
       music: 'Musique',
       beds: 'Ambiance',
       effects: 'Effets',

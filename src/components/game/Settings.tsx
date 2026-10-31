@@ -1,9 +1,16 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import { Choices } from '../hud/Choices'
 import { KeyCap } from '../hud/Emblem'
 import { actClass } from '../hud/Act'
-import { Inline, Line, Panel } from '../hud/Layout'
-import { Heading, Note, Word } from '../hud/Text'
+import { Caption, Inline, Panel } from '../hud/Layout'
+import { Heading } from '../hud/Text'
+import { Setting } from '../hud/Setting'
 import type { Volume } from '~/audio/settings'
 import type { Locale } from '~/i18n/locale'
 import {
@@ -20,6 +27,9 @@ import { useChooseLocale, useLocale, useMessages } from '~/i18n'
 // on the home; a click lays a sheet by it: four volumes, each its word, its
 // slider and its figure; the sound on or cut, its key M; the language,
 // changed at once. Escape or a click elsewhere puts it down.
+
+/** Pixels kept between the sheet and the screen's right edge. */
+const EDGE = 12
 
 const VOLUMES: ReadonlyArray<Volume> = ['all', 'music', 'beds', 'effects']
 const LOCALES: ReadonlyArray<{ value: Locale; label: string }> = [
@@ -69,13 +79,16 @@ function Sheet() {
   )
   const locale = useLocale()
   const choose = useChooseLocale()
+  // The book's hierarchy (BookSettings.tsx): the sheet's title over a gold
+  // rule, then each setting alike, its name small above, its control under it.
   return (
-    <Panel gap="hair" className="w-[calc(340px*var(--hud))] max-w-[90vw]">
-      <Heading>{m.title}</Heading>
-      <Note>{m.sound}</Note>
+    <Panel gap="part" className="w-[calc(320px*var(--hud))] max-w-[calc(100vw-24px)]">
+      <Caption>
+        <Heading>{m.title}</Heading>
+      </Caption>
       {VOLUMES.map((volume) => (
-        <Line key={volume} name={<Word>{m.volumes[volume]}</Word>}>
-          <Inline className="w-full">
+        <Setting key={volume} name={m.volumes[volume]}>
+          <Inline>
             <input
               type="range"
               min={0}
@@ -90,16 +103,9 @@ function Sheet() {
               {volumes[volume]}
             </span>
           </Inline>
-        </Line>
+        </Setting>
       ))}
-      <Line
-        name={
-          <Inline gap="hair">
-            <Word>{m.mute}</Word>
-            <KeyCap k="M" />
-          </Inline>
-        }
-      >
+      <Setting name={m.mute} aside={<KeyCap k="M" />}>
         <Choices
           name={m.mute}
           options={[
@@ -111,14 +117,15 @@ function Sheet() {
             if ((v === 'off') !== muted) toggleMuted()
           }}
         />
-      </Line>
-      <Note>{m.language}</Note>
-      <Choices
-        name={m.language}
-        options={LOCALES}
-        value={locale}
-        onPick={choose}
-      />
+      </Setting>
+      <Setting name={m.language}>
+        <Choices
+          name={m.language}
+          options={LOCALES}
+          value={locale}
+          onPick={choose}
+        />
+      </Setting>
     </Panel>
   )
 }
@@ -128,6 +135,15 @@ export function Settings({ up = false }: Readonly<{ up?: boolean }>) {
   const m = useMessages().settings
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLSpanElement>(null)
+  const hung = useRef<HTMLSpanElement>(null)
+  // Within the screen, as the bar's drawers: moved left as far as it runs past the right edge.
+  const [shift, setShift] = useState(0)
+  useLayoutEffect(() => {
+    const rect = hung.current?.getBoundingClientRect()
+    if (!open || !rect) return setShift(0)
+    const over = rect.right - shift - (window.innerWidth - EDGE)
+    setShift(Math.max(0, over))
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -160,7 +176,9 @@ export function Settings({ up = false }: Readonly<{ up?: boolean }>) {
       {open && (
         // norm-ok: the sheet hung by its button, the room between them as the drawers' (BarDrawer.tsx).
         <span
+          ref={hung}
           className={`absolute left-0 z-30 w-max ${up ? 'bottom-full pb-2' : 'top-full pt-2'}`}
+          style={{ transform: `translateX(${-shift}px)` }}
         >
           <Sheet />
         </span>

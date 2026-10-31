@@ -142,9 +142,8 @@ export const en = {
   settings: {
     open: 'Settings',
     title: 'Settings',
-    sound: 'Volumes',
     volumes: {
-      all: 'All',
+      all: 'Main volume',
       music: 'Music',
       beds: 'Ambience',
       effects: 'Effects',

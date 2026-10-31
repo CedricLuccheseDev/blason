@@ -4,35 +4,16 @@ import { GAP, Stack } from '../hud/Layout'
 import { Fine, Name, Note, Title } from '../hud/Text'
 import { Shield } from '../hud/Emblem'
 import { Icon } from '../hud/Figure'
-import type { IconName } from '../hud/Figure'
-import { hex } from './format'
-import type { ReactNode } from 'react'
 import { LEVELS } from '../../../engine'
+import { hex } from './format'
+import type { IconName } from '../hud/Figure'
 import type { Book, Level } from '../../../engine'
 import { Flourish } from '~/components/home/Ornaments'
 import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
-// The pieces of the book of the game (GameBook.tsx): a setting's line, a
-// page's head, the lords seated by team, the link to invite friends, and
+// The pieces of the book of the game (GameBook.tsx): a page's head, the lords seated by team, the link to invite friends, and
 // the book's button over the camera's.
-
-/** One setting: its name above, its control (Choices.tsx) the page's width under it. */
-export function Setting({
-  name,
-  icon,
-  children,
-}: Readonly<{ name: string; icon: IconName; children: ReactNode }>) {
-  return (
-    <Stack gap="hair">
-      <span className={`flex items-center ${GAP.hair}`}>
-        <Icon name={icon} size={18} />
-        <Note>{name}</Note>
-      </span>
-      {children}
-    </Stack>
-  )
-}
 
 /** A page's head: a line above, its title in capitals beside its icon, a gold rule. */
 export function Head({

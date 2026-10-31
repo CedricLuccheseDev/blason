@@ -54,8 +54,8 @@ export function Places({
     <div
       className={`pointer-events-none absolute top-[env(safe-area-inset-top)] right-[env(safe-area-inset-right)] bottom-[env(safe-area-inset-bottom)] left-[env(safe-area-inset-left)] grid grid-cols-[1fr_minmax(0,auto)_1fr] grid-rows-[auto_1fr_auto] ${GAP.piece} ${MARGIN}`}
     >
-      <Inline className="self-start">
-        {/* Upright on a phone the race needs the top's width: the game's mark comes down to its initial (BookParts.tsx), the way home kept. */}
+      <Inline className="self-start max-sm:flex-col">
+        {/* Upright on a phone the race needs the top's width: the game's mark comes down to its initial (BookParts.tsx), the way home kept, the settings and the book under it. */}
         <HomeMark onHome={onHome} />
         <Settings />
         {onBook && (

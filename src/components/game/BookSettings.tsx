@@ -1,7 +1,8 @@
 import { LEVELS, SETUP_LIMITS, TICKS_PER_SECOND } from '../../../engine'
 import { Choices, Stepper } from '../hud/Choices'
 import { Note } from '../hud/Text'
-import { Head, Seats, Setting } from './BookParts'
+import { Setting } from '../hud/Setting'
+import { Head, Seats } from './BookParts'
 import type { Book, Level } from '../../../engine'
 import { useMessages } from '~/i18n'
 
