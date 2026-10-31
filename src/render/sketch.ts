@@ -126,11 +126,7 @@ function sketch(
   const soft = relief(world, at, [width, height], SOFT * ratio)
   g.drawImage(soft, 0, 0, width, height)
   g.restore()
-  // The rivers within the coast, no round end out in the sea.
-  g.save()
-  g.clip(land)
   rivers(g, world, px)
-  g.restore()
   mountains(g, world, px)
   g.lineWidth = INK * px
   g.strokeStyle = css(TONE.ink)
@@ -181,23 +177,29 @@ function boundsOf(world: World) {
 }
 
 /** The high mountains, as the map draws them small (layers/peaks.ts): their ground in stone, and on each of their cells a mount in ink, `px` a pixel of the page in the map's units. */
+/** A river's course in so many stretches, each one stroke as wide as its middle: a few strokes a river, as on the map (ground/rivers.ts). */
+const STRETCHES = 3
+
 /** The rivers, water as the sea's (engine/map/streams.ts): the sea's wash between the coast's ink, as wide as on the map, a line at least. */
 function rivers(g: CanvasRenderingContext2D, world: World, px: number) {
   g.lineCap = 'round'
   g.lineJoin = 'round'
   for (const [extra, color] of [
-    [2 * INK * px, css(TONE.ink)],
+    [INK * px, css(TONE.ink)],
     [0, css(TONE.seaWash)],
   ] as const)
     for (const river of world.rivers) {
       const n = river.length
-      for (let i = 0; i < n - 1; i++) {
-        const wide = (2 * halfWidthAt(i, n) + 0.4) * RULES.tileSize
+      const step = Math.max(1, Math.ceil((n - 1) / STRETCHES))
+      for (let from = 0; from < n - 1; from += step) {
+        const to = Math.min(n - 1, from + step)
+        const wide =
+          (2 * halfWidthAt((from + to) / 2, n) + 0.4) * RULES.tileSize
+        g.beginPath()
+        g.moveTo(...river[from])
+        for (let i = from + 1; i <= to; i++) g.lineTo(...river[i])
         g.lineWidth = Math.max(LINE * px, wide) + extra
         g.strokeStyle = color
-        g.beginPath()
-        g.moveTo(...river[i])
-        g.lineTo(...river[i + 1])
         g.stroke()
       }
     }
