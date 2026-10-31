@@ -61,8 +61,8 @@ describe('the golden games', () => {
     const state = createGame(grid, setupOf(20, { seed: SEED }))
     expect(prints(state, [100, 600, 1500])).toEqual({
       100: '1dae4db9da34f6',
-      600: '19ff6fbd90fca0',
-      1500: '146e042811a11f',
+      600: '1a4f8e47bfa025',
+      1500: '193e8c5605fde0',
     })
   }, 60_000)
 
@@ -71,8 +71,8 @@ describe('the golden games', () => {
     const setup = setupOf(8, { seed: SEED, level: 'hard', teams })
     const state = createGame(grid, setup)
     expect(prints(state, [600, 1500])).toEqual({
-      600: '4f7acfad615f0',
-      1500: '5167851cb91a3',
+      600: 'cd50ee55b7971',
+      1500: '1bdf15875b348a',
     })
   }, 60_000)
 
@@ -80,7 +80,7 @@ describe('the golden games', () => {
     const state = createGame(grid, setupOf(20, { seed: SEED, opening: 300 }))
     expect(prints(state, [300, 900])).toEqual({
       300: '1069af28040b0',
-      900: '733fa21225864',
+      900: '118fc5390b78d1',
     })
   }, 60_000)
 })

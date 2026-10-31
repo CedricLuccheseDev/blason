@@ -33,11 +33,17 @@ export function canBuild(
 ): boolean {
   if (state.owner[tile] !== lord || burnt(state, tile)) return false
   if (work === 'port' && !byWater(state.grid, tile)) return false
-  const { castleGap, workGap } = state.rules
   return state.works.every((w) => {
-    const gap = work === 'castle' && w.work === 'castle' ? castleGap : workGap
+    const gap = gapOf(state, work, w.work)
     return apart(state.grid, w.tile, tile) >= gap * gap
   })
+}
+
+/** The tiles kept between two works: their footprints, castles further. */
+function gapOf(state: GameState, a: Work, b: Work): number {
+  const { castleGap, workRoom } = state.rules
+  if (a === 'castle' && b === 'castle') return castleGap
+  return workRoom[a] + workRoom[b]
 }
 
 /** The tiles nearer a work than the gap, shut. */
@@ -68,14 +74,8 @@ export function roomFor(
     if (o === lord && !burnt(state, t) && (work !== 'port' || byWater(grid, t)))
       room[t] = 1
   })
-  const { castleGap, workGap } = state.rules
   for (const w of state.works)
-    shut(
-      room,
-      grid,
-      w.tile,
-      work === 'castle' && w.work === 'castle' ? castleGap : workGap,
-    )
+    shut(room, grid, w.tile, gapOf(state, work, w.work))
   return room
 }
 

@@ -70,6 +70,8 @@ export type Rules = {
   combat: { peasants: number; castle: number; army: number; castleArmy: number }
   /** The least a lord's tile costs the army that takes it, in thousandths of a man, however thin his land: an army is never unending (« la frontiere adverse augmente alors que y'a pas d'unité c'est infini »). */
   leastCost: number
+  /** How fast an army marches on the merchants' roads, in percent of its pace (« les routes accélèrent », 31/10); its march takes them when they bring it sooner. */
+  roadPace: number
   /** An army's pace in the woods, in percent of its own, on the march and at its front (« la foret doit donner un malus de vitesses aux troupes »). */
   forestPace: number
   /** Ticks an even battle between two armies lasts, and how near, in tiles, two armies must come to fight. */
@@ -91,7 +93,7 @@ export type Rules = {
    * Price of each work, in gold, doubled for each one of its kind the lord
    * holds (so many times at most); the first of the kinds in `firstFree`
    * costs nothing, so that a lord can always start again from nothing.
-   * Works stand a few tiles apart (workGap), castles further (castleGap).
+   * Works stand their footprints apart (workRoom), castles further (castleGap).
    */
   workPrice: Record<Work, number>
   /** Ticks each work takes to build before it serves. */
@@ -101,8 +103,8 @@ export type Rules = {
   firstFree: ReadonlyArray<Work>
   priceDoublings: number
   castleGap: number
-  /** Tiles kept between any two works, so that their drawings never lie on one another. */
-  workGap: number
+  /** Each work's footprint, in tiles: two works stand at least the sum of theirs apart, so that their drawings never lie on one another (« il faut pas pouvoir coller autant les marchés des villages, chaque construction a une range », 31/10). */
+  workRoom: Readonly<Record<Work, number>>
   /** An alliance lasts so long; both may renew it in its last moments; an offer waits so long. */
   allianceTicks: number
   renewTicks: number
@@ -206,6 +208,7 @@ export const RULES: Rules = {
   marchPace: 600,
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
   leastCost: 100,
+  roadPace: 150,
   forestPace: 60,
   battleTicks: 40,
   meetTiles: 8,
@@ -227,7 +230,7 @@ export const RULES: Rules = {
   firstFree: ['village', 'market'],
   priceDoublings: 3,
   castleGap: 10,
-  workGap: 4,
+  workRoom: { village: 3, market: 3, castle: 3, port: 2 },
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,

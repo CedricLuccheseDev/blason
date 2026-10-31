@@ -97,11 +97,12 @@ export function sailTo(
   if (size === 0) return null
   // The march to the coast, the crossing after it counted.
   const best = { total: Infinity, coast: -1, sea: -1 }
+  // In hundredths of a tile: the march as its ground costs it, the water a tile a step.
   const roadTo = marchOut(state, lord, sites, (at, walked) => {
-    if (walked + 1 > best.total) return false
+    if (walked + 100 > best.total) return false
     eachAround(state.grid, at, (n) => {
       if (marks[n] !== round) return
-      const total = walked + 1 + steps[n]
+      const total = walked + 100 * (1 + steps[n])
       if (total < best.total) Object.assign(best, { total, coast: at, sea: n })
     })
     return true

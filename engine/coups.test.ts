@@ -72,9 +72,10 @@ describe('the coups', () => {
     run(state, 8 * SECOND)
     expect(state.works.some((w) => w.tile === 29)).toBe(false)
     expect(canBuild(state, 1, 29, 'market')).toBe(false)
-    expect(canBuild(state, 1, 20, 'market')).toBe(false)
+    // Six tiles from its village, its footprint and the market's: free but for the ash.
+    expect(canBuild(state, 1, 22, 'market')).toBe(false)
     run(state, 61 * SECOND)
-    expect(canBuild(state, 1, 20, 'market')).toBe(true)
+    expect(canBuild(state, 1, 22, 'market')).toBe(true)
   })
 
   it('the troublemaker walks there, and the land round him rises, free and held by rebels', () => {

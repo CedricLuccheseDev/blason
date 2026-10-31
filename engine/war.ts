@@ -7,6 +7,7 @@ import { walled } from './battle'
 import { disband, hired } from './armies'
 import { costOf, marching, menFor, paceOf, passable } from './muster'
 import { courseFor, wideOf } from './course'
+import { stepCost } from './paving'
 import { inBand, priority, struck } from './band'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
@@ -192,13 +193,11 @@ function walk(state: GameState, host: Host) {
 const wooded = (state: GameState, tile: number) =>
   state.grid.wood?.[tile] === true
 
-/** An army's pace on its road this tick: slower in the woods. */
+/** An army's pace on its road this tick: faster on a road, slower in the woods. */
 function stepOf(state: GameState, host: Host): number {
   const here = host.road[Math.floor(host.along / 1000)]
-  const pace = paceOf(state, host)
-  return wooded(state, here)
-    ? Math.floor((pace * state.rules.forestPace) / 100)
-    : pace
+  // As its march was laid (paving.ts): a step's cost, its pace against it.
+  return Math.floor((paceOf(state, host) * 100) / stepCost(state, here))
 }
 
 /** An army of the lord's called home, by the village or market it left from (« une croix pour les rappeler »): its survivors back to his peasants, the mercenaries their way. */

@@ -25,9 +25,9 @@ import type { GameState } from './types'
 export const wideOf = (state: GameState, men: number) =>
   state.rules.bandTiles + isqrt(Math.floor(men / UNIT))
 
-/** How long an army takes to march so many tiles, in thousandths of a tick. */
-const marchTime = (state: GameState, army: Army, tiles: number) =>
-  Math.floor((tiles * 1_000_000) / paceOf(state, { army }))
+/** How long an army takes to march so far, in hundredths of a plain tile (the ground counted, paving.ts), in thousandths of a tick. */
+const marchTime = (state: GameState, army: Army, cost: number) =>
+  Math.floor((cost * 10_000) / paceOf(state, { army }))
 
 /**
  * How long an army's bulge takes to reach a tile so far from where it
@@ -155,7 +155,7 @@ export function courseFor(
   const sea = overWater(state, player, tile, sites, free.length > 0)
   if (!sea) return byLand
   const sail =
-    marchTime(state, army, sea.road.length) +
+    marchTime(state, army, 100 * sea.road.length) +
     crossTime(state, army, wide, apart(state.grid, sea.entry, tile))
   return round || sail < best.time ? sea : byLand
 }

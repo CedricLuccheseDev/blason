@@ -198,6 +198,10 @@ leaves it gives his seat back to its bot.
 - **The woods** (`grid.wood`, the forest cells): an army marches there at 60 %
   of its pace, and each tile of woods it takes costs its front as much more
   time (`forestPace`).
+- **The merchants' roads** (`engine/paving.ts`): an army marches on them at
+  150 % of its pace (`roadPace`), a road through the woods a road. Its march
+  is sought by what each step costs, not by tiles: it takes a road when the
+  road brings it sooner, the way the aim draws (`stepCost`).
 - Every tile taken costs the army as the **combat table** says, against the
   men who hold it (the lord's peasants divided among his tiles, half as many
   while he bears the traitor's mark; the villagers on free land):
@@ -237,7 +241,8 @@ leaves it gives his seat back to its bot.
 ## Works
 
 Four works, placed anywhere on one's own land (keys 5 to 7, and P the
-port), at least 4 tiles from any other work so that none lies on another;
+port), each with its footprint (3 tiles, 2 for a port), two works at least
+their two footprints apart so that none lies on another (`workRoom`);
 castles stand at least 10 tiles from one another; a port only on a tile by
 the water (`engine/works.ts`). With one in hand, the tiles it may stand on
 are lit and the rest darkened (`roomFor`):

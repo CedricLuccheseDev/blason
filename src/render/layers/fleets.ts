@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js'
 import { drawCog, drawWarship } from '../art/boat'
 import { TONE, playerColor } from '../palette'
 import { siteOf } from '../marks'
-import { pointOn } from '../roads'
+import { drawRoad, pointOn } from '../roads'
 import type { GraphicsContext } from 'pixi.js'
 import type { Spot } from '../roads'
 import type { makeWakes } from './wakes'
@@ -20,6 +20,9 @@ type Afloat = Ship | Warship
 
 /** A warship's drawing against a cog's. */
 const WARSHIP = 1
+
+/** The ships' size against their drawing: smaller than at first (« les bateaux sont trop gros, la map commence à être bien chargée »). */
+const SHIP_SIZE = 0.5
 
 export function makeFleets(me: number, wakes: ReturnType<typeof makeWakes>) {
   const container = new Container()
@@ -44,7 +47,10 @@ export function makeFleets(me: number, wakes: ReturnType<typeof makeWakes>) {
   const wayOf = (state: GameState, tiles: Array<number>) => {
     let way = ways.get(tiles)
     if (!way) {
-      way = tiles.map((t) => siteOf(state, t))
+      // Straight over the open water, its turns rounded (« les bateaux se
+      // déplacent que verticalement et horizontalement »), as many points as
+      // tiles, so that what it has sailed reads on it.
+      way = drawRoad(state, tiles, (t) => state.grid.water[t], 2)
       ways.set(tiles, way)
     }
     return way
@@ -64,6 +70,7 @@ export function makeFleets(me: number, wakes: ReturnType<typeof makeWakes>) {
       g = container.addChild(
         new Graphics(drawingOf(playerColor(ship.owner), kind)),
       )
+      g.scale.set(SHIP_SIZE)
       ships.set(ship, g)
     }
     const way = wayOf(state, ship.way)
@@ -72,7 +79,8 @@ export function makeFleets(me: number, wakes: ReturnType<typeof makeWakes>) {
     const ahead = pointOn(way, Math.min(way.length - 1, at + 1))
     g.position.set(here.x, here.y)
     // Come to its point, it keeps the way it faced.
-    if (ahead.x !== here.x) g.scale.set(ahead.x < here.x ? -0.8 : 0.8, 0.8)
+    if (ahead.x !== here.x)
+      g.scale.set(ahead.x < here.x ? -SHIP_SIZE : SHIP_SIZE, SHIP_SIZE)
     g.alpha = ship.owner === me ? 1 : 0.85
     wakes.pass(ship, here.x, here.y, now)
     return here
@@ -97,7 +105,7 @@ export function makeFleets(me: number, wakes: ReturnType<typeof makeWakes>) {
         if (ship.id !== chosen || ship.owner !== me) continue
         const post = siteOf(state, ship.post)
         picked
-          .circle(here.x, here.y - 8, 16)
+          .circle(here.x, here.y - 8 * SHIP_SIZE, 20 * SHIP_SIZE)
           .stroke({ color: TONE.gold, width: 1.6, alpha: 0.95 })
           .circle(post.x, post.y, 5)
           .stroke({ color: TONE.gold, width: 1.2, alpha: 0.8 })
