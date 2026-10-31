@@ -1,6 +1,6 @@
 {
   "name": "blason",
-  "version": "0.5.69",
+  "version": "0.5.70",
   "description": "A medieval real-time strategy game in the browser: twenty lords, a land drawn anew each game.",
   "license": "AGPL-3.0-only",
   "repository": {
@@ -31,8 +31,10 @@
     "relay": "tsx server/relay.ts"
   },
   "dependencies": {
+    "@convex-dev/auth": "^0.0.96",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.4",
+    "convex": "^1.49.0",
     "d3-delaunay": "^6.0.4",
     "marked": "^18.1.1",
     "pixi.js": "^8.22.0",

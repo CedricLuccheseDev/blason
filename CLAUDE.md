@@ -77,7 +77,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
     `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.
-  - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.
+  - `bots/` : `bot.ts` (guerre, constructions, expansion, et la terre libre qu'on n'atteint qu'en barque, `shores.ts`, 31/10) et `talk.ts` (diplomatie), joueurs comme les autres.
   - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), les parties dorées
     (`golden.test.ts` : trois parties de bots, leurs empreintes relevées une fois et écrites en dur ; une refonte qui
     garde le jeu les garde), la victoire (`victory.test.ts`), le setup (`setup.test.ts`), la diplomatie et les

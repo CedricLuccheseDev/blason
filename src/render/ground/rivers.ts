@@ -36,10 +36,24 @@ const STRETCHES = 3
 /** How far past its mouth a river runs on under the land's clip, in map units: enough to meet a slanting coast. */
 const PAST = 3 * RULES.tileSize
 
-/** A river run on a little past its last point, the way it was going. */
-function onward(river: Array<Point>): Array<Point> {
+/** Whether a river ends in another, as a tributary: its last point on, or by, another's course. */
+function joins(river: Array<Point>, rivers: Array<Array<Point>>): boolean {
+  const [x, y] = river[river.length - 1]
+  const near = (RULES.tileSize * 1.5) ** 2
+  return rivers.some(
+    (other) =>
+      other !== river &&
+      other.some(([ox, oy]) => (ox - x) ** 2 + (oy - y) ** 2 <= near),
+  )
+}
+
+/** A river run on a little past its last point, the way it was going; not a tributary, which would come out across the river it joins. */
+function onward(
+  river: Array<Point>,
+  rivers: Array<Array<Point>>,
+): Array<Point> {
   const n = river.length
-  if (n < 2) return river
+  if (n < 2 || joins(river, rivers)) return river
   const [[ax, ay], [bx, by]] = [river[n - 2], river[n - 1]]
   const on = PAST / (Math.hypot(bx - ax, by - ay) || 1)
   return [...river, [bx + (bx - ax) * on, by + (by - ay) * on]]
@@ -79,7 +93,7 @@ export function makeRivers(
   // banks under all the water, so that a river joining another opens into it.
   const shore = container.addChild(new Container())
   shore.mask = shore.addChild(new Graphics(land))
-  const courses = rivers.map(onward)
+  const courses = rivers.map((river) => onward(river, rivers))
   const banks = shore.addChild(new Graphics())
   // As the coast's ribbon.
   banks.alpha = 0.85

@@ -12,6 +12,7 @@ import { TALK_EVERY, talk } from './talk'
 import { attack, canHire, war } from './war'
 import { SKILLS } from './levels'
 import { plot } from './coups'
+import { freeAfar } from './shores'
 import type { Level, Skill } from './levels'
 import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
@@ -200,7 +201,8 @@ export function createBot(
     const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
     if (state.tick < rest || !full) return []
     if (!armed(state, me)) return []
-    const free = fronts.get(NEUTRAL)
+    // The free land at its border; else, the free land it reaches by boat.
+    const free = fronts.get(NEUTRAL) ?? freeAfar(state, me) ?? undefined
     const orders = free
       ? expand(state, me, free)
       : war(state, me, fronts, boldness, skill.slips, skill.hunters)
