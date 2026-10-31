@@ -2,6 +2,7 @@ import { drawInt } from '../numbers'
 import { eachAround } from '../grid'
 import { isAllied } from '../diplomacy'
 import { isPort } from '../ships'
+import { standing } from '../land'
 import { warshipPrice } from '../warships'
 import type { GameState, Order } from '../types'
 
@@ -32,7 +33,8 @@ export function navy(state: GameState, me: number): Array<Order> {
   if (drawInt(state.seed, 100, 'navy', me, state.tick) >= NERVE) return []
   if (lord.gold < (warshipPrice(state, me) + 150) * 1000) return []
   const ports = state.works.filter((w) => isPort(w))
-  const own = ports.filter((w) => w.owner === me)
+  // A port standing fits it out: one being built, or just taken, none yet.
+  const own = ports.filter((w) => w.owner === me && standing(state, w))
   if (own.length === 0) return []
   const theirs = ports.filter(
     (w) => w.owner !== me && !isAllied(state, me, w.owner),

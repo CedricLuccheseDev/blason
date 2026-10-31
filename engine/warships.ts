@@ -92,6 +92,13 @@ export function sendWarship(
 const foe = (state: GameState, lord: number, other: number) =>
   other !== lord && !isAllied(state, lord, other)
 
+/** Whether a merchant ship sails to a port of the warship's lord: trade his own port waits for, never shot nor chased. */
+const boundHome = (
+  state: GameState,
+  ship: Warship,
+  s: GameState['ships'][number],
+) => state.works.some((w) => w.tile === s.to && w.owner === ship.owner)
+
 /** Whether a tile lies within so many tiles of another. */
 const within = (state: GameState, a: number, b: number, tiles: number) =>
   apart(state.grid, a, b) <= tiles * tiles
@@ -116,7 +123,7 @@ function fire(state: GameState, ship: Warship): void {
   const trader = state.ships.find(
     (s) =>
       foe(state, ship.owner, s.owner) &&
-      !state.works.some((w) => w.tile === s.to && w.owner === ship.owner) &&
+      !boundHome(state, ship, s) &&
       near(s.way[Math.floor(s.along / 1000)]),
   )
   if (enemy) enemy.hull -= 1
@@ -140,7 +147,9 @@ function nextAim(state: GameState, ship: Warship): number {
       .filter((h) => foe(state, ship.owner, h.owner) && afloat(state, h))
       .map(positionOf),
     ...state.ships
-      .filter((s) => foe(state, ship.owner, s.owner))
+      .filter(
+        (s) => foe(state, ship.owner, s.owner) && !boundHome(state, ship, s),
+      )
       .map((s) => s.way[Math.floor(s.along / 1000)]),
   ].filter(
     (t) =>

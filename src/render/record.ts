@@ -35,6 +35,8 @@ export function makeRecord(state: GameState, me: number) {
     gold: 0,
   }
   let closed = false
+  /** The seats that held a lord at some reading, a person's or a bot's: an empty one never does. */
+  const lords = new Set<number>()
 
   /** The lords standing now, and those who played. */
   const standing = () => state.players.filter((p) => p.alive).length
@@ -44,7 +46,8 @@ export function makeRecord(state: GameState, me: number) {
     read(earned: number): Deeds {
       if (me < 0 || closed) return record
       const lord = state.players[me]
-      record.lords = Math.max(record.lords, state.players.length)
+      state.players.forEach((p, id) => p.alive && lords.add(id))
+      record.lords = lords.size
       record.tiles = Math.max(record.tiles, lord.tiles)
       record.share = Math.max(
         record.share,

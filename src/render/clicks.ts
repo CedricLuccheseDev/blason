@@ -49,7 +49,11 @@ export function makeClick(
     }
     const held = hand.holding()
     const { work, coup, fleet } = hand.hand
-    const ship = !work && !coup && !fleet ? warshipAt(state, me, tile) : null
+    // A warship of mine picked by a click on the water by it; a click on a
+    // coast near it attacks the coast, as ever.
+    const onWater = state.grid.water[tile]
+    const ship =
+      !work && !coup && !fleet && onWater ? warshipAt(state, me, tile) : null
     if (ship !== null && ship !== hand.hand.ship) {
       hand.pick(ship)
       refresh()

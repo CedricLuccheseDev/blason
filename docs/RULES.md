@@ -36,7 +36,7 @@ applies each rule is named beside it.
   outlines from Natural Earth, public domain); each map has its own size and the lords it suits, its islands kept
   apart and its straits open (an island is reached by boat), its high
   mountains on the real ranges. Every piece of land the water touches is in
-  the game, the islands with the rest; only a piece the high mountains close
+  the game, the islands with the rest (20 tiles at least, `isle`); only a piece the high mountains close
   all round is not.
 - A map has a **size** (`MAP_SIZES`): small (half the land), standard,
   large (twice) or huge (four times). The game's book offers its lands as a

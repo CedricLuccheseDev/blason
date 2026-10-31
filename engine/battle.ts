@@ -4,6 +4,7 @@ import { isqrt } from './numbers'
 import { standing } from './land'
 import { isAllied } from './diplomacy'
 import { marching, positionOf } from './muster'
+import { afloat } from './crossing'
 import type { GameState, Host } from './types'
 
 // The battles: an army in a lord's land, taking it, and an army of that lord
@@ -80,23 +81,24 @@ function wayBack(before: Map<number, number>, to: number): Array<number> {
   return way.reverse()
 }
 
-/** Two armies that fight: near enough, a way over the land between them no more than twice the straight line, and one of them in the land of the other's lord, taking it; any other army passes by, so that none is drawn into a war it was not sent to. */
-export function meet(state: GameState, a: Host, b: Host): boolean {
-  if (a.owner === b.owner || isAllied(state, a.owner, b.owner)) return false
-  if (!intrudes(a, b.owner) && !intrudes(b, a.owner)) return false
+/** The way over the land between two armies that fight, or none: near enough, a way no more than twice the straight line, and one of them in the land of the other's lord, taking it; any other army passes by, so that none is drawn into a war it was not sent to; none at sea in its boat, which no battle reaches. */
+function meeting(state: GameState, a: Host, b: Host): Array<number> | null {
+  if (a.owner === b.owner || isAllied(state, a.owner, b.owner)) return null
+  if (!intrudes(a, b.owner) && !intrudes(b, a.owner)) return null
+  if (afloat(state, a) || afloat(state, b)) return null
   const reach = state.rules.meetTiles
   const [p, q] = [positionOf(a), positionOf(b)]
-  return (
-    apart(state.grid, p, q) <= reach * reach && wayBetween(state, p, q) !== null
-  )
+  if (apart(state.grid, p, q) > reach * reach) return null
+  return wayBetween(state, p, q)
 }
 
-/** Ticks two armies take to walk to each other, each going half the way between them. */
-function closingOf(state: GameState, a: Host, b: Host): number {
-  const way = wayBetween(state, positionOf(a), positionOf(b))
-  const tiles = way ? way.length - 1 : 0
-  return Math.ceil((tiles * 1000) / 2 / state.rules.marchPace)
-}
+/** Whether two armies fight (meeting). */
+export const meet = (state: GameState, a: Host, b: Host): boolean =>
+  meeting(state, a, b) !== null
+
+/** Ticks two armies take to walk to each other along their way, each going half of it. */
+const closingOf = (state: GameState, way: Array<number>) =>
+  Math.ceil(((way.length - 1) * 1000) / 2 / state.rules.marchPace)
 
 /** The blows of a tick between two armies come to grips: each loses as the combat table says. */
 function blows(state: GameState, a: Host, b: Host) {
@@ -110,19 +112,29 @@ function blows(state: GameState, a: Host, b: Host) {
   b.men = Math.max(0, b.men - lossB)
 }
 
+/** Two armies that meet stand: each walks its half of the way first, if it was not already, then they fight. */
+function engage(state: GameState, a: Host, b: Host, way: Array<number>) {
+  a.fighting = true
+  b.fighting = true
+  if (a.closing < 0 || b.closing < 0) {
+    const close = closingOf(state, way)
+    if (a.closing < 0) a.closing = close
+    if (b.closing < 0) b.closing = close
+  }
+  if (a.closing === 0 && b.closing === 0) blows(state, a, b)
+}
+
 /** A tick of every battle: the armies that meet stand and walk to each other, then fight. */
 export function clash(state: GameState): void {
   for (const host of state.hosts) host.fighting = false
   const { hosts } = state
   hosts.forEach((a, i) => {
     for (const b of hosts.slice(i + 1)) {
-      if (a.men === 0 || b.men === 0 || !meet(state, a, b)) continue
-      a.fighting = true
-      b.fighting = true
-      const close = closingOf(state, a, b)
-      if (a.closing < 0) a.closing = close
-      if (b.closing < 0) b.closing = close
-      if (a.closing === 0 && b.closing === 0) blows(state, a, b)
+      if (a.men === 0 || b.men === 0) continue
+      // The way between them sought once a tick, its length the walk to the battle.
+      const way = meeting(state, a, b)
+      if (!way) continue
+      engage(state, a, b, way)
     }
   })
   // The armies walking to a battle come a tick nearer; those with no enemy upon them have none to meet.

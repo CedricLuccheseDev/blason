@@ -21,6 +21,9 @@ export type Afloat = {
   alpha: number
 }
 
+/** A boat's size against its drawing (art/boat.ts), some six tiles long, too great for a river: some three. */
+const SIZE = 0.55
+
 export function makeBoats(wakes: ReturnType<typeof makeWakes>) {
   const container = new Container()
   const drawings = new Map<number, GraphicsContext>()
@@ -51,7 +54,7 @@ export function makeBoats(wakes: ReturnType<typeof makeWakes>) {
           boats.set(key, boat)
         }
         boat.position.set(at.x, at.y)
-        boat.scale.set(facing, 1)
+        boat.scale.set(facing * SIZE, SIZE)
         boat.alpha = alpha
       }
       for (const [key, boat] of boats)
@@ -65,14 +68,18 @@ export function makeBoats(wakes: ReturnType<typeof makeWakes>) {
 
 /** The armies at sea, each its boat where its head is, the way it sails. */
 export function afloatOf(
-  armies: Map<Host, { afloat: number; front: Front | null }>,
+  armies: Map<
+    Host,
+    { afloat: number; boat: Spot | null; front: Front | null }
+  >,
 ): Array<Afloat> {
   return [...armies].flatMap(([host, army]) =>
     army.afloat > 0 && army.front
       ? [
           {
             key: army,
-            at: army.front.at,
+            // Where it last sailed: fading out on the water, never ashore.
+            at: army.boat ?? army.front.at,
             facing: army.front.facing.x < 0 ? -1 : 1,
             color: playerColor(host.owner),
             alpha: army.afloat,

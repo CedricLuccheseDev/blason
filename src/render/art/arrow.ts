@@ -13,16 +13,6 @@ type At = { x: number; y: number }
 /** The dashes' period and their part drawn, in pixels; the most drawn. */
 const [PERIOD, DASHES] = [7, 600]
 
-/** The length of a line of points. */
-export const lengthOf = (points: Array<At>) =>
-  points.reduce(
-    (sum, p, i) =>
-      i === 0
-        ? 0
-        : sum + Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y),
-    0,
-  )
-
 /**
  * Dashes along a path, each as opaque as it is near its start: gone at
  * `fade` map units along, none drawn past it.

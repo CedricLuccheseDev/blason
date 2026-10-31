@@ -9,6 +9,7 @@ import { relax, scatter } from './points'
 import { planRelief, sculptLand } from './relief'
 import { makeRivers } from './rivers'
 import { ATLAS, atlasLand, planOf, riversOf, widthOf } from './atlas'
+import { deadOf } from './pockets'
 import type { MapSize } from '../rules'
 import type { Biome, Shares } from './biomes'
 import type { GameMap, Ground, Plan } from './types'
@@ -139,11 +140,8 @@ export function generateWorld(
   const cells = buildCells(sites, width, height)
   const lakes = Math.floor(count / LAKE_EVERY)
   const ground = maker.ground(seed, plan, cells, width, height, scale, lakes)
-  const { water, peaks, heights, passes } = ground
-  // The dead land is what is neither water nor high mountain there.
-  const dead = cells.sites.map(
-    (_, c) => (ground.dead?.[c] ?? false) && !water[c] && !peaks[c],
-  )
+  const { water, heights, passes } = ground
+  const { dead, peaks } = deadOf(cells, ground)
   // Ten times as many cells are a tenth of the size: their borders wiggle less.
   const borders = makeBorders(seed, cells, water, count > FINE ? 2 : 0)
   // A map of the Earth has its own rivers; an invented land, its own.

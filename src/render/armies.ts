@@ -35,6 +35,8 @@ type Army = {
   peasants: Squad
   /** How much it shows as a boat, its men aboard: 1 at sea, 0 ashore (layers/boats.ts). */
   afloat: number
+  /** Its boat's place on the water, kept while it fades out ashore. */
+  boat: Spot | null
   /** Its men at the last tick read, and its place this frame; gone once the game no longer has it. */
   men: number
   front: Front | null
@@ -55,6 +57,7 @@ const enlist = (host: Host): Army => ({
   troops: makeSquad(ARMY_LOOKS[host.army], playerColor(host.owner)),
   peasants: makeSquad('peasant', peasantColor(host.target)),
   afloat: 0,
+  boat: null,
   men: host.men,
   front: null,
   flag: null,
@@ -136,6 +139,7 @@ export function makeArmies(
         : { line: 'ranks', at: front.at, facing: front.facing }
     rally(army.troops, figuresOf(host.men / UNIT), shape, dt)
     // Aboard, its men go with the boat, its standard over it.
+    if (sailing) army.boat = { ...front.at }
     if (sailing) for (const man of army.troops.men) Object.assign(man, front.at)
     const step = dt / FADE
     army.troops.alpha = Math.max(

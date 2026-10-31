@@ -11,7 +11,7 @@ import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
-import { arrowHead, fadingDashes, lengthOf, targetCross } from '../art/arrow'
+import { arrowHead, fadingDashes, targetCross } from '../art/arrow'
 import { reachNow } from '../reach'
 import { makeCoupAim } from './aimCoup'
 import type { Army, GameState, Work } from '../../../engine'
@@ -185,31 +185,17 @@ export function makeAim(state: GameState, me: number) {
     // transparents petit à petit », no banner).
     const front = way.length > 1 ? way : [e, p]
     const reach = reachNow(state, me, tile, army)
+    // Up to the target only (« enlève le tracé bleu après la cible »): full,
+    // or fading out short of it where the army's men will be spent.
     const r = reach ? siteOf(state, reach.tile) : p
-    const toTile = lengthOf(front)
-    const fade = reach?.short
-      ? Math.hypot(r.x - e.x, r.y - e.y)
-      : toTile + Math.hypot(r.x - p.x, r.y - p.y)
-    fadingDashes(
-      marks,
-      reach?.short ? front : [...front, r],
-      zoom,
-      color,
-      Math.max(fade, 1),
-    )
+    const fade = reach?.short ? Math.hypot(r.x - e.x, r.y - e.y) : Infinity
+    fadingDashes(marks, front, zoom, color, Math.max(fade, 1))
     marks
       .circle(e.x, e.y, 7 / zoom)
       .fill(color)
       .stroke({ width: 1.6 / zoom, color: TONE.ink })
     const before = front.at(-2) ?? e
-    arrowHead(
-      marks,
-      before,
-      p,
-      zoom,
-      color,
-      Math.max(0.35, 1 - toTile / Math.max(fade, 1)),
-    )
+    arrowHead(marks, before, p, zoom, color, reach?.short ? 0.35 : 1)
     targetCross(marks, p, zoom)
   }
 

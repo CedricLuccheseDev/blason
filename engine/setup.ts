@@ -142,15 +142,21 @@ export function seatPersons(setup: GameSetup, persons: number): GameSetup {
 /** A host's book read back from the setup it made (hostSetup), as his guests see it before the game. */
 export function bookOf(setup: GameSetup): Book {
   const { seats } = setup
-  const teams = new Set(seats.flatMap((s) => (s.team >= 0 ? [s.team] : [])))
+  // The teams as many as their highest number says, two at least once one is
+  // set: every lord moved into one team is still a game of teams.
+  const highest = Math.max(-1, ...seats.map((s) => s.team))
+  const teams = highest < 0 ? 0 : Math.max(2, highest + 1)
   return {
     seed: setup.seed,
     land: setup.land,
     guests: Math.max(0, seats.filter((s) => s.person).length - 1),
     bots: seats.filter((s) => s.bot !== null).length,
     level: seats.find((s) => s.bot !== null)?.bot ?? 'normal',
-    teams: teams.size,
+    teams,
     opening: setup.opening,
+    // Each seat's team and each bot's level, as the host set them one by one.
+    ...(teams ? { teamOf: seats.map((s) => s.team) } : {}),
+    levels: seats.map((s) => s.bot ?? 'normal'),
   }
 }
 
@@ -158,8 +164,10 @@ export function bookOf(setup: GameSetup): Book {
 export function publicSetup(
   seed: string,
   land: Land = drawn('standard'),
+  /** So many seats, as many as the land suits at most. */
+  lords: number = SETUP_LIMITS.seats.max,
 ): GameSetup {
-  const seats = many(SETUP_LIMITS.seats.max, null)
+  const seats = many(lords, null)
   return on(seed, land, SETUP_LIMITS.opening.public, seats)
 }
 

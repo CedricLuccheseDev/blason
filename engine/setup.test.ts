@@ -12,6 +12,7 @@ import {
 } from './setup'
 import { stateHash } from './step'
 import { field, setupOf } from './testing'
+import type { Level } from './bots/levels'
 import type { GameSetup } from './types'
 
 // What a game is made of: the presets, the setup read from the wire, and
@@ -146,9 +147,28 @@ describe('a host’s book read back', () => {
       teams: 3,
       opening: 200,
     }
-    expect(bookOf(hostSetup(book))).toEqual(book)
+    expect(bookOf(hostSetup(book))).toMatchObject(book)
     const alone = { ...book, guests: 0, bots: 0, teams: 0 }
-    expect(bookOf(hostSetup(alone))).toEqual({ ...alone, level: 'normal' })
+    expect(bookOf(hostSetup(alone))).toMatchObject({
+      ...alone,
+      level: 'normal',
+    })
+  })
+
+  it('gives back each seat’s team and each bot’s level as the host set them, so that a guest reads the same game', () => {
+    const book = {
+      seed: 'moved',
+      land: { kind: 'drawn' as const, size: 'standard' as const },
+      bots: 3,
+      level: 'normal' as const,
+      teams: 2,
+      opening: 200,
+      // Every lord moved into the first team, one bot made hard.
+      teamOf: [0, 0, 0, 0],
+      levels: ['normal', 'hard', 'normal', 'easy'] as Array<Level>,
+    }
+    const setup = hostSetup(book)
+    expect(hostSetup(bookOf(setup))).toEqual(setup)
   })
 })
 

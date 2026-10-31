@@ -3,6 +3,7 @@ import {
   ATLAS_MAPS,
   SETUP_LIMITS,
   botsSetup,
+  lordsFor,
   publicSetup,
   readSetup,
   seatPersons,
@@ -74,8 +75,12 @@ let turned = 0
 function publicGame(): Room {
   if (open) return open
   const land = PUBLIC_LANDS[turned++ % PUBLIC_LANDS.length]
-  const room = watch(makeRoom('PUBLIC', publicSetup(freshSeed(), land)))
-  room.players = Array.from({ length: SEATS }, () => null)
+  // As many seats as its land suits, never more than a public game holds.
+  const lords = Math.min(SEATS, lordsFor(land)[1])
+  const room = watch(
+    makeRoom('PUBLIC', publicSetup(freshSeed(), land, lords)),
+  )
+  room.players = Array.from({ length: lords }, () => null)
   room.played = []
   open = room
   run(room)
@@ -92,7 +97,7 @@ export function upcoming(): Upcoming {
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
     startsIn: Math.max(0, SETUP_LIMITS.opening.public - room.turn) * TURN_MS,
     taken: seated(room),
-    seats: SEATS,
+    seats: room.setup.seats.length,
     waiting: room.players.filter((p) => p && room.waited.has(p)).length,
   }
 }
@@ -176,7 +181,7 @@ function sit(player: Player, room: Room): Room {
   if (!drop(room.left, seat)) room.joined.push(seat)
   player.send(beginning(room, seat))
   for (const turn of room.played ?? []) player.send(turn)
-  if (seated(room) >= SEATS) closeDoors(room)
+  if (seated(room) >= room.setup.seats.length) closeDoors(room)
   return room
 }
 

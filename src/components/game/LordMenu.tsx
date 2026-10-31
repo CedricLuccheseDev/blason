@@ -163,7 +163,14 @@ export function LordMenu({
                   }
                   emblem={
                     <span className={tone}>
-                      <ActMedallion {...LOOKS[line.act]} dim={!line.can} />
+                      <ActMedallion
+                        {...LOOKS[line.act]}
+                        // Breaking it, in gules as its word (« rompre l'alliance en vert c'est bizarre »).
+                        {...(line.act === 'alliance' && line.say === 'break'
+                          ? { ring: 'var(--color-gules)' }
+                          : {})}
+                        dim={!line.can}
+                      />
                     </span>
                   }
                   figure={figure}

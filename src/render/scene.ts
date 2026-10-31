@@ -122,7 +122,6 @@ export function makeScene(
       trade.roads,
       lines,
       coast,
-      ground.rivers,
       peaks.container,
       lit.container,
       scars.container,
@@ -132,6 +131,9 @@ export function makeScene(
       life.container,
       allies.container,
       raids.container,
+      // Over every border, the allies' and the fronts', so that none runs
+      // across a river (« y'a des frontières qui traversent le fleuve »).
+      ground.rivers,
       pacts.container,
       page.frame,
       trade.container,

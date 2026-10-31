@@ -19,7 +19,7 @@ import type { GameSetup, GameState, Grid } from './types'
  * sides, where a walk goes, and every other the water touches, where the
  * boats land (crossing.ts); not a piece the high mountains close all round.
  */
-function reachedLand(grid: Grid): Array<boolean> {
+function reachedLand(grid: Grid, isle: number): Array<boolean> {
   const piece = new Int32Array(grid.land.length).fill(-1)
   const wet = new Set<number>()
   const sizes = new Map<number, number>()
@@ -43,12 +43,10 @@ function reachedLand(grid: Grid): Array<boolean> {
     (on, tile) =>
       on &&
       (piece[tile] === main ||
-        (wet.has(piece[tile]) && (sizes.get(piece[tile]) ?? 0) >= ISLE)),
+        (wet.has(piece[tile]) && (sizes.get(piece[tile]) ?? 0) >= isle)),
   )
 }
 
-/** The fewest tiles an island keeps to be in the game: a speck the water touches, a shore's crumb cut off by the dead land, is not. */
-const ISLE = 20
 
 /**
  * A new game, as its setup says, a lord a seat, but for the empty ones: no
@@ -65,7 +63,7 @@ export function createGame(
   // Land no army reaches, a valley the high mountains close, is no part of
   // the game: no army could ever take it, so it does not count in the share
   // that wins either. The islands are, since the boats reach them.
-  const land = reachedLand(grid)
+  const land = reachedLand(grid, rules.isle)
   const reached = { ...grid, land, area: land.filter(Boolean).length }
   return {
     setup,

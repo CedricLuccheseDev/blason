@@ -210,11 +210,16 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
       last.set(cue, now)
       cast(spec, bus, now)
       const out = ctx.createGain()
-      out.gain.value = spec.gain * level
+      // A cry or the end goes round its bus's duck, not round the player's volume.
+      const around = spec.cry || spec.last
+      const volume = around
+        ? gainOfVolume(soundSettings().volumes[VOLUME_OF[bus]])
+        : 1
+      out.gain.value = spec.gain * level * volume
       const place = ctx.createStereoPanner()
       place.pan.value = Math.max(-1, Math.min(1, pan))
       // A cry or the end is heard over the duck it casts.
-      out.connect(place).connect(spec.cry || spec.last ? master : inputOf(bus))
+      out.connect(place).connect(around ? master : inputOf(bus))
       spec.layers.forEach((layer, i) => sound(cue, i, layer, out, now))
     },
     hear(hearing) {

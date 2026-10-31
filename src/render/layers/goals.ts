@@ -1,10 +1,9 @@
 import { Container, Graphics } from 'pixi.js'
-import { positionOf } from '../../../engine'
 import { arrowHead, fadingDashes, targetCross } from '../art/arrow'
 import { playerColor } from '../palette'
 import { siteOf } from '../marks'
 import { hostReach } from '../reach'
-import type { GameState, Host } from '../../../engine'
+import type { GameState } from '../../../engine'
 
 // Where the player's armies are going, as the aim drew it before the click
 // (« des pointillés avec une flèche qui deviennent transparents petit à
@@ -13,12 +12,6 @@ import type { GameState, Host } from '../../../engine'
 // out where its men will be spent (render/reach.ts, set again each second),
 // an arrowhead and a red target's cross on the tile it was sent at. At a
 // glance, on a phone too, where each of his armies goes and how far.
-
-/** Where an army stands now: on its road, or at the front it last took. */
-function frontOf(host: Host): number {
-  if (host.along < (host.road.length - 1) * 1000) return positionOf(host)
-  return host.edge[0] ?? host.entry
-}
 
 export function makeGoals(me: number) {
   const container = new Container()
@@ -32,15 +25,18 @@ export function makeGoals(me: number) {
       const color = playerColor(me)
       for (const host of state.hosts) {
         if (host.owner !== me || host.men <= 0) continue
-        const from = siteOf(state, frontOf(host))
-        const to = siteOf(state, hostReach(state, host).tile)
-        const aim = siteOf(state, host.aim)
-        const fade = Math.max(1, Math.hypot(to.x - from.x, to.y - from.y))
-        fadingDashes(g, [from, to], zoom, color, fade)
-        // Its target taken, it pushes on past it: no arrow pointing back.
+        // Its target taken, nothing more to show (« enlève le tracé bleu après la cible »).
         if (state.owner[host.aim] === me) continue
-        const toAim = Math.hypot(aim.x - from.x, aim.y - from.y)
-        arrowHead(g, from, aim, zoom, color, Math.max(0.35, 1 - toAim / fade))
+        // From where it entered, as the aim drew it, not from its moving front.
+        const from = siteOf(state, host.entry)
+        const aim = siteOf(state, host.aim)
+        const reach = hostReach(state, host)
+        const to = siteOf(state, reach.tile)
+        const fade = reach.short
+          ? Math.max(1, Math.hypot(to.x - from.x, to.y - from.y))
+          : Infinity
+        fadingDashes(g, [from, aim], zoom, color, fade)
+        arrowHead(g, from, aim, zoom, color, reach.short ? 0.35 : 1)
         targetCross(g, aim, zoom)
       }
     },

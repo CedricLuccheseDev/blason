@@ -140,6 +140,8 @@ export type Rules = {
   homeTrade: number
   /** A piece of land under so many tiles, free or a lord's, ringed by one lord and the sea, passes to him as if ringed all round. */
   seaWalled: number
+  /** The fewest tiles an island keeps to be in the game: a speck the water touches, a shore's crumb cut off by the dead land, is not. */
+  isle: number
   /** Share of the land that wins, in thousandths, and how it falls with time. */
   /** The land's roughness (rough.ts): at most so many tenths of a tile added to the order an army takes a tile in, smooth over a mesh of so many tiles. */
   roughness: number
@@ -253,6 +255,7 @@ export const RULES: Rules = {
   allyTrade: 200,
   homeTrade: 50,
   seaWalled: 200,
+  isle: 20,
   roughness: 30,
   roughMesh: 5,
   victoryShare: 800,
