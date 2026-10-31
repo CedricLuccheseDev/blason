@@ -1,5 +1,4 @@
 import { makeBeds } from './beds'
-import { chance } from './chance'
 import { CUES } from './cues'
 import {
   COMPRESSOR,
@@ -13,9 +12,12 @@ import {
 } from './mix'
 import { makeMusic } from './music'
 import { makeRoom } from './room'
+import { sway, takeOf, takesFor } from './takes'
+import { gainOfVolume, listenSound, soundSettings, toggleMuted } from './settings'
 import type { Hearing } from './beds'
 import type { Cue, CueSpec } from './cues'
 import type { Bus, Duck } from './mix'
+import type { Scope } from './takes'
 
 // The game's sound, by the browser's Web Audio, mixed as audio/mix.ts says:
 // four buses, each its level and the duck that lowers it, into a master
@@ -25,10 +27,17 @@ import type { Bus, Duck } from './mix'
 // cry to all lowers the rest while it passes; the end of the game silences
 // all but itself, for good. Nothing sounds before the player's first
 // gesture (the browser forbids it), nor while the page is hidden; M mutes,
-// remembered from one game to the next.
+// and the player's volumes set each its buses (audio/settings.ts), kept
+// from one game to the next.
 
-/** Where the player's choice to mute is kept. */
-const MUTED = 'blason-muted'
+/** Which of the player's volumes sets each bus: the music, the beds, and the rest. */
+const VOLUME_OF: Record<Bus, 'music' | 'beds' | 'effects'> = {
+  cues: 'effects',
+  world: 'effects',
+  beds: 'beds',
+  music: 'music',
+  ui: 'effects',
+}
 
 export type Mixer = {
   /** A cue, placed from -1 (left) to 1 (right), at a share of its loudness (the world's, by how close it is). */
@@ -42,48 +51,7 @@ export type Mixer = {
   destroy: () => void
 }
 
-function readMuted(): boolean {
-  try {
-    return window.localStorage.getItem(MUTED) === '1'
-  } catch {
-    return false
-  }
-}
-
-function keepMuted(muted: boolean) {
-  try {
-    window.localStorage.setItem(MUTED, muted ? '1' : '0')
-  } catch {
-    // Storage refused: muted for this game only.
-  }
-}
-
-/** A take of a layer's family, any but the last heard (« les sons sont toujours les mêmes … on se lasse »). */
-function takeOf(files: ReadonlyArray<string>, last = -1) {
-  if (files.length < 2) return 0
-  if (last < 0) return Math.floor(chance() * files.length)
-  const i = Math.floor(chance() * (files.length - 1))
-  return i >= last ? i + 1 : i
-}
-
-/** How far a take may play above or below its pitch, so that one blow heard twice is never quite the same. */
-const SWAY = 0.03
-
-/** A take's pitch this time, swayed a little. */
-const sway = () => 1 + (chance() * 2 - 1) * SWAY
-
-/** Every take of the cues a page plays: all of them in the game, the interface's at home. */
-const takesFor = (scope: Scope) =>
-  Object.values(CUES)
-    .filter((spec) => scope === 'game' || spec.bus === 'ui')
-    .flatMap((spec) =>
-      spec.layers.flatMap(({ file }) =>
-        typeof file === 'string' ? [file] : file,
-      ),
-    )
-
-/** The whole game's sound, or the home's: its interface's clicks alone, no beds and no music (« Les son de hud doivent être aussi dans la home »). */
-export type Scope = 'game' | 'home'
+export type { Scope } from './takes'
 
 export function makeMixer(scope: Scope = 'game'): Mixer {
   let ctx: AudioContext | null = null
@@ -95,11 +63,27 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
   const taken = new Map<string, number>()
   let beds: ReturnType<typeof makeBeds> | null = null
   let music: ReturnType<typeof makeMusic> | null = null
-  let muted = readMuted()
   let over = false
   let voices = 0
 
   const inputOf = (bus: Bus) => buses.get(bus)!.input
+  const muted = () => soundSettings().muted
+
+  /** The player's settings laid on the master and the buses, at once or over a moment. */
+  function settle(glide = 0.05) {
+    if (!ctx || !master) return
+    const { volumes } = soundSettings()
+    const now = ctx.currentTime
+    const whole = muted() ? 0 : gainOfVolume(volumes.all)
+    master.gain.setTargetAtTime(whole, now, glide)
+    for (const [bus, { input }] of buses)
+      input.gain.setTargetAtTime(
+        gainOf(LEVELS[bus]) * gainOfVolume(volumes[VOLUME_OF[bus]]),
+        now,
+        glide,
+      )
+  }
+  const unlisten = listenSound(() => settle())
 
   function load(file: string): Promise<AudioBuffer | null> {
     const known = buffers.get(file)
@@ -121,7 +105,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
       squeeze[k as keyof typeof COMPRESSOR].value = v
     squeeze.connect(ctx.destination)
     master = ctx.createGain()
-    master.gain.value = muted ? 0 : 1
+    master.gain.value = 0
     master.connect(squeeze)
     const room = makeRoom(ctx, ROOM.decay)
     room.connect(master)
@@ -136,6 +120,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
       lowered.connect(send).connect(room)
       buses.set(bus, { input, duck: lowered })
     }
+    settle(0.01)
     for (const take of takesFor(scope)) void load(take)
     if (scope === 'home') return
     beds = makeBeds(ctx, inputOf('beds'), load)
@@ -211,7 +196,7 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
 
   return {
     play(cue, pan = 0, level = 1) {
-      if (!ctx || !master || muted || over || document.hidden) return
+      if (!ctx || !master || muted() || over || document.hidden) return
       const spec = CUES[cue]
       const bus = spec.bus ?? 'cues'
       const now = ctx.currentTime
@@ -230,15 +215,10 @@ export function makeMixer(scope: Scope = 'game'): Mixer {
     hear(hearing) {
       if (!over) beds?.set(hearing)
     },
-    toggle() {
-      muted = !muted
-      keepMuted(muted)
-      if (ctx && master)
-        master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.05)
-      return muted
-    },
+    toggle: toggleMuted,
     ended: () => over,
     destroy() {
+      unlisten()
       window.removeEventListener('pointerdown', wake)
       window.removeEventListener('keydown', wake)
       document.removeEventListener('visibilitychange', hide)

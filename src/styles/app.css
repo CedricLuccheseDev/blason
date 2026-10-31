@@ -322,6 +322,12 @@
     @apply pointer-events-none absolute inset-x-0;
     transition: opacity var(--duration-hud-enter) var(--ease-hud);
   }
+  /* A volume's slider: the browser's own, tall enough for a finger, filled
+     in the heraldic gold (Settings.tsx). */
+  .hud-range {
+    @apply min-h-11 w-full cursor-pointer;
+    accent-color: var(--color-gilt-deep);
+  }
   .hud-figure {
     @apply font-figures font-extrabold;
     color: var(--hud-ink, var(--color-quill));

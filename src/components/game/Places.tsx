@@ -1,13 +1,14 @@
 import { GAP, Inline, MARGIN, Stack } from '../hud/Layout'
+import { Settings } from './Settings'
 import { BookButton, HomeMark } from './BookParts'
 import { Banner } from './Banner'
 import { Bar } from './Bar'
-import type { Echo } from './BarGroups'
 import { Campaign } from './Campaign'
 import { Moment } from './Moment'
 import { Purse } from './Purse'
 import { Race } from './Race'
 import { Lords } from './Lords'
+import type { Echo } from './BarGroups'
 import type { RefObject } from 'react'
 import type { GameHandle, Summary } from '~/render/client'
 
@@ -56,6 +57,7 @@ export function Places({
       <Inline className="self-start">
         {/* Upright on a phone the race needs the top's width: the game's mark comes down to its initial (BookParts.tsx), the way home kept. */}
         <HomeMark onHome={onHome} />
+        <Settings />
         {onBook && (
           <span className="pointer-events-auto">
             <BookButton onOpen={onBook} />

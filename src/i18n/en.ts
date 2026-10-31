@@ -138,6 +138,22 @@ export const en = {
     options: 'Alliance, offering',
     hintTouch: 'long press: alliance, offering',
   },
+  // The settings' sheet, beside the game's name and the player on the home (Settings.tsx).
+  settings: {
+    open: 'Settings',
+    title: 'Settings',
+    sound: 'Volumes',
+    volumes: {
+      all: 'All',
+      music: 'Music',
+      beds: 'Ambience',
+      effects: 'Effects',
+    },
+    mute: 'Sound',
+    on: 'On',
+    off: 'Cut',
+    language: 'The language',
+  },
   lord: {
     allied: 'Your ally',
     atWar: 'At war with you',

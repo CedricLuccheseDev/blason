@@ -441,7 +441,16 @@ nothing clips when everything falls at once:
   other with a silence between;
 - **the interface**: a light wooden click on each piece pressed, a dull knock
   on one that cannot be had now (`presses.ts`, read from the page itself), in
-  the game and on the home page alike, where the mixer plays only these.
+  the game and on the home page alike, where the mixer plays only these;
+  a sheet unfolded when a drawer opens.
+
+The player's settings (`settings.ts`): four volumes, the whole on the
+master, the music and the beds each on its bus, the rest on the cues', the
+world's and the interface's, and the mute (M), kept in the browser and
+heard by every mixer at once; set on the settings' sheet
+(`components/game/Settings.tsx`), beside the game's name and the player on
+the home, with the language, changed in place and kept in the site's one
+cookie (`i18n/index.tsx`).
 
 All but the interface and the music send a share of themselves into one
 generated room (`room.ts`), a short open-air reverberation, so that the

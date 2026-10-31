@@ -130,6 +130,21 @@ export const fr: Messages = {
     options: 'Alliance, offrande',
     hintTouch: 'appui long : alliance, offrande',
   },
+  settings: {
+    open: 'Réglages',
+    title: 'Réglages',
+    sound: 'Les volumes',
+    volumes: {
+      all: 'Tout',
+      music: 'Musique',
+      beds: 'Ambiance',
+      effects: 'Effets',
+    },
+    mute: 'Le son',
+    on: 'Activé',
+    off: 'Coupé',
+    language: 'La langue',
+  },
   lord: {
     allied: 'Ton allié',
     atWar: 'En guerre avec toi',

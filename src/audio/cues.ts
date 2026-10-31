@@ -8,37 +8,6 @@ import type { Bus } from './mix'
 // (« c'est surtout des hit que l'on veut pour que ça reste digeste »). A sound
 // more is an entry here and its file, nothing else.
 
-export type Cue =
-  | 'muster'
-  | 'embark'
-  | 'oars'
-  | 'sail'
-  | 'gun'
-  | 'hull'
-  | 'prize'
-  | 'alarm'
-  | 'herald'
-  | 'pact'
-  | 'parting'
-  | 'betrayal'
-  | 'build'
-  | 'victory'
-  | 'defeat'
-  | 'clash'
-  | 'volley'
-  | 'stone'
-  | 'press'
-  | 'refused'
-  | 'unfold'
-  | 'shout'
-  | 'fall'
-  | 'launch'
-  | 'torch'
-  | 'hammer'
-  | 'plant'
-  | 'tick'
-  | 'start'
-
 type Layer = {
   /** Its file in public/sounds/, without the extension; or a family of takes, turned between, never the same twice running (« on verra si on tourne entre les samples de même famille », « les sons sont toujours les mêmes … on se lasse »). */
   file: string | ReadonlyArray<string>
@@ -60,7 +29,7 @@ export type CueSpec = {
   last?: boolean
 }
 
-export const CUES: Record<Cue, CueSpec> = {
+const TABLE = {
   /** My army leaves: a war horn. */
   muster: {
     layers: [{ file: ['horn-1', 'horn-2', 'horn-3', 'horn-4'] }],
@@ -251,4 +220,8 @@ export const CUES: Record<Cue, CueSpec> = {
     gain: 0.8,
     again: 0.5,
   },
-}
+} satisfies Record<string, CueSpec>
+
+/** A sound of the table, by its name. */
+export type Cue = keyof typeof TABLE
+export const CUES: Record<Cue, CueSpec> = TABLE
