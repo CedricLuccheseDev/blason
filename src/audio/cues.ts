@@ -29,6 +29,7 @@ export type Cue =
   | 'stone'
   | 'press'
   | 'refused'
+  | 'unfold'
   | 'shout'
   | 'fall'
   | 'launch'
@@ -152,6 +153,13 @@ export const CUES: Record<Cue, CueSpec> = {
     bus: 'ui',
     gain: 0.6,
     again: 0.05,
+  },
+  /** A drawer of the HUD opening, the bar's or the lords' list: a sheet unfolded. */
+  unfold: {
+    layers: [{ file: ['unfold-1', 'unfold-2', 'unfold-3'] }],
+    bus: 'ui',
+    gain: 0.45,
+    again: 0.15,
   },
   /** A piece of the HUD that cannot be had now, pressed: a dull knock. */
   refused: {

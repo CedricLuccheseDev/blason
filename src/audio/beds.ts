@@ -20,6 +20,7 @@ export type Bed =
   | 'village'
   | 'market'
   | 'castle'
+  | 'port'
   | 'caravan'
   | 'march'
   | 'battle'
@@ -74,6 +75,12 @@ export const BEDS: Record<Bed, BedSpec> = {
     gain: 0.5,
     rank: 1,
     band: [150, 10000],
+  },
+  port: {
+    files: ['port-1', 'port-2'],
+    gain: 0.5,
+    rank: 1,
+    band: [150, 9000],
   },
   caravan: {
     files: ['caravan-1', 'caravan-2'],

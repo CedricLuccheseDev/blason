@@ -22,8 +22,8 @@ const WORKS: Record<Work, Bed> = {
   village: 'village',
   market: 'market',
   castle: 'castle',
-  // A port, the water lapping at its quay.
-  port: 'sea',
+  // A port, a hull creaking at its quay and the gulls over it.
+  port: 'port',
 }
 /** The bed of each scar a coup leaves. */
 const SCARS: Record<Scar['kind'], Bed> = { rebels: 'riot', ash: 'fire' }

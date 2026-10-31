@@ -19,9 +19,13 @@ export function capture(name) {
   return captured.get(name)
 }
 
+/** The pieces renamed on 31/10, read under either name, whichever the capture holds. */
+const RENAMED = { Chevauchée: 'Petite troupe', 'Petite troupe': 'Chevauchée' }
+
 /** The markup of the element a label opens, as far as its first svg's end and a little after. */
 function after(html, label) {
-  const at = html.indexOf(`aria-label="${label}"`)
+  const named = (l) => html.indexOf(`aria-label="${l}"`)
+  const at = named(label) >= 0 ? named(label) : named(RENAMED[label])
   if (at < 0) throw new Error(`No "${label}" in the capture`)
   return html.slice(at, at + 9000)
 }

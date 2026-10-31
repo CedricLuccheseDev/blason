@@ -22,6 +22,11 @@ export async function makeApp(element: HTMLElement): Promise<Application> {
     // events, which test the whole map under every move, nor its filters,
     // its DOM layer or its accessibility overlay are loaded.
     skipExtensionImports: true,
+    // Each piece measured where it stands this frame: the layers are render
+    // groups, whose kept transforms are those of the last frame, so that a
+    // piece moved or drawn anew was measured where it no longer is and left
+    // out, and the works and the "+" of gold blinked.
+    culler: { updateTransform: true },
   })
   element.appendChild(app.canvas)
   return app

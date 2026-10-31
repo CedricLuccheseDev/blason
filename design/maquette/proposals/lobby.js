@@ -8,7 +8,8 @@ import { shield } from './lords.js'
 // round button over the camera's opens it at any time. The bar of the game
 // is hidden while there is no game yet.
 
-export const BAR = 'div.w-max:has(button[aria-label="Chevauchée"])'
+export const BAR =
+  'div.w-max:has(button[aria-label="Chevauchée"], button[aria-label="Petite troupe"])'
 export const PANEL = 'div.hud-enter:has(> div > span.hud-word.text-hud-l)'
 /** The map's place: what is laid over the whole screen goes beside it, the map's image still put inside. */
 export const MAP = 'main > [role="img"]'
