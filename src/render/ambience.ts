@@ -1,3 +1,4 @@
+import { BEDS } from '../audio/beds'
 import { smoothstep } from './ease'
 import { FOREST, HILLS, MOUNTAINS } from './ground/terrain'
 import { siteOf } from './marks'
@@ -33,27 +34,15 @@ const FULL: Partial<Record<Bed, number>> = {
   village: 3,
   market: 2,
   castle: 2,
+  port: 2,
   caravan: 3,
   march: 3,
   battle: 2,
   fire: 2,
   riot: 2,
 }
-/** Every bed, for the tallies. */
-const BED_LIST: ReadonlyArray<Bed> = [
-  'sea',
-  'wind',
-  'river',
-  'wood',
-  'village',
-  'market',
-  'castle',
-  'caravan',
-  'march',
-  'battle',
-  'fire',
-  'riot',
-]
+/** Every bed, for the tallies: the table's own, so that a bed more is never left out. */
+const BED_LIST = Object.keys(BEDS) as ReadonlyArray<Bed>
 /** The points sampled across the screen, by columns and rows. */
 const COLUMNS = 16
 const ROWS = 10
