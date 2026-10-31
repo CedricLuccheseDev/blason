@@ -113,8 +113,9 @@ export const en = {
     },
   },
   race: {
-    toWin: (share: number) => `to win: ${share}%`,
     dropsIn: (left: string) => `to win, drops in ${left}`,
+    win: 'to win:',
+    goal: (share: number) => `to win: ${share}% of the land`,
   },
   // The right click's menu on another lord's land (LordMenu.tsx), and the
   // cartouche's word that a right click opens it.

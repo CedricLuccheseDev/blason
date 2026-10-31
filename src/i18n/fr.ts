@@ -108,8 +108,9 @@ export const fr: Messages = {
     },
   },
   race: {
-    toWin: (share: number) => `pour gagner : ${share}\u202f%`,
     dropsIn: (left: string) => `pour gagner, baisse dans ${left}`,
+    win: 'gagner :',
+    goal: (share: number) => `pour gagner : ${share}\u202f% des terres`,
   },
   menu: {
     label: (lord: string) => `Que faire avec ${lord}`,

@@ -546,10 +546,12 @@ The HUD is React, laid over the map. It is built on a small design system,
   above the bar's row, go to the pointer's other side, and on a phone stand
   above the bar; an offer's sheet; a pennant flies left near the right side).
 
-The game's pieces (`src/components/game/`: the lords' list top left, every
-lord standing on a thin line washed in his colour as far as his land goes
-against the first's, the lord under the pointer lit there (`Lords.tsx`); the
-race on one thin line and under it a betrayal cried to all on a banderole of
+The game's pieces (`src/components/game/`: the lords' list top right, every
+lord standing on a thin line washed in his colour as far as his share of the
+whole land goes, a gold rule down every line at the share that wins, that
+share, the clock and when it drops at its head (`Goal.tsx`), the lord under
+the pointer lit there (`Lords.tsx`); on a phone, the list folded, the race on
+one thin line top centre (`Race.tsx`) and under it a betrayal cried to all on a banderole of
 gules (`Banner.tsx`), the top right left to the map; the seal of an alliance of
 the player's only in its last moments, beside his ally's name, a click to renew
 it, its time and whose turn it is beside it (`PactSeal.tsx`); an offer as one

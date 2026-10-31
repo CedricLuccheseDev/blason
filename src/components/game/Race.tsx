@@ -3,7 +3,6 @@ import { Hint } from '../hud/Hint'
 import { Inline, Panel, Stack } from '../hud/Layout'
 import { Rule } from '../hud/Sheet'
 import { Call, Note } from '../hud/Text'
-import { ICON } from '../hud/tokens'
 import { useCompact } from '../hud/useCompact'
 import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
@@ -79,39 +78,24 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
 }
 
 /**
- * Top centre, on one thin line: the clock, the race to the share of the land
- * that wins (my share in my colour, the leader's shield, the flag at the
- * share to reach), and the share to reach or when it drops next, in words,
- * or its figure alone when the line lacks room (the words then under the
- * pointer). Who leads is read in the lords' list.
+ * Top centre on a phone, on one thin line (« La bar de victoire en haut fais
+ * sur une ligne »): the clock, the race to the share of the land that wins
+ * (my share in my colour, the leader's shield, the flag at the share to
+ * reach), the share to reach and when it drops next; when the line lacks
+ * room, the word before the share left out, then the track shorter. On a screen, the race is read in
+ * the lords' list (Goal.tsx). Who leads is read in the lords' list.
  */
 export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
-  const { room, piece, step } = useFit(1)
+  const { room, piece, step } = useFit(2)
   const compact = useCompact()
   // In the opening, the race not begun, its place says the count and what
   // to do (« la popup qui explique qu'il faut poser son étendard, mets ça
   // sur le header qui indique la victoire »).
   if (summary.opening !== null)
     return <Opening summary={summary} touch={compact} />
+  if (!compact) return null
   const { needed, dropIn } = summary
-  const words =
-    dropIn === null ? m.race.toWin(needed) : m.race.dropsIn(minutes(dropIn))
-  const figure = dropIn === null ? m.game.percent(needed) : minutes(dropIn)
-  // What is left to win: the words, or their figure alone where the room is short.
-  const short = step || compact
-  const left = (
-    <span title={short ? words : undefined}>
-      <Inline gap="hair">
-        {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
-        {short ? (
-          <Figure size="s">{figure}</Figure>
-        ) : (
-          <Note className="whitespace-nowrap">{words}</Note>
-        )}
-      </Inline>
-    </span>
-  )
   return (
     <div ref={room} className="flex w-full min-w-0 justify-center">
       <div ref={piece} className="w-max">
@@ -120,30 +104,23 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          {compact ? (
-            // On a phone, one line: the time, the track, the hourglass and its
-            // figure; the words in the hint (« on peut réduire la section en
-            // haut centré elle est trop grosse »).
-            <Panel>
-              <Inline gap="part">
-                <Figure size="m">{minutes(summary.seconds)}</Figure>
-                <div className="w-36">
-                  <Track summary={summary} />
-                </div>
-                {left}
-              </Inline>
-            </Panel>
-          ) : (
-            <Panel gap="hair" className="w-80 items-center">
-              <div className="w-full">
+          <Panel>
+            <Inline gap="part">
+              <Figure size="m">{minutes(summary.seconds)}</Figure>
+              <div className={step < 2 ? 'w-36' : 'w-20'}>
                 <Track summary={summary} />
               </div>
-              <Inline gap="part">
-                <Figure size="l">{minutes(summary.seconds)}</Figure>
-                {left}
+              <Inline gap="hair">
+                {step === 0 && <Note>{m.race.win}</Note>}
+                <Figure size="s">{m.game.percent(needed)}</Figure>
               </Inline>
-            </Panel>
-          )}
+              {dropIn !== null && (
+                <Figure icon="hourglass" size="s">
+                  {minutes(dropIn)}
+                </Figure>
+              )}
+            </Inline>
+          </Panel>
         </Hint>
       </div>
     </div>
