@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/routes/**/*.{ts,tsx}", "design/mockups/cells.ts"],
+  "entry": [
+    "src/routes/**/*.{ts,tsx}",
+    "design/mockups/cells.ts",
+    "scripts/legends/*.ts"
+  ],
   "project": [
     "src/**/*.{ts,tsx}",
     "engine/**/*.ts",
@@ -9,5 +13,6 @@
     "server/**/*.ts",
     "net/**/*.ts"
   ],
-  "ignoreDependencies": ["tailwindcss"]
+  "ignoreDependencies": ["tailwindcss", "@convex-dev/auth"],
+  "ignore": ["scripts/plates.mjs"]
 }

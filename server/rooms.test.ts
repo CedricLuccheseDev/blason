@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SETUP_LIMITS, readSetup } from '../engine'
-import { SEATS, TURN_MS } from '../net/protocol'
+import { SETUP_LIMITS, lordsFor, readSetup } from '../engine'
+import { TURN_MS } from '../net/protocol'
 import { begun, player, turns } from './testing'
 import type * as Rooms from './rooms'
+
+/** The seats of a public game on a standard land, the first of the turn: as many as it suits. */
+const STANDARD = lordsFor({ kind: 'drawn', size: 'standard' })[1]
 
 // The public game's cycle, on a clock of the test's: one is always in its
 // opening, its land drawn and its turns flowing from the first, no bot in
@@ -33,7 +36,8 @@ describe('the public game', () => {
       // The count its players see in the game: the whole opening.
       startsIn: SETUP_LIMITS.opening.public * TURN_MS,
       taken: 0,
-      seats: SEATS,
+      // As many seats as its land suits: a standard one, sixteen.
+      seats: STANDARD,
     })
     // Joining closes before the opening ends: the last to come may plant.
     expect(rooms.JOIN_MS).toBeLessThan(SETUP_LIMITS.opening.public * TURN_MS)
@@ -73,7 +77,7 @@ describe('the public game', () => {
       opening: SETUP_LIMITS.opening.public,
     })
     // No bot: every seat empty until a person takes it.
-    expect(told.setup.seats).toHaveLength(SEATS)
+    expect(told.setup.seats).toHaveLength(STANDARD)
     expect(told.setup.seats.every((seat) => seat.bot === null)).toBe(true)
     // The forty turns played, from the first, every seat empty.
     const past = turns(one.heard)
@@ -157,8 +161,8 @@ describe('the public game', () => {
   })
 
   it('closes its doors when full, and the next opens', () => {
-    const { seed } = rooms.upcoming()
-    const all = Array.from({ length: SEATS }, (_, i) => player(`p${i}`))
+    const { seed, seats } = rooms.upcoming()
+    const all = Array.from({ length: seats }, (_, i) => player(`p${i}`))
     for (const p of all) rooms.join(p, null)
     expect(all.map((p) => begun(p.heard))).toMatchObject(
       all.map((_, seat) => ({ seat, setup: { seed } })),

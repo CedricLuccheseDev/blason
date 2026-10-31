@@ -35,6 +35,12 @@ export type Ornament =
 /** The tiles of a box, in tiles, with the margin of what leans into it from around. */
 export type Span = { c0: number; c1: number; r0: number; r1: number }
 
+/**
+ * A tile of the woods (« je trouve que la foret est vraiment pas bien fait »):
+ * on its edge a close row of trees, a little taller, that draws the wood's
+ * outline; within, fewer, a clearing now and then among them, the wood's
+ * mass told by its wash (paint.ts) rather than a carpet of crowns.
+ */
 function woods(
   out: Array<Ornament>,
   c: number,
@@ -42,19 +48,36 @@ function woods(
   w: number,
   k: number,
   detail: number,
+  edge: boolean,
 ) {
+  // A clearing: a block of four tiles by four, one in four, its trees gone.
+  if (!edge && hash(c >> 2, r >> 2, 18) < 0.25) return
   for (let sub = 0; sub < 4; sub++) {
     const [sx, sy] = [c * 2 + (sub % 2), r * 2 + (sub >> 1)]
-    if (hash(sx, sy, 11) > 0.85 * w) continue
+    if (hash(sx, sy, 11) > (edge ? 0.9 : 0.45) * w) continue
     out.push({
       kind: hash(sx, sy, 12) < 0.3 ? 'fir' : 'tree',
       x: (sx + 0.5 + (hash(sx, sy, 14) - 0.5) * 0.7) * (k / 2),
       y: (sy + 0.5 + (hash(sx, sy, 15) - 0.5) * 0.6) * (k / 2) + 1.4 * (k / 4),
-      r: ((detail === 2 ? 1.25 : 1.45) + 0.55 * hash(sx, sy, 16)) * (k / 4),
+      r:
+        ((detail === 2 ? 1.25 : 1.45) + 0.55 * hash(sx, sy, 16)) *
+        (k / 4) *
+        (edge ? 1.15 : 1),
       w,
       h: hash(sx, sy, 17),
     })
   }
+}
+
+/** Whether a tile of the woods lies on their edge: another ground beside it. */
+function edgeOf(grid: Grid, terrain: Terrain, c: number, r: number) {
+  for (let dr = -1; dr <= 1; dr++)
+    for (let dc = -1; dc <= 1; dc++) {
+      const [cc, rr] = [c + dc, r + dr]
+      if (cc < 0 || rr < 0 || cc >= grid.width || rr >= grid.height) continue
+      if (terrain.biome[rr * grid.width + cc] !== FOREST) return true
+    }
+  return false
 }
 
 function hills(
@@ -152,7 +175,8 @@ export function ornaments(
       const w = weights.deco[t]
       if (w <= 0) continue
       const b = terrain.biome[t]
-      if (b === FOREST) woods(out, c, r, w, k, detail)
+      if (b === FOREST)
+        woods(out, c, r, w, k, detail, edgeOf(grid, terrain, c, r))
       else if (b === HILLS) hills(out, c, r, w, k)
       else if (b === MOUNTAINS) mountains(out, c, r, w, k)
       else if (b === PLAIN) plain(out, c, r, w, k, detail)

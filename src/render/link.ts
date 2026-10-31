@@ -26,6 +26,15 @@ export function upcomingUrl(): string | null {
   return line && new URL('/public', line.replace(/^ws/, 'http')).href
 }
 
+/** Where the relay tells a watcher every room it holds (GET /admin), behind its key. */
+export function adminUrl(key: string): string | null {
+  const line = relayUrl()
+  if (!line) return null
+  const url = new URL('/admin', line.replace(/^ws/, 'http'))
+  url.searchParams.set('key', key)
+  return url.href
+}
+
 /** A line opened to the relay, once it answers. */
 export function connect(url: string): Promise<Link> {
   return new Promise((resolve, reject) => {

@@ -15,8 +15,8 @@ import type { GameState, Point } from '../../engine'
 // borders' ink (layers/borders.ts), the green of the allies and the red of
 // the wars, and its keys to the ground's decoration (ground/decor.ts).
 
-const WASH = 0.5
-const MY_WASH = 0.74
+const WASH = 0.64
+const MY_WASH = 0.84
 const FREE = 0xdccb9e
 const FREE_WASH = 0.42
 /** How much stone tints the land a castle holds. */
@@ -27,6 +27,9 @@ const MERLON = 6
 const UNDER_INK = 0.08
 /** How often the lands are traced again, in ms. */
 const EVERY_MS = 200
+/** How often the free land is traced again, in ms: one region for the whole of it, the greatest and the most often changed, holes and all (« le jeu n'est pas très fluide sur la map europe avec 20 joueurs ça sacade »); its edges are the lords' borders, traced as often as the lords. */
+const FREE_EVERY_MS = 1000
+const FREE_KEY = -3
 
 /** The key of a region: a lord, or the free land (-3); -2 the open sea; never yet drawn. */
 const SEA_KEY = -2
@@ -44,7 +47,11 @@ export function makeRegions(state: GameState, me: number) {
   washes.sortableChildren = true
   /** The castles' stone, laid over the ground's decoration with the borders. */
   const stone = new Graphics()
-  // Each tile under the sea near a shore takes the nearest land's region, so the washes reach the coast and the coast clips them.
+  // Each tile under the sea near a shore takes the nearest land's region, so
+  // the washes reach the coast and the coast clips them; a river's too, so
+  // that they reach its banks with no corner of parchment left (« y'a plein
+  // de défauts de territoire »), the river drawn over all the borders
+  // (scene.ts) so that none runs across it.
   const shore = grid.land.map((l, t) => (l ? t : -1))
   let ring = shore.flatMap((s, t) => (s >= 0 ? [t] : []))
   for (let depth = 0; depth < 4; depth++) {
@@ -62,13 +69,16 @@ export function makeRegions(state: GameState, me: number) {
     if (s < 0) return SEA_KEY
     const owner = state.owner[s]
     // The free land is one, in the opening too: only the standards planted are drawn.
-    return owner !== NEUTRAL ? owner : -3
+    return owner !== NEUTRAL ? owner : FREE_KEY
   }
   let keys = new Int32Array(shore.length).fill(UNSET)
   const drawn = new Map<number, Array<Graphics>>()
   /** Each region's outline as last traced, for the lines laid along its border. */
   const outlines = new Map<number, Array<Array<Point>>>()
   let traced = -Infinity
+  /** When the free land was last traced, and whether it changed since. */
+  let freeTraced = -Infinity
+  let freeDue = false
   let built = ''
 
   function washOf(key: number): number {
@@ -165,6 +175,13 @@ export function makeRegions(state: GameState, me: number) {
       if (now - traced < EVERY_MS) return null
       traced = now
       const { next, dirty } = changes()
+      // The free land waits its turn, the rest is traced now.
+      if (dirty.delete(FREE_KEY)) freeDue = true
+      if (freeDue && now - freeTraced >= FREE_EVERY_MS) {
+        dirty.add(FREE_KEY)
+        freeDue = false
+        freeTraced = now
+      }
       const works = state.works.map((w) => [w.tile, w.owner].join(':')).join()
       if (dirty.size === 0 && works === built) return null
       const tiles = tilesOf(next, dirty)
@@ -172,8 +189,12 @@ export function makeRegions(state: GameState, me: number) {
         if (key !== SEA_KEY && key !== UNSET)
           draw(key, tiles.get(key) ?? [], next)
       keys = next
+      // The castles' stone only when a castle's lord's land or the works moved.
+      const castled = state.works.some(
+        (w) => w.work === 'castle' && dirty.has(w.owner),
+      )
+      if (works !== built || castled) wall(next)
       built = works
-      wall(next)
       dirty.delete(SEA_KEY)
       dirty.delete(UNSET)
       return dirty

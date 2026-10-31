@@ -1,6 +1,6 @@
 # Blason
 
-Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : vingt seigneurs, joueurs et bots, sur une terre
+Jeu de stratégie médiéval en ligne, inspiré d'OpenFront : vingt-quatre seigneurs, joueurs et bots, sur une terre
 redessinée à chaque partie, prise tuile par tuile ; des paysans qui tiennent la terre et qu'on lève en armées,
 l'or qui paie les constructions posées librement, des alliances courtes, des félons et des marchands. Dans le
 navigateur.
@@ -8,7 +8,7 @@ navigateur.
 **La doctrine** (Cédric, 28/10) : « un jeu qui prend plusieurs briques des rts complexes, mais en simplifié rapide et
 fun. Et agréable visuellement ». Chaque règle et chaque écran se jugent à cette aune.
 
-Phase actuelle : **la terre fluide**, sur `/play` contre dix-neuf bots ; l'accueil (`/`) est fait comme celui d'OpenFront,
+Phase actuelle : **la terre fluide**, sur `/play` contre vingt-trois bots ; l'accueil (`/`) est fait comme celui d'OpenFront,
 la partie publique en cours de pose où « Jouer » entre aussitôt, le solo et les parties privées. Le jeu des fiefs, premier modèle, est retiré du dépôt (son dernier
 état est à l'étiquette git `fiefs-final`). Le dépôt est fait pour devenir public, comme celui d'OpenFront : code
 rangé, documenté en anglais (`README.md`, `docs/`, `CONTRIBUTING.md`), sous licence AGPL-3.0.
@@ -22,7 +22,7 @@ rangé, documenté en anglais (`README.md`, `docs/`, `CONTRIBUTING.md`), sous li
 
 Ces documents font foi : une règle se discute et se valide avant d'y être inscrite, et n'est codée
 qu'ensuite. Le code ne tranche rien seul. Le dépôt en porte la version publique, en anglais :
-`docs/RULES.md` (les règles et leurs chiffres) et `docs/ARCHITECTURE.md` ; une règle qui change les met à jour
+`docs/gdd/` (le GDD, 30/10 : chaque décision en fiche Pourquoi / Comment / Quoi, sa preuve et sa validation), `docs/RULES.md` (les règles et leurs chiffres) et `docs/ARCHITECTURE.md` ; une règle qui change les met à jour
 dans le même commit.
 
 ## Comment on travaille
@@ -31,6 +31,9 @@ dans le même commit.
   pourquoi, puis la construction. Cédric veut apprendre l'architecture : expliquer avant de coder.
 - **Une question à la fois**, avec une recommandation ; être critique en joueur ; rester simple et nerveux
   comme OpenFront, sans empiler les règles.
+- **Chaque feature avec son son** (30/10, « a chaque fois aussi qu'on ajoutera des features il faudra penser au son qui va
+  avec ») : une règle, une pièce du HUD ou un geste nouveau se pense avec ce qu'on en entend, dans la même brique ; son
+  entrée dans la table (`audio/cues.ts`, `beds.ts`), sa famille (le bus de `audio/mix.ts`) et ses fichiers crédités.
 - **Construit de zéro.** OpenFront (AGPL-3.0) se lit pour comprendre, il ne se recopie jamais.
 - **Une architecture SOLID, acté le 27/10** (« Rajoute en règle qu'on instaure une architecture SOLID ») : le code
   est fait de modules et de fonctions plus que de classes, et les cinq principes s'y lisent ainsi.
@@ -57,18 +60,24 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `engine/` : la simulation, la partie entière, pure et déterministe (hasard tiré d'une graine, nombres entiers en
   millièmes, `UNIT`, jamais l'horloge, 10 pas par seconde). Son seul contrat est `engine/index.ts` : hors du moteur,
   on n'importe rien d'autre (`.dependency-cruiser.cjs`), et le moteur n'importe rien de l'app.
-  - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ;
-    `grid.ts` les tuiles ; `setup.ts` ce dont une partie est faite, en un objet (`GameSetup`, dans `types.ts` : la
+  - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ; `map/atlas.ts`
+    l'atlas (sa table dans `map/earth.ts` ; les terres de légende, Terre du Milieu et Westeros, dessinées de notre main par `scripts/legend.ts`, 30/10), les cartes de la vraie Terre (30/10, « faire des maps de la vrai terre », l'Europe d'abord) : leur sol cuit des
+    hauteurs du monde (ETOPO 2022, NOAA) et leurs grands lacs et fleuves (Natural Earth), domaine public, par
+    `scripts/atlas.ts` dans `map/atlas/` (leurs fleuves seuls refaits par `scripts/rivers.ts`, plus fins sur une petite carte, 31/10 « il faut faire les fleuves dans les cartes France, britannique », chacun prolongé jusqu'à l'eau où il se jette) ; chacune sa propre taille et les seigneurs qu'elle sied (« chaque carte a sa propre
+    taille »), ses îles gardées à part et ses détroits ouverts, nommés (« l'irlande est connecté a l'angleterre … »), ses
+    hautes montagnes sur les vraies chaînes (le relief local ; détroits et chaînes posés sur le cadre, `map/landmarks.ts`), ses vrais fleuves ; une partie dit sa terre par `Land`
+    (`types.ts` : inventée à une taille, ou une carte de l'atlas), le livre les range par taille et dit laquelle convient ;
+    `grid.ts` les tuiles, les fleuves en vraie eau (31/10, « des vrais points d'eaux pour ajouter des ports traverser tout ça », sans gué : `map/streams.ts`, d'une tuile de large à la source à trois à l'embouchure, dessinés comme la mer à toutes les distances) ; `setup.ts` ce dont une partie est faite, en un objet (`GameSetup`, dans `types.ts` : la
     graine et sa terre, le mode, l'ouverture, les sièges, chacun son équipe et son bot ou personne), que le livre de
     l'hôte remplira, que le relais passera sans le lire et dont `createGame(grid, setup)` fait la partie, ses
     préréglages (seul, des bots, la partie publique sans bot), sa lecture bornée par `SETUP_LIMITS` et sa terre
     (`landOf`) ; `land.ts` la terre de la partie et les paysans ; `opening.ts` l'ouverture, les étendards plantés où l'on veut et les terres données autour à la fin du compte, et les sièges vides (sans bot ni personne : pas de seigneur, ni étendard ni terre, sauf si une personne le prend pendant l'ouverture, `takeSeat`) ; `muster.ts` la levée aux villages
     et la marche ; `course.ts` le chemin d'une armée, par l'entrée qui la mène le plus vite au clic, marche et traversée
-    comptées (acté le 29/10), celui même que la visée dessine ; `war.ts` les armées ; `rough.ts` la rugosité des terres, qui courbe les fronts (actée le 29/10) ; `battle.ts` les batailles entre armées ; `volleys.ts` les flèches des châteaux ;
+    comptées (acté le 29/10), celui même que la visée dessine ; `war.ts` les armées, `band.ts` la bande qu'elles prennent, `reach.ts` où leurs hommes seront dépensés (31/10, le clic une direction), que la visée et les armées parties dessinent en pointillés qui s'effacent jusque-là, une flèche et une croix de cible rouge où l'on vise, sans bannière (« des pointillés avec une flèche qui deviennent transparents petit à petit », `render/art/arrow.ts`) ; `crossing.ts` la traversée de l'eau en barque (30/10, « de n'importe quelle tuile comme openfront ») ; `ships.ts` les ports et les bateaux marchands, `warships.ts` les navires de guerre (30/10, « fais comme open front tu choisi une position sur l'eau et il part du port le plus proche »), leur sillage dessiné derrière chaque bateau (`layers/wakes.ts`) ; `rough.ts` la rugosité des terres, qui courbe les fronts (actée le 29/10) ; `battle.ts` les batailles entre armées ; `volleys.ts` les flèches des châteaux ;
     `enclosure.ts` les terres encerclées ;
     `works.ts` les constructions ; `diplomacy.ts` les alliances et les félons ; `caravans.ts` les marchands ;
     `step.ts` le pas et la victoire ; `rules.ts` tous les chiffres (`RULES`) ; `types.ts` l'état et les ordres.
-  - `bots/` : `bot.ts` (guerre, constructions, expansion) et `talk.ts` (diplomatie), joueurs comme les autres.
+  - `bots/` : `bot.ts` (guerre, constructions, expansion, et la terre libre qu'on n'atteint qu'en barque, `shores.ts`, 31/10) et `talk.ts` (diplomatie), joueurs comme les autres.
   - Tests : la pureté (`purity.test.ts`), le déterminisme et la guerre (`war.test.ts`), les parties dorées
     (`golden.test.ts` : trois parties de bots, leurs empreintes relevées une fois et écrites en dur ; une refonte qui
     garde le jeu les garde), la victoire (`victory.test.ts`), le setup (`setup.test.ts`), la diplomatie et les
@@ -78,13 +87,18 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   le jeu tourne ; le plaisir et la lisibilité se jugent en jouant. `scripts/census.ts`, le recensement
   (`npm run census -- [graine]`) : une partie de bots, et toutes les trois minutes la terre, les constructions,
   les paysans et l'or du premier et du seigneur médian ; on y règle les chiffres (`LAND=… VILLAGE=…` pour en essayer d'autres).
-- `src/render/` : le rendu (PixiJS) et les gestes, qui ne décident rien. `client.ts` monte une partie, `session.ts`
-  la fait tourner dans la page, `scene.ts` empile les calques ; chaque terre tracée en lignes autour de ses tuiles et
+- `src/render/` : le rendu (PixiJS) et les gestes, qui ne décident rien. `client.ts` monte une partie (`app.ts` le canevas et le culling, `controls.ts` la souris et les touches), `session.ts`
+  la fait tourner (dans son propre fil, 30/10 « go la simulation dans un fil a part » : `sim.worker.ts` y joue la session,
+  `threaded.ts` en tient le contrat dans la page, `mirror.ts` y pose après chaque pas ce qui a bougé, chaque chose restant
+  le même objet ; dans la page faute de fil), `scene.ts` empile les calques ; chaque terre tracée en lignes autour de ses tuiles et
   repassée à la plume (`regions.ts`, `trace.ts`, `pen.ts`, le ruban `layers/borders.ts`), comme les planches ; la
   carte gagne du détail en zoomant, par paliers de pixels par tuile (`ground/detail.ts`) : le décor (`ground/`,
   collines, bois, champs, rivières) peint par morceaux de seize tuiles gardés par palier et multiplié dans le lavis,
   les constructions à trois niveaux (`art/works.ts`) et leur vie (`layers/life.ts`) ; la carte dézoomée est celle du
-  stratège, acté le 29/10 (« map dézoomée = map stratégique : tout doit être compréhensible super rapidement et
+  stratège (30/10, « il faut quelle soit une map stratégique … uniquement des icons flat bien visible, les etendard sans
+  l'armée, les chemins des marchands + visibles … une transition douce entre les 2 » : `ground/detail.ts` `strategicOf`,
+  de 5 à 9 pixels la tuile, les constructions en icônes plates `layers/plan.ts`, les armées réduites à leurs étendards,
+  les routes en traits gras, en fondu avec la carte dessinée), acté le 29/10 (« map dézoomée = map stratégique : tout doit être compréhensible super rapidement et
   facilement, et aéré ; map zoomée = map micro-gestion et spectacle, on peut s'amuser plus mais il faut que ça reste
   lisible ») : les constructions y rétrécissent plus vite que la carte en petites marques, celles des autres
   s'effacent (leurs marchés d'abord, les routes en tiennent lieu), les sceaux des villages et les chantiers des
@@ -92,7 +106,24 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   et ne s'effacent qu'avec une terre trop petite à l'écran pour les porter (`layers/labels.ts`) ; ils s'écartent de
   leurs constructions sur leur terre (29/10, « essaye de les décaler quand ils sont sur un bâtiment », `layers/crowd.ts`,
   `clearance.ts`) ; les étendards des armées (`flags.ts`) grandissent quand on survole leur campagne ; `camera.ts` la
-  caméra du joueur ; `summary.ts` ce que lit le HUD, une fois par seconde.
+  caméra du joueur ; ce qui sort de l'écran n'est pas dessiné (le culler de pixi, `client.ts`, chaque pièce des calques marquée
+  `cullable` par `scene.ts`, 30/10 « Le jeu ram … faire du culling », et mesurée à sa place du moment : les calques sont des groupes de rendu, mesurés avec leur place d'avant, les constructions et le « + » de l'or clignotaient, 31/10) ; `summary.ts` ce que lit le HUD, une fois par seconde.
+- `src/audio/` : **le son**, qui ne connaît rien du jeu, mixé comme celui d'un jeu (30/10, « Il faudra qu'on gère le mixage
+  de l'ensemble pour que ça soit propre … digne d'un jeu vidéo ») : `mix.ts` la table du mixage, cinq bus à leur niveau
+  (ce qui informe, le monde de près, les fonds, la musique, l'interface), qui baisse quoi quand un son informe ou qu'un
+  cri passe, trois sons du monde à la fois, un compresseur sur le tout ; tous les fichiers au même volume, la table seule
+  règle l'équilibre. `cues.ts` les sons qui informent (brique 1, actée le 29/10 : des coups courts, « c'est surtout des
+  hit ») et ceux du monde et de l'interface, chacun une famille de prises, tirées tour à tour sans la même deux fois de suite et
+  jouées un peu plus haut ou plus bas (« on se lasse », 30/10 ; `audio/files.test.ts` vérifie que chacune est là et créditée) ; `beds.ts` les fonds de la terre (la carte qu'on entend,
+  choisie le 30/10, « Je veux que le jeu soit vivant »), des boucles sans couture ; `music.ts` la musique (« Et la
+  musique aussi »), les pièces de Kevin MacLeod l'une après l'autre avec un silence entre ; `mixer.ts` joue le tout en
+  Web Audio, après le premier geste du joueur, à gauche ou à droite, M pour couper (gardé d'une partie à l'autre), muet
+  quand la page est cachée. Ce que le joueur entend se lit dans le rendu : `render/hearing.ts` (les nouvelles de la
+  seconde, et à chaque pas mon armée qui part, ma construction posée et la fin ; l'or d'une caravane se voit, son « + », il ne
+  s'entend plus, 30/10 « pas besoin de ce son la »), `render/ambience.ts` (les fonds selon ce qui est à l'écran, une fois par seconde),
+  `render/spectacle.ts` (de près seulement : chocs et cris des batailles, armée tombée, flèches des châteaux, chaque coup qui part et qui tombe, le marteau d'un chantier) ; chaque élément du jeu a son son (30/10, « Je veux que chaque élément du jeu a son son »), les tables typées sur les listes du moteur (`Record<Work, Bed>`, `Record<Coup, …>`) : une construction, une marque ou un coup de plus ne compile pas sans le sien ; les fonds chacun dans sa bande, la guerre sur la vie sur la nature, leur somme plafonnée, placés à gauche ou à droite, et une réverbération commune (`audio/room.ts`) pour que tout s'entremêle (« Les sons doivent s'entremêler avec un mixage qui rend le tout bien »), `render/sound.ts` place
+  chaque son selon où il tombe sur l'écran, et le clic de bois sur chaque pièce du HUD pressée. Des prises de Freesound
+  en CC0 ou CC BY et la musique en CC BY (`public/sounds/CREDITS.md`). Les réglages (31/10, « Réglages niquel » sur la maquette) : un bouton à la roue dentée à côté du nom du jeu, et à côté du joueur sur l'accueil, son feuillet sous lui, quatre volumes (tout, musique, ambiance, effets), le son activé ou coupé (M) et la langue, changée aussitôt sans recharger (`components/game/Settings.tsx` ; les volumes et la coupure gardés dans le navigateur par `audio/settings.ts`, que le mixeur écoute ; la langue dans le seul cookie du site, `i18n/index.tsx`).
 - `src/components/hud/` : **le système du HUD**. Toute pièce de l'écran est faite de ses briques, jamais de mesures
   à elle : quatre tailles (15, 18, 22, 28, rien sous 15, acté le 29/10 : « La police texte toute petite là elle est
   dure à lire ») par quatre rôles (`.hud-word`, `.hud-name`, `.hud-note` en italique à pleine encre, `.hud-figure`),
@@ -105,8 +136,8 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   `components/game` et `components/home` n'écrivent aucun espacement ni taille de texte à eux, `npm run norm` le
   refuse (`spacing`, une exception dit pourquoi en `norm-ok`) ; le bas de l'écran aligné sur la même marge que
   les côtés, bourse, barre et campagnes posées sur une ligne ; une matière, le feuillet (`Sheet.tsx`) ; un bouton de 44 px
-  (`Act.tsx`, `call` pour celui qu'un feuillet attend, `Tap` le léger) ; la bulle d'aide au survol de chaque pièce, son nom et ce qu'elle fait avec ses chiffres, posée au-dessus de toute la page (`Hint.tsx`, 29/10 « ajoute des helpers ») ; le chiffre et son icône (`Figure.tsx`) ; écus, sceaux, médaillons, touches et insignes de
-  rapport (`Emblem.tsx`, `StandingBadge` : l'allié en vert `pact`, des maillons ; l'ennemi en gueules, une épée ;
+  (`Act.tsx`, `call` pour celui qu'un feuillet attend, `Tap` le léger) ; la bulle d'aide au survol de chaque pièce, son nom et ce qu'elle fait avec ses chiffres, posée au-dessus de toute la page (`Hint.tsx`, 29/10 « ajoute des helpers ») ; le chiffre et son icône (`Figure.tsx`), **coloré selon ce qu'il dit** (30/10, « quand on affiche des nombres chiffre, les mettres d'une police couleur differente vert rouge gris en fonction de si c'est une croissance décroissance information … oublie pas les icons ») : ce qui croît en vert (`gain`), ce qui baisse ou manque en rouge (`loss`), ce qui informe dans la couleur des mots, blanc sur la carte et encre sur un feuillet (`info`, par défaut ; le gris essayé, « c'était mieux en blanc »), son icône de la même couleur, et une teinte plus claire pour les chiffres posés sur la carte (`.hud-afloat`, et `TONE.gainLight`/`lossLight` sur la carte elle-même) ; tout chiffre porte son icône quand elle existe ; écus, sceaux, médaillons, touches et insignes de
+  rapport (`Emblem.tsx`, et `Standing.tsx` pour `StandingBadge` : l'allié en vert `pact`, des maillons ; l'ennemi en gueules, une épée ;
   le félon, l'écu brisé sur gueules ; la forme dit avant la couleur, les mêmes qu'à côté des noms sur la carte) ;
   un mouvement unifié, acté le 28/10 (« chaque élément hud interactif soit animé ... des animations unifiés ») :
   une courbe (`ease-hud`), deux durées (120 ms pour ce qu'on touche, 200 ms pour ce qui apparaît), deux rôles
@@ -120,9 +151,11 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   gauche près du bord droit). La mise en page en HTML, le SVG pour les seuls
   objets dessinés.
 - `src/components/game/` : le HUD de la partie, **sans fond depuis le 29/10** (« le HUD repensé », Concept) : six
-  places à une seule marge (`Places.tsx`), le nom du jeu en haut à gauche, la course et le temps dessous en haut au
-  centre (`Race.tsx`), les royaumes en haut à droite, les cinq premiers et moi, tous au clic (`Realms.tsx`), moi en
-  bas à gauche (`Purse.tsx`), toutes les actions sur une ligne en bas au centre (`Bar.tsx`), mes campagnes en bas à
+  places à une seule marge (`Places.tsx`), le nom du jeu en haut à gauche, les seigneurs en haut à droite (`Lords.tsx`), où se lit la
+  victoire (30/10, « tu met la victoire dans la popup seigneur avec la bar vertical ») : chaque bande calée sur toute la
+  terre, un trait d'or sur toutes les lignes à la part qui gagne, le temps et la baisse en tête (`Goal.tsx`) ; sur
+  téléphone, la liste repliée, la course sur une ligne fine en haut au centre (`Race.tsx`), moi en
+  bas à gauche (`Purse.tsx`), toutes les actions sur une ligne en bas au centre, chaque famille nommée au-dessus (`Bar.tsx` ; faute de place, les coups, puis les bâtiments, puis les armées rangés chacun derrière une face, un tiroir qui s'ouvre au survol ou au doigt, `BarDrawer.tsx`, 30/10 « si ya la place met tout en ligne sinon range »), le navire de guerre parmi les armées en sceau d'or, mes campagnes en bas à
   droite (`Campaign.tsx`) ; tout flotte en lettres de la carte, claires cernées d'encre (`.hud-afloat`, `--hud-ink`),
   et le haut ou le bas de l'écran ne s'assombrit que quand la souris s'en approche (`Shades.tsx`). Ce qui suit
   décrit les pièces d'avant, dont le dessin a changé : (la liste des seigneurs en haut à gauche, en bandes : tous ceux encore
@@ -143,7 +176,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   de gueules, leur emblème, leur touche et leur prix seuls, leur nom sous la souris ; touches 1 à 4 les armées, 5 à
   7 les constructions, 8, 9 et 0 les coups ; ce qui ne se paie pas à demi-encre ; sur téléphone la même sur des
   lignes ; le cartouche près de la souris, ce qu'un clic gauche envoie, l'armée en main et ses hommes, et sur la
-  terre d'un autre seigneur qu'un clic droit ouvre le reste (`Cursor.tsx`) ; le clic droit là ouvre à côté de la
+  terre d'un autre seigneur qu'un clic droit ouvre le reste (`Cursor.tsx`) ; le clic droit repose ce qu'on a en main, sinon ouvre le menu du lieu, homogène (31/10, le tableau des clics, « fais quelque chose d'homogene ») : sur ma terre les bâtiments qui peuvent s'y poser, sur l'eau qu'un de mes ports atteint un navire de guerre, chaque pièce avec la bulle de la barre et sa sœur éclairée dans la barre (`PlaceMenu.tsx`), une cible d'or sur la tuile cliquée et, au survol d'une construction, elle dessinée là comme en main, rouge où elle ne peut pas, où elle peut cernée d'or (31/10, « survoler les constructions montre la preview et si c'est possible comme quand on l'a dans la main », `pin.ts` `drawn`) ; sur la terre d'un autre seigneur le clic droit ouvre à côté de la
   souris son menu en liste courte (acté le 29/10, « dans le clic droit rajoute les boutons attaquer / alliance /
   offrande », dessiné « en liste courte ») : un petit feuillet, son écu et son nom, puis une ligne fine par acte,
   son médaillon cerclé de sa couleur, son mot et son chiffre : Attaquer, les hommes de l'armée en main, envoyée là
@@ -154,7 +187,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
   système comme openfront en adapté pour nous pour la home »), allégé le 29/10 (« la partie en arrière-plan est de
   trop je pense, et le layout peut être mieux fait ») : plus de partie de bots derrière, la page du jeu seule, son
-  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`). Le nom du jeu seul (sa ligne
+  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`) ; depuis le 31/10, la terre de la partie publique en grand sous toute la page, floutée, et nette et entière dans sa carte (« la carte de la partie publique nette dans sa section, et le reste de la terre flouté derrière » ; une seule terre vue par la carte essayée, « c'était mieux avant avec les 2 maps », `HomeLand.tsx`). Le nom du jeu seul (sa ligne
   viendra avec les titres et les mots, « retire la catchline », 29/10) ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
   la partie en cours de pose, celle même où elle se joue, tirée de sa graine quand le navigateur a un moment et
   dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par `ahead.ts`), son titre, le temps qui reste
@@ -173,7 +206,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   **Pas de salon d'attente** (acté le 29/10, « comme dans openfront ne fait pas de lobby en attente ») : le relais
   tient toujours une partie publique dans son ouverture, de 30 secondes en ligne, lancée dès qu'elle s'ouvre,
   **sans aucun bot** (acté le 29/10, « en ligne il faut 0 bot », « le matchmaking classique il ne doit pas ajouter
-  de bot ») : jusqu'à vingt personnes, chacun pour soi, sur une terre standard ; « Jouer » y entre aussitôt sur le
+  de bot ») : jusqu'à vingt-quatre personnes, chacun pour soi, sur une terre standard ; « Jouer » y entre aussitôt sur le
   premier siège libre, avec les tours déjà joués à rattraper, pour planter son étendard ; un siège que personne ne
   prend reste vide, sans seigneur, ni étendard ni terre. Plus personne n'entre dans les 5 dernières secondes : la
   partie continue avec ceux qui sont venus et la suivante s'ouvre ; vide, elle est abandonnée et une nouvelle terre
@@ -185,7 +218,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   `SoloSettings.tsx`, `PrivateRoom.tsx`, `useRoom.ts` la ligne vers le relais, `useUpcoming.ts`). La terre de la
   prochaine partie solo s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à
   `/play?online` (`src/render/online.ts`, `remote.ts` qui la joue au rythme des tours du relais).
-- Les pages à côté du jeu (le Journal et ses articles, « Comment ça marche », les mentions légales, les erreurs) sont
+- Les pages à côté du jeu (le Journal et ses articles, les mentions légales, les erreurs ; « Comment ça marche » retirée le 31/10, « enlève le comment ça marche, on fera une page règles / help » : écart voulu à la page `/about` de la norme, que la page de règles et d'aide remplacera) sont
   des feuillets du livre du jeu (`src/components/home/Leaf.tsx`, 29/10, « les articles on lit mal y'a pas de hiérarchie
   de sections ») : la page de l'accueil, son cadre et sa rose, le nom du jeu en tête, le contenu sur un feuillet dans
   les niveaux du design system (`.hud-prose` pour le texte des articles), et leur pied. comme le veut la norme (29/10, « Dans la norme pour les blogs et autre page met que ça doit ressembler a la DA du site ») :
@@ -212,7 +245,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 
 ## Surface de jeu
 
-- **Joué d'abord sur ordinateur**, dans le navigateur ; livré en PWA ; le mobile viendra ensuite.
+- **Joué d'abord sur ordinateur**, dans le navigateur ; livré en PWA, installée en plein écran et dans le sens qu'on veut (`display: fullscreen`, `orientation: any`, 30/10 « je veux qu'on puisse jouer comme on veut », la carte sous l'encoche par `viewport-fit=cover`, 30/10 « Sur mobile y'a toujours les dead zone en haut et en bas ») ; le mobile viendra ensuite.
 - **La direction artistique, actée** (Concept, section 3) : une carte dessinée à l'encre sur un
   manuscrit (parchemin, lavis de la couleur de chaque seigneur, lignes de côte, cadre et page autour,
   jamais de fond noir ou gris), et une interface faite d'objets de ce monde (écu, parchemins, rubans,

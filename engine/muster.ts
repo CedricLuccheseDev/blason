@@ -3,6 +3,8 @@ import { apart, eachAround } from './grid'
 import { capOf, standing } from './land'
 import { isAllied } from './diplomacy'
 import { hired } from './armies'
+import { pop, push } from './heap'
+import { stepCost } from './paving'
 import type { Army, Work } from './rules'
 import type { GameState, Host } from './types'
 
@@ -65,63 +67,52 @@ export const walkers = (state: GameState, lord: number): Array<boolean> =>
 
 /**
  * The marches out of the lord's villages (or markets) given, all at once,
- * over the land his armies walk (walkers): `visit` sees each tile walked in
- * the order an army reaches it, with how many tiles it is from the nearest of
- * them, and stops the search by returning false. What comes back is the road
- * to any tile walked, from the village it is nearest.
+ * over the land his armies walk (walkers), each the way soonest, the ground
+ * counted (paving.ts: the roads speed it, the woods slow it, « il faut
+ * calculer par rapport au terrain »): `visit` sees each tile walked in the
+ * order an army reaches it, with what its march there costs, in hundredths
+ * of a plain tile, from the nearest of them, and stops the search by
+ * returning false. What comes back is the road to any tile walked, from the
+ * village it is soonest from.
  */
 export function marchOut(
   state: GameState,
   lord: number,
   sites: Array<number>,
-  visit: (tile: number, steps: number) => boolean,
+  visit: (tile: number, cost: number) => boolean,
 ): (tile: number) => Array<number> {
   const walks = walkers(state, lord)
   const { owner, grid } = state
-  const { width } = grid
-  // Each tile's steps from the nearest village, -1 not walked, and that village.
-  const steps = new Int32Array(owner.length).fill(-1)
-  const root = new Int32Array(owner.length).fill(-1)
-  const queue = sites.filter((site) => owner[site] === lord)
-  for (const site of queue) [steps[site], root[site]] = [0, site]
+  // Each tile's cost from the nearest village, -1 not reached, and the tile before it.
+  const cost = new Int32Array(owner.length).fill(-1)
+  const before = new Int32Array(owner.length).fill(-1)
+  const done = new Uint8Array(owner.length)
+  const queue: Array<[number, number]> = []
+  for (const site of sites)
+    if (owner[site] === lord) {
+      cost[site] = 0
+      push(queue, [0, site])
+    }
   let from = -1
   const reach = (next: number) => {
     const o = owner[next]
-    if (steps[next] !== -1 || o < 0 || !walks[o]) return
-    steps[next] = steps[from] + 1
-    root[next] = root[from]
-    queue.push(next)
+    if (done[next] || o < 0 || !walks[o]) return
+    const c = cost[from] + stepCost(state, next)
+    if (cost[next] !== -1 && cost[next] <= c) return
+    cost[next] = c
+    before[next] = from
+    push(queue, [c, next])
   }
-  // A ring of tiles at a time, each a tile further than the one before.
-  for (const tile of queue) {
-    from = tile
-    if (!visit(from, steps[from])) break
+  for (let next = pop(queue); next; next = pop(queue)) {
+    from = next[1]
+    if (done[from]) continue
+    done[from] = 1
+    if (!visit(from, cost[from])) break
     eachAround(grid, from, reach)
   }
-  // Of the roads as short, the one nearest the straight line from its
-  // village: a regular stair rather than a right angle (« il fait faire des
-  // angles droits par les alliés »), as long to walk.
   return (tile) => {
     const road = [tile]
-    const village = root[tile]
-    if (village < 0) return road
-    const [ax, ay] = [tile % width, Math.floor(tile / width)]
-    const [bx, by] = [village % width, Math.floor(village / width)]
-    const off = (t: number) =>
-      Math.abs(
-        ((t % width) - ax) * (by - ay) -
-          (Math.floor(t / width) - ay) * (bx - ax),
-      )
-    let at = tile
-    while (steps[at] > 0) {
-      let next = -1
-      eachAround(grid, at, (n) => {
-        if (steps[n] !== steps[at] - 1 || root[n] !== village) return
-        if (next < 0 || off(n) < off(next)) next = n
-      })
-      at = next
-      road.push(at)
-    }
+    for (let at = before[tile]; at >= 0; at = before[at]) road.push(at)
     return road.reverse()
   }
 }

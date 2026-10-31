@@ -150,7 +150,7 @@ const hudMarkup = (page) =>
     const place = root.querySelector(map)
     const copies = [...frame.querySelectorAll('canvas')]
     for (const [i, canvas] of [...root.querySelectorAll('canvas')].entries()) {
-      if (place.contains(canvas)) continue
+      if (place?.contains(canvas)) continue
       const image = document.createElement('img')
       for (const { name, value } of canvas.attributes)
         image.setAttribute(name, value)
@@ -158,8 +158,8 @@ const hudMarkup = (page) =>
       copies[i].replaceWith(image)
     }
     const copy = frame.querySelector(map)
-    copy.replaceChildren()
-    copy.setAttribute('data-map', '')
+    copy?.replaceChildren()
+    copy?.setAttribute('data-map', '')
     const attributes = (element) =>
       Object.fromEntries([...element.attributes].map((a) => [a.name, a.value]))
     return {
@@ -211,17 +211,23 @@ async function capture(context, room, moment, size, first) {
   await page.waitForFunction(
     ([map, ready]) =>
       ready
-        ? document.querySelector(ready) && document.querySelector(map)
+        ? document.querySelector(ready) && (!map || document.querySelector(map))
         : location.search.includes('save=') &&
           document.querySelector(map) &&
           document.querySelectorAll('main > *').length > 3,
-    [MAP, moment.ready],
+    [moment.map === false ? null : MAP, moment.ready],
     { timeout: 120_000 },
   )
   await stage(page, moment, size)
-  const { map, share } = await drawnMap(page, room, moment.longest)
   const name = `${moment.name}-${width}x${height}`
-  writeFileSync(new URL(`${name}.webp`, OUT), await room.webp(map))
+  // A page with no map behind (the home since 29/10): its HUD alone, its
+  // canvases as the images they show.
+  let share = 0
+  if (moment.map !== false) {
+    const drawn = await drawnMap(page, room, moment.longest)
+    share = drawn.share
+    writeFileSync(new URL(`${name}.webp`, OUT), await room.webp(drawn.map))
+  }
   const { markup, page: around } = await hudMarkup(page)
   writeFileSync(new URL(`${name}.html`, OUT), `${markup}\n`)
   if (PROOF)

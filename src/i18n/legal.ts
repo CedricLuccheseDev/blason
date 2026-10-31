@@ -30,7 +30,7 @@ export const legalEn: LegalContent = {
       heading: 'Personal data',
       body: [
         'Blason has no accounts, no advertising and no audience measurement. A game against the bots is played entirely in your browser: the map, the bots and every move are computed on your machine, and nothing of it is sent to our server. A game online goes through our relay, which receives your orders and passes them to the other players of the room, with your IP address as any connection; it keeps nothing once the game is over.',
-        'This site sets no cookie and keeps nothing in your browser. The language follows the one your browser asks for.',
+        'This site keeps in your browser only your sound settings (the volumes, the mute) and, if you choose one in the settings, your language, in a cookie of its own; nothing of it leaves your browser but the language, read by our server to serve the page in it. Otherwise the language follows the one your browser asks for.',
         'Fonts are served by Google Fonts (Google Ireland Ltd), which receives your IP address when the page loads.',
         'If a page fails, the error message, its trace and the address of the page are sent to our server with your browser’s user agent, so that the failure can be fixed; they are kept in the server logs for a limited time.',
         'Like any web server, the hosting infrastructure logs requests (IP address, user agent) for security and diagnostics, for a limited time.',
@@ -67,7 +67,7 @@ export const legalFr: LegalContent = {
       heading: 'Données personnelles',
       body: [
         "Blason n'a ni compte, ni publicité, ni mesure d'audience. Une partie contre les bots se joue entièrement dans votre navigateur : la carte, les bots et chaque coup sont calculés sur votre machine, et rien n'en est envoyé à notre serveur. Une partie en ligne passe par notre relais, qui reçoit vos ordres et les transmet aux autres joueurs de la salle, avec votre adresse IP comme toute connexion ; il n'en garde rien une fois la partie finie.",
-        'Ce site ne dépose aucun cookie et ne garde rien dans votre navigateur. La langue suit celle que demande votre navigateur.',
+        'Ce site ne garde dans votre navigateur que vos réglages du son (les volumes, la coupure) et, si vous en choisissez une dans les réglages, votre langue, dans un cookie à elle ; rien n’en sort que la langue, que notre serveur lit pour vous servir la page dans celle-ci. Sinon, la langue suit celle que demande votre navigateur.',
         'Les polices sont servies par Google Fonts (Google Ireland Ltd), qui reçoit votre adresse IP au chargement de la page.',
         "Si une page échoue, le message d'erreur, sa trace et l'adresse de la page sont envoyés à notre serveur avec le user agent de votre navigateur, pour que la panne soit corrigée ; ils restent dans les journaux du serveur pour une durée limitée.",
         "Comme tout serveur web, l'hébergement journalise les requêtes (adresse IP, user agent) à des fins de sécurité et de diagnostic, pour une durée limitée.",

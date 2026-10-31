@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react'
 import { Act } from '../hud/Act'
-import { Shield, StandingBadge } from '../hud/Emblem'
+import { Shield } from '../hud/Emblem'
+import { StandingBadge } from '../hud/Standing'
 import { useCompact } from '../hud/useCompact'
-import { Figure } from '../hud/Figure'
-import { Inline, Panel } from '../hud/Layout'
+import { Figure, Icon } from '../hud/Figure'
+import { GAP, Inline, Panel } from '../hud/Layout'
 import { Fine, Note } from '../hud/Text'
-import { hex } from './format'
+import { hex, minutes } from './format'
+import { GoalHead, GoalRule } from './Goal'
 import { standingsOf } from './standing'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
 /**
- * Top left, every lord still standing, as Cédric chose on the mockup (« ok
+ * Top right, every lord still standing, as Cédric chose on the mockup (« ok
  * les bandes »): a thin line each, by his share of the land, washed behind
- * in his colour as far as his land goes against the first's, so that who
- * leads and by how much reads at a glance; his shield, his name, his badges
+ * in his colour as far as his share of the whole land goes, a gold rule down
+ * them all at the share that wins, and over them that share, the clock and
+ * when it drops (Goal.tsx), so that how far each is from winning reads at a
+ * glance; his shield, his name, his badges
  * (an ally's links on a line ruled in green, a foe's sword, a traitor's
  * broken shield) and his share. Mine ringed in gold; the lord under the
  * pointer lit, as he stands out on the map (« enlève le hud en bas à gauche
@@ -60,7 +64,6 @@ export function Lords({
     .filter((l) => l.alive)
     .sort((a, b) => b.share - a.share || b.men - a.men)
   const rows = standing.map((lord, i) => ({ lord, rank: i + 1 }))
-  const first = Math.max(1, ...standing.map((l) => l.land))
   // On a phone, folded, the list is a shield to open it by.
   if (compact && !open)
     return (
@@ -71,8 +74,16 @@ export function Lords({
   return (
     <Panel
       gap="hair"
-      className={`w-full ${
-        compact ? 'absolute top-0 left-0 z-10 w-[calc(100vw-1rem)]' : ''
+      // Open on a phone, it stands where its shield was, top right, over
+      // the map, never past the screen: its lines scroll within it. On a
+      // screen, over the map too, down to the bottom row and no further,
+      // so that twenty-four lords push nothing off it (« Passe de 20 a 24
+      // joueurs »).
+      scroll
+      className={`absolute top-0 right-0 ${
+        compact
+          ? 'z-30 max-h-[calc(100dvh-1.5rem)] w-72'
+          : 'w-full max-h-[calc(100dvh-14rem)]'
       }`}
     >
       <button
@@ -81,15 +92,24 @@ export function Lords({
         onClick={() => setOpen(!open)}
         className="pointer-events-auto flex cursor-pointer items-center justify-between hud-press"
       >
-        <Note>{m.lord.list}</Note>
-        <Note
-          className={`transition-transform duration-(--duration-hud-press) ease-hud ${open ? '' : '-rotate-90'}`}
-        >
-          ▾
-        </Note>
+        <span className={`flex items-center ${GAP.hair}`}>
+          <Icon name="crown" size={16} />
+          <Note>{m.lord.list}</Note>
+        </span>
+        <span className={`flex items-center ${GAP.line}`}>
+          <Figure size="s">{minutes(summary.seconds)}</Figure>
+          <Note
+            className={`transition-transform duration-(--duration-hud-press) ease-hud ${open ? '' : '-rotate-90'}`}
+          >
+            ▾
+          </Note>
+        </span>
       </button>
+      <GoalHead summary={summary} />
       {open && (
-        <div className="flex flex-col gap-px">
+        // norm-ok: the gold rule's room over the first line, where its flag flies.
+        <div className="relative mt-2 flex flex-col gap-px">
+          <GoalRule needed={summary.needed} />
           {rows.map(({ lord, rank }) => {
             const lit = lord.seat === aimed || lord.seat === pointed
             const self = lord.key === me
@@ -119,7 +139,7 @@ export function Lords({
                   aria-hidden="true"
                   className="absolute inset-y-px left-0 transition-[width] duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none"
                   style={{
-                    width: `${(100 * lord.land) / first}%`,
+                    width: `${lord.share}%`,
                     background: `color-mix(in srgb, ${hex(lord.color)} 30%, transparent)`,
                   }}
                 />

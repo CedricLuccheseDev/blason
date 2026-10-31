@@ -29,7 +29,10 @@ export function penned(
     const n = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) / step))
     for (let k = 0; k < n; k++) {
       const t = k / n
-      out.push(pushed([ax + (bx - ax) * t, ay + (by - ay) * t], amount))
+      const x = ax + (bx - ax) * t
+      const y = ay + (by - ay) * t
+      // One point made a step, not two: the borders are penned several times a second.
+      out.push([x + tremble(x, y, 0) * amount, y + tremble(x, y, 1.7) * amount])
     }
   }
   if (line.length) out.push(pushed(line[line.length - 1], amount))

@@ -3,13 +3,15 @@ import { useNavigate } from '@tanstack/react-router'
 import { Defs } from './svg/kit'
 import { Cursor } from './Cursor'
 import { LordMenu } from './LordMenu'
+import { PlaceMenu } from './PlaceMenu'
 import { Shades } from './Shades'
 import { Heralds } from './Heralds'
 import { GameBook } from './GameBook'
 import { Places } from './Places'
 import { Failed } from './Failed'
+import type { Echo } from './BarGroups'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
-import type { Book, Level, MapSize } from '../../../engine'
+import type { Atlas, Book, Land, Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
 import type { Save } from '~/render/save'
 import { PLAYERS } from '~/render/palette'
@@ -51,6 +53,8 @@ export type Hosting = {
   quit: () => void
   /** A guest's: his book to read, what his room says. */
   guest?: { status: string }
+  /** The persons seated, by their seats, the host first, as the relay tells them. */
+  names?: Array<string>
 }
 
 export function GameScreen({
@@ -59,6 +63,7 @@ export function GameScreen({
   online,
   save,
   size: sized = 'standard',
+  map,
   hosting,
 }: Readonly<{
   me: number
@@ -68,11 +73,16 @@ export function GameScreen({
   /** A saved game, held still at its tick (render/save.ts). */
   save?: Save
   size?: MapSize
+  /** A map of the Earth, over the size. */
+  map?: Atlas
   /** The host's game, held until he launches it from his book (« créer une partie »). */
   hosting?: Hosting
 }>) {
-  // A hosted game's land is its book's: another land or size, another game.
-  const size = hosting?.book.size ?? sized
+  // A hosted game's land is its book's: another land, another game.
+  const land: Land =
+    hosting?.book.land ??
+    (map ? { kind: 'real', map } : { kind: 'drawn', size: sized })
+  const landKey = land.kind === 'real' ? land.map : land.size
   const seed = hosting?.book.seed
   const [open, setOpen] = useState(hosting !== undefined)
   const waiting = hosting !== undefined && !hosting.launched
@@ -84,6 +94,8 @@ export function GameScreen({
   const [game, setGame] = useState<GameHandle | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [aim, setAim] = useState<Aim | null>(null)
+  /** The bar's piece lit from the right click's menu, its sister under the pointer there. */
+  const [echo, setEcho] = useState<Echo>(null)
   // The game could not start (no WebGL, a failed load): said, not a blank page.
   const [failed, setFailed] = useState(false)
   // The last betrayal, cried under the race for a few seconds; the rest of
@@ -122,7 +134,7 @@ export function GameScreen({
           level,
           online,
           save,
-          size,
+          land,
           book: hosting?.book,
         })
         if (off()) mounted.destroy()
@@ -137,12 +149,16 @@ export function GameScreen({
       handle?.destroy()
     }
     // The book's other settings change the game only at its launch.
-  }, [me, level, online, save, size, seed])
+  }, [me, level, online, save, landKey, seed])
 
   // touch-none: the fingers belong to the game, which pinches its own map
-  // sharp; the browser zooming the page would only blur it.
+  // sharp; the browser zooming the page would only blur it. Pinned to the
+  // four edges rather than given a height: in an app laid on a phone's home
+  // screen, iOS counts 100dvh short of its bars, and the map left bands of
+  // page under them (« Sur mobile y'a toujours les dead zone en haut et en
+  // bas »).
   return (
-    <main className="hud relative h-dvh w-full touch-none overflow-hidden bg-vellum select-none">
+    <main className="hud fixed inset-0 touch-none overflow-hidden bg-vellum select-none">
       <div
         ref={host}
         className="absolute inset-0"
@@ -163,10 +179,26 @@ export function GameScreen({
             online={online !== undefined}
             cry={cry}
             floor={floor}
+            echo={aim?.pinned ? echo : null}
             onHome={() => void navigate({ to: '/' })}
             onBook={hosting ? () => setOpen(true) : null}
           />
-          {aim?.pinned ? (
+          {aim?.pinned && aim.lord === null && (
+            <PlaceMenu
+              key={`${aim.x},${aim.y}`}
+              aim={aim}
+              summary={summary}
+              floor={floor}
+              onBuild={game.build}
+              onFitOut={game.fitOut}
+              onLeave={game.leave}
+              onEcho={(piece) => {
+                setEcho(piece)
+                game.foresee(piece)
+              }}
+            />
+          )}
+          {aim?.pinned && aim.lord !== null && (
             <LordMenu
               key={`${aim.x},${aim.y}`}
               aim={aim}
@@ -176,9 +208,8 @@ export function GameScreen({
               onTreat={game.treat}
               onLeave={game.leave}
             />
-          ) : (
-            <Cursor summary={summary} aim={aim} floor={floor} />
           )}
+          {!aim?.pinned && <Cursor summary={summary} aim={aim} floor={floor} />}
         </>
       )}
       {hosting && open && (
@@ -205,6 +236,7 @@ export function GameScreen({
           }}
           onQuit={hosting.quit}
           guest={hosting.guest}
+          names={hosting.names}
         />
       )}
     </main>

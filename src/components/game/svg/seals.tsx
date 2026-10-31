@@ -1,5 +1,4 @@
 import { Glyph, INK, PAPER } from './marks'
-import { LIFT } from './kit'
 import type { Mark } from './marks'
 
 // The pieces of the bar: the wax seal of an army or an act, the gilt
@@ -38,7 +37,7 @@ export function Seal({
 }>) {
   const points = waxEdge(cx, cy, r)
   return (
-    <g filter={lifted ? GLOW : LIFT} opacity={dim ? 0.55 : 1}>
+    <g filter={lifted ? GLOW : undefined} opacity={dim ? 0.45 : 1}>
       <polygon
         points={points}
         fill={color}
@@ -94,7 +93,7 @@ export function Medallion({
   lifted?: boolean
 }>) {
   return (
-    <g filter={lifted ? GLOW : LIFT} opacity={dim ? 0.5 : 1}>
+    <g filter={lifted ? GLOW : undefined} opacity={dim ? 0.5 : 1}>
       <circle cx={cx} cy={cy} r={r} fill={PAPER} stroke={INK} strokeWidth="2" />
       <circle
         cx={cx}
@@ -124,12 +123,15 @@ export function Plaque({
   r,
   icon,
   lifted = false,
+  dim = false,
 }: Readonly<{
   cx: number
   cy: number
   r: number
   icon: Mark
   lifted?: boolean
+  /** At half ink, inside the drawing: what cannot be paid. */
+  dim?: boolean
 }>) {
   // A square looks larger than a disc of its radius: it reaches a little less.
   const square = (k: number, round: number) => (
@@ -137,7 +139,7 @@ export function Plaque({
   )
   const reach = r * 0.9
   return (
-    <g filter={lifted ? GLOW : LIFT}>
+    <g filter={lifted ? GLOW : undefined} opacity={dim ? 0.45 : 1}>
       <g fill={PAPER} stroke={INK} strokeWidth="2">
         {square(reach, 4)}
       </g>
@@ -159,19 +161,22 @@ export function Lozenge({
   r,
   icon,
   lifted = false,
+  dim = false,
 }: Readonly<{
   cx: number
   cy: number
   r: number
   icon: Mark
   lifted?: boolean
+  /** At half ink, inside the drawing: what cannot be paid. */
+  dim?: boolean
 }>) {
   // A diamond looks smaller than a disc of its radius: it reaches a little further.
   const diamond = (k: number) =>
     `M${cx} ${cy - k} L${cx + k} ${cy} L${cx} ${cy + k} L${cx - k} ${cy} Z`
   const reach = r * 1.2
   return (
-    <g filter={lifted ? GLOW : LIFT}>
+    <g filter={lifted ? GLOW : undefined} opacity={dim ? 0.45 : 1}>
       <path
         d={diamond(reach)}
         fill={PAPER}

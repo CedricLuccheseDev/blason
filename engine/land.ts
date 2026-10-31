@@ -14,9 +14,15 @@ import type { GameSetup, GameState, Grid } from './types'
 // its villagers, every tile of it taken by a fight. A lord's peasants live
 // on his land and hold it; his gold pays the men he raises from them.
 
-/** The largest piece of the land, its tiles joined by their sides: the land a walk reaches. */
-function mainLand(grid: Grid): Array<boolean> {
+/**
+ * The land an army can reach: the largest piece, its tiles joined by their
+ * sides, where a walk goes, and every other the water touches, where the
+ * boats land (crossing.ts); not a piece the high mountains close all round.
+ */
+function reachedLand(grid: Grid, isle: number): Array<boolean> {
   const piece = new Int32Array(grid.land.length).fill(-1)
+  const wet = new Set<number>()
+  const sizes = new Map<number, number>()
   let main = -1
   let most = 0
   grid.land.forEach((on, start) => {
@@ -25,14 +31,22 @@ function mainLand(grid: Grid): Array<boolean> {
     const queue = [start]
     for (const t of queue)
       for (const n of around(grid, t)) {
+        if (grid.water[n]) wet.add(start)
         if (!grid.land[n] || piece[n] >= 0) continue
         piece[n] = start
         queue.push(n)
       }
+    sizes.set(start, queue.length)
     if (queue.length > most) [main, most] = [start, queue.length]
   })
-  return grid.land.map((on, tile) => on && piece[tile] === main)
+  return grid.land.map(
+    (on, tile) =>
+      on &&
+      (piece[tile] === main ||
+        (wet.has(piece[tile]) && (sizes.get(piece[tile]) ?? 0) >= isle)),
+  )
 }
+
 
 /**
  * A new game, as its setup says, a lord a seat, but for the empty ones: no
@@ -46,10 +60,10 @@ export function createGame(
   setup: GameSetup,
   rules: Rules = RULES,
 ): GameState {
-  // Land no walk reaches, an islet cut off by the sea, is no part of the
-  // game: no army could ever take it, so it does not count in the share
-  // that wins either.
-  const land = mainLand(grid)
+  // Land no army reaches, a valley the high mountains close, is no part of
+  // the game: no army could ever take it, so it does not count in the share
+  // that wins either. The islands are, since the boats reach them.
+  const land = reachedLand(grid, rules.isle)
   const reached = { ...grid, land, area: land.filter(Boolean).length }
   return {
     setup,
@@ -75,6 +89,9 @@ export function createGame(
     requests: [],
     offerings: [],
     caravans: [],
+    ships: [],
+    warships: [],
+    warshipsBuilt: 0,
     strikes: [],
     scars: [],
     teams: setup.seats.map((seat) => seat.team),
@@ -90,6 +107,17 @@ export function worksOf(state: GameState, lord: number, work: string) {
 /** Whether a work stands done and serves: one being built does nothing yet. */
 export const standing = (state: GameState, work: GameState['works'][number]) =>
   (work.ready ?? 0) <= state.tick
+
+/** A work passed to another lord with its tile: idle a while before it serves him (rules.ts, seizedTicks), as a work being built is. */
+export function seize(
+  state: GameState,
+  work: GameState['works'][number],
+  lord: number,
+) {
+  if (work.owner === lord) return
+  work.owner = lord
+  work.ready = Math.max(work.ready ?? 0, state.tick + state.rules.seizedTicks)
+}
 
 /** The peasants a lord's land feeds: fewer by the tile as it grows, as the square root of its size. */
 export function fedByLand(state: GameState, lord: number): number {

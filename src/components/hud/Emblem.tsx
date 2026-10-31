@@ -1,21 +1,15 @@
 import { Ecu } from '../game/svg/kit'
 import { Lozenge, Medallion, Plaque, Seal } from '../game/svg/seals'
-import { Glyph, INK, PAPER } from '../game/svg/marks'
-import { BADGE, LINE_MEDALLION, RAISE, SEAL, SHIELD, scaled } from './tokens'
+import { INK } from '../game/svg/marks'
+import { LINE_MEDALLION, RAISE, SEAL, SHIELD, box, scaled } from './tokens'
 import type { Mark } from '../game/svg/marks'
 import type { ReactNode } from 'react'
 
 // The HUD's drawn objects at their fixed sizes, each in its own box so the
 // sheets lay them out as they do words: a lord's shield, the wax seal of an
 // army or an act, the medallion of a work or of an act on a line, the lozenge
-// of a coup, a badge of standing, a key of the keyboard. Drawn at scale 1,
-// grown by the HUD's scale.
-
-/** A drawing's box: drawn on `w` by `h` units, laid out at that size grown by the HUD's scale. */
-const box = (w: number, h: number) => ({
-  viewBox: `0 0 ${w} ${h}`,
-  style: { width: scaled(w), height: scaled(h) },
-})
+// of a coup, a key of the keyboard (the badges of standing in Standing.tsx).
+// Drawn at scale 1, grown by the HUD's scale.
 
 /** A lord's shield; with a level, his colour fills it as a vessel. */
 export function Shield({
@@ -30,10 +24,15 @@ export function Shield({
       aria-hidden="true"
       className="shrink-0 overflow-visible"
     >
-      <Ecu x={1} y={1} w={w} h={h} color={color} level={level} lift={false} />
+      <Ecu x={1} y={1} w={w} h={h} color={color} level={level} />
     </svg>
   )
 }
+
+/** A drawn piece's shadow off the page, in ink: the game's drawn matter, wax and gilt lifted off the parchment, not a panel's elevation. */
+// norm-ok: a drawn seal's shadow on the page (the art direction), as the SVG filter it replaces.
+const SHADOW =
+  'drop-shadow(0 calc(2px * var(--hud)) calc(2px * var(--hud)) color-mix(in srgb, var(--color-quill) 38%, transparent))'
 
 /** The box a seal or a medallion sits in, room left for it to rise. */
 const boxOf = (size: keyof typeof SEAL) => 2 * (SEAL[size] + RAISE) + 6
@@ -60,7 +59,11 @@ function Round({
       viewBox={viewBox}
       aria-hidden="true"
       className="shrink-0 overflow-visible transition-transform duration-(--duration-hud-enter) ease-hud motion-reduce:transition-none"
-      style={{ ...style, transform: lift }}
+      // Lifted off the page by a shadow of the whole drawing, not an SVG
+      // filter under the half ink of what cannot be paid: that one came out
+      // as a square behind the lozenges (« en bas les losanges y'a un carré
+      // derrière »); the one in hand glows instead (svg/kit.tsx).
+      style={{ ...style, transform: lift, filter: held ? undefined : SHADOW }}
     >
       {children({ cx: c, cy: c, r })}
     </svg>
@@ -73,16 +76,26 @@ export function SealEmblem({
   color,
   size = 'l',
   held = false,
+  dim = false,
 }: Readonly<{
   icon: Mark
   color: string
   size?: keyof typeof SEAL
   held?: boolean
+  /** At half ink, inside the drawing (no layer of its own to leave a trace as the bar moves). */
+  dim?: boolean
 }>) {
   return (
     <Round size={size} held={held}>
       {(at) => (
-        <Seal {...at} icon={icon} color={color} edge={INK} lifted={held} />
+        <Seal
+          {...at}
+          icon={icon}
+          color={color}
+          edge={INK}
+          lifted={held}
+          dim={dim}
+        />
       )}
     </Round>
   )
@@ -93,35 +106,60 @@ export function WorkEmblem({
   icon,
   size = 'l',
   held = false,
-}: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
+  dim = false,
+}: Readonly<{
+  icon: Mark
+  size?: keyof typeof SEAL
+  held?: boolean
+  dim?: boolean
+}>) {
   return (
     <Round size={size} held={held}>
-      {(at) => <Plaque {...at} icon={icon} lifted={held} />}
+      {(at) => <Plaque {...at} icon={icon} lifted={held} dim={dim} />}
     </Round>
   )
 }
 
 /**
- * An act's medallion on a thin line of a list, ringed in the colour of what
- * it does (the right click's menu: an attack in gules, an alliance in green,
- * an offering in gold): the cartouche's medallion, drawn smaller.
+ * An act's medallion in the right click's menu, ringed in the colour of what
+ * it does (an attack in gules, an alliance in green, an offering in gold): as
+ * large as the bar's pieces and the works of the menu on one's own land, so
+ * that both menus are one design (« c'est pas le même design »), round as an
+ * act is, where a work is square.
  */
 export function ActMedallion({
   icon,
   ring,
-}: Readonly<{ icon: Mark; ring: string }>) {
-  // The cartouche's box, laid out smaller.
-  const side = boxOf('s')
-  const c = side / 2
+  dim = false,
+  small = false,
+}: Readonly<{
+  icon: Mark
+  ring: string
+  dim?: boolean
+  /** In the cartouche by the pointer, among the mouse's signs: smaller. */
+  small?: boolean
+}>) {
+  if (small) {
+    const c = boxOf('s') / 2
+    return (
+      <svg
+        viewBox={`0 0 ${2 * c} ${2 * c}`}
+        style={{
+          width: scaled(LINE_MEDALLION),
+          height: scaled(LINE_MEDALLION),
+          filter: SHADOW,
+        }}
+        aria-hidden="true"
+        className="shrink-0 overflow-visible"
+      >
+        <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} dim={dim} />
+      </svg>
+    )
+  }
   return (
-    <svg
-      viewBox={`0 0 ${side} ${side}`}
-      style={{ width: scaled(LINE_MEDALLION), height: scaled(LINE_MEDALLION) }}
-      aria-hidden="true"
-      className="shrink-0 overflow-visible"
-    >
-      <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} />
-    </svg>
+    <Round size="s" held={false}>
+      {(at) => <Medallion {...at} icon={icon} ring={ring} dim={dim} />}
+    </Round>
   )
 }
 
@@ -130,89 +168,17 @@ export function CoupEmblem({
   icon,
   size = 'l',
   held = false,
-}: Readonly<{ icon: Mark; size?: keyof typeof SEAL; held?: boolean }>) {
+  dim = false,
+}: Readonly<{
+  icon: Mark
+  size?: keyof typeof SEAL
+  held?: boolean
+  dim?: boolean
+}>) {
   return (
     <Round size={size} held={held}>
-      {(at) => <Lozenge {...at} icon={icon} lifted={held} />}
+      {(at) => <Lozenge {...at} icon={icon} lifted={held} dim={dim} />}
     </Round>
-  )
-}
-
-/**
- * How a lord stands with the player, each by a badge whose shape says it
- * before its colour does, as on the map (render/art/icons.ts): an ally the
- * links of a chain in the alliance's green, a foe at war a sword in gules,
- * a felon his broken shield on gules.
- */
-const STANDINGS = {
-  ally: {
-    icon: 'links',
-    ground: PAPER,
-    rim: 'var(--color-pact)',
-    fill: PAPER,
-    stroke: 'var(--color-pact)',
-  },
-  foe: {
-    icon: 'sword',
-    ground: PAPER,
-    rim: 'var(--color-gules)',
-    fill: 'var(--color-wax)',
-    stroke: 'var(--color-gules-deep)',
-  },
-  felon: {
-    icon: 'felon',
-    ground: 'var(--color-gules)',
-    rim: INK,
-    fill: 'var(--color-wax)',
-    stroke: INK,
-  },
-} as const satisfies Record<
-  string,
-  { icon: Mark; ground: string; rim: string; fill: string; stroke: string }
->
-
-export type Standing = keyof typeof STANDINGS
-
-/** A badge of standing: a disc ringed in its colour, its mark in it; named by `label` where no word stands beside it. */
-export function StandingBadge({
-  standing,
-  label,
-  size = 's',
-}: Readonly<{
-  standing: Standing
-  label?: string
-  size?: keyof typeof BADGE
-}>) {
-  const { icon, ground, rim, fill, stroke } = STANDINGS[standing]
-  const side = BADGE[size] + 2
-  const c = side / 2
-  return (
-    <svg
-      {...box(side, side)}
-      role={label ? 'img' : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : true}
-      className="shrink-0 overflow-visible"
-    >
-      {label && <title>{label}</title>}
-      <circle
-        cx={c}
-        cy={c}
-        r={c - 1.5}
-        fill={ground}
-        stroke={rim}
-        strokeWidth="2.2"
-      />
-      <Glyph
-        name={icon}
-        cx={c}
-        cy={c}
-        size={side * 0.66}
-        fill={fill}
-        stroke={stroke}
-        sw={1.8}
-      />
-    </svg>
   )
 }
 

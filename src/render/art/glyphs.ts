@@ -27,6 +27,12 @@ export const GLYPHS = {
       open: true,
     },
   ],
+  // An anchor: a port, its ring, its stock and its arms.
+  port: [
+    { d: 'M12 5.6 V20.6 M8 9 H16', open: true },
+    { d: 'M4.4 13.6 Q5.6 20.6 12 20.6 Q18.4 20.6 19.6 13.6', open: true },
+    { d: 'M10.2 3.8 A1.8 1.8 0 1 0 13.8 3.8 A1.8 1.8 0 1 0 10.2 3.8 Z' },
+  ],
   // A shield broken in two, its halves pulled apart along the crack: a
   // felon, never to be read as a lord's whole shield.
   felon: [

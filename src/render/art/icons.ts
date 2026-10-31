@@ -36,20 +36,24 @@ const PLAIN = {
 }
 
 /** An icon in its badge, centred on (0, 0), 24 units across. */
-export function drawIcon(g: Graphics, icon: Icon): void {
+/** An icon on its disc; `bare`, its drawing alone, light cut round in ink, to lie over a gauge that fills the disc (« rajoute une ptite icon d'alliance par dessus le vert »). */
+export function drawIcon(g: Graphics, icon: Icon, bare = false): void {
   const look = LOOKS[icon] ?? PLAIN
-  g.circle(0, 0, 17.3).fill(look.ground).stroke({ width: 2.6, color: look.rim })
+  if (!bare)
+    g.circle(0, 0, 17.3)
+      .fill(look.ground)
+      .stroke({ width: 2.6, color: look.rim })
   g.translateTransform(-12, -12)
   const line = {
-    width: 2,
-    color: look.stroke,
+    width: bare ? 2.6 : 2,
+    color: bare ? TONE.ink : look.stroke,
     join: 'round',
     cap: 'round',
   } as const
   const parts: Array<Part> = GLYPHS[icon]
   for (const part of parts) {
     g.path(new GraphicsPath(part.d))
-    if (!part.open) g.fill(look.fill)
+    if (!part.open) g.fill(bare ? TONE.parchment : look.fill)
     g.stroke(line)
   }
 }

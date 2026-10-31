@@ -14,7 +14,14 @@ import type { GameSetup, GameState, Grid, Order } from './types'
 /** A land of so many tiles across and down, all of it land. */
 export function field(width: number, height = 1): Grid {
   const land = Array.from({ length: width * height }, () => true)
-  return { width, height, size: 4, land, area: land.length }
+  return {
+    width,
+    height,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: land.length,
+  }
 }
 
 /** A game of so many lords on the seed, each in his team if any is given, his bot of the level. */

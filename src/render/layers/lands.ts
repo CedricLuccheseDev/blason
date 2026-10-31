@@ -1,4 +1,12 @@
-import { Container, Graphics, GraphicsContext } from 'pixi.js'
+import {
+  Container,
+  FillPattern,
+  Graphics,
+  GraphicsContext,
+  Matrix,
+  Texture,
+} from 'pixi.js'
+import { css } from '../art/ink'
 import { mixColor } from '../ease'
 import { chain, flatten, simplify } from '../geometry'
 import { TONE } from '../palette'
@@ -24,18 +32,28 @@ const [FROM, TO] = [2.6, 3.8]
 /** How far from the coast's own line a shore line may stray, against its distance from the shore. */
 const WITHIN = 0.04
 
-/** The sea's wash with its shore lines so wide, in map units. */
+/** How much darker the open sea is than the shallows, beyond the last shore line: each band out from the coast a step deeper (« pour la mer a chaque couche assombri l'eau. pour simuler les fond marins »). */
+const DEEPEST = 0.22
+
+/** The water's tone so many bands out from the coast, of the shore lines' count. */
+const depthOf = (band: number) =>
+  mixColor(TONE.seaWash, TONE.seaLine, (DEEPEST * band) / SHORES.length)
+
+/** The sea's wash with its shore lines so wide, in map units, the water darkening band by band out to the open sea. */
 function sea(world: World, width: number): Graphics {
   const g = new Graphics()
     .rect(0, 0, world.width, world.height)
-    .fill(TONE.seaWash)
+    .fill(depthOf(SHORES.length))
   // The coast drawn wide in the line's colour, then a little less wide in
-  // the sea's: what is left is a line at that distance from every shore (the
-  // land, drawn over it, hides the inner half). The coast alone, not every
-  // cell's outline: a land of small cells would be painted over and over.
+  // the water's within it: what is left is a line at that distance from
+  // every shore (the land, drawn over it, hides the inner half), the water
+  // inside it a band shallower than the one outside. The coast alone, not
+  // every cell's outline: a land of small cells would be painted over and
+  // over.
   const line = { join: 'round', cap: 'round' } as const
   const coast = chain(world.coast)
-  for (const [d, strength] of [...SHORES].reverse()) {
+  ;[...SHORES].reverse().forEach(([d, strength], k) => {
+    const band = SHORES.length - 1 - k
     // So far from the shore, the coast's smallest turns do not show: a
     // line a twenty-fifth of its distance from the coast's is enough.
     const plain = coast.map((run) => flatten(simplify(run, d * WITHIN)))
@@ -43,11 +61,11 @@ function sea(world: World, width: number): Graphics {
     g.stroke({
       ...line,
       width: 2 * d + width,
-      color: mixColor(TONE.seaWash, TONE.seaLine, strength),
+      color: mixColor(depthOf(band + 1), TONE.seaLine, strength),
     })
     for (const run of plain) g.poly(run, false)
-    g.stroke({ ...line, width: 2 * d - width, color: TONE.seaWash })
-  }
+    g.stroke({ ...line, width: 2 * d - width, color: depthOf(band) })
+  })
   return g
 }
 
@@ -73,7 +91,9 @@ export function makeSea(world: World) {
  * straight, the same line seen from both, so that no crack opens between
  * them (only the coast is seen); its coast and the frame as drawn.
  */
-export function plainCells(land: World['land']): Array<Array<Point>> {
+export function plainCells(
+  land: ReadonlyArray<{ outline: Array<Point> }>,
+): Array<Array<Point>> {
   const at = ([x, y]: Point) => `${x},${y}`
   const cells = new Map<string, number>()
   const sides = new Set<string>()
@@ -110,3 +130,45 @@ export function landShape(world: World): GraphicsContext {
     cap: 'round',
   })
 }
+
+/** The dead land: dark, brown-black, as a land beyond the game is inked out on an old map (« Il faut instaurer des dead space », « il faut mettre en marron noir les lands dead »), and hatched a shade lighter, lest it read as sea. */
+export const DEAD = mixColor(TONE.ink, TONE.page, 0.12)
+const HATCH = mixColor(DEAD, TONE.page, 0.14)
+/** The hatching's tile, in pixels of its texture, and in map units. */
+const [TILE, SPAN] = [16, 7]
+
+/** The hatching: a stroke across each tile, joined from one to the next. */
+function hatching(): FillPattern {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = TILE
+  const g = canvas.getContext('2d')
+  if (g) {
+    g.fillStyle = css(DEAD)
+    g.fillRect(0, 0, TILE, TILE)
+    g.strokeStyle = css(HATCH)
+    g.lineWidth = 2
+    g.beginPath()
+    for (const k of [-TILE, 0, TILE]) {
+      g.moveTo(k, TILE)
+      g.lineTo(k + TILE, 0)
+    }
+    g.stroke()
+  }
+  const pattern = new FillPattern(Texture.from(canvas), 'repeat')
+  pattern.setTransform(new Matrix().scale(SPAN / TILE, SPAN / TILE))
+  return pattern
+}
+
+/** The dead land, others' than the map's own (atlas.ts): drawn, dulled and hatched, bare, no lord's wash ever over it. */
+function deadShape(world: World): GraphicsContext {
+  const shape = new GraphicsContext()
+  if (world.dead.length === 0) return shape
+  for (const cell of plainCells(world.dead)) shape.poly(flatten(cell))
+  return shape.fill(hatching())
+}
+
+/** The land's parchment under the lords' washes, and the dead land beside it. */
+export const landLayers = (world: World, shape: GraphicsContext) => [
+  new Graphics(shape),
+  new Graphics(deadShape(world)),
+]

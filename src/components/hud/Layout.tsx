@@ -79,18 +79,31 @@ export function Inline(props: Flow) {
 export function Panel({
   page = false,
   gap = 'line',
+  scroll = false,
   className = '',
   children,
 }: Readonly<{
   page?: boolean
   gap?: Gap
+  /** Taller than the screen may hold: its words scroll within it, its edge and its gold rule standing still (a sheet that scrolled took its rule with it, and the rule ran out half way, « la stroke or »). */
+  scroll?: boolean
   className?: string
   children: ReactNode
 }>) {
   const inside = page ? 'px-6 py-5 max-sm:px-4' : 'px-3 py-2'
+  if (!scroll)
+    return (
+      <Sheet className={`flex flex-col ${GAPS[gap]} ${inside} ${className}`}>
+        {children}
+      </Sheet>
+    )
   return (
-    <Sheet className={`flex flex-col ${GAPS[gap]} ${inside} ${className}`}>
-      {children}
+    <Sheet className={`flex flex-col ${className}`}>
+      <div
+        className={`flex min-h-0 flex-col overflow-y-auto ${GAPS[gap]} ${inside}`}
+      >
+        {children}
+      </div>
     </Sheet>
   )
 }
@@ -138,7 +151,7 @@ export function Veil({
 }: Readonly<{ onClose?: () => void; children: ReactNode }>) {
   return (
     <div // norm-ok: the veil is no control, a click on it doubles the sheet's own button to put it down.
-      className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/50 p-3"
+      className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-quill/40 p-3 backdrop-blur-[3px] hud-enter"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose?.()
       }}
@@ -148,16 +161,20 @@ export function Veil({
   )
 }
 
-/** Two pages side by side, a fold between them; one under the other on a phone. */
+/** Two pages side by side, a fold between them; one under the other on a phone. `fill`: in a sheet of a fixed height, they take what it leaves and each page scrolls within it (« il faut que la modal ne bouge pas en taille il faut scroller »), the two together on a phone. */
 export function Spread({
   left,
   right,
-}: Readonly<{ left: ReactNode; right: ReactNode }>) {
+  fill = false,
+}: Readonly<{ left: ReactNode; right: ReactNode; fill?: boolean }>) {
+  const page = `flex min-w-0 flex-col gap-3 ${fill ? 'sm:min-h-0 sm:overflow-y-auto sm:pr-2' : ''}`
   return (
-    <div className="grid gap-6 sm:grid-cols-[1fr_auto_1fr]">
-      <div className="flex min-w-0 flex-col gap-3">{left}</div>
+    <div
+      className={`grid gap-6 sm:grid-cols-[1fr_auto_1fr] ${fill ? 'min-h-0 flex-1 overflow-y-auto sm:overflow-visible' : ''}`}
+    >
+      <div className={page}>{left}</div>
       <span aria-hidden="true" className="w-px bg-quill/35 max-sm:hidden" />
-      <div className="flex min-w-0 flex-col gap-3">{right}</div>
+      <div className={page}>{right}</div>
     </div>
   )
 }

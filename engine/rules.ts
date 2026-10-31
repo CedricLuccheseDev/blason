@@ -5,41 +5,10 @@ import { TICKS_PER_SECOND } from './units'
 // Men and gold are counted in thousandths (UNIT), so every rate stays an
 // integer.
 
-/** The armies a lord may send: three levied at a village, a share of his peasants; the mercenaries hired at a market for gold. */
-export type Army = 'raid' | 'host' | 'ban' | 'mercenaries'
+import type { Army, Coup, Work } from './kinds'
 
-/** What a lord may build anywhere on his land, one thing a place. */
-export type Work = 'village' | 'market' | 'castle'
-
-/** The coups that may turn a game, each its own deed: take land, kill troops, ruin an economy. */
-export type Coup = 'archers' | 'troublemaker' | 'trebuchet'
-
-/** The sizes a map may be drawn at. */
-export type MapSize = 'standard' | 'large' | 'huge'
-
-/**
- * Each size's land, so many times the standard one's area (some 53,000
- * tiles): its tiles and cells the same size, more of them.
- */
-export const MAP_SIZES: Readonly<Record<MapSize, number>> = {
-  standard: 1,
-  large: 2,
-  huge: 4,
-}
-
-/** The armies, the works and the coups, in the order the bar shows them: one more is one more entry here. */
-export const ARMIES: ReadonlyArray<Army> = [
-  'raid',
-  'host',
-  'ban',
-  'mercenaries',
-]
-export const WORKS: ReadonlyArray<Work> = ['village', 'market', 'castle']
-export const COUPS: ReadonlyArray<Coup> = [
-  'archers',
-  'troublemaker',
-  'trebuchet',
-]
+export type { Army, Coup, MapSize, Work } from './kinds'
+export { ARMIES, COUPS, MAP_SIZES, WORKS } from './kinds'
 
 /**
  * A coup's figures: its first price in gold; how far from its lord's border
@@ -85,7 +54,9 @@ export type Rules = {
   mercenaryPrice: number
   /** Tiles an army takes each tick at most, once at the front: its pace, whatever its size. */
   paceTiles: number
-  /** How fast each army goes, on the march and at the front, in percent of the host's pace: a raid rides, the levy plods. */
+  /** How fast it takes free land against its pace on a lord's, in percent: the free land hardly holds (« je sais pas si l'assaut de zone vide est satisfaisant, ça peut être long », 31/10). */
+  freePace: number
+  /** How fast each army goes, on the march and at the front, in percent of the host's pace: a raid rides half again as fast, the levy at half the pace (« Essaye le -50 +50% », 30/10). */
   armySpeed: Readonly<Record<Army, number>>
   /** How far an army marches each tick from its village to the front, in thousandths of a tile. */
   marchPace: number
@@ -97,6 +68,12 @@ export type Rules = {
    * one.
    */
   combat: { peasants: number; castle: number; army: number; castleArmy: number }
+  /** The least a lord's tile costs the army that takes it, in thousandths of a man, however thin his land: an army is never unending (« la frontiere adverse augmente alors que y'a pas d'unité c'est infini »). */
+  leastCost: number
+  /** How fast an army marches on the merchants' roads, in percent of its pace (« les routes accélèrent », 31/10); its march takes them when they bring it sooner. */
+  roadPace: number
+  /** An army's pace in the woods, in percent of its own, on the march and at its front (« la foret doit donner un malus de vitesses aux troupes »). */
+  forestPace: number
   /** Ticks an even battle between two armies lasts, and how near, in tiles, two armies must come to fight. */
   battleTicks: number
   meetTiles: number
@@ -116,16 +93,18 @@ export type Rules = {
    * Price of each work, in gold, doubled for each one of its kind the lord
    * holds (so many times at most); the first of the kinds in `firstFree`
    * costs nothing, so that a lord can always start again from nothing.
-   * Works stand a few tiles apart (workGap), castles further (castleGap).
+   * Works stand their footprints apart (workRoom), castles further (castleGap).
    */
   workPrice: Record<Work, number>
   /** Ticks each work takes to build before it serves. */
   buildTicks: Record<Work, number>
+  /** Ticks a work taken from another lord, or with free land, stands idle before it serves its new lord: no levy, no trade, no volley, so that a fight does not turn at once on what it took (« quand une construction est prise, il faut qu'elle soit inactive pendant 5/10s »). */
+  seizedTicks: number
   firstFree: ReadonlyArray<Work>
   priceDoublings: number
   castleGap: number
-  /** Tiles kept between any two works, so that their drawings never lie on one another. */
-  workGap: number
+  /** Each work's footprint, in tiles: two works stand at least the sum of theirs apart, so that their drawings never lie on one another (« il faut pas pouvoir coller autant les marchés des villages, chaque construction a une range », 31/10). */
+  workRoom: Readonly<Record<Work, number>>
   /** An alliance lasts so long; both may renew it in its last moments; an offer waits so long. */
   allianceTicks: number
   renewTicks: number
@@ -144,10 +123,27 @@ export type Rules = {
   tradeRange: number
   /** Gold a caravan brings each of its two markets for each tile of its road, in thousandths; between allies, so much more, in percent; between two markets of one lord, so much, paid once. */
   caravanGold: number
+  /** A village within so many tiles of a caravan's road is a relay (« les villages sur les chemins des marchands comme sur openfront »): once a caravan, it pays its lord and the caravan's so much, in thousandths, as OpenFront's stations do: the same lord's less, allies' more. */
+  /** A port may send a ship so often, which sails so many thousandths of a tile a tick; with so many of its lord's at sea, it sends one time in two; it brings each port so much gold a tile of its way, in thousandths (ships.ts). */
+  shipTicks: number
+  shipPace: number
+  shipCrowd: number
+  shipGold: number
+  /** A warship (warships.ts): its price, in gold, doubling with each afloat; it sails so many thousandths of a tile a tick, patrols within so many tiles of its post, shoots within so many, every so many ticks, and sinks at so many shots. */
+  warshipPrice: number
+  warshipPace: number
+  warshipPatrol: number
+  warshipReach: number
+  warshipReload: number
+  warshipHull: number
+  relayReach: number
+  relayGold: { self: number; other: number; ally: number }
   allyTrade: number
   homeTrade: number
-  /** A piece of a lord's land under so many tiles, ringed by one other lord and the sea, passes to him as if ringed all round. */
+  /** A piece of land under so many tiles, free or a lord's, ringed by one lord and the sea, passes to him as if ringed all round. */
   seaWalled: number
+  /** The fewest tiles an island keeps to be in the game: a speck the water touches, a shore's crumb cut off by the dead land, is not. */
+  isle: number
   /** Share of the land that wins, in thousandths, and how it falls with time. */
   /** The land's roughness (rough.ts): at most so many tenths of a tile added to the order an army takes a tile in, smooth over a mesh of so many tiles. */
   roughness: number
@@ -175,7 +171,7 @@ const MINUTE = 60 * SECOND
  * letters at most.
  */
 export const SETUP_LIMITS = {
-  seats: { min: 2, max: 20 },
+  seats: { min: 2, max: 24 },
   teams: 4,
   opening: {
     min: 5 * SECOND,
@@ -207,9 +203,13 @@ export const RULES: Rules = {
   },
   mercenaryPrice: 2000,
   paceTiles: 3,
-  armySpeed: { raid: 125, host: 100, ban: 75, mercenaries: 100 },
+  freePace: 200,
+  armySpeed: { raid: 150, host: 100, ban: 50, mercenaries: 100 },
   marchPace: 600,
   combat: { peasants: 50, castle: 100, army: 100, castleArmy: 200 },
+  leastCost: 100,
+  roadPace: 150,
+  forestPace: 60,
   battleTicks: 40,
   meetTiles: 8,
   neutralHold: 50,
@@ -219,16 +219,18 @@ export const RULES: Rules = {
   castleRadius: 12,
   volleyTicks: 3 * SECOND,
   volleyToll: 5,
-  workPrice: { village: 100, market: 100, castle: 200 },
+  workPrice: { village: 100, market: 100, castle: 200, port: 150 },
   buildTicks: {
     village: 10 * SECOND,
     market: 10 * SECOND,
     castle: 20 * SECOND,
+    port: 10 * SECOND,
   },
+  seizedTicks: 8 * SECOND,
   firstFree: ['village', 'market'],
   priceDoublings: 3,
   castleGap: 10,
-  workGap: 4,
+  workRoom: { village: 3, market: 3, castle: 3, port: 2 },
   allianceTicks: 5 * MINUTE,
   renewTicks: 30 * SECOND,
   requestTicks: 20 * SECOND,
@@ -241,9 +243,22 @@ export const RULES: Rules = {
   caravanCrowd: 6,
   tradeRange: 40,
   caravanGold: 150,
+  shipTicks: 15 * SECOND,
+  shipPace: 800,
+  shipCrowd: 4,
+  shipGold: 150,
+  warshipPrice: 200,
+  warshipPace: 600,
+  warshipPatrol: 12,
+  warshipReach: 3,
+  warshipReload: 2 * SECOND,
+  warshipHull: 4,
+  relayReach: 2,
+  relayGold: { self: 1000, other: 2500, ally: 3500 },
   allyTrade: 200,
   homeTrade: 50,
   seaWalled: 200,
+  isle: 20,
   roughness: 30,
   roughMesh: 5,
   victoryShare: 800,

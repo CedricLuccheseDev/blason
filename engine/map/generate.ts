@@ -8,12 +8,15 @@ import { wetness } from './ground'
 import { relax, scatter } from './points'
 import { planRelief, sculptLand } from './relief'
 import { makeRivers } from './rivers'
+import { ATLAS, atlasLand, planOf, riversOf, widthOf } from './atlas'
+import { deadOf } from './pockets'
 import type { MapSize } from '../rules'
 import type { Biome, Shares } from './biomes'
 import type { GameMap, Ground, Plan } from './types'
 import type { Cells } from './cells'
 import type { Point } from './points'
 import type { ShapeKind } from './shapes'
+import type { Atlas } from './atlas'
 
 /** What the rendering draws of a cell of land; the simulation reads the GameMap. */
 type WorldCell = {
@@ -32,6 +35,8 @@ export type Generator = 'classic' | 'relief'
 export type World = {
   seed: string
   generator: Generator
+  /** A map of the real Earth (atlas.ts); none for an invented land. */
+  atlas?: Atlas
   shape: ShapeKind
   size: MapSize
   /** The frame of the map, which grows with the sea so a cell keeps its size. */
@@ -43,6 +48,8 @@ export type World = {
   peaks: Array<{ outline: Array<Point> }>
   /** The middle of each pass over them. */
   passes: Array<Point>
+  /** The dead land, a cell each, as map.dead: drawn, but no one's (atlas.ts). */
+  dead: Array<{ outline: Array<Point> }>
   /** The shores of the sea and of the lakes. */
   coast: Array<Array<Point>>
   rivers: Array<Array<Point>>
@@ -97,18 +104,32 @@ const GENERATORS: Readonly<
 export function generateWorld(
   seed: string,
   {
-    size = 'standard',
+    size: asked = 'standard',
     generator = 'relief',
-  }: { size?: MapSize; generator?: Generator } = {},
+    atlas,
+  }: { size?: MapSize; generator?: Generator; atlas?: Atlas } = {},
 ): World {
+  // A map of the real Earth has its own size, and reads its ground there.
+  const size = atlas ? ATLAS[atlas].size : asked
   const scale = MAP_SIZES[size]
-  const maker = GENERATORS[generator]
-  const plan = maker.plan(seed)
+  const maker = atlas
+    ? {
+        plan: () => planOf(atlas),
+        ground: atlasLand(atlas),
+        biomes: GENERATORS.relief.biomes,
+      }
+    : GENERATORS[generator]
+  // Each size its own family of shape from one seed, so that the book's
+  // small, middling and great lands differ (« Pourquoi les lands a gauche
+  // c'est que des terres centrals ? »); the middling one's as it always was.
+  const plan = maker.plan(size === 'standard' ? seed : `${seed}:${size}`)
   // The land open to the armies keeps its count: the high mountains come on top.
   const count = Math.floor((CELLS * scale * 1000) / (1000 - plan.peakShare))
   const area = Math.floor((count * 1000) / (1000 - plan.seaShare)) * CELL_AREA
-  // A screen's proportions, 17 by 10.
-  const width = isqrt(Math.floor((area * 17) / 10))
+  // A screen's proportions, 17 by 10; the Earth's own for a map of it.
+  const width = atlas
+    ? widthOf(atlas, area)
+    : isqrt(Math.floor((area * 17) / 10))
   const height = Math.floor(area / width)
   const spacing = (isqrt(CELL_AREA) * 86) / 100
   const sites = relax(
@@ -118,29 +139,26 @@ export function generateWorld(
   )
   const cells = buildCells(sites, width, height)
   const lakes = Math.floor(count / LAKE_EVERY)
-  const { water, peaks, heights, passes } = maker.ground(
-    seed,
-    plan,
-    cells,
-    width,
-    height,
-    scale,
-    lakes,
-  )
+  const ground = maker.ground(seed, plan, cells, width, height, scale, lakes)
+  const { water, heights, passes } = ground
+  const { dead, peaks } = deadOf(cells, ground)
   // Ten times as many cells are a tenth of the size: their borders wiggle less.
   const borders = makeBorders(seed, cells, water, count > FINE ? 2 : 0)
-  const rivers = makeRivers(
-    seed,
-    cells,
-    water,
-    heights,
-    borders,
-    Math.floor(count / RIVER_EVERY),
-  )
+  // A map of the Earth has its own rivers; an invented land, its own.
+  const rivers = atlas
+    ? riversOf(atlas, cells, width, height, water)
+    : makeRivers(
+        seed,
+        cells,
+        water,
+        heights,
+        borders,
+        Math.floor(count / RIVER_EVERY),
+      )
   const wet = wetness(seed, cells, water, heights, rivers.banks)
-  const closed = water.map((w, c) => w || peaks[c])
+  const closed = water.map((w, c) => w || peaks[c] || dead[c])
   const biomes = placeBiomes(cells, closed, heights, wet, maker.biomes)
-  const map = gameMap(cells, water, peaks)
+  const map = gameMap(cells, water, peaks, dead, (c) => biomes[c] === 'forest')
   const outline = (c: number) => borders.outline(c)
   const onLand = cells.sites.flatMap((_, c) => (closed[c] ? [] : [c]))
   const land = onLand.map((c): WorldCell => ({
@@ -158,6 +176,7 @@ export function generateWorld(
   return {
     seed,
     generator,
+    ...(atlas ? { atlas } : {}),
     shape: plan.kind,
     size,
     width,
@@ -168,6 +187,9 @@ export function generateWorld(
       peaks[c] ? [{ outline: outline(c) }] : [],
     ),
     passes,
+    dead: cells.sites.flatMap((_, c) =>
+      dead[c] ? [{ outline: outline(c) }] : [],
+    ),
     coast,
     rivers: rivers.courses,
   }
@@ -178,14 +200,16 @@ function gameMap(
   cells: Cells,
   water: Array<boolean>,
   peaks: Array<boolean>,
+  dead: Array<boolean>,
+  wooded: (c: number) => boolean,
 ): GameMap {
   const index = cells.sites.map(() => -1)
   let landCount = 0
   let seaCount = 0
-  const open = (c: number) => !water[c] && !peaks[c]
+  const open = (c: number) => !water[c] && !peaks[c] && !dead[c]
   cells.sites.forEach((_, c) => {
     if (water[c]) index[c] = seaCount++
-    else if (!peaks[c]) index[c] = landCount++
+    else if (open(c)) index[c] = landCount++
   })
   const pick = (c: number, wanted: (j: number) => boolean) =>
     cells.neighbors[c].filter(wanted).map((j) => index[j])
@@ -197,7 +221,14 @@ function gameMap(
   return {
     land: cells.sites.flatMap((_, c) =>
       open(c)
-        ? [{ ...at(c), neighbors: pick(c, open), shore: pick(c, isWater) }]
+        ? [
+            {
+              ...at(c),
+              neighbors: pick(c, open),
+              shore: pick(c, isWater),
+              ...(wooded(c) ? { wood: true } : {}),
+            },
+          ]
         : [],
     ),
     sea: cells.sites.flatMap((_, c) =>
@@ -206,5 +237,6 @@ function gameMap(
         : [],
     ),
     peaks: cells.sites.flatMap((_, c) => (peaks[c] ? [at(c)] : [])),
+    dead: cells.sites.flatMap((_, c) => (dead[c] ? [at(c)] : [])),
   }
 }

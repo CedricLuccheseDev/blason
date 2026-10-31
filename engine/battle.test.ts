@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { wayBetween } from './battle'
 import { overLand } from './grid'
 import { attack, endow, field, hold, muster, playing, run } from './testing'
 import type { GameState } from './types'
@@ -83,5 +84,24 @@ describe('the battles', () => {
     expect(overLand(grid, 0, 2 * 5 + 4)).toBe(false)
     grid.land[1] = true
     expect(overLand(grid, 2 * 5 + 4, 0)).toBe(true)
+  })
+
+  it('meet round a mountain by the way over the land, if it is no more than twice the straight line', () => {
+    // Ten by five; a wall of high mountains down column 5, a gap below it.
+    const near = playing(field(10, 5))
+    const wall = (state: GameState, rows: number) => {
+      const land = [...state.grid.land]
+      for (let r = 0; r < rows; r++) land[r * 10 + 5] = false
+      state.grid = { ...state.grid, land }
+    }
+    // Through the gap at row 3: down 2, across 4, up 2, twice the line.
+    wall(near, 3)
+    const way = wayBetween(near, 13, 17)
+    expect(way).toHaveLength(9)
+    expect(way?.[4]).toBe(35)
+    // The gap at row 4 only: ten steps, too far round.
+    const far = playing(field(10, 5))
+    wall(far, 4)
+    expect(wayBetween(far, 13, 17)).toBeNull()
   })
 })

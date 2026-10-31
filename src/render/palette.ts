@@ -3,7 +3,7 @@
 // mine, red for a fight and green for an alliance. Every other tone is muted earth, so that only a
 // player's colour stands out.
 
-/** Twenty heraldic colours, one per seat; their names live in the messages. */
+/** Twenty-four heraldic colours, one per seat (« Passe de 20 a 24 joueurs »); their names live in the messages. */
 export const PLAYERS = [
   { key: 'azure', color: 0x2f6db5 },
   { key: 'gules', color: 0xc0392b },
@@ -25,6 +25,10 @@ export const PLAYERS = [
   { key: 'peacock', color: 0x1f7a99 },
   { key: 'plum', color: 0x5a2347 },
   { key: 'slate', color: 0x7c8b9a },
+  { key: 'amaranth', color: 0xb5236e },
+  { key: 'ochre', color: 0xb58a3a },
+  { key: 'indigo', color: 0x40379a },
+  { key: 'mint', color: 0x6fc7a8 },
 ] as const
 
 export type Heraldry = (typeof PLAYERS)[number]['key']
@@ -32,8 +36,9 @@ export type Heraldry = (typeof PLAYERS)[number]['key']
 export const TONE = {
   ink: 0x2b1e12,
   page: 0xefe3c4,
-  seaWash: 0xcdd6c2,
-  seaLine: 0x8fa39a,
+  // A little bluer, for the land to stand out (« L'eau fais la + bleu un peu pour le contraste »).
+  seaWash: 0xa6bfd0,
+  seaLine: 0x5f7f96,
   gold: 0xd9a41e,
   goldLight: 0xf4d277,
   goldDeep: 0x946512,
@@ -57,8 +62,13 @@ export const TONE = {
   parchment: 0xf1e8d2,
   gain: 0x2f9e44,
   loss: 0xd6332b,
+  /** A figure's growth and fall afloat on the map, light to read in its ink (the HUD's --color-thrive-light, --color-gules-light). */
+  gainLight: 0x7fd38b,
+  lossLight: 0xff7b66,
   white: 0xffffff,
-  stone: 0xd9d1be,
+  stone: 0xc9bea4,
+  snow: 0xfbf8ef,
+  stoneShade: 0x8f8268,
   stoneDark: 0xb7ad97,
   /** A castle's rampart round the land it holds. */
   lead: 0x8d8574,

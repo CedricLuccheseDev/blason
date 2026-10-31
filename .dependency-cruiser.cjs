@@ -57,6 +57,9 @@ module.exports = {
     doNotFollow: { path: 'node_modules' },
     tsPreCompilationDeps: true,
     tsConfig: { fileName: 'tsconfig.json' },
-    exclude: { path: ['routeTree\\.gen', '_generated'] },
+    // The atlas's sheets are data (scripts/atlas.ts), the world's too long a line to parse.
+    exclude: {
+      path: ['routeTree\\.gen', '_generated', 'engine/map/atlas/world\\.ts'],
+    },
   },
 }

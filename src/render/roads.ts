@@ -2,9 +2,10 @@ import { siteOf } from './marks'
 import type { GameState } from '../../engine'
 
 // The roads as they are drawn. The simulation walks a road from tile to
-// tile, in steps across and down; a man or a wagon walks it in straight
-// lines, from each turn on to the farthest point of the road he can see
-// without leaving the ground the road may cross; a built road wanders a
+// tile, in steps across and down; a man walks it in straight lines, from
+// each turn on to the farthest point of the road he can see without leaving
+// the ground the road may cross; a built road, the merchants', keeps to its
+// own tiles in runs across and down, as OpenFront's railways, wanders a
 // little aside, as roads of old, and its corners are smoothed; at an even
 // pace: as many points as the road has tiles,
 // evenly spaced, so that what the simulation counts in tiles moves smoothly.
@@ -42,6 +43,15 @@ function straighten(state: GameState, road: Array<number>, open: Open) {
     turns.push(road[to])
     from = to
   }
+  return turns.map((t) => siteOf(state, t))
+}
+
+/** A built road on its own tiles, as OpenFront's railways: its runs across and down, a point at each turn (« des chemins verticaux horizontaux comme openfront »). */
+function runs(state: GameState, road: Array<number>) {
+  const turns = [road[0]]
+  for (let i = 1; i < road.length - 1; i++)
+    if (road[i] - road[i - 1] !== road[i + 1] - road[i]) turns.push(road[i])
+  turns.push(road[road.length - 1])
   return turns.map((t) => siteOf(state, t))
 }
 
@@ -132,6 +142,52 @@ function wander(
   })
 }
 
+/** How far from the water a built road keeps when it may, in tiles; how far it is pushed aside at most. */
+const [SHORE, PUSH] = [1.6, 0.9]
+
+/** Where the water near a point pushes it, in tiles: away from each water tile within the shore's reach, the nearer the more. */
+function pushOf(state: GameState, cx: number, cy: number): [number, number] {
+  const { width, height, water } = state.grid
+  const reach = Math.ceil(SHORE)
+  let [px, py] = [0, 0]
+  for (let y = Math.floor(cy) - reach; y <= Math.floor(cy) + reach; y++)
+    for (let x = Math.floor(cx) - reach; x <= Math.floor(cx) + reach; x++) {
+      const off = x < 0 || y < 0 || x >= width || y >= height
+      if (off || !water[y * width + x]) continue
+      const [dx, dy] = [cx - (x + 0.5), cy - (y + 0.5)]
+      const d = Math.hypot(dx, dy) || 1
+      if (d >= SHORE) continue
+      px += (dx / d) * (SHORE - d)
+      py += (dy / d) * (SHORE - d)
+    }
+  return [px, py]
+}
+
+/**
+ * A built road kept off the water's edge (« les chemins des marchands
+ * collent trop proche » of the rivers): the shortest way from tile to tile
+ * runs along the bank, where the river's drawing covers it; each point
+ * pushed away from the water tiles near it, the nearer the more, never onto
+ * a tile the road may not cross.
+ */
+function ashore(state: GameState, line: Array<Spot>, open: Open): Array<Spot> {
+  const { size, width } = state.grid
+  return line.map((p, i) => {
+    if (i === 0 || i === line.length - 1) return p
+    const [cx, cy] = [p.x / size, p.y / size]
+    const [px, py] = pushOf(state, cx, cy)
+    const push = Math.hypot(px, py)
+    if (push === 0) return p
+    // As far as it may go, less if that would put it off its ground.
+    for (let k = Math.min(PUSH, push) / push; k > 0.1; k /= 2) {
+      const [x, y] = [cx + px * k, cy + py * k]
+      if (open(Math.floor(y) * width + Math.floor(x)))
+        return { x: x * size, y: y * size }
+    }
+    return p
+  })
+}
+
 /** A road's tiles as it is drawn: straight over open tiles, wandering so far aside if it is a built road, smoothed so many times, as many points as it has tiles. */
 export function drawRoad(
   state: GameState,
@@ -141,8 +197,11 @@ export function drawRoad(
   stray = 0,
 ): Array<Spot> {
   if (road.length < 2) return road.map((t) => siteOf(state, t))
-  const line = straighten(state, road, open)
-  const bent = stray > 0 ? wander(state, line, open, stray) : line
+  // A built road on its tiles, so that a village by it is a relay where it
+  // seems to be; a march, a man's way, pulled straight.
+  const line = stray > 0 ? runs(state, road) : straighten(state, road, open)
+  const bent =
+    stray > 0 ? ashore(state, wander(state, line, open, stray), open) : line
   return resample(round(bent, rounds), road.length)
 }
 

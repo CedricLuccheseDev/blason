@@ -6,6 +6,7 @@ import { cast } from '../art/light'
 import { fir, firShadow, tree, treeShadow, tuft } from '../art/trees'
 import { hash } from '../pen'
 import { fades } from './detail'
+import { FOREST } from './terrain'
 import { ornaments } from './ornaments'
 import type { Pen } from '../art/ink'
 import type { Field } from './fields'
@@ -32,6 +33,8 @@ const SHADE = {
   /** A broadleaf's crown, a fir's: the wash greened and darkened a little. */
   tree: 0xe0e5d8,
   fir: 0xd4d7cc,
+  /** The woods' mass under their trees: the wash greened and darkened, as a wood is washed in on a map. */
+  canopy: 0xd9dfcd,
   /** A hill hides what is behind it, and leaves the wash as it is. */
   hill: 0xffffff,
   /** The sea's line on its wash. */
@@ -54,6 +57,7 @@ function quieted(k: number): Shade {
     ink: q(SHADE.ink),
     tree: q(SHADE.tree),
     fir: q(SHADE.fir),
+    canopy: q(SHADE.canopy),
     hill: SHADE.hill,
     ripple: q(SHADE.ripple),
     crops: SHADE.crops.map(q),
@@ -129,6 +133,35 @@ function fields(
   }
 }
 
+/** The woods' mass: a round of wash on each of their tiles, overlapping into one shape with a soft edge, under their trees. */
+function canopy(p: Pen, ground: Ground, span: Span, color: number) {
+  const { grid, terrain } = ground
+  const k = grid.size
+  const g = p.g
+  g.beginPath()
+  for (
+    let r = Math.max(0, span.r0);
+    r <= Math.min(grid.height - 1, span.r1);
+    r++
+  )
+    for (
+      let c = Math.max(0, span.c0);
+      c <= Math.min(grid.width - 1, span.c1);
+      c++
+    ) {
+      const t = r * grid.width + c
+      // The wash runs to the border, as the land does: the trees alone
+      // stand back from it (« y'a des coupures aux frontiere c'est bizarre »).
+      if (terrain.biome[t] !== FOREST) continue
+      const [x, y] = [(c + 0.5) * k, (r + 0.5) * k]
+      const rad = k * (0.78 + 0.12 * hash(c, r, 19))
+      g.moveTo(x + rad, y)
+      g.arc(x, y, rad, 0, Math.PI * 2)
+    }
+  g.fillStyle = css(color)
+  g.fill()
+}
+
 /** The shadows the ornaments cast, all in one pass. */
 function shadows(p: Pen, list: Array<Ornament>) {
   cast(p, SHADOW.alpha, SHADOW.soft, (g) => {
@@ -177,6 +210,7 @@ export function paint(
     span,
     detail,
   )
+  canopy(p, ground, span, shade.canopy)
   if (shadowed) shadows(p, list)
   for (const it of list) {
     g.globalAlpha = (0.55 + 0.45 * it.w) * faint

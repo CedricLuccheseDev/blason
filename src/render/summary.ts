@@ -11,6 +11,7 @@ import {
   fedByLand,
   freeWorks,
   hasPicked,
+  isPort,
   menFor,
   nextDrop,
   offeringOf,
@@ -18,6 +19,7 @@ import {
   sicknessOf,
   standing,
   victoryShare,
+  warshipPrice,
   wonBy,
 } from '../../engine'
 import { PLAYERS } from './palette'
@@ -26,6 +28,7 @@ import type { Lord } from './standings'
 import type { Army, Coup, GameState, Work } from '../../engine'
 import type { Hand } from './hand'
 import type { Heraldry } from './palette'
+import type { Deeds } from './record'
 
 // What the HUD shows, read from the state once a second, as
 // every figure of the game: they step, they do not run.
@@ -43,6 +46,8 @@ export type Summary = {
   winner: Heraldry | null
   /** Whether the player's side won: himself, or his team. */
   won: boolean
+  /** His course through the game, told at the end (record.ts); none in a summary read alone. */
+  record?: Deeds
   me:
     | (Seat & {
         /** His peasants and what his land and villages feed, his land's part apart and his villages counted, and how many are born a second, or die of sickness when there are too many (below zero); his gold, and all he has gained since the start, the purse's "+" read from it. */
@@ -66,6 +71,8 @@ export type Summary = {
   /** The coup in hand, if any, and what each costs now: dearer with each launched. */
   coup: Coup | null
   coups: Array<{ coup: Coup; price: number; can: boolean }>
+  /** A warship: whether one is in hand to fit out or picked to send, what the next costs, and whether it may be had: the gold, and a port to fit it out at. */
+  fleet: { held: boolean; picked: boolean; price: number; can: boolean }
   /**
    * My allies: the seconds left and the share of its time still to run, of
    * the whole or, in its last moments, of them; whether those have come,
@@ -192,6 +199,7 @@ export function summarize(
       const price = me >= 0 ? coupPrice(state, me, c) : 0
       return { coup: c, price, can: price <= gold }
     }),
+    fleet: fleetOf(state, me, hand, gold),
     ...pacts(state, me),
     offering: me >= 0 ? Math.floor(offeringOf(state, me) / UNIT) : 0,
     lords: lordsOf(state, me),
@@ -203,5 +211,25 @@ export function summarize(
         target: h.target,
         from: h.from,
       })),
+  }
+}
+
+/** The warship's piece of the bar: in hand, its price, and whether it may be had, a port of mine standing and the gold. */
+function fleetOf(
+  state: GameState,
+  me: number,
+  hand: Hand,
+  gold: number,
+): Summary['fleet'] {
+  const price = me >= 0 ? warshipPrice(state, me) : 0
+  // A port standing: one being built, or just taken, fits none out yet.
+  const port = state.works.some(
+    (w) => w.owner === me && isPort(w) && standing(state, w),
+  )
+  return {
+    held: hand.fleet,
+    picked: hand.ship !== null,
+    price,
+    can: port && price <= gold,
   }
 }

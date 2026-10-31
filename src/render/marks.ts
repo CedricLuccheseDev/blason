@@ -10,6 +10,7 @@ import {
 } from './art/works'
 import { playerColor } from './palette'
 import type { Box } from './camera'
+import type { Lod } from './art/works'
 import type { GameState, Grid } from '../../engine'
 
 // What stands on the land, drawn at its scale as on the boards: the lords'
@@ -27,6 +28,8 @@ export function makeMarks(state: GameState, me: number) {
   const at = (tile: number) => siteOf(state, tile)
   let key = ''
   let seen = { tick: -1, zoom: 0 }
+  /** Each work's level of detail as drawn, changed only once the zoom has clearly crossed its threshold. */
+  const levels = new WeakMap<Sprite, Lod>()
 
   function redraw() {
     works.removeChildren().forEach((c) => c.destroy())
@@ -60,7 +63,8 @@ export function makeMarks(state: GameState, me: number) {
         const shown = mine ? 1 : workShown(work.work, px)
         drawn.visible = shown > 0
         if (!drawn.visible) return
-        const lod = workLod(workPx(zoom, mine))
+        const lod = steady(levels.get(drawn), workPx(zoom, mine))
+        levels.set(drawn, lod)
         drawn.texture = workTexture(work.work, playerColor(work.owner), lod)
         drawn.scale.set(
           (workScale(zoom, mine) * BOX.width) / drawn.texture.width,
@@ -69,6 +73,14 @@ export function makeMarks(state: GameState, me: number) {
       })
     },
   }
+}
+
+/** A level of detail held until the size on screen has gone a tenth past the threshold, so that a work does not flip between two looks as the zoom glides by it. */
+function steady(held: Lod | undefined, px: number): Lod {
+  const wanted = workLod(px)
+  if (held === undefined || wanted === held) return wanted
+  const step = wanted > held ? 1.1 : 0.9
+  return workLod(px / step) === wanted ? wanted : held
 }
 
 /** A tile's middle, in map units. */

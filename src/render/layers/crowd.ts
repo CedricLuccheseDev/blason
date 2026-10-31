@@ -1,4 +1,4 @@
-import type { BitmapText, Container, Graphics } from 'pixi.js'
+import type { BitmapText, Container } from 'pixi.js'
 
 // The lords' words among the rest of the screen: off his works, moved aside
 // on his land; two that would lie on each other, the smaller land's giving
@@ -9,7 +9,6 @@ export type Label = {
   box: Container
   name: BitmapText
   army: BitmapText
-  mark: Graphics
   size: number
   /** His land's side, in map units. */
   reach: number
@@ -127,9 +126,6 @@ export function fadeUnder(labels: Map<number, Label>, bottom: number) {
   for (const label of labels.values()) {
     if (!label.box.renderable) continue
     const at = label.box.getGlobalPosition()
-    label.name.alpha =
-      label.army.alpha =
-      label.mark.alpha =
-        at.y > bottom ? 0.15 : 1
+    label.name.alpha = label.army.alpha = at.y > bottom ? 0.15 : 1
   }
 }

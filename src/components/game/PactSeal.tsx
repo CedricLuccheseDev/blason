@@ -90,7 +90,7 @@ export function PactSeal({
         </button>
       )}
       <Tag>
-        <Figure size="s" tone="ink">
+        <Figure icon="hourglass" size="s">
           {minutes(ally.left)}
         </Figure>
       </Tag>

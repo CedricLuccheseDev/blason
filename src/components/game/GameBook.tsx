@@ -1,16 +1,12 @@
-import {
-  LEVELS,
-  MAP_SIZES,
-  SETUP_LIMITS,
-  TICKS_PER_SECOND,
-} from '../../../engine'
 import { Act, Tap } from '../hud/Act'
-import { Inline, Panel, Ruled, Spread, Stack, Veil } from '../hud/Layout'
+import { Icon } from '../hud/Figure'
+import { Panel, Ruled, Spread, Stack, Veil } from '../hud/Layout'
 import { Note } from '../hud/Text'
-import { Head, Invite, Seats, Setting, stepped } from './BookParts'
+import { Head, Invite } from './BookParts'
+import { BookSettings } from './BookSettings'
+import { MapList } from './MapList'
 import type { ReactNode } from 'react'
-import type { Book, Level, MapSize } from '../../../engine'
-import { LandPlate } from '~/components/home/LandPlate'
+import type { Book } from '../../../engine'
 import { useMessages } from '~/i18n'
 
 // The book of the game (Concept, 29/10: « dans les 2 cas on est en game »,
@@ -18,14 +14,12 @@ import { useMessages } from '~/i18n'
 // object, open on two pages over the game, a veil over the rest. Before the
 // launch it is the host's lobby, open of itself: the land, its size or
 // another one; the lords, his bots, their level, the teams, the planting;
-// « Lancer la partie ». After it, his menu: the same settings for the next
+// « Lancer la partie ». The land is one of a list of cards (MapList.tsx),
+// each its own size (« Fais pas de mode carte moyenne grosse tout ça, chaque
+// carte a sa propre taille »), the smallest first, its size and the lords it
+// suits said under it, and whether it suits this game. After it, his menu: the same settings for the next
 // land, « Recommencer », « Quitter ». The book's button (BookButton) opens
 // it again.
-
-const SIZES = Object.keys(MAP_SIZES) as Array<MapSize>
-const TEAMS = [0, 2, 3, 4] as const
-/** The plantings offered, in seconds, within the setup's bounds. */
-const OPENINGS = [10, 20, 30, 45, 60] as const
 
 export function GameBook({
   book,
@@ -38,6 +32,7 @@ export function GameBook({
   onRestart,
   onQuit,
   guest,
+  names,
 }: Readonly<{
   book: Book
   /** The room's code to give friends; none without a relay. */
@@ -52,33 +47,39 @@ export function GameBook({
   onQuit: () => void
   /** A guest's book, to read: what his room says (waiting for the host, or why it failed), no setting his to change. */
   guest?: { status: string }
+  /** The persons seated, the host first. */
+  names?: Array<string>
 }>) {
   const m = useMessages().book
   const set = (part: Partial<Book>) => onChange({ ...book, ...part })
   const lobby = running === null
-  const seconds = Math.round(book.opening / TICKS_PER_SECOND)
-  // As many bots as the seats the guests leave.
-  const bots = Array.from(
-    { length: SETUP_LIMITS.seats.max - (book.guests ?? 0) },
-    (_, i) => i,
+  // The foot (« met pas voir la carte, mais quitter, et retour si on est en
+  // jeu »), each its icon: before the game, the invitation, the way out and
+  // the launch; in it, the way out, back to the game, and another.
+  const quit = (
+    <Act tone="plain" onClick={onQuit}>
+      <Icon name="door" size={18} />
+      {m.quit}
+    </Act>
   )
-  // A guest reads the settings; the host sets them.
-  const Choice = guest ? Fixed : Setting
   const hosts: ReactNode = lobby ? (
     <>
-      <Act tone="plain" onClick={onClose}>
-        {m.see}
-      </Act>
+      {code && <Invite code={code} />}
+      {quit}
       <Act call onClick={onLaunch}>
+        <Icon name="horn" size={20} />
         {m.launch}
       </Act>
     </>
   ) : (
     <>
-      <Act tone="plain" onClick={onQuit}>
-        {m.quit}
+      {quit}
+      <Act tone="plain" onClick={onClose}>
+        <Icon name="back" size={18} />
+        {m.back}
       </Act>
       <Act call onClick={onRestart}>
+        <Icon name="again" size={20} />
         {m.restart}
       </Act>
     </>
@@ -86,14 +87,7 @@ export function GameBook({
   const foot: ReactNode = guest ? (
     <Stack gap="part" align="center">
       <Note>{guest.status}</Note>
-      <Inline gap="piece" justify="center">
-        <Act tone="plain" onClick={onQuit}>
-          {m.quit}
-        </Act>
-        <Act tone="plain" onClick={onClose}>
-          {m.see}
-        </Act>
-      </Inline>
+      {quit}
     </Stack>
   ) : (
     hosts
@@ -104,7 +98,7 @@ export function GameBook({
       <Panel
         page
         gap="piece"
-        className="relative max-h-full w-full max-w-[calc(820px*var(--hud))] overflow-y-auto"
+        className="relative h-[min(100%,calc(720px*var(--hud)))] w-full max-w-[calc(860px*var(--hud))]"
       >
         {!lobby && !guest && (
           <span className="absolute top-2 right-3">
@@ -114,80 +108,33 @@ export function GameBook({
           </span>
         )}
         <Spread
+          fill
           left={
             <>
-              <Head kicker={guest ? m.hostGame : kicker} title={m.land} />
-              <LandPlate seed={book.seed} size={book.size} label={m.land} />
-              <Choice
-                name={m.size}
-                value={m.sizes[book.size]}
-                onStep={(by) => set({ size: stepped(SIZES, book.size, by) })}
+              <Head
+                kicker={guest ? m.hostGame : kicker}
+                title={m.land}
+                icon="globe"
               />
-              {!guest && (
-                <Inline justify="center">
-                  <Note>{m.or}</Note>
-                  <Act tone="plain" onClick={onAnother}>
-                    {m.another}
-                  </Act>
-                </Inline>
-              )}
+              <MapList
+                book={book}
+                onPick={guest ? undefined : (land) => set({ land })}
+                onAnother={guest ? undefined : onAnother}
+              />
             </>
           }
           right={
-            <>
-              <Head
-                kicker={
-                  guest
-                    ? m.seatedGuest(book.bots, book.guests ?? 0)
-                    : m.seated(book.bots, book.guests ?? 0)
-                }
-                title={m.lords}
-              />
-              <Seats book={book} />
-              {code && <Invite code={code} />}
-              <Choice
-                name={m.bots}
-                value={String(book.bots)}
-                onStep={(by) => set({ bots: stepped(bots, book.bots, by) })}
-              />
-              <Choice
-                name={m.level}
-                value={m.levels[book.level]}
-                onStep={(by) =>
-                  set({ level: stepped<Level>(LEVELS, book.level, by) })
-                }
-              />
-              <Choice
-                name={m.teams}
-                value={book.teams ? String(book.teams) : m.none}
-                onStep={(by) =>
-                  set({ teams: stepped<number>(TEAMS, book.teams, by) })
-                }
-              />
-              <Choice
-                name={m.opening}
-                value={m.seconds(seconds)}
-                onStep={(by) =>
-                  set({
-                    opening:
-                      stepped<number>(OPENINGS, seconds, by) * TICKS_PER_SECOND,
-                  })
-                }
-              />
-              {!lobby && <Note className="text-center">{m.next}</Note>}
-            </>
+            <BookSettings
+              book={book}
+              lobby={lobby}
+              guest={guest !== undefined}
+              names={names}
+              onChange={onChange}
+            />
           }
         />
         <Ruled>{foot}</Ruled>
       </Panel>
     </Veil>
   )
-}
-
-/** A setting as a guest reads it: its name and its value, no arrows. */
-function Fixed({
-  name,
-  value,
-}: Readonly<{ name: string; value: string; onStep?: unknown }>) {
-  return <Setting name={name} value={value} />
 }

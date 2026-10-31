@@ -26,6 +26,8 @@ export type Session = {
   advance: (ms: number, each?: () => void, most?: number) => number
   /** A game waiting for its host: made again from the setup his book filled, on the same land, then started. */
   launch?: (setup: GameSetup) => void
+  /** The session let go: its thread, if it has one, stopped (threaded.ts). */
+  stop?: () => void
 }
 
 export function startSession(

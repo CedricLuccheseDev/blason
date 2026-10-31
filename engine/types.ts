@@ -1,5 +1,6 @@
 import type { Army, Coup, MapSize, Rules, Work } from './rules'
 import type { Level } from './bots/levels'
+import type { Atlas } from './map/atlas'
 
 export const NEUTRAL = -1
 export const SEA = -2
@@ -12,6 +13,12 @@ export type Grid = {
   /** A tile's side, in map units. */
   size: number
   land: Array<boolean>
+  /** The sea's tiles and the lakes', which the boats sail; not the high mountains, which are no land either. */
+  water: Array<boolean>
+  /** The woods' tiles, which slow the armies; none on a test's land. */
+  wood?: Array<boolean>
+  /** The rivers' tiles, water as the sea's (map/streams.ts), told apart for the drawing; none on a test's land. */
+  river?: Array<boolean>
   /** Tiles of land in all. */
   area: number
 }
@@ -60,13 +67,17 @@ export type Seat = {
   person: boolean
 }
 
+/** The land a game is played on: drawn from the seed at a size, or a map of the real Earth at its own (map/atlas.ts, « chaque carte a sa propre taille »). */
+export type Land =
+  { kind: 'drawn'; size: MapSize } | { kind: 'real'; map: Atlas }
+
 /** What a game is made of (setup.ts): the host's book fills it, the relay passes it on, every machine makes the same game from it. */
 export type GameSetup = {
   /** The format's version: a setup of another is refused, never half read. */
   v: 1
   seed: string
-  /** The land, drawn from the seed at its size (its shape drawn too, until a host may choose it). */
-  land: { kind: 'drawn'; size: MapSize }
+  /** The land it is played on (Land). */
+  land: Land
   /** How it is won: the conquest of the land, for now (step.ts). */
   mode: 'conquest'
   /** The opening, in ticks. */
@@ -102,12 +113,16 @@ export type Host = {
   from: number
   road: Array<number>
   along: number
+  /** On its way to a lord its land does not touch: it takes the free land between first (course.ts). */
+  through?: boolean
   /** Whether an enemy army is upon it this tick: it stands, and goes to meet it. */
   fighting: boolean
   /** Ticks before the blows begin, the two armies walking to meet each other; -1 with no enemy upon it. */
   closing: number
   /** The tiles each side of its line it takes, as wide as its men. */
   wide: number
+  /** What the woods it took still owe, in hundredths of its stride: it waits them out before it takes more. */
+  slow?: number
 }
 
 /** Two lords who may not strike each other, until it runs out. */
@@ -137,6 +152,36 @@ export type Caravan = {
   gold: number
   /** Taken by an enemy: the place on its road it was taken, its new lord's road from there. */
   taken?: number
+  /** The villages it passed by and paid as relays, their tiles. */
+  stops?: Array<number>
+}
+
+/** A merchant ship from one lord's port to another's, by its way over the water (ships.ts). */
+export type Ship = {
+  owner: number
+  /** Its port, and the port it sails to: their tiles. */
+  from: number
+  to: number
+  /** The water's tiles of its way, and how far along it is, in thousandths of a tile. */
+  way: Array<number>
+  along: number
+  gold: number
+}
+
+/** A warship of a lord's, patrolling round a tile of the water (warships.ts). */
+export type Warship = {
+  /** Its number, the order that sends it names it by. */
+  id: number
+  owner: number
+  /** The tile of water it patrols round. */
+  post: number
+  /** The water's tiles of its way, from where it set out, and how far along it is, in thousandths of a tile. */
+  way: Array<number>
+  along: number
+  /** The shots it may still take before it sinks. */
+  hull: number
+  /** The tick it may shoot again. */
+  reload: number
 }
 
 export type GameState = {
@@ -155,6 +200,10 @@ export type GameState = {
   requests: Array<Request>
   offerings: Array<Offering>
   caravans: Array<Caravan>
+  ships: Array<Ship>
+  warships: Array<Warship>
+  /** The warships fitted out in the game: the last one's number. */
+  warshipsBuilt: number
   strikes: Array<Strike>
   scars: Array<Scar>
   /** Each seat's team, as the setup gives it, a number from 0, or -1 for a lord who plays for himself: teammates are allies for good and win together. */
@@ -172,4 +221,8 @@ export type Order = { player: number } & (
   /** An army called home, by the village or market it left from: its survivors back to the peasants. */
   | { type: 'recall'; tile: number }
   | { type: 'coup'; tile: number; coup: Coup }
+  /** A warship fitted out at the lord's port nearest a tile of water, and sent there. */
+  | { type: 'warship'; tile: number }
+  /** One of his warships, by its number, sent to a tile of water. */
+  | { type: 'sail'; tile: number; ship: number }
 )

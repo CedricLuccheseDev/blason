@@ -37,15 +37,23 @@ describe('the encircled land', () => {
     expect(state.owner[2]).toBe(1)
   })
 
-  it('takes free land walled by one lord and the sea, never by two', () => {
+  it('takes small free land walled by one lord and the sea, never by two, nor a great one', () => {
     // A row of ten: free land at the edge (0 to 2), lord 0 beside it; the
     // free tiles 6 and 7 between lords 0 and 1 stay free.
     const state = playing(field(10, 1), 2)
+    state.rules = { ...state.rules, seaWalled: 200 }
     hold(state, 0, [3, 4, 5])
     hold(state, 1, [8, 9])
     run(state, 10)
     expect([0, 1, 2].map((t) => state.owner[t])).toEqual([0, 0, 0])
     expect([6, 7].map((t) => state.owner[t])).toEqual([-1, -1])
+    // A great free island where one boat landed: taken tile by tile.
+    const island = playing(field(10, 1), 2)
+    island.rules = { ...island.rules, seaWalled: 3 }
+    hold(island, 0, [3, 4, 5])
+    hold(island, 1, [8, 9])
+    run(island, 10)
+    expect([0, 1, 2].map((t) => island.owner[t])).toEqual([-1, -1, -1])
   })
 
   it('takes a small piece of a lord’s land walled by one lord and the sea, not a large one', () => {

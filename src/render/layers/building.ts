@@ -2,12 +2,14 @@ import { Container, Graphics } from 'pixi.js'
 import { standing } from '../../../engine'
 import { TONE, playerColor } from '../palette'
 import { siteOf } from '../marks'
+import { drawGauge } from '../art/gauge'
 import { toldShown, workPx, workScale } from '../art/works'
 import type { GameState } from '../../../engine'
 
 // The works being built: each drawn pale (marks.ts), and over it a seal of
-// parchment ringed by the time its building takes, the ring filling in its
-// lord's colour round an hourglass until the work stands and serves; it
+// parchment in the gauge of the time its building takes, filling from the
+// bottom in its lord's colour round an hourglass until the work stands and
+// serves (art/gauge.ts); it
 // swells a little as it beats, so that a work under way catches the eye.
 // Sized on screen, never too small to read, and smaller from afar with the
 // works: there only the player's own, another's coming as one zooms in
@@ -57,24 +59,15 @@ export function makeBuilding(me: number) {
         const y = siteOf(state, work.tile).y - ABOVE * workScale(zoom, mine)
         const size = R_WORK * workPx(zoom, mine)
         const r = Math.max(R_LEAST, Math.min(R, size)) * s * beat
-        const [ring, inner] = [RING * r, r * (1 - RING * 0.6)]
-        g.circle(x, y, r)
-          .fill({ color: TONE.parchment, alpha: 0.95 * alpha })
-          .stroke({ width: 1.4 * s, color: TONE.ink, alpha })
-        g.circle(x, y, inner).stroke({
-          width: ring,
-          color: TONE.ink,
-          alpha: 0.15 * alpha,
+        const ring = RING * r
+        // The disc filling from the bottom in the lord's colour as it is
+        // built, its hourglass over it, as the alliances' gauges (« les
+        // jauges ne sont pas comme celle de l'alliance »).
+        drawGauge(g, x, y, [r - ring, r], done, playerColor(work.owner), {
+          width: 1.4 * s,
+          alpha,
         })
-        g.moveTo(x, y - inner)
-          .arc(x, y, inner, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * done)
-          .stroke({
-            width: ring,
-            color: playerColor(work.owner),
-            alpha,
-            cap: 'round',
-          })
-        hourglass(g, x, y, r * 0.8)
+        hourglass(g, x, y, (r - ring) * 1.1)
         g.fill({ color: TONE.gold, alpha }).stroke({
           width: 1.1 * s,
           color: TONE.ink,

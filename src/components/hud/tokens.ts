@@ -46,6 +46,12 @@ export const TEXT: Record<Size, string> = {
 /** A drawn measure on the screen: its pixels at scale 1, grown by the HUD's scale. */
 export const scaled = (px: number): string => `calc(${px}px * var(--hud))`
 
+/** A drawing's box: drawn on `w` by `h` units, laid out at that size grown by the HUD's scale. */
+export const box = (w: number, h: number) => ({
+  viewBox: `0 0 ${w} ${h}`,
+  style: { width: scaled(w), height: scaled(h) },
+})
+
 /** An icon beside a figure, sized on its type. */
 export const ICON: Record<Size, number> = { s: 16, m: 18, l: 22, xl: 24 }
 
@@ -61,7 +67,7 @@ export const SHIELD = {
 /** A seal's, a medallion's or a lozenge's radius: on the bar, in the cartouche, at its largest. */
 export const SEAL = { xs: 13, s: 18, l: 26 } as const
 
-/** An act's medallion on a thin line of a list (the right click's menu): its side, the cartouche's medallion drawn smaller. */
+/** An act's medallion in the cartouche by the pointer, among the mouse's signs: its side, drawn smaller. */
 export const LINE_MEDALLION = 28
 
 /** A badge of standing (an ally, a foe, a felon): its diameter, beside a name in a list or on a sheet. */

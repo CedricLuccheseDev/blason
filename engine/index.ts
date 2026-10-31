@@ -23,17 +23,25 @@ export {
   publicSetup,
   readSetup,
   seatPersons,
+  lordsFor,
+  sizeOf,
+  worldOf,
 } from './setup'
+export { ATLAS_MAPS } from './map/atlas'
+export type { Atlas } from './map/atlas'
 export type { Book } from './setup'
 export { ARMIES, COUPS, MAP_SIZES, RULES, SETUP_LIMITS, WORKS } from './rules'
 export type { Army, Coup, MapSize, Work } from './rules'
 export { NEUTRAL, NO_ONE } from './types'
 export type {
   Caravan,
+  Ship,
+  Warship,
   GameSetup,
   GameState,
   Grid,
   Host,
+  Land,
   Order,
   Scar,
   Strike,
@@ -50,8 +58,15 @@ export { barredBy, canStart, hasPicked, takeSeat } from './opening'
 export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.
-export { courseFor, entryFor } from './course'
-export { canBuild, priceOf } from './works'
+export { courseFor, entryFor, wideOf } from './course'
+export { halfWidthAt } from './map/streams'
+export { reachOf } from './reach'
+export type { Plan } from './reach'
+export { afloat } from './crossing'
+export { relayGold } from './relays'
+export { isPort, reachesSea } from './ships'
+export { warshipPrice, whereIs } from './warships'
+export { canBuild, priceOf, roomFor } from './works'
 export { coupPrice, journeyOf, launchSite, strikeAt } from './coups'
 export { burnt, rebelled } from './scars'
 export {
@@ -70,7 +85,7 @@ export {
   isTeammate,
   offeringOf,
 } from './diplomacy'
-export { groundOf, meet } from './battle'
+export { meet, wayBetween } from './battle'
 export { shootsAt, underFire } from './volleys'
 export { tradeLinks } from './network'
 export type { Link } from './network'

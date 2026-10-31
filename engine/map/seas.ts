@@ -73,6 +73,26 @@ export function oneLand(cells: Cells, sea: Array<boolean>): Array<boolean> {
   )
 }
 
+/**
+ * The sea of a map of the Earth (atlas.ts): its lands as they are, islands
+ * and all, none joined to another (« l'irlande est connecté a l'angleterre
+ * pareille pour le danemark et la suede »); only the islets under `least`
+ * cells go under, and the ponds left in the land are filled.
+ */
+export function keepLands(
+  cells: Cells,
+  sea: Array<boolean>,
+  least: number,
+): Array<boolean> {
+  const piece = piecesOf(wideSides(cells), (c) => !sea[c])
+  const size = new Map<number, number>()
+  piece.forEach((p) => p >= 0 && size.set(p, (size.get(p) ?? 0) + 1))
+  return fillPonds(
+    cells,
+    sea.map((w, c) => w || (size.get(piece[c]) ?? 0) < least),
+  )
+}
+
 /** The neck to raise for the greatest piece of land cut off from the largest, if it is great enough. */
 function neckFor(wide: Array<Array<number>>, wet: Array<boolean>) {
   const piece = piecesOf(wide, (c) => !wet[c])

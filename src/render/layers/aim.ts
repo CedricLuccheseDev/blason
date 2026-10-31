@@ -1,16 +1,18 @@
 import { Container, Graphics } from 'pixi.js'
 import {
+  NEUTRAL,
   barredBy,
   canBuild,
   canStart,
-  courseFor,
-  freeWorks,
-  menFor,
+  isFriendly,
 } from '../../../engine'
+import { canSend, courseNow, wayTo } from '../course'
 import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
+import { arrowHead, fadingDashes, targetCross } from '../art/arrow'
+import { reachNow } from '../reach'
 import { makeCoupAim } from './aimCoup'
 import type { Army, GameState, Work } from '../../../engine'
 import type { Hand } from '../hand'
@@ -18,7 +20,9 @@ import type { Hand } from '../hand'
 // What a click on the tile under the pointer would do. Against another's
 // land or free land: the road the army would march from its village (the
 // mercenaries from their market) to the border, where it would enter, ringed, and a dotted line from there to
-// the tile aimed at, the very course the click sends it by. With a work in hand: its drawing on the
+// the tile aimed at, the very course the click sends it by, dashes fading
+// out where its men will be spent (render/reach.ts), past the tile or short
+// of it, an arrowhead and a red target's cross where it is aimed (art/arrow.ts). With a work in hand: its drawing on the
 // tile, the circle it reaches (the castle's land held, the market's range of
 // trade), red where it may not stand,
 // with the works already standing ringed in red. With a coup in hand, the
@@ -29,11 +33,17 @@ import type { Hand } from '../hand'
 
 type At = { x: number; y: number }
 
+/** The tile aimed at: under the pointer, or the one a right click pinned the place's menu on, its target drawn there. */
+export type Pointed = { tile: number; pinned: boolean }
+
 /** How far a work reaches, in tiles, for those that reach: a castle holds its land, a market trades. */
 const REACH: Partial<Record<Work, (state: GameState) => number>> = {
   castle: (state) => state.rules.castleRadius,
   market: (state) => state.rules.tradeRange,
 }
+
+/** Dashes a path is drawn with at most: beyond them, the rest of a far way is left undrawn. */
+const DASHES = 4000
 
 export function makeAim(state: GameState, me: number) {
   const container = new Container()
@@ -43,39 +53,76 @@ export function makeAim(state: GameState, me: number) {
   const coups = makeCoupAim(state, me)
   container.addChild(coups.container)
   const color = playerColor(me)
-  let read = { key: '', entry: -1, road: [] as Array<At> }
+  let read = {
+    key: '',
+    entry: -1,
+    road: [] as Array<At>,
+    way: [] as Array<At>,
+  }
 
-  /** Whether a click would send the army: a village (or a market) with none out, and men to raise (« si tu peux pas envoyer d'armée ne met pas le chemin du village »). */
-  const sendable = (army: Army) =>
-    freeWorks(state, me, 0, state.rules.raisedAt[army]).length > 0 &&
-    menFor(state, me, army) > 0
+  const sendable = (army: Army) => canSend(state, me, army)
 
   /** Where an army would enter, and the road it would march there from its free village or, for mercenaries, its free market, as drawn: the engine's own course, the one the click sends it by (courseFor); nothing if no army can leave. Read again only when the pointer, the land or the army in hand changes. */
   function entryAt(tile: number, army: Army) {
     const key = `${tile}:${state.tick}:${army}`
     if (key !== read.key) {
-      const course = sendable(army) ? courseFor(state, me, tile, army) : null
+      const course = sendable(army) ? courseNow(state, me, tile, army) : null
       const road = course?.road ?? []
+      const entry = course?.entry ?? -1
+      // From the border to the tile, the way it takes over the land, round
+      // the mountains, as drawn.
+      const through = course?.through === true
+      const way = entry < 0 ? [] : wayTo(state, entry, tile, through)
+      const target = state.owner[tile]
+      const walked = (t: number) =>
+        state.owner[t] === target || (through && state.owner[t] === NEUTRAL)
       read = {
         key,
-        entry: course?.entry ?? -1,
+        entry,
         road: road.length
-          ? drawRoad(state, road, (t) => state.owner[t] === me, 0)
+          ? // Straightened over the land it marches, mine and my allies', and the water it sails.
+            drawRoad(
+              state,
+              road,
+              (t) =>
+                isFriendly(state, me, state.owner[t]) || state.grid.water[t],
+              0,
+            )
           : [],
+        way: way.length > 1 ? drawRoad(state, way, walked, 0) : [],
       }
     }
     return read
   }
 
-  function line(a: At, b: At, zoom: number) {
-    const d = Math.hypot(b.x - a.x, b.y - a.y)
-    const step = 7 / zoom
-    for (let s = 0; s + step / 2 < d; s += step) {
-      const t0 = s / d
-      const t1 = Math.min(1, (s + step / 2) / d)
-      marks
-        .moveTo(a.x + (b.x - a.x) * t0, a.y + (b.y - a.y) * t0)
-        .lineTo(a.x + (b.x - a.x) * t1, a.y + (b.y - a.y) * t1)
+  /**
+   * A dotted line along a path, its dashes some seven pixels apart on
+   * screen, their rhythm kept from one stretch to the next, however short.
+   * Each dash counted by its number along the whole path, never by adding
+   * up lengths: summed, a long path's lengths stopped moving the pen on, and
+   * the loop drew without end until the page ran out of memory (« au moment
+   * ou ça commence ça crash »). So many dashes at most.
+   */
+  function path(points: Array<At>, zoom: number) {
+    const period = 7 / zoom
+    const dash = period / 2
+    let along = 0
+    let drawn = 0
+    for (let i = 1; i < points.length && drawn < DASHES; i++) {
+      const [a, b] = [points[i - 1], points[i]]
+      const d = Math.hypot(b.x - a.x, b.y - a.y)
+      if (d <= 0) continue
+      const at = (k: number) =>
+        [a.x + ((b.x - a.x) * k) / d, a.y + ((b.y - a.y) * k) / d] as const
+      const last = Math.ceil((along + d) / period)
+      for (let j = Math.floor(along / period); j < last; j++) {
+        const start = Math.max(j * period, along) - along
+        const end = Math.min(j * period + dash, along + d) - along
+        if (end <= start) continue
+        marks.moveTo(...at(start)).lineTo(...at(end))
+        if (++drawn >= DASHES) break
+      }
+      along += d
     }
     marks.stroke({ width: 2.2 / zoom, color, cap: 'round' })
   }
@@ -96,13 +143,22 @@ export function makeAim(state: GameState, me: number) {
     ghost.visible = true
   }
 
-  /** A dotted ring round a point, its dots some twelve pixels apart on screen, sixteen at least. */
+  /**
+   * A dotted ring round a point, its dots some twelve pixels apart on
+   * screen, sixteen at least; each dot a few straight strokes, no arc: on a
+   * phone an arc after a moveTo was drawn from the map's origin (« Le bug
+   * long pression », the bundle of lines to the top left, as the works'
+   * timer did before its gauge).
+   */
   function dotted(p: At, r: number, tone: number, zoom: number) {
     const dots = Math.max(16, Math.round((2 * Math.PI * r * zoom) / 12))
+    const at = (a: number) =>
+      [p.x + Math.cos(a) * r, p.y + Math.sin(a) * r] as const
     for (let k = 0; k < dots; k++) {
       const a = (k / dots) * Math.PI * 2
-      marks.moveTo(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r)
-      marks.arc(p.x, p.y, r, a, a + Math.PI / dots)
+      const span = Math.PI / dots
+      marks.moveTo(...at(a))
+      for (let i = 1; i <= 3; i++) marks.lineTo(...at(a + (span * i) / 3))
     }
     marks.stroke({ width: 2.4 / zoom, color: tone, cap: 'round' })
   }
@@ -119,31 +175,49 @@ export function makeAim(state: GameState, me: number) {
   }
 
   function strike(tile: number, army: Army, zoom: number) {
-    const { entry, road } = entryAt(tile, army)
+    const { entry, road, way } = entryAt(tile, army)
     if (entry < 0) return
     const e = siteOf(state, entry)
     const p = siteOf(state, tile)
-    // From the village or the market to the border, the road the army would walk, then on to the tile aimed at.
-    for (let i = 1; i < road.length; i++) line(road[i - 1], road[i], zoom)
-    if (road.length > 0) line(road[road.length - 1], e, zoom)
-    line(e, p, zoom)
+    // From the village or the market to the border, the road the army would
+    // walk, then on to the tile aimed at by the way it takes over the land.
+    if (road.length > 0) path([...road, e], zoom)
+    // From the border on, dashes fading out where its men will be spent,
+    // past the tile or short of it, an arrowhead where it is aimed and a red
+    // target's cross there (« des pointillés avec une flèche qui deviennent
+    // transparents petit à petit », no banner).
+    const front = way.length > 1 ? way : [e, p]
+    const reach = reachNow(state, me, tile, army)
+    // Up to the target only (« enlève le tracé bleu après la cible »): full,
+    // or fading out short of it where the army's men will be spent.
+    const r = reach ? siteOf(state, reach.tile) : p
+    const fade = reach?.short ? Math.hypot(r.x - e.x, r.y - e.y) : Infinity
+    fadingDashes(marks, front, zoom, color, Math.max(fade, 1))
     marks
       .circle(e.x, e.y, 7 / zoom)
       .fill(color)
       .stroke({ width: 1.6 / zoom, color: TONE.ink })
-    marks
-      .circle(p.x, p.y, 6 / zoom)
-      .stroke({ width: 2 / zoom, color: TONE.ink })
+    const before = front.at(-2) ?? e
+    arrowHead(marks, before, p, zoom, color, reach?.short ? 0.35 : 1)
+    targetCross(marks, p, zoom)
   }
 
   return {
     container,
-    draw(hovered: number, hand: Hand, zoom: number) {
+    draw({ tile: hovered, pinned }: Pointed, hand: Hand, zoom: number) {
       marks.clear()
       ghost.clear()
       ghost.visible = false
       coups.clear()
       if (me < 0 || !state.players[me].alive) return
+      // The place's menu open: its target where it was right clicked, under
+      // the work its pointer is on, drawn as in hand (« survoler les
+      // constructions montre la preview et si c'est possible »).
+      if (pinned) {
+        targetCross(marks, siteOf(state, hovered), zoom, TONE.gold)
+        if (hand.work) building(hovered, hand.work, zoom)
+        return
+      }
       const opened = state.tick >= state.rules.openingTicks
       // The reach of a coup in hand shows even with the pointer off the land.
       if (opened && hand.coup && hovered < 0) coups.band(hand.coup)

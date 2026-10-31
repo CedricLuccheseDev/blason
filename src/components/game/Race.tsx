@@ -1,8 +1,9 @@
 import { Figure, Icon } from '../hud/Figure'
 import { Hint } from '../hud/Hint'
-import { Inline, Panel } from '../hud/Layout'
-import { Note } from '../hud/Text'
-import { ICON } from '../hud/tokens'
+import { Inline, Panel, Stack } from '../hud/Layout'
+import { Rule } from '../hud/Sheet'
+import { Call, Note } from '../hud/Text'
+import { useCompact } from '../hud/useCompact'
 import { useFit } from '../hud/useFit'
 import { hex, minutes } from './format'
 import { Ecu } from './svg/kit'
@@ -61,7 +62,6 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
           w={12}
           h={15}
           color={hex(rival.color)}
-          lift={false}
         />
       )}
       {me && (
@@ -71,7 +71,6 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
           w={14}
           h={17}
           color={hex(me.color)}
-          lift={false}
         />
       )}
     </svg>
@@ -79,19 +78,24 @@ function Track({ summary }: Readonly<{ summary: Summary }>) {
 }
 
 /**
- * Top centre, on one thin line: the clock, the race to the share of the land
- * that wins (my share in my colour, the leader's shield, the flag at the
- * share to reach), and the share to reach or when it drops next, in words,
- * or its figure alone when the line lacks room (the words then under the
- * pointer). Who leads is read in the lords' list.
+ * Top centre on a phone, on one thin line (« La bar de victoire en haut fais
+ * sur une ligne »): the clock, the race to the share of the land that wins
+ * (my share in my colour, the leader's shield, the flag at the share to
+ * reach), the share to reach and when it drops next; when the line lacks
+ * room, the word before the share left out, then the track shorter. On a screen, the race is read in
+ * the lords' list (Goal.tsx). Who leads is read in the lords' list.
  */
 export function Race({ summary }: Readonly<{ summary: Summary }>) {
   const m = useMessages()
-  const { room, piece, step } = useFit(1)
+  const { room, piece, step } = useFit(2)
+  const compact = useCompact()
+  // In the opening, the race not begun, its place says the count and what
+  // to do (« la popup qui explique qu'il faut poser son étendard, mets ça
+  // sur le header qui indique la victoire »).
+  if (summary.opening !== null)
+    return <Opening summary={summary} touch={compact} />
+  if (!compact) return null
   const { needed, dropIn } = summary
-  const words =
-    dropIn === null ? m.race.toWin(needed) : m.race.dropsIn(minutes(dropIn))
-  const figure = dropIn === null ? m.game.percent(needed) : minutes(dropIn)
   return (
     <div ref={room} className="flex w-full min-w-0 justify-center">
       <div ref={piece} className="w-max">
@@ -100,26 +104,57 @@ export function Race({ summary }: Readonly<{ summary: Summary }>) {
           lines={[m.hints.race.line(needed), m.hints.race.drops]}
           under
         >
-          <Panel gap="hair" className="w-80 items-center max-sm:w-auto">
-            <div className="w-full max-sm:w-56">
-              <Track summary={summary} />
-            </div>
+          <Panel>
             <Inline gap="part">
-              <Figure size="l">{minutes(summary.seconds)}</Figure>
-              <span title={step ? words : undefined}>
-                <Inline gap="hair">
-                  {dropIn !== null && <Icon name="hourglass" size={ICON.s} />}
-                  {step ? (
-                    <Figure size="s">{figure}</Figure>
-                  ) : (
-                    <Note className="whitespace-nowrap">{words}</Note>
-                  )}
-                </Inline>
-              </span>
+              <Figure size="m">{minutes(summary.seconds)}</Figure>
+              <div className={step < 2 ? 'w-36' : 'w-20'}>
+                <Track summary={summary} />
+              </div>
+              <Inline gap="hair">
+                {step === 0 && <Note>{m.race.win}</Note>}
+                <Figure size="s">{m.game.percent(needed)}</Figure>
+              </Inline>
+              {dropIn !== null && (
+                <Figure icon="hourglass" size="s">
+                  {minutes(dropIn)}
+                </Figure>
+              )}
             </Inline>
           </Panel>
         </Hint>
       </div>
+    </div>
+  )
+}
+
+/** The opening in the race's place: its count, and what the player does, before and after planting; a spectator watches them planted. On a phone, how a lord's menu opens without a right button. */
+function Opening({
+  summary,
+  touch,
+}: Readonly<{ summary: Summary; touch: boolean }>) {
+  const m = useMessages()
+  const { me, opening } = summary
+  let [title, hint] = [m.game.others, '']
+  if (me && !me.picked) [title, hint] = [m.game.choose, m.game.chooseHint]
+  else if (me) [title, hint] = [m.game.planted, m.game.plantedHint]
+  return (
+    <div className="flex w-full min-w-0 justify-center">
+      <Panel className="max-w-xl">
+        <Inline gap="piece">
+          <Figure icon="hourglass" size="xl">
+            {opening}
+          </Figure>
+          <Rule />
+          <Stack gap="hair">
+            <Inline gap="hair">
+              <Icon name="banner" size={22} />
+              <Call>{title}</Call>
+            </Inline>
+            {hint && <Note>{hint}</Note>}
+            {touch && <Note>{m.menu.hintTouch}</Note>}
+          </Stack>
+        </Inline>
+      </Panel>
     </div>
   )
 }

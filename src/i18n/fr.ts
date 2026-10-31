@@ -2,7 +2,7 @@ import { blogFr } from './blog'
 import { homeFr } from './home'
 import { heraldsFr } from './heralds'
 import { hintsFr } from './hints'
-import { bookFr } from './book'
+import { bookFr } from './bookFr'
 import type { Messages } from './en'
 
 export const fr: Messages = {
@@ -12,7 +12,6 @@ export const fr: Messages = {
   book: bookFr,
   common: {
     author: 'Cédric Lucchese',
-    about: 'Comment ça marche',
     legal: 'Mentions légales',
   },
   home: homeFr,
@@ -23,12 +22,11 @@ export const fr: Messages = {
       'Clique où tu veux sur la terre ; tu peux le déplacer jusqu’à la fin du compte',
     planted: 'Ton étendard est planté',
     others: 'Les seigneurs plantent leurs étendards',
-    plantedHint:
-      'Clique ailleurs pour le déplacer ; la terre autour sera à toi à la fin du compte',
+    plantedHint: 'Clique ailleurs pour le déplacer',
     tooNear: 'trop près d’un autre étendard',
     click: 'clic : attaquer',
     noLevy: {
-      village: 'tous tes villages ont une armée dehors',
+      village: 'aucune armée',
       market: 'aucun marché libre pour les engager',
     },
     noMen: {
@@ -36,21 +34,24 @@ export const fr: Messages = {
       market: 'pas assez d’or',
     },
     armies: {
-      raid: 'Chevauchée',
-      host: 'Ost',
-      ban: 'Arrière-ban',
+      raid: 'Petite troupe',
+      host: 'Troupe',
+      ban: 'Grande troupe',
       mercenaries: 'Mercenaires',
     },
     works: {
       village: 'Village',
       market: 'Marché',
       castle: 'Château',
+      port: 'Port',
     },
     coups: {
       troublemaker: 'Causeur de troubles',
-      archers: 'Archers',
+      archers: 'Volée de flèches',
       trebuchet: 'Trébuchet',
     },
+    warship: 'Navire de guerre',
+    families: { armies: 'Armées', works: 'Bâtiments', coups: 'Coups' },
     launch: 'clic : lancer',
     campaign: 'En campagne',
     seek: (army: string) => `Voir : ${army}`,
@@ -65,7 +66,20 @@ export const fr: Messages = {
     winner: 'remporte la partie',
     fallen: 'Ton royaume est tombé',
     playAgain: 'Rejouer',
+    quit: 'Quitter',
     watchEnd: 'Regarder la fin',
+    deeds: {
+      title: 'Ton parcours',
+      played: 'Temps de jeu',
+      widest: 'Terre au plus haut',
+      land: (share: number, tiles: string) =>
+        `${share}\u202f% · ${tiles} tuiles`,
+      place: 'Ta place',
+      rank: (place: number, of: number) =>
+        `${place}${place === 1 ? 're' : 'e'} sur ${of}`,
+      peasants: 'Paysans au plus haut',
+      gold: 'L’or gagné',
+    },
     colors: {
       azure: 'Azur',
       gules: 'Gueules',
@@ -87,14 +101,21 @@ export const fr: Messages = {
       peacock: 'Canard',
       plum: 'Prune',
       slate: 'Ardoise',
+      amaranth: 'Amarante',
+      ochre: 'Ocre',
+      indigo: 'Indigo',
+      mint: 'Menthe',
     },
   },
   race: {
-    toWin: (share: number) => `pour gagner : ${share}\u202f%`,
     dropsIn: (left: string) => `pour gagner, baisse dans ${left}`,
+    win: 'gagner :',
+    goal: (share: number) => `pour gagner : ${share}\u202f% des terres`,
   },
   menu: {
     label: (lord: string) => `Que faire avec ${lord}`,
+    build: 'Bâtir ici',
+    sea: 'En mer',
     attack: 'Attaquer',
     alliance: {
       offer: 'Alliance',
@@ -107,6 +128,20 @@ export const fr: Messages = {
     hint: 'clic droit : alliance, offrande',
     options: 'Alliance, offrande',
     hintTouch: 'appui long : alliance, offrande',
+  },
+  settings: {
+    open: 'Réglages',
+    title: 'Réglages',
+    volumes: {
+      all: 'Volume général',
+      music: 'Musique',
+      beds: 'Ambiance',
+      effects: 'Effets',
+    },
+    mute: 'Le son',
+    on: 'Activé',
+    off: 'Coupé',
+    language: 'La langue',
   },
   lord: {
     allied: 'Ton allié',

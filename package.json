@@ -1,6 +1,6 @@
 {
   "name": "blason",
-  "version": "0.5.0",
+  "version": "0.5.79",
   "description": "A medieval real-time strategy game in the browser: twenty lords, a land drawn anew each game.",
   "license": "AGPL-3.0-only",
   "repository": {
@@ -21,15 +21,21 @@
     "depcruise": "depcruise src engine scripts net server",
     "norm": "node scripts/norm-check.mjs $(git ls-files 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css')",
     "arena": "tsx scripts/arena.ts",
+    "atlas": "tsx scripts/atlas.ts",
+    "legend": "tsx scripts/legend.ts",
     "maquette": "tsx scripts/maquette.ts",
     "planches": "node design/maquette/planches.mjs",
     "census": "tsx scripts/census.ts",
     "maps": "tsx scripts/maps.ts",
-    "relay": "tsx server/relay.ts"
+    "plates": "node scripts/plates.mjs",
+    "relay": "tsx server/relay.ts",
+    "rivers": "tsx scripts/rivers.ts"
   },
   "dependencies": {
+    "@convex-dev/auth": "^0.0.96",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.4",
+    "convex": "^1.49.0",
     "d3-delaunay": "^6.0.4",
     "marked": "^18.1.1",
     "pixi.js": "^8.22.0",
@@ -58,5 +64,5 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^5.0.5"
   },
-  "clNorm": "2026-10-27"
+  "clNorm": "2026-10-29"
 }

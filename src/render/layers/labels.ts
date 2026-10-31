@@ -1,5 +1,4 @@
-import { BitmapText, Container, Graphics, TextStyle } from 'pixi.js'
-import { drawSoldier } from '../art/soldier'
+import { BitmapText, Container, TextStyle } from 'pixi.js'
 import { smoothstep } from '../ease'
 import { BEAT } from '../men'
 import { TONE } from '../palette'
@@ -7,7 +6,8 @@ import { apart, fadeUnder, offWorks } from './crowd'
 import type { Ground, Label } from './crowd'
 
 // Who holds each land and how strong he is, as in OpenFront: the lord's name
-// and, under it, his army in big figures beside a soldier, written at the
+// and, under it, his army in big figures (no soldier beside them: « Retire
+// l'icône soldat a côté du nombre d'hommes »), written at the
 // heart of his land; mine in gold. Light letters cut out in ink, readable on
 // any wash, over the works. Sized on screen, the bigger the land the bigger
 // the words, readable at every zoom: a name never under 16 pixels and at
@@ -25,14 +25,6 @@ const NAME = 0.56
 const NAME_MIN = 16
 /** A land's side on screen, in pixels, under which its words begin to fade, and under which none show. */
 const ROOM = [14, 26] as const
-
-/** The soldier of the battles, light, beside an army: what the figure counts. */
-function soldier(): Graphics {
-  const g = new Graphics()
-  drawSoldier(g, LIGHT)
-  g.pivot.set(1.9, -4.5)
-  return g
-}
 
 /** Where each lord is written, and how big on screen: the heart of his land, the bigger the land the bigger the words. */
 /** Share of the way a label glides each frame towards its new place. */
@@ -92,13 +84,11 @@ export function makeLabels<TState extends { tick: number }>(
     const army = box.addChild(
       new BitmapText({ text: '', style: lord === me ? mineArmy : armyStyle }),
     )
-    army.anchor.set(0, 0.5)
-    const mark = box.addChild(soldier())
+    army.anchor.set(0.5, 0.5)
     label = {
       box,
       name,
       army,
-      mark,
       size: 0,
       reach: 0,
       at: { x: 0, y: 0 },
@@ -152,7 +142,7 @@ export function makeLabels<TState extends { tick: number }>(
     return any
   }
 
-  /** The name over the army and its soldier, `scale` their sizes on screen; the words of a land too small on screen faded. */
+  /** The name over the army's figure, `scale` their sizes on screen; the words of a land too small on screen faded. */
   function layout(zoom: number, scale: number) {
     for (const [lord, label] of labels) {
       const shows = lord === me ? 1 : smoothstep(...ROOM, label.reach * zoom)
@@ -163,13 +153,7 @@ export function makeLabels<TState extends { tick: number }>(
       label.name.scale.set(small / SHARP)
       label.name.position.set(0, -small * 0.62)
       label.army.scale.set(big / SHARP)
-      const width = label.army.width
-      const mark = big * 0.62
-      const row = big * 0.48
-      // The soldier is drawn 14 units tall, a little taller than the figures' mark.
-      label.mark.scale.set((mark * 1.25) / 14)
-      label.mark.position.set(-(width + mark * 1.05) / 2 + mark * 0.35, row)
-      label.army.position.set(-(width + mark * 1.05) / 2 + mark * 1.05, row)
+      label.army.position.set(0, big * 0.48)
     }
     if (ground) offWorks(labels, ground(zoom))
     apart(labels, me)
@@ -187,7 +171,8 @@ export function makeLabels<TState extends { tick: number }>(
         y: shown.y + name.y,
         half: name.width / 2,
         tall: name.height,
-        right: shown.x + Math.max(name.x + name.width / 2, army.x + army.width),
+        right:
+          shown.x + Math.max(name.x + name.width / 2, army.x + army.width / 2),
         alpha: label.box.alpha,
       }
     },

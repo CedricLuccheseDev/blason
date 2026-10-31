@@ -1,15 +1,27 @@
-import { UNIT, barredBy, coupPrice, entryFor, launchSite } from '../../engine'
+import {
+  UNIT,
+  WORKS,
+  barredBy,
+  canBuild,
+  coupPrice,
+  launchSite,
+  reachesSea,
+} from '../../engine'
+import { courseNow } from './course'
 import { siteOf } from './marks'
+import { onCanvas } from './input'
 import type { Container } from 'pixi.js'
-import type { Army, Coup, GameState } from '../../engine'
+import type { Army, Coup, GameState, Work } from '../../engine'
 import type { Hand } from './hand'
 
 // What the pointer aims at: another's land or free land a click would
 // strike, where the army would enter, and whose land it is; over any other
 // lord's land, even one no army of mine reaches, his name, for the right
-// click's menu he has there. A right click (or a long press) pins it on
-// another lord's land alone, whatever is in hand, for that menu
-// (components/game/LordMenu.tsx). With a coup in hand, the coup, where it
+// click's menu he has there; over my own land, the works that may stand on
+// the tile; over the water a port of mine reaches, a warship to fit out
+// there (« Parfait pour le tableau, fais quelque chose d'homogene »). A
+// right click (or a long press) pins it there, for the menu of what may be
+// done there (components/game/LordMenu.tsx, PlaceMenu.tsx). With a coup in hand, the coup, where it
 // would leave from, and whether it may go and be paid for. In the opening,
 // only a spot where the standard may not stand, another lord's being too
 // near. In pixels of the map's element.
@@ -27,6 +39,10 @@ export type Aim = {
   coup: { coup: Coup; allowed: boolean; can: boolean } | null
   /** In the opening, whether another lord's standard is too near for mine there. */
   barred: boolean
+  /** Over my own land, the works that may stand on the tile, for the right click's menu; none elsewhere. */
+  works: ReadonlyArray<Work>
+  /** Over the water a port of mine reaches: a warship may be fitted out for it. */
+  sea: boolean
 }
 
 export function makeAiming(
@@ -37,8 +53,9 @@ export function makeAiming(
 ) {
   const pointer = { x: 0, y: 0 }
   const onPointer = (e: PointerEvent) => {
-    pointer.x = e.offsetX
-    pointer.y = e.offsetY
+    const { x, y } = onCanvas(canvas, e)
+    pointer.x = x
+    pointer.y = y
   }
   canvas.addEventListener('pointermove', onPointer)
   canvas.addEventListener('pointerdown', onPointer)
@@ -59,6 +76,8 @@ export function makeAiming(
       pinned: false,
       coup: { coup, allowed: site >= 0, can: state.players[me].gold >= price },
       barred: false,
+      works: [],
+      sea: false,
     }
   }
 
@@ -72,12 +91,14 @@ export function makeAiming(
       pinned: false,
       coup: null,
       barred: true,
+      works: [],
+      sea: false,
     }
   }
 
   /** Where the army in hand would strike a tile, and whose it is; none on my land, or where it may not go and no lord holds it. */
   function strikeAt(tile: number, pin: boolean, army: Army): Aim | null {
-    const gate = entryFor(state, me, tile, army)
+    const gate = courseNow(state, me, tile, army)?.entry ?? -1
     const owner = state.owner[tile]
     const lord = owner >= 0 && owner !== me ? owner : null
     // Another lord's land with nothing to strike, an ally's or one beyond
@@ -90,6 +111,26 @@ export function makeAiming(
       pinned: pin,
       coup: null,
       barred: false,
+      works: [],
+      sea: false,
+    }
+  }
+
+  /** Over my own land, the works that may stand there; over the water a port of mine reaches, a warship; none elsewhere. */
+  function placeAt(tile: number, pin: boolean): Aim | null {
+    const mine = state.owner[tile] === me
+    const works = mine ? WORKS.filter((w) => canBuild(state, me, tile, w)) : []
+    const sea = !mine && reachesSea(state, me, tile)
+    if (works.length === 0 && !sea) return null
+    return {
+      ...pointer,
+      entry: null,
+      lord: null,
+      pinned: pin,
+      coup: null,
+      barred: false,
+      works,
+      sea,
     }
   }
 
@@ -104,14 +145,15 @@ export function makeAiming(
       if (tile < 0) return null
       if (state.tick < state.rules.openingTicks)
         return pin ? null : plantAt(tile)
-      // A right click opens a lord's menu, on his land alone, whatever is in hand.
+      // A right click opens the menu of the place: a lord's on his land, the
+      // works on mine, a warship on the water a port of mine reaches.
       if (pin) {
         const aim = strikeAt(tile, true, hand.army)
-        return aim && aim.lord !== null ? aim : null
+        return aim && aim.lord !== null ? aim : placeAt(tile, true)
       }
       if (hand.work) return null
       if (hand.coup) return coupAt(tile, hand.coup)
-      return strikeAt(tile, false, hand.army)
+      return strikeAt(tile, false, hand.army) ?? placeAt(tile, false)
     },
     destroy() {
       canvas.removeEventListener('pointermove', onPointer)

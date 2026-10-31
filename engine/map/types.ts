@@ -12,6 +12,8 @@ type LandCell = {
   neighbors: Array<number>
   /** The sea cells along its coast. */
   shore: Array<number>
+  /** Its woods, which slow the armies (« la foret doit donner un malus de vitesses aux troupes »). */
+  wood?: boolean
 }
 
 /** A cell of the open sea, held by no one. */
@@ -30,6 +32,8 @@ export type GameMap = {
   land: Array<LandCell>
   sea: Array<SeaCell>
   peaks: Array<PeakCell>
+  /** The cells of the dead land: another's on a map of some lands only (atlas.ts), drawn, but no one's to take. */
+  dead: Array<PeakCell>
 }
 
 /** The family a generator draws, and how much its sea takes of the frame and its high mountains of the land, in thousandths. */
@@ -45,4 +49,6 @@ export type Ground = {
   heights: Array<number>
   /** The middle of each pass over the high mountains. */
   passes: Array<Point>
+  /** The dead land's cells, which no one enters: other lands than a map's own; none on an invented land. */
+  dead?: Array<boolean>
 }

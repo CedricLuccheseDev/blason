@@ -75,7 +75,13 @@ function path(points: ReadonlyArray<Point>, close: boolean): string {
 
 /** A map's figures: its tiles, its land, how much the game keeps, its high mountains and its passes. */
 function figures(world: World) {
-  const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
+  const grid = makeGrid(
+    world.map,
+    world.width,
+    world.height,
+    RULES.tileSize,
+    world.rivers,
+  )
   const game = createGame(grid, botsSetup(world))
   // The mountains' tiles: the land there would be, were they land.
   const open = makeGrid(
@@ -86,10 +92,12 @@ function figures(world: World) {
       ],
       sea: world.map.sea,
       peaks: [],
+      dead: world.map.dead,
     },
     world.width,
     world.height,
     RULES.tileSize,
+    world.rivers,
   )
   return {
     tiles: grid.width * grid.height,

@@ -46,15 +46,24 @@ function fromRuns(runs: Array<number>): Array<number> {
   return values
 }
 
-/** A walk over the tiles: its first tile, how many steps, and the steps, three a letter. */
-type Path = [number, number, string]
+/** A walk over the tiles: its first tile, how many steps, and the steps, two a letter, of eight ways; a save of before 31/10, three a letter of four ways, has no fourth. */
+type Path = [number, number, string] | [number, number, string, 8]
 
-/** The four ways a step goes, up, right, down and left, two bits each. */
-const ways = (width: number) => [-width, 1, width, -1]
+/** The four ways a step goes, up, right, down and left; then the four aslant (the roads since 31/10). */
+const ways = (width: number) => [
+  -width,
+  1,
+  width,
+  -1,
+  -width - 1,
+  -width + 1,
+  width + 1,
+  width - 1,
+]
 const LETTERS =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
-/** Tiles as a walk, each the neighbour of the one before; none if they are not one. */
+/** Tiles as a walk, each the neighbour of the one before, aslant too; none if they are not one. */
 function toPath(tiles: Array<number>, width: number): Path | null {
   if (tiles.length < 8) return null
   const steps: Array<number> = []
@@ -64,18 +73,21 @@ function toPath(tiles: Array<number>, width: number): Path | null {
     steps.push(way)
   }
   let letters = ''
-  for (let i = 0; i < steps.length; i += 3) {
-    const [a, b = 0, c = 0] = steps.slice(i, i + 3)
-    letters += LETTERS[(a << 4) | (b << 2) | c]
+  for (let i = 0; i < steps.length; i += 2) {
+    const [a, b = 0] = steps.slice(i, i + 2)
+    letters += LETTERS[(a << 3) | b]
   }
-  return [tiles[0], steps.length, letters]
+  return [tiles[0], steps.length, letters, 8]
 }
 
-function fromPath([first, count, letters]: Path, width: number) {
+function fromPath([first, count, letters, eight]: Path, width: number) {
   const tiles = [first]
   for (let i = 0; i < count; i++) {
-    const letter = LETTERS.indexOf(letters[Math.floor(i / 3)])
-    const way = (letter >> (4 - 2 * (i % 3))) & 3
+    const at = eight ? Math.floor(i / 2) : Math.floor(i / 3)
+    const letter = LETTERS.indexOf(letters[at])
+    const way = eight
+      ? (letter >> (3 - 3 * (i % 2))) & 7
+      : (letter >> (4 - 2 * (i % 3))) & 3
     tiles.push(tiles[i] + ways(width)[way])
   }
   return tiles

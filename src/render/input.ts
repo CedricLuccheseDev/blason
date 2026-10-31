@@ -9,6 +9,19 @@ const SLOP = 6
 /** How long a finger rests before its press is the right button's. */
 const LONG_PRESS_MS = 500
 
+/**
+ * Where a pointer is on the canvas, in its pixels: from the screen's
+ * coordinates, not offsetX/Y, which a phone may give as naught or stale
+ * around a long press: the aim ran to the top left corner (« les traits qui
+ * vont jusqu'en haut a gauche … quand on reste appuyé sur mobile ») and the
+ * lord's menu opened elsewhere than the finger (« ca met la popup pas au bon
+ * endroit »).
+ */
+export function onCanvas(canvas: HTMLCanvasElement, e: PointerEvent) {
+  const box = canvas.getBoundingClientRect()
+  return { x: e.clientX - box.left, y: e.clientY - box.top }
+}
+
 export function makeInput(
   canvas: HTMLCanvasElement,
   view: Container,
@@ -27,7 +40,7 @@ export function makeInput(
   let long: ReturnType<typeof setTimeout> | undefined
 
   function tileAt(e: PointerEvent): number {
-    const { x, y } = view.toLocal({ x: e.offsetX, y: e.offsetY })
+    const { x, y } = view.toLocal(onCanvas(canvas, e))
     return pick(x, y)
   }
 
@@ -59,7 +72,8 @@ export function makeInput(
   const onMove = (e: PointerEvent) => {
     if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > SLOP)
       clearTimeout(long)
-    on.hover(press ? -1 : tileAt(e))
+    // A finger hovers nothing: what it rests on is a press, the aim is the mouse's.
+    on.hover(press || e.pointerType === 'touch' ? -1 : tileAt(e))
   }
   const onLeave = () => on.hover(-1)
   const onMenu = (e: Event) => e.preventDefault()

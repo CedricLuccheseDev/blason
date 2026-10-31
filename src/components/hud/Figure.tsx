@@ -37,25 +37,25 @@ export function Icon({
   )
 }
 
+/** What a figure says, by its colour (app.css): what grows, what falls, what only informs; its icon in the same. */
 const TONES = {
-  ink: '',
-  dim: 'opacity-70',
-  thrive: 'text-thrive',
-  gilt: 'text-gilt-deep',
-  gules: 'text-gules',
-  pact: 'text-pact',
+  gain: 'hud-gain',
+  loss: 'hud-loss',
+  info: 'hud-info',
 } as const
 
-/** A figure of the HUD, its icon before it, both at one of the four sizes. */
+export type Meaning = keyof typeof TONES
+
+/** A figure of the HUD, its icon before it, both at one of the four sizes, in the colour of what it says: grey unless it grows or falls. */
 export function Figure({
   icon,
   size = 'm',
-  tone = 'ink',
+  tone = 'info',
   children,
 }: Readonly<{
   icon?: IconName
   size?: Size
-  tone?: keyof typeof TONES
+  tone?: Meaning
   children: ReactNode
 }>) {
   return (

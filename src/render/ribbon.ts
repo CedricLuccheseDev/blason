@@ -33,10 +33,15 @@ export function makeRibbon(
     const n = pts.length
     if (n < 2) continue
     for (let i = 0; i < n; i++) {
-      const [ax, ay] = pts[Math.max(0, i - 1)]
-      const [bx, by] = pts[Math.min(n - 1, i + 1)]
-      const [x, y] = pts[i]
-      const d = Math.hypot(bx - ax, by - ay) || 1
+      const before = pts[Math.max(0, i - 1)]
+      const after = pts[Math.min(n - 1, i + 1)]
+      const ax = before[0]
+      const ay = before[1]
+      const bx = after[0]
+      const by = after[1]
+      const x = pts[i][0]
+      const y = pts[i][1]
+      const d = Math.sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)) || 1
       const swell = 0.72 + 0.56 * (0.5 + 0.5 * tremble(x * 0.45, y * 0.45, 3.1))
       const k = (v + i) * 2
       centre[k] = x
@@ -44,7 +49,8 @@ export function makeRibbon(
       across[k] = (-(by - ay) / d) * swell * 0.5
       across[k + 1] = ((bx - ax) / d) * swell * 0.5
       if (i > 0) {
-        const [a, b] = [(v + i - 1) * 2, (v + i) * 2]
+        const a = (v + i - 1) * 2
+        const b = (v + i) * 2
         indices.push(a, a + 1, b, a + 1, b + 1, b)
       }
     }
@@ -63,8 +69,11 @@ export function makeRibbon(
   mesh.autoUpdate = false
   const widen = (width: number) => {
     for (let i = 0; i < count; i++) {
-      const [x, y] = [centre[i * 2], centre[i * 2 + 1]]
-      const [nx, ny] = [across[i * 2] * width, across[i * 2 + 1] * width]
+      // Plain numbers: widened at every zoom, for every border.
+      const x = centre[i * 2]
+      const y = centre[i * 2 + 1]
+      const nx = across[i * 2] * width
+      const ny = across[i * 2 + 1] * width
       vertices[i * 4] = x + nx
       vertices[i * 4 + 1] = y + ny
       vertices[i * 4 + 2] = x - nx

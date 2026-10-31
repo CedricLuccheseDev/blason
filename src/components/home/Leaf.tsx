@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Foot } from './Foot'
 import { Flourish, Frame, Rose } from './Ornaments'
+import { usePresses } from './usePresses'
 import type { ReactNode } from 'react'
 import { Panel, Stack } from '~/components/hud/Layout'
 import { Note, Title } from '~/components/hud/Text'
@@ -28,6 +29,7 @@ export function Leaf({
   wide?: boolean
   children: ReactNode
 }>) {
+  usePresses()
   return (
     <main className="hud relative flex w-full flex-1 flex-col bg-vellum">
       <Frame />

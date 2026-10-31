@@ -78,7 +78,7 @@ function Earned({ earned }: Readonly<{ earned: number }>) {
           }`}
         >
           <span className="hud-enter inline-block">
-            <Figure size="s" tone="thrive">
+            <Figure size="s" tone="gain">
               +{count(amount)}
             </Figure>
           </span>
@@ -117,22 +117,21 @@ export function Purse({
   return (
     <div className={`hud-afloat flex items-end ${GAP.line}`}>
       {/* As tall as the two lines beside it (« le blason est pas aussi haut que la partie droite »); a click brings the camera back to my land (« cliquer sur le blason centre la cam sur le territoire »). */}
-      {!compact && (
-        <Hint title={t.home.title} lines={[t.home.line]}>
-          <button
-            type="button"
-            onClick={onHome}
-            aria-label={t.home.title}
-            className="hud-press flex cursor-pointer"
-          >
-            <Shield
-              color={hex(me.color)}
-              size="purse"
-              level={Math.min(1, me.peasants / Math.max(1, me.cap))}
-            />
-          </button>
-        </Hint>
-      )}
+      {/* On a phone too, smaller (« Le blason n'est pas affiché sur mobile en bas a gauche »). */}
+      <Hint title={t.home.title} lines={[t.home.line]}>
+        <button
+          type="button"
+          onClick={onHome}
+          aria-label={t.home.title}
+          className="hud-press flex cursor-pointer"
+        >
+          <Shield
+            color={hex(me.color)}
+            size={compact ? 'm' : 'purse'}
+            level={Math.min(1, me.peasants / Math.max(1, me.cap))}
+          />
+        </button>
+      </Hint>
       {/* Two lines everywhere, narrow on a phone too (« le HUD sur téléphone »). */}
       <div className={`grid grid-cols-[auto_auto] items-center ${GAP.hair}`}>
         <Hint title={t.peasants.title} lines={[fed, growing]}>
@@ -140,7 +139,7 @@ export function Purse({
             {count(me.peasants)}
             <span
               className={`transition-colors duration-(--duration-hud-enter) ease-hud ${
-                shrunk ? 'text-gules' : 'opacity-70'
+                shrunk ? 'hud-loss' : ''
               }`}
             >
               {' '}
@@ -148,7 +147,7 @@ export function Purse({
             </span>
           </Figure>
         </Hint>
-        <Figure size="s" tone={me.growth < 0 ? 'gules' : 'thrive'}>
+        <Figure size="s" tone={me.growth < 0 ? 'loss' : 'gain'}>
           {me.growth > 0 && `+${me.growth}/s`}
           {/* Too many for the villages: the sickness takes them. */}
           {me.growth < 0 && `\u2212${-me.growth}/s`}

@@ -1,19 +1,26 @@
 import { KeyCap } from '../hud/Emblem'
 import { Hint } from '../hud/Hint'
+import { Name } from '../hud/Text'
+import { Figure } from '../hud/Figure'
+import { count } from './format'
 import type { ReactNode } from 'react'
 
 // The pieces the bar is made of (Bar.tsx): one for each army, work or coup,
 // and the gold rule between two parts.
 
 // norm-ok: the piece's hover wash follows the sheet's worn corners (the art direction).
-const PIECE =
+export const PIECE =
   'pointer-events-auto flex cursor-pointer flex-col items-center gap-1 rounded-md px-1 pt-1 hud-press hover:bg-quill/5'
+
+// norm-ok: a piece lit from the right click's menu, washed and ringed in gold as a lord's line is lit in the list.
+export const LIT = 'bg-gilt/35 outline-[1.5px] outline-gilt outline-solid'
 
 /**
  * One piece of the bar: its emblem, its key at its top right (none on a
  * phone, which has no keyboard), and under it its figure, if it has one. No
- * word: its name, and what it does, are said under the pointer in its hint,
- * and its name to screen readers.
+ * word on the bar: its name, and what it does, are said under the pointer in
+ * its hint, and its name to screen readers; in a drawer, where there is room
+ * and a new player learns the bar, its name is written under its figure.
  */
 export function Piece({
   emblem,
@@ -22,7 +29,9 @@ export function Piece({
   hint,
   figure,
   held,
-  faint = false,
+  short = false,
+  named = false,
+  lit = false,
   onClick,
 }: Readonly<{
   emblem: ReactNode
@@ -32,8 +41,12 @@ export function Piece({
   hint: ReadonlyArray<string>
   figure?: ReactNode
   held: boolean
-  /** At half ink: what cannot be had, the gold short. */
-  faint?: boolean
+  /** What cannot be had now (no man to raise, not the gold): said to the ear as a refusal (render/sound.ts). */
+  short?: boolean
+  /** Its name written under its figure, as in a drawer. */
+  named?: boolean
+  /** Lit from elsewhere: its sister in the right click's menu under the pointer. */
+  lit?: boolean
   onClick: () => void
 }>) {
   return (
@@ -41,11 +54,13 @@ export function Piece({
       <button
         type="button"
         aria-pressed={held}
+        aria-disabled={short || undefined}
         aria-label={name}
         onClick={onClick}
-        className={PIECE}
+        className={`${PIECE} ${lit ? LIT : ''}`}
       >
-        <span className={`relative ${faint ? 'opacity-45' : ''}`}>
+        {/* What cannot be had is at half ink inside its drawing (the emblems' dim): an opacity here made a layer that left its trace as the bar moved (« en bas les losanges y'a un carré derrière »). */}
+        <span className="relative">
           {emblem}
           {k !== null && (
             <span className="absolute -top-1 -right-3">
@@ -54,6 +69,7 @@ export function Piece({
           )}
         </span>
         {figure}
+        {named && <Name className="whitespace-nowrap">{name}</Name>}
       </button>
     </Hint>
   )
@@ -69,5 +85,17 @@ export function Divide({ close }: Readonly<{ close: boolean }>) {
     >
       <span className="absolute top-1/2 left-1/2 size-2.5 -translate-1/2 rotate-45 border border-quill bg-gilt" />
     </span>
+  )
+}
+
+/** A price under a piece, in gules when it cannot be paid. */
+export function Price({
+  price,
+  short,
+}: Readonly<{ price: number; short: boolean }>) {
+  return (
+    <Figure icon="coins" size="m" tone={short ? 'loss' : 'info'}>
+      {count(price)}
+    </Figure>
   )
 }

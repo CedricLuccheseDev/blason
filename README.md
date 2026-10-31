@@ -1,6 +1,6 @@
 # Blason
 
-Blason is a medieval real-time strategy game played in the browser. Twenty
+Blason is a medieval real-time strategy game played in the browser. Twenty-four
 lords share a land drawn anew for each game and take it from one another tile
 by tile: peasants hold the land and march out as armies, gold builds, alliances
 are short and traitors are marked for all to see. The whole map is drawn in
@@ -28,7 +28,7 @@ It is inspired by [OpenFront](https://openfront.io) and written from scratch.
   village and market are free, so a lord can always start again.
 - **Diplomacy**: alliances of five minutes, renewed or left to lapse; a lord
   who breaks one bears the traitor's mark.
-- **Nineteen bots** that read the same state and send the same orders as you.
+- **Twenty-three bots** that read the same state and send the same orders as you.
 - **A deterministic simulation**, the same on every machine, ready for
   lockstep multiplayer.
 
@@ -51,7 +51,7 @@ npm run dev
 ```
 
 Then open the address `npm run dev` prints: the home offers the public game
-in its opening, a solo game against nineteen bots, and private rooms. Online
+in its opening, a solo game against twenty-three bots, and private rooms. Online
 play needs the relay beside it (`npm run relay`).
 
 ## Commands
@@ -87,13 +87,15 @@ play needs the relay beside it (`npm run relay`).
 - `src/content/`: the journal's posts
 - `scripts/`: the arena and the style checks
 - `design/mockups/`: the sources of the design boards
-- `docs/`: the architecture and the rules
+- `docs/`: the architecture, the rules and the game design document
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md): how the simulation, the rendering and
   the HUD fit together, and why.
 - [Rules](docs/RULES.md): the game as it plays today, with its numbers.
+- [Game design](docs/gdd/README.md): every design decision, why it was
+  taken, and how it is validated.
 - [Contributing](CONTRIBUTING.md): the workflow, the checks and the
   conventions.
 
@@ -102,3 +104,7 @@ play needs the relay beside it (`npm run relay`).
 Blason is free software under the
 [GNU Affero General Public License v3.0](LICENSE): whoever runs a modified
 version of it on a server must offer its source to the players.
+
+The sounds and the music are their authors', under CC0 or CC BY 4.0; the
+music is Kevin MacLeod's (incompetech.com). Each is listed with its source
+in [public/sounds/CREDITS.md](public/sounds/CREDITS.md).

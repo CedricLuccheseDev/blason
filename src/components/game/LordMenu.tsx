@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { ActMedallion, Shield, StandingBadge } from '../hud/Emblem'
+import { ActMedallion, Shield } from '../hud/Emblem'
+import { StandingBadge } from '../hud/Standing'
 import { Figure } from '../hud/Figure'
 import { Caption, Inline, Panel } from '../hud/Layout'
 import { Name } from '../hud/Text'
@@ -68,7 +69,7 @@ function told(
 }
 
 /** The menu is left when the pointer goes far from it; on a phone, where it stands above the bar, only a tap elsewhere closes it. */
-function useFar(
+export function useFar(
   box: RefObject<HTMLElement | null>,
   onLeave: () => void,
   near: boolean,
@@ -153,9 +154,8 @@ export function LordMenu({
                   key={line.act}
                   k={null}
                   name={word}
-                  hint={[]}
+                  hint={[m.hints.menu[line.act]]}
                   held={false}
-                  faint={!line.can}
                   onClick={() =>
                     line.act === 'alliance'
                       ? acts.alliance(line.say)
@@ -163,7 +163,14 @@ export function LordMenu({
                   }
                   emblem={
                     <span className={tone}>
-                      <ActMedallion {...LOOKS[line.act]} />
+                      <ActMedallion
+                        {...LOOKS[line.act]}
+                        // Breaking it, in gules as its word (« rompre l'alliance en vert c'est bizarre »).
+                        {...(line.act === 'alliance' && line.say === 'break'
+                          ? { ring: 'var(--color-gules)' }
+                          : {})}
+                        dim={!line.can}
+                      />
                     </span>
                   }
                   figure={figure}

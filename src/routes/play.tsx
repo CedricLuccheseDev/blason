@@ -1,6 +1,7 @@
 import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
+  ATLAS_MAPS,
   LEVELS,
   MAP_SIZES,
   SETUP_LIMITS,
@@ -8,7 +9,7 @@ import {
   hostSetup,
   readSetup,
 } from '../../engine'
-import type { Book, Level, MapSize } from '../../engine'
+import type { Atlas, Book, Level, MapSize } from '../../engine'
 import type { Save } from '~/render/save'
 import { GameScreen } from '~/components/game/GameScreen'
 import { heldOnline, holdOnline } from '~/render/online'
@@ -20,7 +21,8 @@ import { useMessages } from '~/i18n'
 
 export const Route = createFileRoute('/play')({
   // The bots' level, chosen at the home, and the land's size (?size=large
-  // or huge): normal and standard if none or unknown; or a game begun
+  // or huge), or a map of the Earth (?map=europe): normal and standard if
+  // none or unknown; or a game begun
   // online at the home (online.ts); or a saved game, held still (?save=,
   // render/save.ts), as the maquette takes the game's moments.
   validateSearch: (
@@ -28,6 +30,7 @@ export const Route = createFileRoute('/play')({
   ): {
     level?: Level
     size?: MapSize
+    map?: Atlas
     online?: boolean
     save?: string
     host?: boolean
@@ -37,6 +40,7 @@ export const Route = createFileRoute('/play')({
     const size = (Object.keys(MAP_SIZES) as Array<MapSize>).find(
       (s) => s === search.size,
     )
+    const map = ATLAS_MAPS.find((a) => a === search.map)
     const online = search.online === true || search.online === 'true'
     const save = typeof search.save === 'string' ? search.save : null
     const host = search.host === true || search.host === 'true'
@@ -49,6 +53,7 @@ export const Route = createFileRoute('/play')({
       ...(room ? { room } : {}),
       ...(level ? { level } : {}),
       ...(size ? { size } : {}),
+      ...(map ? { map } : {}),
       ...(online ? { online } : {}),
       ...(save ? { save } : {}),
     }
@@ -61,12 +66,12 @@ export const Route = createFileRoute('/play')({
 // setup says (none a bot's in the public game). A game online left by a
 // reload is lost: back to the table.
 function Play() {
-  const { level, size, online, save, host, room } = Route.useSearch()
+  const { level, size, map, online, save, host, room } = Route.useSearch()
   if (save) return <Saved name={save} />
   if (host) return <Hosted />
   if (room) return <Guest code={room} />
   if (!online)
-    return <GameScreen me={0} level={level ?? 'normal'} size={size} />
+    return <GameScreen me={0} level={level ?? 'normal'} size={size} map={map} />
   const game = heldOnline()
   if (!game) return <Navigate to="/" />
   return <GameScreen me={game.seat} online={game} />
@@ -89,7 +94,7 @@ function Hosted() {
   const guests = seated ? seated.names.length - 1 : 0
   const fresh = (): Book => ({
     seed: randomSeed(),
-    size: 'standard',
+    land: { kind: 'drawn', size: 'standard' },
     bots: SETUP_LIMITS.seats.max - 1,
     level: 'normal',
     teams: 0,
@@ -98,7 +103,7 @@ function Hosted() {
   const [book, setBook] = useState(fresh)
   const [launched, setLaunched] = useState(false)
   // The book as it stands, for the guests to read (« à lire pour l'invité »).
-  // The bots in the seats the guests leave: twenty lords at most.
+  // The bots in the seats the guests leave: twenty-four lords at most.
   const sat: Book = {
     ...book,
     guests,
@@ -115,6 +120,7 @@ function Hosted() {
         book: sat,
         launched,
         code: seated?.room ?? null,
+        names: seated?.names,
         online: guests > 0,
         change: setBook,
         another: () => setBook({ ...book, seed: randomSeed() }),
@@ -156,7 +162,7 @@ function Guest({ code }: Readonly<{ code: string }>) {
     ? bookOf(told)
     : {
         seed: code,
-        size: 'standard',
+        land: { kind: 'drawn', size: 'standard' },
         bots: 0,
         level: 'normal',
         teams: 0,
@@ -181,6 +187,7 @@ function Guest({ code }: Readonly<{ code: string }>) {
         book,
         launched: false,
         code: seated?.room ?? code,
+        names: seated?.names,
         online: true,
         change: () => {},
         another: () => {},

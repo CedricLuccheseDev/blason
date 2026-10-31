@@ -7,11 +7,15 @@ name: CI
 # only. An advisory published overnight would turn every push red without a
 # line of code having changed, and a dev branch that can never be green stops
 # being read at all. A release is the right moment to block on it.
+#
+# It runs on main only, after a release, and by hand. Work on dev carries a
+# light check alone (tsc and the tests touched); the full battery is the
+# /dev-release gate, run once on the whole cycle (« Les lint ci tout ça on a
+# dit qu'on les faisait que au dev release »).
 on:
   push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -6,7 +6,8 @@ simulation:
 ```
 src/routes, src/components   the pages and the HUD (React)
         |
-   src/render                the map on screen (PixiJS), the session, the gestures
+   src/render                the map on screen (PixiJS), the session, the gestures,
+                             what the player hears (played by src/audio)
         |
    engine/index.ts           the engine's contract
         |
@@ -90,26 +91,30 @@ can tune them without touching the code. The rules themselves are described in
 
 ### The modules
 
-| Module                   | Responsibility                                                                                      |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                     |
-| `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes |
-| `grid.ts`                | The land cut into tiles of four map units                                                           |
-| `setup.ts`               | What a game is made of: the presets, a setup read from the wire, the land drawn for it              |
-| `land.ts`                | A new game from its setup; the land in the game, the peasants, the men holding a tile               |
-| `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given |
-| `muster.ts`              | Raising an army: the free villages, the march out of them and its pace, where an army stands        |
-| `course.ts`              | An army's course: the border tile that brings it soonest to the click, its village and its road     |
-| `war.ts`                 | Armies: their march, how they spread, what each tile costs                                          |
-| `battle.ts`              | Battles between armies that meet, by the combat table                                               |
-| `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone           |
-| `enclosure.ts`           | Encircled land passing to the lord all round it                                                     |
-| `heap.ts`                | The heap that orders the tiles an army strikes next                                                 |
-| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time               |
-| `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                            |
-| `caravans.ts`            | The merchants' roads and what they pay                                                              |
-| `step.ts`                | The tick, validation of orders, victory                                                             |
-| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `levels.ts`               |
+| Module                   | Responsibility                                                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `units.ts`, `numbers.ts` | The two units, integer arithmetic, seeded draws                                                                |
+| `map/`                   | The map generator: from a seed, the shape of the land, its coasts, relief, lakes, rivers and biomes            |
+| `grid.ts`                | The land cut into tiles of four map units                                                                      |
+| `setup.ts`               | What a game is made of: the presets, a setup read from the wire, the land drawn for it                         |
+| `land.ts`                | A new game from its setup; the land in the game, the peasants, the men holding a tile                          |
+| `opening.ts`             | The opening: each lord's standard, planted anywhere and moved at will, then the land round it given            |
+| `muster.ts`              | Raising an army: the free villages, the march out of them and its pace, where an army stands                   |
+| `course.ts`              | An army's course: the border tile that brings it soonest to the click, its village and its road                |
+| `war.ts`                 | Armies: their march, how they spread, what each tile costs                                                     |
+| `band.ts`                | The band an army takes: its strip along its line, the order it takes it in                                     |
+| `reach.ts`               | Where an army's men will be spent: its push played over in thought, its standard there                         |
+| `battle.ts`              | Battles between armies that meet, by the combat table                                                          |
+| `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone                      |
+| `enclosure.ts`           | Encircled land passing to the lord all round it                                                                |
+| `heap.ts`                | The heap that orders the tiles an army strikes next                                                            |
+| `works.ts`               | Villages, markets and castles: where they may stand, their price, their building time                          |
+| `diplomacy.ts`           | Alliances, offers, renewals and traitors                                                                       |
+| `caravans.ts`            | The merchants' roads and what they pay                                                                         |
+| `ships.ts`               | Ports (a work by the water) and the merchant ships between them                                                |
+| `warships.ts`            | Warships: fitted out at the nearest port, patrolling, taking ships, sinking boats, fighting                    |
+| `step.ts`                | The tick, validation of orders, victory                                                                        |
+| `bots/`                  | The bots: `bot.ts` for war, works and expansion, `talk.ts` for diplomacy, `fleet.ts` for warships, `levels.ts` |
 
 ### The map
 
@@ -230,8 +235,8 @@ orders. It decides nothing about the rules.
 
 - `client.ts` mounts a game in a page element: the land (`ahead.ts` makes the
   next one while the home is read, and keeps the public game's, which
-  `sketch.ts` draws small on the home's card, for that game when it
-  begins), the session, the scene, the camera, the input, and the handle the
+  `sketch.ts` draws on the home's card, and large and blurred under the
+  whole page (`HomeLand.tsx`), for that game when it begins), the session, the scene, the camera, the input, and the handle the
   React screen drives. What the player holds in
   hand, an army, a work or a coup, and the order a click sends with it, is
   `hand.ts` (the keys 1 to 9 then 0, `keys.ts`). What the pointer aims at, where
@@ -242,6 +247,15 @@ orders. It decides nothing about the rules.
   behind, so that no army goes out of a click meant to put it away).
 - `session.ts` runs the simulation in the page: it collects the player's
   orders and the bots', and steps the state ten times a second.
+- The simulation runs in its own thread wherever the browser gives one,
+  so that no step however heavy, nor a bot thinking long, ever holds a frame
+  back: `sim.worker.ts` plays the session there, alone or online, and after
+  each step sends what moved (`mirror.ts`: the tiles that changed hands, and
+  each list of what lives on the land, each thing under a number of its
+  own); `threaded.ts` keeps the session's contract in the page, its state a
+  mirror on which each step is laid in place, every army, work or caravan
+  the same object from one step to the next, as the drawing and the sound
+  know them by it. The page keeps the clock and the relay's line.
 - A saved game (`save.ts`) is a game's state at a tick as plain data, less
   what the seed makes again (the land and its tiles, the rules, whatever the
   game has not changed since it began): the arrays over every tile kept as
@@ -404,6 +418,72 @@ orders. It decides nothing about the rules.
   or come to their end unbroken (there too, though the map shows them), and
   any lord who broke an alliance.
 
+## The sound
+
+`src/audio/` plays the game's sounds with the browser's Web Audio, and knows
+nothing of the game. It is mixed as a game's sound is (`mix.ts`): every file
+brought to one loudness, so that a table alone sets the balance; five buses,
+each at its level, into a master that mutes and a gentle compressor, so that
+nothing clips when everything falls at once:
+
+- **the cues** that tell the player something (`cues.ts`): his army leaving,
+  an army at him, a herald's letter, his alliances, a betrayal cried to all,
+  his work laid, the end. Short hits, a second or so, the end
+  hardly more;
+- **the world** heard up close: a clash of swords, a volley, a stone (in
+  `cues.ts` too, on their bus), three at once at most;
+- **the beds** of the land (`beds.ts`): the sea, the wind, the rivers, the
+  woods, the villages, the markets, the castles, the caravans, the armies
+  marching, the battles' din, the burnt and the risen lands; long loops
+  played on without a seam, each as loud as what makes it holds of the
+  screen and from the side it lies on, each in its own band of the
+  spectrum, war over life over nature, their sum held under a ceiling, their
+  highs filtered away from afar, each fetched once first heard;
+- **the music** (`music.ts`): pieces of the period, streamed one after the
+  other with a silence between;
+- **the interface**: a light wooden click on each piece pressed, a dull knock
+  on one that cannot be had now (`presses.ts`, read from the page itself), in
+  the game and on the home page alike, where the mixer plays only these;
+  a sheet unfolded when a drawer opens.
+
+The player's settings (`settings.ts`): four volumes, the whole on the
+master, the music and the beds each on its bus, the rest on the cues', the
+world's and the interface's, and the mute (M), kept in the browser and
+heard by every mixer at once; set on the settings' sheet
+(`components/game/Settings.tsx`), beside the game's name and the player on
+the home, with the language, changed in place and kept in the site's one
+cookie (`i18n/index.tsx`).
+
+All but the interface and the music send a share of themselves into one
+generated room (`room.ts`), a short open-air reverberation, so that the
+sounds mingle rather than sit side by side. What tells comes first: a cue
+lowers the beds and the music a little while it passes, a cry to all lowers everything else, the end of the game silences
+all but itself. Each sound is a family of takes, the first the one heard
+unless its entry turns between them, never the same twice running.
+`mixer.ts` plays it all after the player's first gesture (the browser allows
+no sound before), each sound placed left or right, muted by M and
+remembered, silent while the page is hidden. A sound more is an entry in a
+table and its files.
+
+What the player hears is read in `src/render/`, never in the engine:
+`hearing.ts` turns the news of the second (`news.ts`: an army or a coup at
+him, a herald's letter, his alliances made or ended, any betrayal) and, each
+tick, his army leaving, his work laid and the end of the game into cues, each
+from its tile, and in the opening the standard planted, a drum for each of
+its last seconds and a horn as the game begins; `ambience.ts` samples the
+screen once a second over the drawn ground (`ground/terrain.ts`) and the
+rivers, and finds every element of the game on it, for the beds;
+`spectacle.ts` reads each tick the clashes and cries of the armies
+fighting, an army fallen, the castles' volleys, each coup as it sets out
+and comes down, a hammer on a work rising, all heard only coming closer, as
+the map's two scales would have it. Both are typed on the engine's lists
+(`Record<Work, Bed>`, `Record<Coup, …>`), so that a work, a scar or a coup
+more does not compile without its sound; `sound.ts` places each
+sound by where it falls across the screen, off it too, so that the ear tells
+where to look. The files come from Freesound and the music from Kevin
+MacLeod, under CC0 or CC BY; their sources and authors are listed in
+`public/sounds/CREDITS.md`.
+
 ## The interface
 
 The pages beside the game (the journal and its articles, how it works, the
@@ -454,8 +534,8 @@ The HUD is React, laid over the map. It is built on a small design system,
   whole page, its name and what it does with its figures (`Hint.tsx`; its
   words in `i18n/hints.ts`);
 - a figure with its icon (`Figure.tsx`), and the drawn objects at fixed sizes:
-  shields, the armies' wax seals, the works' square plaques ringed in gold, the acts' medallions, the coups' lozenges ringed in gules, keys, and the badges of standing
-  (`Emblem.tsx`): an ally the links of a chain in the alliance's green
+  shields, the armies' wax seals, the works' square plaques ringed in gold, the acts' medallions, the coups' lozenges ringed in gules and keys (`Emblem.tsx`), and the badges of standing
+  (`Standing.tsx`): an ally the links of a chain in the alliance's green
   (`--color-pact`, the map's `TONE.pact`), a foe at war a sword in gules, a
   felon his shield broken in two on gules; the shape says it before the
   colour, the same badges as beside the names on the map;
@@ -477,10 +557,12 @@ The HUD is React, laid over the map. It is built on a small design system,
   above the bar's row, go to the pointer's other side, and on a phone stand
   above the bar; an offer's sheet; a pennant flies left near the right side).
 
-The game's pieces (`src/components/game/`: the lords' list top left, every
-lord standing on a thin line washed in his colour as far as his land goes
-against the first's, the lord under the pointer lit there (`Lords.tsx`); the
-race on one thin line and under it a betrayal cried to all on a banderole of
+The game's pieces (`src/components/game/`: the lords' list top right, every
+lord standing on a thin line washed in his colour as far as his share of the
+whole land goes, a gold rule down every line at the share that wins, that
+share, the clock and when it drops at its head (`Goal.tsx`), the lord under
+the pointer lit there (`Lords.tsx`); on a phone, the list folded, the race on
+one thin line top centre (`Race.tsx`) and under it a betrayal cried to all on a banderole of
 gules (`Banner.tsx`), the top right left to the map; the seal of an alliance of
 the player's only in its last moments, beside his ally's name, a click to renew
 it, its time and whose turn it is beside it (`PactSeal.tsx`); an offer as one
@@ -492,17 +574,24 @@ to the player's capital while it stands (`HeraldLetter.tsx`,
 `layers/pacts.ts`); either waiting at the screen's edge
 with an arrow when out of view (`Heralds.tsx`, `edge.ts`); the news as a
 pennant planted where it happened, a few seconds (`Pennant.tsx`); the
-bar at the bottom, tight, with the purse in it, then the four armies as seals
-in a row, the mercenaries' in gold, paid in gold, each with its figure under
-it as a work has its price (the share of the peasants a levy takes, the
-mercenaries' gold), and only the one in hand named under the row with its
-men, then the works and the coups as their
-emblems and their prices alone, their names under the pointer, what cannot be
-paid at half ink, keys 1 to 9 then 0 (`Bar.tsx`, its pieces `BarPiece.tsx`);
+bar at the bottom, its three families each named over it (armies, buildings,
+strikes): the four armies as seals in a row, the levies' share by the
+peasants' icon, the mercenaries' and the warship's in gold, paid in gold
+(key B); the works as medallions and the coups as lozenges, each with its
+price, its name under the pointer, what cannot be paid at half ink, keys 1 to
+9 then 0. Short of room it folds a family at a time behind one face, the
+strikes first, then the buildings, then the armies: a drawer the pointer, a
+click or a tap lifts above it, its pieces named in it (`Bar.tsx`, its
+families `BarGroups.tsx`, the drawer `BarDrawer.tsx`, its pieces
+`BarPiece.tsx`, the seals' marks `seals.ts`);
 the cartouche beside the pointer, what a left click sends, the army in hand
 and its men, and over another lord's land that a right click opens the rest
-(`Cursor.tsx`); a right click there opens his menu beside the pointer, as a
-short list: a small sheet, his shield and his name, then a thin line for
+(`Cursor.tsx`, its pieces `CursorParts.tsx`); a right click puts down a
+work, a coup or a warship in hand, and with the army alone in hand opens the
+place's menu: on my land the works that may stand there, on the water a port
+of mine reaches a warship, each as the bar's piece with its hint, the one
+under the pointer lit in the bar (`PlaceMenu.tsx`); on another lord's land
+his menu beside the pointer, as a short list: a small sheet, his shield and his name, then a thin line for
 each act, its medallion ringed in its colour, its word and its figure:
 attack, the men of the army in hand, sent there as a left click would (none
 on an ally's land); the alliance, its word what it does now, to offer,
@@ -593,7 +682,11 @@ the game being planted now: the very land it is played on, made from the
 relay's seed when the browser has a moment and drawn small on a canvas
 (`sketch.ts`), as the map shows it from afar at the opening, the sea's wash
 and its shore lines, the land's parchment, its woods, hills and mountains a
-shade darker, the coast in ink. Its title, the time left to join it and the
+shade darker, the coast in ink. The book's list of maps draws its random
+lands the same way, but a map of the atlas is the same whatever the seed:
+`npm run plates` (`scripts/plates.mjs`) draws each once in a headless Chrome
+and keeps it light in `public/lands/<map>.webp`, the map faded into the sea
+at its frame, never cut straight there. Its title, the time left to join it and the
 seats taken lie on it as a map's cartouches, and Play at its corner, or a
 click anywhere on the land, goes straight into its opening, to plant a
 standard: there is no room to wait in
@@ -644,7 +737,7 @@ simulation.
   (`npm run relay`, `Dockerfile.relay`), deployed beside the site. Each game
   (`server/rooms.ts`, one game's seats and turns in `server/room.ts`) is
   made of its setup (`room.setup`), its land drawn as it opens from a seed
-  at the standard size, and seats up to twenty persons: the public game's
+  at the standard size, and seats up to twenty-four persons: the public game's
   setup has no bot (`publicSetup`), the seats no one took staying empty; a
   private room's has a bot in every seat (`botsSetup`) until the host's book
   sets them. As on OpenFront there is no room to wait in: one public game
@@ -655,7 +748,7 @@ simulation.
   on the first free seat, given the land, the opening and every turn played
   so far, and his seat is a person's from the next turn, on every browser.
   No one comes in during the opening's last 5 seconds, so that the last to
-  come may still plant his standard, nor once twenty have come: then the
+  come may still plant his standard, nor once twenty-four have come: then the
   game goes on with whoever came, and the next opens; if no one came, it is
   dropped and a new land takes its place; if one alone came, no one wins
   alone: the opening begins again on the same land, as a new game. The relay

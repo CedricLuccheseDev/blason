@@ -19,9 +19,9 @@ export const hintsEn = {
     earned: (gold: string) => `Earned: ${gold}`,
   },
   armies: {
-    raid: '10 % of your peasants, fast',
-    host: '25 % of your peasants',
-    ban: '50 % of your peasants, slow',
+    raid: '10 % of your peasants, 50 % faster',
+    host: '25 % of your peasants, the common pace',
+    ban: '50 % of your peasants, 50 % slower',
     mercenaries: 'Paid in gold, 2 a man',
     men: (men: string) => `${men} men`,
   },
@@ -29,11 +29,20 @@ export const hintsEn = {
     village: '+60 peasants, levies armies',
     market: 'A caravan every 10 s, paid on arrival; hires mercenaries',
     castle: 'Holds its land, shoots',
+    port: 'By the water: merchant ships to the other lords’ ports; fits out the warships',
   },
   coups: {
     troublemaker: 'Raises an enemy land',
     archers: 'A volley: −30 % of an army',
     trebuchet: 'Its flaming stone burns the works where it falls',
+  },
+  warship:
+    'Click the water: it sails from your nearest port and patrols there; takes merchant ships, sinks boats',
+  // The right click's menu on another lord's land, each act as the bar's pieces are told.
+  menu: {
+    attack: 'Sends the army in hand at his land, as a left click',
+    alliance: 'Allies for 5 minutes: your armies no longer strike each other',
+    offering: 'Gives him a quarter of your gold',
   },
   race: {
     title: 'The race',
@@ -60,9 +69,9 @@ export const hintsFr: HintsMessages = {
     earned: (gold: string) => `Gagné : ${gold}`,
   },
   armies: {
-    raid: '10 % de tes paysans, rapide',
-    host: '25 % de tes paysans',
-    ban: '50 % de tes paysans, lent',
+    raid: '10 % de tes paysans, 50 % plus vite',
+    host: '25 % de tes paysans, l’allure commune',
+    ban: '50 % de tes paysans, 50 % moins vite',
     mercenaries: 'Payés en or, 2 l’homme',
     men: (men: string) => `${men} hommes`,
   },
@@ -71,11 +80,19 @@ export const hintsFr: HintsMessages = {
     market:
       'Une caravane toutes les 10 s, payée à l’arrivée ; engage les mercenaires',
     castle: 'Tient sa terre, tire des flèches',
+    port: 'Au bord de l’eau : des bateaux marchands vers les ports des autres ; arme les navires de guerre',
   },
   coups: {
     troublemaker: 'Soulève une terre ennemie',
     archers: 'Une volée : −30 % d’une armée',
     trebuchet: 'Son boulet enflammé brûle les constructions',
+  },
+  warship:
+    'Clic sur l’eau : il part de ton port le plus proche et y patrouille ; prend les marchands, coule les barques',
+  menu: {
+    attack: 'Envoie l’armée en main sur sa terre, comme un clic gauche',
+    alliance: 'Alliés 5 minutes : vos armées ne se frappent plus',
+    offering: 'Lui donne un quart de ton or',
   },
   race: {
     title: 'La course',

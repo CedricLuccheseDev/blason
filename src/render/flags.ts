@@ -18,6 +18,8 @@ const LIT = 1.45
 /** What a standard reads of its army (armies.ts): its men, how many, where its standard stood, whether the game still has it. */
 type Army = {
   troops: Squad
+  /** How much its boat shows, its men aboard. */
+  afloat: number
   men: number
   flag: Spot | null
   gone: boolean
@@ -51,7 +53,8 @@ export function makeFlags(container: Container) {
           container.addChild(drawn.box)
         }
         const grown = host.from === lit && !army.gone
-        drawn.box.alpha = army.troops.alpha
+        // Its men aboard, it flies over their boat (layers/boats.ts).
+        drawn.box.alpha = Math.max(army.troops.alpha, army.afloat)
         drawn.box.position.set(army.flag.x, army.flag.y)
         drawn.box.scale.set(grown ? LIT : 1)
         if (grown) container.addChild(drawn.box)

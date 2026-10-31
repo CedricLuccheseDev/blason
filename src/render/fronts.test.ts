@@ -17,7 +17,14 @@ function bay(): GameState {
     const [x, y] = [t % WIDTH, Math.floor(t / WIDTH)]
     return !(x >= 8 && x <= 11 && y <= 9)
   })
-  const grid: Grid = { width: WIDTH, height: 16, size: 4, land, area: 0 }
+  const grid: Grid = {
+    width: WIDTH,
+    height: 16,
+    size: 4,
+    land,
+    water: land.map((on) => !on),
+    area: 0,
+  }
   grid.area = land.filter(Boolean).length
   const state = createGame(grid, botsSetup({ seed: 'bay', lords: 2 }), RULES)
   const strip = (t: number) => t % WIDTH >= 13 && Math.floor(t / WIDTH) === 12
@@ -75,7 +82,8 @@ describe('a battle', () => {
     for (const army of state.hosts) {
       const front = fronts.get(army)
       expect(front?.phase).toBe('battle')
-      expect(dry(front?.line ?? null)).toBe(true)
+      // Walking to the ground, then fighting on it: on the land all along.
+      expect(dry(front?.line ?? front?.at ?? null)).toBe(true)
       expect(dry(front?.at ?? null)).toBe(true)
     }
   })

@@ -2,16 +2,18 @@ import { Container } from 'pixi.js'
 import { UNIT, isFriendly } from '../../engine'
 import { GAP, makeFronts } from './fronts'
 import { makeRoads, pathOf } from './layers/column'
+import { afloatOf, makeBoats } from './layers/boats'
 import { makeFallen } from './layers/fallen'
-import { makeTroops } from './layers/troops'
+import { linesOf, makeTroops } from './layers/troops'
 import { makeWarning } from './layers/warning'
 import { makeFlags } from './flags'
 import { TONE, playerColor } from './palette'
 import { legible } from './ease'
 import { figuresOf, lose, makeSquad, middle, rally } from './squads'
 import { ARMY_LOOKS, warmFigures } from './figures'
+import type { makeWakes } from './layers/wakes'
 import type { Front, Spot } from './fronts'
-import type { Drawn, Line } from './layers/troops'
+import type { Drawn } from './layers/troops'
 import type { Man, Shape, Squad } from './squads'
 import type { Box } from './camera'
 import type { GameState, Host } from '../../engine'
@@ -31,12 +33,20 @@ const FADE = 0.5
 type Army = {
   troops: Squad
   peasants: Squad
+  /** How much it shows as a boat, its men aboard: 1 at sea, 0 ashore (layers/boats.ts). */
+  afloat: number
+  /** Its boat's place on the water, kept while it fades out ashore. */
+  boat: Spot | null
   /** Its men at the last tick read, and its place this frame; gone once the game no longer has it. */
   men: number
   front: Front | null
   flag: Spot | null
   gone: boolean
 }
+
+/** Whether an army's head is on the water of its road (crossing.ts). */
+const atSea = (state: GameState, host: Host, head: number) =>
+  state.grid.water[host.road[Math.min(host.road.length - 1, Math.round(head))]]
 
 /** The colour of the peasants who hold a land: their lord's, or the free land's. */
 const peasantColor = (owner: number) =>
@@ -46,23 +56,31 @@ const peasantColor = (owner: number) =>
 const enlist = (host: Host): Army => ({
   troops: makeSquad(ARMY_LOOKS[host.army], playerColor(host.owner)),
   peasants: makeSquad('peasant', peasantColor(host.target)),
+  afloat: 0,
+  boat: null,
   men: host.men,
   front: null,
   flag: null,
   gone: false,
 })
 
-export function makeArmies(me: number) {
+export function makeArmies(
+  me: number,
+  wakes: ReturnType<typeof makeWakes>,
+  underWoods?: (x: number, y: number) => boolean,
+) {
   warmFigures()
   const container = new Container()
   const roads = makeRoads()
   const fallen = makeFallen(0.2)
-  const troops = makeTroops()
+  const troops = makeTroops(underWoods)
+  const boats = makeBoats(wakes)
   const warning = makeWarning(me)
   container.addChild(
     warning.container,
     roads.container,
     fallen.container,
+    boats.container,
     troops.container,
   )
   const fronts = makeFronts()
@@ -111,15 +129,27 @@ export function makeArmies(me: number) {
     peasants.alpha = Math.min(1, peasants.alpha + dt / FADE)
   }
 
-  /** Each man of the army a frame closer to his place: in a column on the march, in ranks at the front or in battle. */
+  /** Each man of the army a frame closer to his place: in a column on the march, in ranks at the front or in battle; gathered aboard at sea, its boat shown for them. */
   function place(state: GameState, host: Host, army: Army, dt: number) {
     const front = army.front as Front
+    const sailing = front.phase === 'march' && atSea(state, host, front.head)
     const shape: Shape =
-      front.phase === 'march'
+      front.phase === 'march' && !sailing
         ? { line: 'column', path: pathOf(state, host), head: front.head }
         : { line: 'ranks', at: front.at, facing: front.facing }
     rally(army.troops, figuresOf(host.men / UNIT), shape, dt)
-    army.troops.alpha = Math.min(1, army.troops.alpha + dt / FADE)
+    // Aboard, its men go with the boat, its standard over it.
+    if (sailing) army.boat = { ...front.at }
+    if (sailing) for (const man of army.troops.men) Object.assign(man, front.at)
+    const step = dt / FADE
+    army.troops.alpha = Math.max(
+      0,
+      Math.min(1, army.troops.alpha + (sailing ? -step : step)),
+    )
+    army.afloat = Math.max(
+      0,
+      Math.min(1, army.afloat + (sailing ? step : -step)),
+    )
     defend(state, host, army, dt)
   }
 
@@ -149,31 +179,6 @@ export function makeArmies(me: number) {
       if (!now.has(host)) dismiss(host, army, dt)
   }
 
-  /** The lines where men fight: each front, each battle once. */
-  function lines(): Array<Line> {
-    const drawn: Array<Line> = []
-    const told = new Set<Host>()
-    for (const [host, army] of armies) {
-      const { front } = army
-      if (!front?.line || army.gone || told.has(host)) continue
-      if (front.foe) told.add(front.foe)
-      // The dust rises where the men stand, which never jump, before them.
-      const men = middle(army.troops.men)
-      if (!men) continue
-      drawn.push({
-        at: {
-          x: men.x + front.facing.x * GAP,
-          y: men.y + front.facing.y * GAP,
-        },
-        across: { x: -front.facing.y, y: front.facing.x },
-        width: Math.ceil(army.troops.men.length / 2) * 3.6,
-        alpha: army.troops.alpha,
-        seed: host.from,
-      })
-    }
-    return drawn
-  }
-
   /** Every side drawn: each army's men, and the peasants before it. */
   function sides(): Array<Drawn> {
     return [...armies.values()].flatMap((a) => [
@@ -193,8 +198,15 @@ export function makeArmies(me: number) {
     flagOf: (from: number) => flags.flagOf(armies, from),
     /** The army to grow, by the village or market it left from; none. */
     light: flags.light,
-    /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen. */
-    draw(state: GameState, zoom: number, view: Box, between = 0, far = 1) {
+    /** `far`: under 1 farther out than the whole land, where the standards shrink with it; `view`, the map on screen; `strategic`, how much the map is the strategist's, where an army is its standard alone (ground/detail.ts). */
+    draw(
+      state: GameState,
+      zoom: number,
+      view: Box,
+      between = 0,
+      far = 1,
+      strategic = 0,
+    ) {
       const seconds = performance.now() / 1000
       const dt = Math.min(0.1, seconds - last)
       last = seconds
@@ -205,7 +217,13 @@ export function makeArmies(me: number) {
       // alliés »).
       const marches = standing.flatMap((a) =>
         a.front?.phase === 'march' && isFriendly(state, me, a.front.host.owner)
-          ? [{ host: a.front.host, head: a.front.head, alpha: a.troops.alpha }]
+          ? [
+              {
+                host: a.front.host,
+                head: a.front.head,
+                alpha: Math.max(a.troops.alpha, a.afloat),
+              },
+            ]
           : [],
       )
       warning.draw(
@@ -214,8 +232,18 @@ export function makeArmies(me: number) {
         zoom,
       )
       roads.draw(state, marches, zoom)
-      troops.draw(sides(), lines(), seconds, view)
-      fallen.draw(seconds)
+      // From afar the men fade out, their standards stay (« les etendard
+      // sans l'armée »); not drawn at all once gone.
+      const men = 1 - strategic
+      for (const layer of [troops, fallen, boats]) {
+        layer.container.alpha = men
+        layer.container.visible = men > 0
+      }
+      if (men > 0) {
+        troops.draw(sides(), linesOf(armies), seconds, view)
+        fallen.draw(seconds)
+        boats.draw(afloatOf(armies))
+      }
       flags.place(armies, zoom / far, legible(far), seconds)
     },
   }

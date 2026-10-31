@@ -156,5 +156,6 @@ describe('the map generator', () => {
     expect(generateWorld('valbrune', { ...CLASSIC, size: 'huge' })).toEqual(
       huge,
     )
-  })
+    // Four lands drawn, the huge one among them: slow on a busy machine.
+  }, 30_000)
 })

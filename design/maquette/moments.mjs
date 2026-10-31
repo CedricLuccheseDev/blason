@@ -11,7 +11,8 @@
 // be a page of the site rather than a save (`path:`), taken once what it
 // waits for is there (`ready:` a selector), and without waiting for its
 // map to hold still past so many ms (`longest:`), the home's game behind
-// never holding still.
+// never holding still; with `map: false`, a page with no map behind, its
+// HUD alone.
 
 /** The sizes every moment is captured at: a desk's screen, a laptop's, a phone upright. */
 export const SIZES = [
@@ -24,10 +25,10 @@ export const MOMENTS = [
   {
     name: 'home',
     title: "L'accueil",
-    line: 'La prochaine partie publique en premier et en grand, puis le solo et les parties privées ; derrière, une partie de bots.',
+    line: 'La prochaine partie publique en premier et en grand, sa terre dessinée dedans ; puis créer une partie et rejoindre avec un code, le Journal à droite.',
     path: '/',
     ready: 'canvas[role="img"].opacity-100',
-    longest: 20_000,
+    map: false,
   },
   {
     name: 'opening',

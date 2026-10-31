@@ -12,7 +12,7 @@ import { LocaleProvider } from '~/i18n'
 import { getLocale } from '~/i18n/locale'
 
 const DESCRIPTION =
-  'A medieval real-time strategy game in the browser: twenty lords, a land drawn anew each game, taken tile by tile.'
+  'A medieval real-time strategy game in the browser: twenty-four lords, a land drawn anew each game, taken tile by tile.'
 
 /** The schema.org graph every page carries: the site and the game it serves. */
 function siteGraph(): string {
@@ -45,7 +45,18 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // The map to the edges of a phone, under its notch and its bars (« Sur
+      // mobile on peut fill le haut et le bas ? »); the HUD keeps clear of
+      // them (components/game/Places.tsx).
+      {
+        name: 'viewport',
+        content: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      {
+        name: 'apple-mobile-web-app-status-bar-style',
+        content: 'black-translucent',
+      },
       { name: 'theme-color', content: '#f6eedb' },
       { title: 'Blason' },
       { name: 'description', content: DESCRIPTION },

@@ -1,6 +1,7 @@
-import { canStart } from '../../engine'
+import { apart, canStart, whereIs } from '../../engine'
 import { keyOf } from './keys'
 import { tilePlaces } from './places'
+import { canSend } from './course'
 import type { GameState, Order } from '../../engine'
 import type { makeHand } from './hand'
 import type { Spot } from './roads'
@@ -9,16 +10,35 @@ import type { Spot } from './roads'
 // standard, only where it may stand (the last one sent is the one a lone
 // player keeps when the opening begins again online); after it, what is in
 // hand, an army or a work or a coup, the figures read again when it was a
-// work or a coup put down.
+// work or a coup put down. A click by one of my warships picks it, to send
+// by the next click on the water.
+
+/** How near a warship a click picks it, in tiles. */
+const PICK = 2
+
+/** My warship nearest a tile, within reach of a click; none. */
+function warshipAt(state: GameState, me: number, tile: number) {
+  let [best, near] = [null as number | null, PICK * PICK + 1]
+  for (const ship of state.warships) {
+    if (ship.owner !== me) continue
+    const gap = apart(state.grid, whereIs(ship), tile)
+    if (gap < near) [best, near] = [ship.id, gap]
+  }
+  return best
+}
 
 export function makeClick(
   state: GameState,
   me: number,
   send: (order: Order) => void,
-  hand: Pick<ReturnType<typeof makeHand>, 'holding' | 'order'>,
+  hand: Pick<ReturnType<typeof makeHand>, 'holding' | 'order' | 'pick'> & {
+    hand: { ship: number | null; work: unknown; coup: unknown; fleet: boolean }
+  },
   /** Whether this click only closes the right click's menu. */
   dismisses: () => boolean,
   refresh: () => void,
+  /** An army asked for that cannot go: no village free, or no man to raise. */
+  refuse: () => void,
 ) {
   return (tile: number) => {
     if (tile < 0 || me < 0 || dismisses()) return
@@ -28,21 +48,51 @@ export function makeClick(
       return
     }
     const held = hand.holding()
-    send(hand.order(me, tile))
+    const { work, coup, fleet } = hand.hand
+    // A warship of mine picked by a click on the water by it; a click on a
+    // coast near it attacks the coast, as ever.
+    const onWater = state.grid.water[tile]
+    const ship =
+      !work && !coup && !fleet && onWater ? warshipAt(state, me, tile) : null
+    if (ship !== null && ship !== hand.hand.ship) {
+      hand.pick(ship)
+      refresh()
+      return
+    }
+    const order = hand.order(me, tile)
+    // Said, not silently dropped: on a phone no aim shows beforehand that
+    // nothing can go (« quand on simple clic dans un territoire d'un autre
+    // joueur ça attaque pas », its village's army out).
+    if (
+      order.type === 'attack' &&
+      state.owner[tile] !== me &&
+      !canSend(state, me, order.army)
+    ) {
+      refuse()
+      return
+    }
+    send(order)
     if (held) refresh()
   }
 }
 
-/** What a key does: Escape closes the right click's menu; a digit takes an army, a work or a coup in hand, the figures read again. */
+/** What a key does: Escape closes the right click's menu; M mutes or brings back the sound; a digit takes an army, a work or a coup in hand, the figures read again. */
 export function makeKeys(
   close: () => void,
   hand: Pick<ReturnType<typeof makeHand>, 'key'>,
   refresh: () => void,
+  /** M: the sound muted or back. */
+  mute: () => void,
+  /** Whether what a key takes in hand can be had now; refused with its knock, else (« j'ai cliqué sur le clavier ça a selectionné la construction alors que j'ai pas les sous »). */
+  allowed: (key: string) => boolean,
 ) {
   return (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === 'Escape') close()
-    if (hand.key(keyOf(e))) refresh()
+    if (e.key.toLowerCase() === 'm') mute()
+    const key = keyOf(e)
+    if (!allowed(key)) return
+    if (hand.key(key)) refresh()
   }
 }
 

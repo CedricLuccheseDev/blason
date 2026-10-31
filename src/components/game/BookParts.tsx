@@ -1,73 +1,28 @@
 import { useState } from 'react'
-import { Act, Tap } from '../hud/Act'
-import { Figure } from '../hud/Figure'
-import { Inline, Line, Stack } from '../hud/Layout'
-import { Call, Note, Title, Word } from '../hud/Text'
-import { Shield } from '../hud/Emblem'
-import { hex } from './format'
-import type { ReactNode } from 'react'
-import type { Book } from '../../../engine'
+import { Act } from '../hud/Act'
+import { GAP, Stack } from '../hud/Layout'
+import { Note, Title } from '../hud/Text'
+import { Icon } from '../hud/Figure'
+import type { IconName } from '../hud/Figure'
 import { Flourish } from '~/components/home/Ornaments'
-import { PLAYERS } from '~/render/palette'
 import { useMessages } from '~/i18n'
 
-// The pieces of the book of the game (GameBook.tsx): a setting turned by
-// its arrows, a page's head, the lords seated by team, and the book's
-// button over the camera's.
+// The pieces of the book of the game (GameBook.tsx): a page's head (the
+// lords seated are BookSeats.tsx's), the link to invite friends, and
+// the book's button over the camera's.
 
-/** The next value of a list, a step forward or back, kept at its ends. */
-export function stepped<T>(list: ReadonlyArray<T>, value: T, by: 1 | -1): T {
-  const at = Math.max(0, list.indexOf(value))
-  return list[Math.max(0, Math.min(list.length - 1, at + by))]
-}
-
-/** A line of the book: its name, then its value (Line, the HUD's line of a list). */
-const Row = ({
-  name,
-  children,
-}: Readonly<{ name: string; children: ReactNode }>) => (
-  <Line name={<Note>{name}</Note>}>{children}</Line>
-)
-
-/** One setting: its name, and its value between two arrows; read only for whoever may not change it. */
-export function Setting({
-  name,
-  value,
-  onStep,
-}: Readonly<{
-  name: string
-  value: string
-  onStep?: (by: 1 | -1) => void
-}>) {
-  const m = useMessages().book
-  const arrow = (by: 1 | -1) =>
-    onStep && (
-      <Tap
-        label={`${name} : ${by < 0 ? m.less : m.more}`}
-        onClick={() => onStep(by)}
-      >
-        <Call className="text-current">{by < 0 ? '‹' : '›'}</Call>
-      </Tap>
-    )
-  return (
-    <Row name={name}>
-      {arrow(-1)}
-      <Word className="flex-1 text-center">{value}</Word>
-      {arrow(1)}
-    </Row>
-  )
-}
-
-/** A page's head: a line above, its title in capitals, a gold rule. */
+/** A page's head: a line above, its title in capitals beside its icon, a gold rule. */
 export function Head({
   kicker,
   title,
-}: Readonly<{ kicker: string; title: string }>) {
+  icon,
+}: Readonly<{ kicker: string; title: string; icon?: IconName }>) {
   return (
     <header>
       <Stack gap="hair" align="center" className="text-center">
         <Note>{kicker}</Note>
-        <h2>
+        <h2 className={`flex items-center ${GAP.hair}`}>
+          {icon && <Icon name={icon} size={26} />}
           <Title>{title}</Title>
         </h2>
         <span className="w-3/5">
@@ -75,50 +30,6 @@ export function Head({
         </span>
       </Stack>
     </header>
-  )
-}
-
-/** The lords in play: me and the bots, by team, a shield each. */
-export function Seats({ book }: Readonly<{ book: Book }>) {
-  const m = useMessages().book
-  const guests = book.guests ?? 0
-  const whoSits = (i: number) => {
-    if (i === 0) return m.you
-    return i <= guests ? m.guest : m.bot
-  }
-  const lords = Array.from(
-    { length: Math.min(PLAYERS.length, 1 + guests + book.bots) },
-    (_, i) => i,
-  )
-  const sides =
-    book.teams >= 2
-      ? Array.from({ length: book.teams }, (_, t) =>
-          lords.filter((i) => i % book.teams === t),
-        )
-      : [lords]
-  return (
-    <Stack>
-      {sides.map((side, t) => (
-        <Inline key={t} justify="center">
-          {book.teams >= 2 && (
-            <span className="hud-figure w-6 text-gilt-deep">
-              {['I', 'II', 'III', 'IV'][t]}
-            </span>
-          )}
-          <Inline gap="hair" justify="center" wrap>
-            {side.map((i) => (
-              <span
-                key={i}
-                title={whoSits(i)}
-                className={i <= guests ? '' : 'opacity-55'}
-              >
-                <Shield color={hex(PLAYERS[i].color)} size="s" />
-              </span>
-            ))}
-          </Inline>
-        </Inline>
-      ))}
-    </Stack>
   )
 }
 
@@ -150,40 +61,34 @@ export function BookButton({ onOpen }: Readonly<{ onOpen: () => void }>) {
 /** The game's name top left, its mark in IM Fell on a sheet, the way back to the home (« met dans le header en haut à gauche, au moins le logo du jeu »). */
 export function HomeMark({ onHome }: Readonly<{ onHome: () => void }>) {
   const m = useMessages().book
+  // The HUD's one button, as the book's and the lords' beside it (« il faut
+  // un seul type visuel »), its word the game's mark.
   return (
-    <button
-      type="button"
-      onClick={onHome}
-      aria-label={m.home}
-      title={m.home}
-      className="hud-press pointer-events-auto cursor-pointer"
-    >
-      {/* norm-ok: wordmark, not copy */}
+    <Act tone="plain" label={m.home} onClick={onHome}>
+      {/* norm-ok: wordmark, not copy. Upright on a phone, its initial alone: the race needs the width, and the way home stays (« Y'a plus le bouton logo »). */}
       <span className="hud-word font-mark text-hud-xl leading-none text-quill">
-        Blason
+        <span className="max-sm:hidden">Blason</span>
+        <span className="sm:hidden">B</span>
       </span>
-    </button>
+    </Act>
   )
 }
 
-/** The room's code, to give friends, and a click to copy it (« quand on host y'a pas de code »). */
+/** The room's link, to give friends: a click copies it, and whoever opens it sits in the game at once (« au lieu d'un code fais copier un lien c'est mieux »), a button of the book's foot with its letter (« le bouton inviter met le en bas avec une icon invitation »). */
 export function Invite({ code }: Readonly<{ code: string }>) {
   const m = useMessages().book
   const [copied, setCopied] = useState(false)
   const copy = () => {
+    const link = `${location.origin}/play?room=${code}`
     void navigator.clipboard
-      .writeText(code)
+      .writeText(link)
       .then(() => setCopied(true))
       .catch(() => setCopied(false))
   }
   return (
-    <Row name={m.invite}>
-      <span className="flex-1 text-center tracking-widest">
-        <Figure size="l">{code}</Figure>
-      </span>
-      <Tap onClick={copy}>
-        <Note className="text-current">{copied ? m.copied : m.copy}</Note>
-      </Tap>
-    </Row>
+    <Act tone={copied ? 'pact' : 'plain'} onClick={copy}>
+      <Icon name="letter" size={18} />
+      {copied ? m.linkCopied : m.invite}
+    </Act>
   )
 }

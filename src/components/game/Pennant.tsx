@@ -4,7 +4,7 @@ import { Tag } from '../hud/Layout'
 import { Word } from '../hud/Text'
 import { scaled } from '../hud/tokens'
 import { Glyph, INK } from './svg/marks'
-import { COUP_MARKS } from './Bar'
+import { COUP_MARKS } from './seals'
 import { count } from './format'
 import type { Mark } from './svg/marks'
 import type { News } from '~/render/client'
@@ -142,7 +142,11 @@ export function Pennant({
         <span className={flip ? '-mr-3' : '-ml-3'}>
           <Tag>
             <Word className={ill ? 'text-gules' : ''}>{text}</Word>
-            {gold !== undefined && <Figure icon="coins">{count(gold)}</Figure>}
+            {gold !== undefined && (
+              <Figure icon="coins" tone="gain">
+                {count(gold)}
+              </Figure>
+            )}
           </Tag>
         </span>
       </div>

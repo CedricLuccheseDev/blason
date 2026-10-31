@@ -1,16 +1,19 @@
 import { landAhead } from './ahead'
 import { css } from './art/ink'
+import { DEAD } from './layers/lands'
 import { mixColor } from './ease'
 import { chain, simplify } from './geometry'
 import { TONE } from './palette'
-import type { MapSize, Point, World } from '../../engine'
+import { sketchRivers } from './sketchRivers'
+import type { Land, Point, World } from '../../engine'
 
 // The land of a game to come, drawn small on a canvas for its card on the
 // home: the very land the game will have, made from its seed and kept for
 // it (ahead.ts). As the map shows it from afar at the opening: the sea's
 // pale wash with lines along its shores, fading outwards (layers/lands.ts),
 // the land parchment, its woods, hills and mountains a shade darker
-// (ground/tones.ts), the coast in ink; its lines measured in the card's
+// (ground/tones.ts), the high mountains in stone with a mount on each of
+// their cells (layers/peaks.ts), the coast in ink; its lines measured in the card's
 // pixels rather than the map's units, so they read at that size.
 
 /** How much darker than the parchment each kind of land is: the plain bare. */
@@ -30,6 +33,8 @@ const SHORES = [
 const [LINE, INK] = [0.8, 1.3]
 /** Pixels of the page a pixel of the darker lands spans, stretched: how soft their edges. */
 const SOFT = 3
+/** Pixels of the page over which a map in a list fades into the sea at its frame. */
+const FADE = 14
 /** Canvas pixels drawn per pixel of the page, at most. */
 const SHARPEST = 2
 
@@ -37,27 +42,57 @@ const SHARPEST = 2
 export function sketchGame(
   canvas: HTMLCanvasElement,
   seed: string,
-  size: MapSize,
+  land: Land,
+  /** The whole land in the sea round it, as a list of maps shows it; else covering the canvas. */
+  whole = false,
 ): void {
-  const world = landAhead(seed, size)
+  const world = landAhead(seed, land)
   const ratio = Math.min(SHARPEST, window.devicePixelRatio || 1)
   canvas.width = Math.round(canvas.clientWidth * ratio)
   canvas.height = Math.round(canvas.clientHeight * ratio)
   const g = canvas.getContext('2d')
-  if (g) sketch(g, world, ratio)
+  if (g) sketch(g, world, ratio, whole)
 }
 
-function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
+function sketch(
+  g: CanvasRenderingContext2D,
+  world: World,
+  ratio: number,
+  whole: boolean,
+) {
   const { width, height } = g.canvas
   g.fillStyle = css(TONE.seaWash)
   g.fillRect(0, 0, width, height)
   // The land covering the canvas, in its middle: on a card of another
   // shape, cut at its sides rather than floating in the sea (« grossis en
-  // hauteur l'area partie publique »).
-  const scale = Math.max(width / world.width, height / world.height)
-  const [dx, dy] = [width - world.width * scale, height - world.height * scale]
-  const at = new DOMMatrix([scale, 0, 0, scale, dx / 2, dy / 2])
+  // hauteur l'area partie publique »); or, in a list of maps, its land in
+  // play whole and in the middle, the rest of the map round it as far as
+  // the card goes (« fais pas les rectangles sur les maps … rend ça mieux »).
+  // In a list, the land whole, never cut (« je veux la map complète »), as
+  // little as may be past the map's frame: a land cut by the frame showed a
+  // straight edge there and a pale band beyond (« problème de trait »,
+  // « bandes claires »); it fades into the sea at its frame (FADE).
+  const frame = whole
+    ? boundsOf(world)
+    : { x: 0, y: 0, w: world.width, h: world.height }
+  const cover = Math.max(width / world.width, height / world.height)
+  const scale = whole ? Math.min(width / frame.w, height / frame.h) : cover
+  // The land's middle, moved for the card to show as little past the frame as may be.
+  const within = (middle: number, half: number, side: number) =>
+    2 * half >= side ? side / 2 : Math.min(Math.max(middle, half), side - half)
+  const [dx, dy] = [
+    width / 2 -
+      within(frame.x + frame.w / 2, width / 2 / scale, world.width) * scale,
+    height / 2 -
+      within(frame.y + frame.h / 2, height / 2 / scale, world.height) * scale,
+  ]
+  const at = new DOMMatrix([scale, 0, 0, scale, dx, dy])
   g.setTransform(at)
+  // Nothing drawn past the frame: the lines along a shore the frame cuts
+  // came round its ends there.
+  g.beginPath()
+  g.rect(0, 0, world.width, world.height)
+  g.clip()
   /** A pixel of the page, in the map's units. */
   const px = ratio / scale
   const coast = new Path2D()
@@ -86,12 +121,86 @@ function sketch(g: CanvasRenderingContext2D, world: World, ratio: number) {
   const soft = relief(world, at, [width, height], SOFT * ratio)
   g.drawImage(soft, 0, 0, width, height)
   g.restore()
+  sketchRivers(g, world, px, LINE, INK)
+  // The dead land, others' than the map's own, brown-black (layers/lands.ts), over the rivers, which are
+  // the land in play's alone.
+  if (world.dead.length > 0) {
+    g.fillStyle = css(DEAD)
+    g.fill(cells(world.dead))
+  }
+  mountains(g, world, px)
   g.lineWidth = INK * px
   g.strokeStyle = css(TONE.ink)
   g.stroke(coast)
   // The map's edge, as its frame's inner rule: on a card wider than the
-  // land, a land that runs to it is cut there, not in the open sea.
-  g.strokeRect(0, 0, world.width, world.height)
+  // land, a land that runs to it is cut there, not in the open sea. In a
+  // list of maps, none: the map runs on to the card's edge.
+  if (!whole) g.strokeRect(0, 0, world.width, world.height)
+  else fade(g, world, FADE * px)
+}
+
+/** The map's frame dissolved into the sea round it, over `soft` of the map's units: no land cut straight. */
+function fade(g: CanvasRenderingContext2D, world: World, soft: number) {
+  const { width: w, height: h } = world
+  const sea = css(TONE.seaWash)
+  const clear = css(TONE.seaWash, 0)
+  const sides: Array<[number, number, number, number]> = [
+    [0, 0, soft, 0],
+    [w, 0, w - soft, 0],
+    [0, 0, 0, soft],
+    [0, h, 0, h - soft],
+  ]
+  for (const [x0, y0, x1, y1] of sides) {
+    const wash = g.createLinearGradient(x0, y0, x1, y1)
+    wash.addColorStop(0, sea)
+    wash.addColorStop(1, clear)
+    g.fillStyle = wash
+    g.fillRect(0, 0, w, h)
+  }
+}
+
+/** The land in play's bounds, a little sea round it, within the map's frame: what a card of a list shows whole. */
+function boundsOf(world: World) {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity]
+  for (const { outline } of world.land)
+    for (const [x, y] of outline) {
+      x0 = Math.min(x0, x)
+      y0 = Math.min(y0, y)
+      x1 = Math.max(x1, x)
+      y1 = Math.max(y1, y)
+    }
+  const pad = Math.max(x1 - x0, y1 - y0) * 0.05
+  x0 = Math.max(0, x0 - pad)
+  y0 = Math.max(0, y0 - pad)
+  x1 = Math.min(world.width, x1 + pad)
+  y1 = Math.min(world.height, y1 + pad)
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }
+}
+
+/** The high mountains, as the map draws them small (layers/peaks.ts): their ground in stone, and on each of their cells a mount in ink, `px` a pixel of the page in the map's units. */
+function mountains(g: CanvasRenderingContext2D, world: World, px: number) {
+  if (world.peaks.length === 0) return
+  const ground = new Path2D()
+  const mounts = new Path2D()
+  for (const { outline } of world.peaks) {
+    trace(ground, outline)
+    ground.closePath()
+    const xs = outline.map(([x]) => x)
+    const ys = outline.map(([, y]) => y)
+    const w = Math.max(...xs) - Math.min(...xs)
+    const [x, y] = [
+      (Math.min(...xs) + Math.max(...xs)) / 2,
+      (Math.min(...ys) + Math.max(...ys)) / 2,
+    ]
+    mounts.moveTo(x - w * 0.38, y + w * 0.22)
+    mounts.lineTo(x, y - w * 0.3)
+    mounts.lineTo(x + w * 0.38, y + w * 0.22)
+  }
+  g.fillStyle = css(TONE.stone)
+  g.fill(ground)
+  g.lineWidth = INK * px * 0.8
+  g.strokeStyle = css(TONE.ink)
+  g.stroke(mounts)
 }
 
 /**
@@ -128,7 +237,7 @@ function trace(path: Path2D, line: ReadonlyArray<Point>) {
 }
 
 /** Cells of land as one shape, filled at once so that no seam shows between two. */
-function cells(land: World['land']): Path2D {
+function cells(land: ReadonlyArray<{ outline: Array<Point> }>): Path2D {
   const path = new Path2D()
   for (const { outline } of land) {
     trace(path, outline)

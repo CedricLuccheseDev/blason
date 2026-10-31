@@ -1,8 +1,33 @@
 import type { Heralds } from './heralds'
-import type { Army, Book, Coup, Work } from '../../engine'
+import type { Aim } from './aiming'
+import type { News } from './news'
+import type { Online } from './online'
+import type { Save } from './save'
+import type { Summary } from './summary'
+import type { Army, Book, Coup, Land, Level, Work } from '../../engine'
 
 // What the page holds of a game on screen (client.ts): its orders, its
 // camera, and where the HUD lays its pieces on the map.
+
+/** What the page gives a game it mounts: where it tells what happens, and what the game is. */
+export type GameHooks = {
+  onSummary: (summary: Summary) => void
+  /** The pointer over land a click would strike, or another lord's land right clicked, for his menu; none elsewhere. */
+  onAim: (aim: Aim | null) => void
+  /** What happened in the last second that the player should read. */
+  onNews?: (news: Array<News>) => void
+  names: Array<string>
+  /** The bots' level, chosen at the home; normal if none. */
+  level?: Level
+  /** The land: the standard invented one if none. Online, the relay's. */
+  land?: Land
+  /** A game online (online.ts): its land, its turns and my seat come from the relay. */
+  online?: Online
+  /** The host's game, held while he sets it in his book (« créer une partie »), its land the one asked. */
+  book?: Book
+  /** A saved game (save.ts), held still at its tick: its land, my seat and the camera come from it. */
+  save?: Save
+}
 
 export type GameHandle = {
   destroy: () => void
@@ -10,10 +35,18 @@ export type GameHandle = {
   hold: (work: Work | null) => void
   /** A coup taken in hand, or put down. */
   aim: (coup: Coup | null) => void
+  /** A warship to fit out taken in hand, or put down. */
+  fit: (fleet: boolean) => void
   /** The pointer gone far from the right click's menu: it closes, and a click on the map just after only finishes closing it. */
   leave: () => void
   /** From the right click's menu: the army in hand sent at the land right clicked, as a left click there would. */
   attack: () => void
+  /** From the right click's menu on my land: the work built on the tile right clicked. */
+  build: (work: Work) => void
+  /** From the right click's menu on the water: a warship fitted out for the tile right clicked, from my nearest port. */
+  fitOut: () => void
+  /** The piece under the pointer in the place's menu, drawn on the tile right clicked as if in hand; none. */
+  foresee: (piece: Work | 'warship' | null) => void
   /** An order about another lord: to offer or accept an alliance, renew it, or break it, or to give him an offering. */
   treat: (type: 'ally' | 'breakAlliance' | 'offering', target: number) => void
   /** The camera: one step closer (1) or farther (-1), back to the player's land. */

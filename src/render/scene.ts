@@ -1,18 +1,25 @@
-import { Container, Graphics } from 'pixi.js'
-import { UNIT, canRenew } from '../../engine'
+import { Container } from 'pixi.js'
+import { UNIT } from '../../engine'
+import { viewOf } from './camera'
+import { cullable, group } from './groups'
+import { renewalsOf } from './renewals'
 import { makeLabels } from './layers/labels'
-import { landShape, makeSea } from './layers/lands'
-import { makePeaks } from './layers/peaks'
-import { REACH, makePage } from './layers/page'
+import { landLayers } from './layers/lands'
+import { REACH } from './layers/page'
 import { makePaper } from './layers/paper'
 import { makeStamps } from './textures'
 import { makeArmies } from './armies'
 import { makeAim } from './layers/aim'
+import { makeGoals } from './layers/goals'
+import { makePlan } from './layers/plan'
+import { strategicOf } from './ground/detail'
 import { makePlanted } from './layers/planted'
-import { makeMarks } from './marks'
-import { makeBadges, tilePlaces } from './places'
-import { makeRegions } from './regions'
+import { makeMarks, tileAt } from './marks'
+import { FOREST } from './ground/terrain'
+import { makeBadges, placesEachTick } from './places'
 import { makeTrade } from './trade'
+import { makeFleets } from './layers/fleets'
+import { makeWakes } from './layers/wakes'
 import { makeTidings } from './layers/tidings'
 import { makeRaids } from './layers/raids'
 import { makeAllies } from './layers/allies'
@@ -23,17 +30,17 @@ import { makeEnvoys } from './envoys'
 import { makeBuilding } from './layers/building'
 import { makeLevySeals } from './layers/levy'
 import { makeScars } from './layers/scars'
+import { makeRoom } from './layers/room'
 import { makeStrikes } from './layers/strikes'
 import { makeVolleys } from './layers/volleys'
-import { makeBorders } from './layers/borders'
-import { makeGround } from './layers/ground'
+import { makeBase } from './base'
 import { makeLife } from './layers/life'
 import { groundOf } from './clearance'
+import type { Pointed } from './layers/aim'
 import type { Measure } from './perf'
 import type { GameState, World } from '../../engine'
 import type { Hand } from './hand'
 import type { Application } from 'pixi.js'
-import type { Placement } from './layers/labels'
 import type { Anchor } from './heralds'
 
 // The map, stacked so that what the game must make read stays above what
@@ -45,20 +52,13 @@ import type { Anchor } from './heralds'
 // ashes); the villages and the works, and their life; the borders between
 // allies in green and those at war in red; the frame; the wagons, the
 // armies and the castles' arrows falling on them, the coups on their way,
-// the aim, the standards planted in the
+// the aim, the war banners where my armies go (layers/goals.ts), the standards planted in the
 // opening, and over all each lord's name and peasants at the heart of his
 // land. An alliance broken snaps between the names, under the wagons and
 // the armies. The grain of the parchment over the whole page, moving with
 // it. Farther out than the whole land, the figures and the standards
 // shrink with it, as if the page were held farther away, a name never
 // under 16 pixels, and the standards' small writing fades out.
-
-/** Containers drawn as one render group, their batches kept until their own structure changes. */
-function group(...children: Array<Container>) {
-  const c = new Container({ isRenderGroup: true })
-  c.addChild(...children)
-  return c
-}
 
 /** The HUD's bottom row's height on screen, in pixels: the map's words fade under it. */
 const BOTTOM = 130
@@ -70,33 +70,23 @@ export function makeScene(
   state: GameState,
   names: Array<string>,
 ) {
-  const page = makePage(land)
-  const sea = makeSea(land)
-  const peaks = makePeaks(land)
-  const regions = makeRegions(state, me)
-  const ground = makeGround(land, state)
-  const borders = makeBorders(land, regions.outline)
-  // The land's one shape, laid bare and clipped to twice: the washes with
-  // the ground's tones, then the borders over the decoration.
-  const shape = landShape(land)
-  const washed = new Container()
-  washed.addChild(regions.container, ground.tinted)
-  washed.mask = washed.addChild(new Graphics(shape))
-  const lines = new Container()
-  lines.addChild(regions.stone, borders.container)
-  lines.mask = lines.addChild(new Graphics(shape))
+  const base = makeBase(land, state, me)
+  const { page, sea, peaks, regions, shape, ground, borders } = base
+  const { washed, lines, coast } = base
   const marks = makeMarks(state, me)
   const life = makeLife(ground.fieldsNear)
-  const armies = makeArmies(me)
+  // The wakes of every boat, the armies' and the ships', under them all.
+  const wakes = makeWakes()
+  const armies = makeArmies(me, wakes, (x, y) => {
+    const t = tileAt(state.grid, x, y)
+    return t >= 0 && ground.terrain.biome[t] === FOREST
+  })
   const volleys = makeVolleys(armies.menOf)
   const aim = makeAim(state, me)
   const planted = makePlanted(me)
-  // Where the lords are written, read once a tick for the names and their marks.
-  let read = { tick: -1, places: new Map() as Placement }
-  const placesOf = (s: GameState) => {
-    if (read.tick !== s.tick) read = { tick: s.tick, places: tilePlaces(s) }
-    return read.places
-  }
+  const goals = makeGoals(me)
+  const plan = makePlan(me)
+  const placesOf = placesEachTick()
   const labels = makeLabels(
     me,
     names,
@@ -108,6 +98,7 @@ export function makeScene(
   const pacts = makePacts(me, labels.nameOf)
   const envoys = makeEnvoys(state, me, labels.nameOf)
   const trade = makeTrade(makeStamps(app.renderer), me)
+  const fleets = makeFleets(me, wakes)
   const tidings = makeTidings(me)
   const allies = makeAllies(me, regions.outline)
   const lit = makeLit(regions.outline)
@@ -115,13 +106,14 @@ export function makeScene(
   const building = makeBuilding(me)
   const seals = makeLevySeals(me)
   const scars = makeScars()
+  const room = makeRoom(state, me)
   const strikes = makeStrikes(me)
   const world = new Container()
   // Each layer its own render group: what moves each frame (a man shown or
   // hidden, a seal drawn again) rebuilds its own group's batches, never the
   // washes', the borders' or the decoration's, which change a few times a
   // second at most.
-  const below = [page.container, sea.container, new Graphics(shape)]
+  const below = [page.container, sea.container, ...landLayers(land, shape)]
   if (page.compass) below.push(page.compass)
   world.addChild(
     group(...below),
@@ -130,25 +122,35 @@ export function makeScene(
       ground.container,
       trade.roads,
       lines,
-      borders.coast,
+      coast,
       peaks.container,
       lit.container,
       scars.container,
+      room.sprite,
       marks.container,
+      plan.container,
       life.container,
       allies.container,
       raids.container,
-      seals.container,
-      building.container,
+      // Over every border, the allies' and the fronts', so that none runs
+      // across a river (« y'a des frontières qui traversent le fleuve »).
+      ground.rivers,
       pacts.container,
       page.frame,
       trade.container,
+      wakes.graphics,
+      fleets.container,
+      // A village's seal and a work's gauge over the caravans passing by
+      // (« attentions aux couche le marchand passe par dessus »).
+      seals.container,
+      building.container,
       armies.container,
       volleys.container,
       strikes.container,
       tidings.container,
       aim.container,
       planted.container,
+      goals.container,
       labels.container,
       badges.container,
     ].map((layer) => group(layer)),
@@ -158,32 +160,19 @@ export function makeScene(
   app.stage.addChild(world)
 
   /** The part of the world on screen, in map units. */
-  const view = () => {
-    const k = world.scale.x
-    return {
-      left: -world.x / k,
-      top: -world.y / k,
-      right: (app.screen.width - world.x) / k,
-      bottom: (app.screen.height - world.y) / k,
-    }
-  }
+  const view = () => viewOf(world, app.screen)
 
   return {
     world,
-    /**
-     * Where the HUD lays its pieces on the map this frame: the seal of each
-     * of my alliances in its last moments, when it asks to be renewed,
-     * beside my ally's name (at the heart of his land while it is not
-     * written); the heralds of the offers made to me.
-     */
+    /** What the ear reads of the map (render/sound.ts): its ground, and the part of it on screen. */
+    ear: { terrain: ground.terrain, rivers: land.rivers, view },
+    /** Where the HUD lays its pieces on the map this frame: my alliances asking to be renewed (renewals.ts), the heralds of the offers made to me. */
     anchors(): Array<Anchor> {
-      const asking = state.alliances.flatMap((x): Array<Anchor> => {
-        if ((x.a !== me && x.b !== me) || !canRenew(state, x)) return []
-        const ally = x.a === me ? x.b : x.a
-        const at = badges.besideOf(ally) ?? placesOf(state).get(ally)
-        return at ? [{ key: `pact:${ally}`, kind: 'pact', lord: ally, at }] : []
-      })
-      return [...asking, ...envoys.anchors()]
+      const placeOf = (lord: number) => placesOf(state).get(lord)
+      return [
+        ...renewalsOf(state, me, badges.besideOf, placeOf),
+        ...envoys.anchors(),
+      ]
     },
     /** The lord whose land is lit, pointed at in the HUD's list; none. */
     light: lit.light,
@@ -202,7 +191,7 @@ export function makeScene(
     },
     /** `far`: the land's size against the whole land's, under 1 only farther out than it. */
     draw(
-      hovered: number,
+      pointed: Pointed,
       hand: Hand,
       zoom: number,
       between = 0,
@@ -211,6 +200,7 @@ export function makeScene(
       m: Measure = unmeasured,
     ) {
       const now = performance.now()
+      cullable(world)
       const retraced = m('regions', () => regions.update(now))
       const traced = retraced !== null
       const seen = view()
@@ -219,20 +209,28 @@ export function makeScene(
       m('ground', () => ground.draw(seen, zoom, now))
       m('borders', () => borders.update(retraced, zoom))
       m('lit', () => lit.draw(zoom, retraced))
+      m('room', () => room.draw(hand.work))
+      // How much the map is the strategist's: the drawn works fade for the flat icons.
+      const strategic = strategicOf(zoom * state.grid.size)
+      marks.container.alpha = 1 - strategic
+      marks.container.visible = strategic < 1
       m('marks', () => marks.update(zoom))
+      m('plan', () => plan.draw(state, zoom, strategic))
       m('life', () => life.draw(state, seen, zoom, now))
       m('allies', () => allies.draw(state, zoom, traced, now))
       m('scars', () => scars.draw(state, zoom))
       m('raids', () => raids.draw(state, zoom, traced))
       m('building', () => building.draw(state, zoom))
       m('seals', () => seals.draw(state, zoom))
-      m('trade', () => trade.draw(state, zoom, between))
-      m('armies', () => armies.draw(state, zoom, seen, between, far))
+      m('trade', () => trade.draw(state, zoom, between, strategic))
+      m('fleets', () => fleets.draw(state, between, hand.ship))
+      m('armies', () => armies.draw(state, zoom, seen, between, far, strategic))
       m('volleys', () => volleys.draw(state, zoom, seen, between))
       m('strikes', () => strikes.draw(state, zoom, between))
       m('tidings', () => tidings.draw(state, zoom))
-      m('aim', () => aim.draw(hovered, hand, zoom))
+      m('aim', () => aim.draw(pointed, hand, zoom))
       m('planted', () => planted.draw(state, zoom, now))
+      m('goals', () => goals.draw(state, zoom))
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
       m('labels', () =>
         // The bottom row's band, where the words fade under its pieces.

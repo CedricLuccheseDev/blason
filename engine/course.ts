@@ -3,8 +3,10 @@ import { isqrt } from './numbers'
 import { apart, eachAround } from './grid'
 import { isAllied } from './diplomacy'
 import { NEUTRAL } from './types'
-import { freeWorks, marchOut, menFor, paceOf, walkers } from './muster'
+import { freeWorks, marchOut, menFor, paceOf } from './muster'
+import { landingOf, sailTo } from './crossing'
 import { standing } from './land'
+import { borderOf, nearestOf, reachable, roundabout } from './frontline'
 import type { Army, Work } from './rules'
 import type { GameState } from './types'
 
@@ -23,9 +25,9 @@ import type { GameState } from './types'
 export const wideOf = (state: GameState, men: number) =>
   state.rules.bandTiles + isqrt(Math.floor(men / UNIT))
 
-/** How long an army takes to march so many tiles, in thousandths of a tick. */
-const marchTime = (state: GameState, army: Army, tiles: number) =>
-  Math.floor((tiles * 1_000_000) / paceOf(state, { army }))
+/** How long an army takes to march so far, in hundredths of a plain tile (the ground counted, paving.ts), in thousandths of a tick. */
+const marchTime = (state: GameState, army: Army, cost: number) =>
+  Math.floor((cost * 10_000) / paceOf(state, { army }))
 
 /**
  * How long an army's bulge takes to reach a tile so far from where it
@@ -50,37 +52,12 @@ const builtWorks = (state: GameState, lord: number, work: Work) =>
     .map((w) => w.tile)
 
 /** Where and how an army would go: the border tile it enters by, the village (or market) it is raised at, and its road there; with none free to reach the front, no village (-1) and no road. */
-export type Course = { entry: number; from: number; road: Array<number> }
-
-/**
- * The border an army may enter by: the target's tiles beside land the lord's
- * armies walk, each with how far it is from the tile aimed at (the square of
- * the distance).
- */
-function borderOf(
-  state: GameState,
-  player: number,
-  target: number,
-  tile: number,
-) {
-  const walks = walkers(state, player)
-  const { owner } = state
-  const gaps = new Map<number, number>()
-  const mark = (t: number) => {
-    if (owner[t] === target && !gaps.has(t))
-      gaps.set(t, apart(state.grid, t, tile))
-  }
-  for (let t = 0; t < owner.length; t++)
-    if (owner[t] >= 0 && walks[owner[t]]) eachAround(state.grid, t, mark)
-  return gaps
-}
-
-/** The tile of a border nearest the tile aimed at, the first on a tie; -1 for none. */
-function nearestOf(gaps: Map<number, number>) {
-  let [nearest, near] = [-1, Infinity]
-  for (const [t, gap] of gaps)
-    if (gap < near || (gap === near && t < nearest)) [nearest, near] = [t, gap]
-  return nearest
+/** Its entry, the village or market it is raised at (-1 for none free), its road there; `through`, the free land it takes on its way to a lord whose land its own does not touch. */
+export type Course = {
+  entry: number
+  from: number
+  road: Array<number>
+  through: boolean
 }
 
 /**
@@ -102,9 +79,30 @@ export function courseFor(
   const target = state.owner[tile]
   if (target === player || target < NEUTRAL) return null
   if (target >= 0 && isAllied(state, player, target)) return null
-  const gaps = borderOf(state, player, target, tile)
+  let gaps = borderOf(
+    state,
+    player,
+    target,
+    tile,
+    reachable(state, tile, new Set([target])),
+  )
+  // No border with the lord: the army takes the free land on its way to him
+  // first, then strikes him (« il faut quand meme pouvoir », « Prend la
+  // terre libre »).
+  const through = target >= 0 && gaps.size === 0
+  if (through)
+    gaps = borderOf(
+      state,
+      player,
+      NEUTRAL,
+      tile,
+      reachable(state, tile, new Set([target, NEUTRAL])),
+    )
+  const work = state.rules.raisedAt[army]
+  const free = freeWorks(state, player, tile, work)
+  const sites = free.length > 0 ? free : builtWorks(state, player, work)
   const nearest = nearestOf(gaps)
-  if (nearest < 0) return null
+  if (nearest < 0) return overWater(state, player, tile, sites, free.length > 0)
   const wide = wideOf(state, menFor(state, player, army))
   // No border tile brings it to the tile sooner than the nearest one's way.
   const least = crossTime(state, army, wide, gaps.get(nearest) ?? 0)
@@ -123,9 +121,6 @@ export function courseFor(
         (gap < best.gap || (gap === best.gap && t < best.entry)))
     if (sooner) Object.assign(best, { time, gap, entry: t, end: walked })
   }
-  const work = state.rules.raisedAt[army]
-  const free = freeWorks(state, player, tile, work)
-  const sites = free.length > 0 ? free : builtWorks(state, player, work)
   const roadTo = marchOut(state, player, sites, (at, steps) => {
     walked = at
     march = marchTime(state, army, steps)
@@ -137,9 +132,66 @@ export function courseFor(
   // No land it may walk from its villages touches the border: beyond its
   // reach, not the nearest border tile, an ally's across the sea maybe (« y'a
   // un souci avec le traceur bleu »).
-  if (best.entry < 0) return null
+  if (best.entry < 0)
+    return overWater(state, player, tile, sites, free.length > 0)
   const road = roadTo(best.end)
-  return { entry: best.entry, from: free.length > 0 ? road[0] : -1, road }
+  const byLand = {
+    entry: best.entry,
+    from: free.length > 0 ? road[0] : -1,
+    road,
+    through,
+  }
+  // A long way round by the land, the sea perhaps sooner (« il faut y aller
+  // a la mer dans ce cas la »): sought only when the land's road goes far
+  // round, as a search over the water costs.
+  // Round a river or a range, its band would stop at the water: the boat,
+  // if there is one (« normalement il faut pouvoir traverser les fleuves »).
+  const round = roundabout(state, best.entry, tile)
+  if (
+    !round &&
+    road.length * road.length * 4 <= apart(state.grid, road[0], tile) * 9 + 64
+  )
+    return byLand
+  const sea = overWater(state, player, tile, sites, free.length > 0)
+  if (!sea) return byLand
+  const sail =
+    marchTime(state, army, 100 * sea.road.length) +
+    crossTime(state, army, wide, apart(state.grid, sea.entry, tile))
+  return round || sail < best.time ? sea : byLand
+}
+
+/**
+ * A land no road reaches, by water (crossing.ts): the army lands on its
+ * lord's shore nearest the click; with none his land reached from the click,
+ * on the free land's, which it takes on its way to him. None with no water
+ * to it.
+ */
+function overWater(
+  state: GameState,
+  player: number,
+  tile: number,
+  sites: Array<number>,
+  free: boolean,
+): Course | null {
+  const target = state.owner[tile]
+  let landing = landingOf(
+    state,
+    target,
+    tile,
+    reachable(state, tile, new Set([target])),
+  )
+  const through = landing < 0 && target >= 0
+  if (through)
+    landing = landingOf(
+      state,
+      NEUTRAL,
+      tile,
+      reachable(state, tile, new Set([target, NEUTRAL])),
+    )
+  if (landing < 0) return null
+  const road = sailTo(state, player, sites, landing)
+  if (!road) return null
+  return { entry: landing, from: free ? road[0] : -1, road, through }
 }
 
 /** Where an army of the kind against the tile's lord, or the free land, enters (courseFor), or -1. */

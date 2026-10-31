@@ -1,10 +1,12 @@
+import { Icon } from '../hud/Figure'
 import { Countdown } from './Countdown'
 import { LandPlate } from './LandPlate'
 import { RoomTrouble, Seats } from './Seats'
 import { atPublic } from './useRoom'
-import { useUpcoming } from './useUpcoming'
+import { publicLand } from './useUpcoming'
 import type { ReactNode } from 'react'
 import type { Room, RoomActions } from './useRoom'
+import type { Heard } from './useUpcoming'
 import { Act } from '~/components/hud/Act'
 import { Inline, Panel, Stack } from '~/components/hud/Layout'
 import { Heading, Note } from '~/components/hud/Text'
@@ -40,14 +42,17 @@ export function PublicCard({
   room,
   rooms,
   online,
+  heard,
 }: Readonly<{
   room: Room
   rooms: RoomActions
   /** Whether a relay is there to play online at all. */
   online: boolean
+  /** The public game as the relay told it last (useUpcoming.ts). */
+  heard: Heard
 }>) {
-  const t = useMessages().home
-  const heard = useUpcoming()
+  const m = useMessages()
+  const t = m.home
   const game = heard.lost ? null : heard.game
   const here = atPublic(room)
   const entering = here && room.status === 'joining'
@@ -58,16 +63,15 @@ export function PublicCard({
   if (failed) status = <RoomTrouble room={room} />
   else if (!online) status = <p className="hud-note">{t.room.unavailable}</p>
   else if (heard.lost) status = <p className="hud-note">{t.public.lost}</p>
+  const land = publicLand(game)
+  const landName =
+    land.kind === 'real' ? m.book.lands[land.map] : m.book.random[land.size]
   let word = t.public.play
   if (entering) word = t.public.entering
   else if (failed) word = t.room.retry
   return (
     <Panel gap="part">
-      <LandPlate
-        seed={game?.seed ?? null}
-        size={game?.size ?? 'standard'}
-        label={t.public.land}
-      >
+      <LandPlate seed={game?.seed ?? null} land={land} label={t.public.land}>
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}
         {(ready || failed) && (
           <button
@@ -84,8 +88,9 @@ export function PublicCard({
               <Heading>{t.public.title}</Heading>
               {/* One alone in the last opening waits in this one: said even on a phone, it is why to play now. */}
               {game && game.waiting > 0 && <Note>{t.public.waiting}</Note>}
+              {/* Its land's name (« écris le nom de la map sur partie publique »). */}
               {game && game.waiting === 0 && (
-                <Note className="max-sm:hidden">{t.public.live}</Note>
+                <Note className="max-sm:hidden">{landName}</Note>
               )}
             </Stack>
           </h2>
@@ -104,6 +109,7 @@ export function PublicCard({
           className={`absolute right-2 bottom-2 ${ready || failed ? '' : 'opacity-50'}`}
         >
           <Act call asleep={!ready && !failed} onClick={() => rooms.join(null)}>
+            <Icon name="horn" size={20} />
             {word}
           </Act>
         </div>

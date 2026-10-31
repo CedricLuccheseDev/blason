@@ -26,7 +26,9 @@ export type Peaks = {
  * The high mountains of a land: of its cells, the `share` in a thousand that
  * rise the most, less the groups too small to be a range; then the passes,
  * so that the land between them stays one. `side` is how many times the
- * standard land's side this one's is.
+ * standard land's side this one's is. `join`: whether the pieces of land
+ * cut off are given a pass or sunk; a map of the Earth's islands are cut off
+ * by the sea, not by its ranges, and stay as they are (atlas.ts).
  */
 export function raisePeaks(
   cells: Cells,
@@ -35,6 +37,7 @@ export function raisePeaks(
   water: Array<boolean>,
   share: number,
   side: number,
+  join = true,
 ): Peaks {
   const area = side * side
   const land = cells.sites.flatMap((_, c) => (water[c] ? [] : [c]))
@@ -62,7 +65,7 @@ export function raisePeaks(
       passes.push(cells.sites[path[Math.floor(path.length / 2)]])
     },
   }
-  joinLand(range, POCKET * area)
+  if (join) joinLand(range, POCKET * area)
   cutRanges(range, side)
   return { peaks: [...peak].map((p) => p === 1), passes }
 }

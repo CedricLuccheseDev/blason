@@ -1,4 +1,4 @@
-import type { Standing } from '../hud/Emblem'
+import type { Standing } from '../hud/Standing'
 import type { Messages } from '~/i18n/en'
 
 /** How a lord stands with the player, as the HUD reads it: allied, at war, a felon (any of them at once). */

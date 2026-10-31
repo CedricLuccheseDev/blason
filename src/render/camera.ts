@@ -14,6 +14,20 @@ const [FAR, CLOSE] = [0.5, 9]
 
 export type Box = { left: number; top: number; right: number; bottom: number }
 
+/** The part of the world on a screen so wide and high, in world units. */
+export function viewOf(
+  world: Container,
+  screen: { width: number; height: number },
+): Box {
+  const k = world.scale.x
+  return {
+    left: -world.x / k,
+    top: -world.y / k,
+    right: (screen.width - world.x) / k,
+    bottom: (screen.height - world.y) / k,
+  }
+}
+
 export function makeCamera(
   app: Application,
   world: Container,
@@ -31,12 +45,18 @@ export function makeCamera(
   const fitZoom = () =>
     Math.min(app.screen.width / land.width, app.screen.height / land.height) *
     0.96
+  /** The land fitted to the screen laid flat, whichever way the phone is held: the closest zoom stands on it, not on the screen's narrow side (« on peut pas beaucoup zoomé », upright). */
+  const flatZoom = () => {
+    const long = Math.max(app.screen.width, app.screen.height)
+    const short = Math.min(app.screen.width, app.screen.height)
+    return Math.min(long / land.width, short / land.height) * 0.96
+  }
   // A larger land, its side so many times the standard one's, lets the
   // camera come as close as the standard land does: the detail up close
   // is the same whatever its size.
   const side = Math.sqrt(MAP_SIZES[land.size])
   /** The closest zoom. */
-  const closest = () => CLOSE * fitZoom() * side
+  const closest = () => CLOSE * flatZoom() * side
   /** A zoom within the camera's reach. */
   const within = (k: number) =>
     Math.max(FAR * fitZoom(), Math.min(closest(), k))
@@ -148,15 +168,7 @@ export function makeCamera(
     level: () => world.scale.x / fitZoom(),
     zoom: () => world.scale.x,
     /** The part of the world on screen, in world units. */
-    view() {
-      const k = world.scale.x
-      return {
-        left: -world.x / k,
-        top: -world.y / k,
-        right: (app.screen.width - world.x) / k,
-        bottom: (app.screen.height - world.y) / k,
-      }
-    },
+    view: () => viewOf(world, app.screen),
     /** One frame of the smoothing towards the wheel's target. */
     step() {
       if (aim) {

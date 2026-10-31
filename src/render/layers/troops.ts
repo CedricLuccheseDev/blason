@@ -4,8 +4,11 @@ import { TONE } from '../palette'
 import { hash } from '../pen'
 import { quality } from '../quality'
 import { SIZE, frameAt, makeFigure, pixel, shadowOf, sheetOf } from '../figures'
+import { GAP } from '../fronts'
+import { middle } from '../squads'
 import type { Box } from '../camera'
-import type { Spot } from '../fronts'
+import type { Front, Spot } from '../fronts'
+import type { Host } from '../../../engine'
 import type { Look } from '../figures'
 import type { Man, Squad } from '../squads'
 
@@ -64,7 +67,13 @@ export function traits(look: Look, seed: number, men: number) {
 
 type Body = { figure: ReturnType<typeof makeFigure>; shadow: Sprite }
 
-export function makeTroops() {
+/** How much of a man shows under the woods' canopy (« Les unités marchent sur les arbres c'est bizarre »): glimpsed through it, his standard over the trees. */
+const UNDER_WOODS = 0.35
+
+export function makeTroops(
+  /** Whether a point of the map lies under the woods. */
+  underWoods: (x: number, y: number) => boolean = () => false,
+) {
   const container = new Container()
   const dust = container.addChild(new Graphics())
   const shadows = container.addChild(new Container())
@@ -100,7 +109,8 @@ export function makeTroops() {
     figure.tone(t.tint)
     figure.box.scale.set(pixel(t.size))
     figure.box.position.set(man.x, man.y)
-    figure.box.alpha = man.alpha * squad.alpha
+    const veiled = underWoods(man.x, man.y) ? UNDER_WOODS : 1
+    figure.box.alpha = man.alpha * squad.alpha * veiled
     figure.box.zIndex = man.y
     const s = figures.shadow
     const unit = SIZE * t.size
@@ -110,7 +120,7 @@ export function makeTroops() {
     )
     shadow.width = s.rx * 2 * unit
     shadow.height = s.ry * 2 * unit
-    shadow.alpha = man.alpha * squad.alpha
+    shadow.alpha = man.alpha * squad.alpha * (veiled < 1 ? 0 : 1)
   }
 
   /** A side's men on screen: those off it are not laid at all. */
@@ -155,12 +165,7 @@ export function makeTroops() {
 
   return {
     container,
-    draw(
-      sides: Array<Drawn>,
-      lines: Array<Line>,
-      seconds: number,
-      view: Box,
-    ) {
+    draw(sides: Array<Drawn>, lines: Array<Line>, seconds: number, view: Box) {
       used = 0
       // When the frames run long, the men stand without their shadows (quality.ts).
       shadows.visible = quality().footing
@@ -174,4 +179,27 @@ export function makeTroops() {
       }
     },
   }
+}
+
+/** The lines where men fight: each front, each battle once, the dust rising before the men where they stand, who never jump. */
+export function linesOf(
+  armies: Map<Host, { troops: Squad; front: Front | null; gone: boolean }>,
+): Array<Line> {
+  const drawn: Array<Line> = []
+  const told = new Set<Host>()
+  for (const [host, army] of armies) {
+    const { front } = army
+    if (!front?.line || army.gone || told.has(host)) continue
+    if (front.foe) told.add(front.foe)
+    const men = middle(army.troops.men)
+    if (!men) continue
+    drawn.push({
+      at: { x: men.x + front.facing.x * GAP, y: men.y + front.facing.y * GAP },
+      across: { x: -front.facing.y, y: front.facing.x },
+      width: Math.ceil(army.troops.men.length / 2) * 3.6,
+      alpha: army.troops.alpha,
+      seed: host.from,
+    })
+  }
+  return drawn
 }

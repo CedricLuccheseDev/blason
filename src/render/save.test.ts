@@ -43,7 +43,13 @@ describe('a saved game', () => {
   it('gives back the game it was made from, and the same HUD to every seat', () => {
     const restored = back()
     expect(stateHash(restored)).toBe(stateHash(state))
-    const hand = { army: 'host', work: null, coup: null } as const
+    const hand = {
+      army: 'host',
+      work: null,
+      coup: null,
+      fleet: false,
+      ship: null,
+    } as const
     for (let me = 0; me < 20; me++)
       expect(summarize(restored, me, hand)).toEqual(summarize(state, me, hand))
   })
@@ -77,6 +83,7 @@ describe('a saved game', () => {
     expect(Object.keys(save.state)).not.toContain('realm')
     expect(text).toContain('"owner":{"$runs"')
     expect(text).toContain('"road":{"$path"')
-    expect(text.length).toBeLessThan(80_000)
+    // Some 81 000 since the roads keep off the water, a little longer (31/10).
+    expect(text.length).toBeLessThan(85_000)
   })
 })

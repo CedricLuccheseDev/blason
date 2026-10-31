@@ -1,4 +1,5 @@
 import { Flourish } from './Ornaments'
+import { Settings } from '~/components/game/Settings'
 import { Shield } from '~/components/hud/Emblem'
 import { Inline, Stack } from '~/components/hud/Layout'
 import { useMessages } from '~/i18n'
@@ -27,6 +28,7 @@ export function Lord() {
     <Inline className="min-h-11">
       <Shield color="var(--color-gilt)" size="m" />
       <span className="hud-name">{t.lord}</span>
+      <Settings up />
     </Inline>
   )
 }

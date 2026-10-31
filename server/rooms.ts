@@ -1,13 +1,17 @@
 import { randomBytes } from 'node:crypto'
 import {
+  ATLAS_MAPS,
   SETUP_LIMITS,
   botsSetup,
+  lordsFor,
   publicSetup,
   readSetup,
   seatPersons,
+  sizeOf,
 } from '../engine'
 import { SEATS, TURN_MS } from '../net/protocol'
-import { fingerprints, isMove, tell } from './checks'
+import { isMove, tell } from './checks'
+import { unwatch, watch } from './watch'
 import {
   beginning,
   broadcast,
@@ -17,6 +21,7 @@ import {
   seated,
   started,
 } from './room'
+import type { Land } from '../engine'
 import type { Player, Room } from './room'
 import type { Lobby, ToRelay, Upcoming } from '../net/protocol'
 
@@ -57,11 +62,25 @@ function freeCode(): string {
 
 const freshSeed = () => `online-${randomBytes(6).toString('hex')}`
 
+/** The lands the public games turn through, one each, in turn (« les parties publiques fait les tourné avec toutes les maps pas que les random »): the random ones at each size, and every map of the atlas. */
+const PUBLIC_LANDS: ReadonlyArray<Land> = [
+  { kind: 'drawn', size: 'standard' },
+  ...ATLAS_MAPS.map((map): Land => ({ kind: 'real', map })),
+  { kind: 'drawn', size: 'small' },
+  { kind: 'drawn', size: 'large' },
+]
+let turned = 0
+
 /** The public game in its opening; when none is, one opens and begins, so that there always is one to see or to join. */
 function publicGame(): Room {
   if (open) return open
-  const room = makeRoom('PUBLIC', publicSetup(freshSeed()))
-  room.players = Array.from({ length: SEATS }, () => null)
+  const land = PUBLIC_LANDS[turned++ % PUBLIC_LANDS.length]
+  // As many seats as its land suits, never more than a public game holds.
+  const lords = Math.min(SEATS, lordsFor(land)[1])
+  const room = watch(
+    makeRoom('PUBLIC', publicSetup(freshSeed(), land, lords)),
+  )
+  room.players = Array.from({ length: lords }, () => null)
   room.played = []
   open = room
   run(room)
@@ -73,11 +92,12 @@ export function upcoming(): Upcoming {
   const room = publicGame()
   return {
     seed: room.setup.seed,
-    size: room.setup.land.size,
+    size: sizeOf(room.setup.land),
+    ...(room.setup.land.kind === 'real' ? { map: room.setup.land.map } : {}),
     closesIn: Math.max(0, JOIN_TURNS - room.turn) * TURN_MS,
     startsIn: Math.max(0, SETUP_LIMITS.opening.public - room.turn) * TURN_MS,
     taken: seated(room),
-    seats: SEATS,
+    seats: room.setup.seats.length,
     waiting: room.players.filter((p) => p && room.waited.has(p)).length,
   }
 }
@@ -124,18 +144,22 @@ function again(room: Room) {
   const player = room.players[seat]
   if (!player) return
   const standard = room.planted.get(seat)
-  room.turn = 0
-  room.pending = standard ? [standard] : []
-  room.joined = [seat]
-  room.left = []
-  room.played = []
-  room.prints = fingerprints()
-  room.planted = new Map(standard ? [[seat, standard]] : [])
-  room.waited = new Set([player])
+  // A new game from a fresh room, its players and its clock kept: no field
+  // of the last opening carried into this one.
+  Object.assign(room, makeRoom(room.code, room.setup), {
+    players: room.players,
+    timer: room.timer,
+    pending: standard ? [standard] : [],
+    joined: [seat],
+    played: [],
+    planted: new Map(standard ? [[seat, standard]] : []),
+    waited: new Set([player]),
+  })
   player.send(beginning(room, seat))
 }
 
 function close(room: Room) {
+  unwatch(room)
   if (room.timer) clearInterval(room.timer)
   if (privates.get(room.code) === room) privates.delete(room.code)
   if (open === room) open = null
@@ -157,7 +181,7 @@ function sit(player: Player, room: Room): Room {
   if (!drop(room.left, seat)) room.joined.push(seat)
   player.send(beginning(room, seat))
   for (const turn of room.played ?? []) player.send(turn)
-  if (seated(room) >= SEATS) closeDoors(room)
+  if (seated(room) >= room.setup.seats.length) closeDoors(room)
   return room
 }
 
@@ -166,9 +190,11 @@ export function join(player: Player, code: string | null): Room | null {
   if (code === null) return sit(player, publicGame())
   // A bot in every seat no player takes, as before the host's book sets it.
   const made = () =>
-    makeRoom(
-      freeCode(),
-      botsSetup({ seed: freshSeed(), opening: SETUP_LIMITS.opening.public }),
+    watch(
+      makeRoom(
+        freeCode(),
+        botsSetup({ seed: freshSeed(), opening: SETUP_LIMITS.opening.public }),
+      ),
     )
   const room = code === 'new' ? made() : privates.get(code.toUpperCase())
   if (!room) {

@@ -6,10 +6,13 @@ import { NEUTRAL } from '../types'
 import { hired } from '../armies'
 import { menFor } from '../muster'
 import { canBuild, priceOf } from '../works'
+import { byWater } from '../ships'
+import { navy } from './fleet'
 import { TALK_EVERY, talk } from './talk'
 import { attack, canHire, war } from './war'
 import { SKILLS } from './levels'
 import { plot } from './coups'
+import { freeAfar } from './shores'
 import type { Level, Skill } from './levels'
 import type { Work } from '../rules'
 import type { GameState, Order } from '../types'
@@ -85,9 +88,14 @@ function placeFor(
 ): number {
   let best = -1
   let score = -Infinity
+  // A port only by the water: drawn among its shore, not the whole map.
+  const shore = work === 'port' ? shoreOf(state, me) : null
   for (let k = 0; k < 60; k++) {
-    const t = drawInt(state.seed, state.owner.length, 'site', me, state.tick, k)
-    if (!canBuild(state, me, t, work)) continue
+    const t = shore
+      ? (shore[drawInt(state.seed, shore.length, 'shore', me, state.tick, k)] ??
+        -1)
+      : drawInt(state.seed, state.owner.length, 'site', me, state.tick, k)
+    if (t < 0 || !canBuild(state, me, t, work)) continue
     const near = borders.reduce(
       (m, b) => Math.min(m, apart(state.grid, b, t)),
       1e12,
@@ -99,6 +107,15 @@ function placeFor(
     }
   }
   return best
+}
+
+/** The lord's tiles by the water, where a port may stand. */
+function shoreOf(state: GameState, me: number): Array<number> {
+  const shore: Array<number> = []
+  state.owner.forEach((o, t) => {
+    if (o === me && byWater(state.grid, t)) shore.push(t)
+  })
+  return shore
 }
 
 /** A bot builds as a player would, at the measure of its land: beyond its first two works, one for so many tiles it holds, those it took with the land counted. */
@@ -127,6 +144,9 @@ function construct(
     if (drawInt(state.seed, 100, 'build', me, state.tick) >= thrift) return []
     const roll = drawInt(state.seed, 100, 'work', me, state.tick)
     if (roll >= 45) work = 'market'
+    // A port, one at first, more as the land grows, if it has a shore.
+    const ports = 1 + Math.floor(state.players[me].tiles / (4 * ROOM))
+    if (roll >= 85 && worksOf(state, me, 'port') < ports) work = 'port'
     if (enemies.length && roll < 25) work = 'castle'
   }
   if (state.players[me].gold < (priceOf(state, me, work) + 40) * 1000) return []
@@ -161,8 +181,30 @@ export function createBot(
   const thrift = 20 + drawInt(seed, 40, 'thrift', self) + skill.thrift
   const seen = new Map<number, number>()
   let rest = 0
+  /** The tick before which it acts no more: its pause after its last act. */
+  let ready = 0
 
-  return (state, me) => {
+  /** Its army out, once its peasants are full enough and its rest over: to the free land, or to war; its rest begins. */
+  const strike = (
+    state: GameState,
+    me: number,
+    fronts: Map<number, Array<number>>,
+  ): Array<Order> => {
+    const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
+    if (state.tick < rest || !full || !armed(state, me)) return []
+    // The free land at its border; else, the free land it reaches by boat.
+    const free = fronts.get(NEUTRAL) ?? freeAfar(state, me) ?? undefined
+    const orders = free
+      ? expand(state, me, free)
+      : war(state, me, fronts, boldness, skill.slips, skill.hunters)
+    if (orders.length === 0) return orders
+    const drawn = drawInt(state.seed, 100, 'rest', me, state.tick)
+    rest =
+      state.tick + Math.floor((((free ? 50 : 60) + drawn) * skill.rest) / 100)
+    return orders
+  }
+
+  const decide: Bot = (state, me) => {
     if ((state.tick + me) % skill.every !== 0) return []
     if (state.tick < state.rules.openingTicks) return opening(state, me)
     const answered = answer(state, me, seen, skill)
@@ -176,22 +218,22 @@ export function createBot(
     }
     const built = construct(state, me, fronts, thrift)
     if (built.length) return built
-    const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
-    if (state.tick < rest || !full) return []
-    if (!armed(state, me)) return []
-    const free = fronts.get(NEUTRAL)
-    const orders = free
-      ? expand(state, me, free)
-      : war(state, me, fronts, boldness, skill.slips, skill.hunters)
-    if (orders.length)
-      rest =
+    const fitted = navy(state, me)
+    if (fitted.length) return fitted
+    return strike(state, me, fronts)
+  }
+
+  // A pause after each act, drawn within its level's: never two at once.
+  return (state, me) => {
+    if (state.tick < ready) return []
+    const orders = decide(state, me)
+    if (orders.length > 0) {
+      const [least, most] = skill.pause
+      ready =
         state.tick +
-        Math.floor(
-          (((free ? 50 : 60) +
-            drawInt(state.seed, 100, 'rest', me, state.tick)) *
-            skill.rest) /
-            100,
-        )
+        least +
+        drawInt(state.seed, most - least + 1, 'pause', me, state.tick)
+    }
     return orders
   }
 }
