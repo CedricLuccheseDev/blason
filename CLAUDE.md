@@ -63,7 +63,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   - `map/` le générateur de carte (une graine, la même terre partout ; ses cellules s'appellent encore `fiefs`) ; `map/atlas.ts`
     l'atlas (sa table dans `map/earth.ts` ; les terres de légende, Terre du Milieu et Westeros, dessinées de notre main par `scripts/legend.ts`, 30/10), les cartes de la vraie Terre (30/10, « faire des maps de la vrai terre », l'Europe d'abord) : leur sol cuit des
     hauteurs du monde (ETOPO 2022, NOAA) et leurs grands lacs et fleuves (Natural Earth), domaine public, par
-    `scripts/atlas.ts` dans `map/atlas/` ; chacune sa propre taille et les seigneurs qu'elle sied (« chaque carte a sa propre
+    `scripts/atlas.ts` dans `map/atlas/` (leurs fleuves seuls refaits par `scripts/rivers.ts`, plus fins sur une petite carte, 31/10 « il faut faire les fleuves dans les cartes France, britannique », chacun prolongé jusqu'à l'eau où il se jette) ; chacune sa propre taille et les seigneurs qu'elle sied (« chaque carte a sa propre
     taille »), ses îles gardées à part et ses détroits ouverts, nommés (« l'irlande est connecté a l'angleterre … »), ses
     hautes montagnes sur les vraies chaînes (le relief local ; détroits et chaînes posés sur le cadre, `map/landmarks.ts`), ses vrais fleuves ; une partie dit sa terre par `Land`
     (`types.ts` : inventée à une taille, ou une carte de l'atlas), le livre les range par taille et dit laquelle convient ;

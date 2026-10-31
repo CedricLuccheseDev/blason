@@ -134,21 +134,74 @@ export function atlasLand(atlas: Atlas) {
   }
 }
 
-/** A map's main rivers on its frame, in map units, and the cells along their banks (the woods lie by them, ground.ts). */
+/** How far a river's mouth may lie from the water, in map units, and still be run on into it: the rivers end on the world's coast, the map's lies a little off it. */
+const MOUTH = 40
+/** The shortest a river is kept, in map units: a stub cut by the frame or simplified away reads as no river. */
+const SHORTEST = 24
+
+/** Whether a course runs at least so far, end to end along it. */
+function long(course: Array<Point>, least: number): boolean {
+  let run = 0
+  for (let i = 1; i < course.length; i++) {
+    const [dx, dy] = [
+      course[i][0] - course[i - 1][0],
+      course[i][1] - course[i - 1][1],
+    ]
+    run += isqrt(Math.round(dx * dx + dy * dy))
+    if (run >= least) return true
+  }
+  return false
+}
+
+/**
+ * A river run on into the water its mouth lies by: the map's coast, drawn
+ * from the heights, lies a little off the coast the rivers end on, and a
+ * river stopping short of the sea left a strip of land no boat crosses (« les
+ * fleuves … pour ajouter des ports »). Its course turned round first if its
+ * other end lies nearer the water.
+ */
+function intoWater(
+  course: Array<Point>,
+  water: (x: number, y: number) => number,
+  sites: Cells['sites'],
+): Array<Point> {
+  /** The square of a point's distance to the water nearest it. */
+  const gap = ([x, y]: Point) => {
+    const c = water(x, y)
+    if (c < 0) return Infinity
+    const [dx, dy] = [sites[c][0] - x, sites[c][1] - y]
+    return dx * dx + dy * dy
+  }
+  const down =
+    gap(course[0]) < gap(course[course.length - 1])
+      ? [...course].reverse()
+      : course
+  const [x, y] = down[down.length - 1]
+  const c = water(x, y)
+  if (c < 0 || gap(down[down.length - 1]) > MOUTH * MOUTH) return down
+  return [...down, [sites[c][0], sites[c][1]]]
+}
+
+/** A map's main rivers on its frame, in map units, each run on into the water by its mouth, and the cells along their banks (the woods lie by them, ground.ts). */
 export function riversOf(
   atlas: Atlas,
   cells: Cells,
   width: number,
   height: number,
+  water: Array<boolean>,
 ): { courses: Array<Array<Point>>; banks: Set<number> } {
   const { sheet } = ATLAS[atlas]
   // Its rivers in tenths of a degree.
   const at = framed(sheet, width, height)
-  const courses = sheet.rivers.map((r) =>
-    Array.from({ length: r.length / 2 }, (_, i) =>
-      at(r[2 * i] / 10, r[2 * i + 1] / 10),
-    ),
-  )
+  const wet = nearestSite(cells, width, (c) => water[c])
+  const courses = sheet.rivers
+    .map((r) =>
+      Array.from({ length: r.length / 2 }, (_, i) =>
+        at(r[2 * i] / 10, r[2 * i + 1] / 10),
+      ),
+    )
+    .filter((course) => long(course, SHORTEST))
+    .map((course) => intoWater(course, wet, cells.sites))
   const nearest = nearestSite(cells, width)
   const banks = new Set<number>()
   for (const course of courses)
@@ -156,12 +209,17 @@ export function riversOf(
   return { courses, banks }
 }
 
-/** The cell whose site is nearest a point, found among buckets of the frame. */
-function nearestSite(cells: Cells, width: number) {
+/** The cell whose site is nearest a point, of those kept, found among buckets of the frame; -1 for none near. */
+function nearestSite(
+  cells: Cells,
+  width: number,
+  keep: (c: number) => boolean = () => true,
+) {
   const SIDE = 40
   const across = Math.ceil(width / SIDE) + 1
   const buckets = new Map<number, Array<number>>()
   cells.sites.forEach(([x, y], c) => {
+    if (!keep(c)) return
     const key = Math.floor(y / SIDE) * across + Math.floor(x / SIDE)
     const list = buckets.get(key)
     if (list) list.push(c)
@@ -169,7 +227,7 @@ function nearestSite(cells: Cells, width: number) {
   })
   return (x: number, y: number) => {
     const [bx, by] = [Math.floor(x / SIDE), Math.floor(y / SIDE)]
-    let [best, near] = [0, Infinity]
+    let [best, near] = [-1, Infinity]
     for (let dy = -1; dy <= 1; dy++)
       for (let dx = -1; dx <= 1; dx++)
         for (const c of buckets.get((by + dy) * across + bx + dx) ?? []) {

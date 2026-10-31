@@ -1,4 +1,6 @@
 import { writeFileSync } from 'node:fs'
+import { EARTH, features, partsOf, riversWithin } from './earth'
+import type { Coords, Feature } from './earth'
 
 // The atlas's grounds baked from the world's heights: ETOPO 2022 (NOAA,
 // public domain), read through NOAA's ERDDAP server, one point every 0.2
@@ -29,57 +31,8 @@ const [
 const STRIDE = Number(minutes)
 /** The height the bytes reach, in metres: higher is as high. */
 const TOP = 4000
-/** The rivers and lakes kept, by Natural Earth's rank: the greater, the lower. */
-const RANK = 7
 /** The fewest points a piece of the lands named keeps to live. */
 const CRUMB = 8
-/** How far a river may stray from its drawn line once simplified, in degrees. */
-const STRAY = 0.06
-const EARTH =
-  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/'
-
-type Coords = Array<[number, number]>
-type Feature = {
-  properties: { scalerank?: number }
-  geometry: { type: string; coordinates: unknown } | null
-}
-
-/** The lines or rings of a feature, whatever its geometry. */
-function partsOf(f: Feature): Array<Coords> {
-  const g = f.geometry
-  if (!g) return []
-  const c = g.coordinates as never
-  if (g.type === 'LineString') return [c]
-  if (g.type === 'MultiLineString' || g.type === 'Polygon') return c
-  if (g.type === 'MultiPolygon') return (c as Array<Array<Coords>>).flat()
-  return []
-}
-
-/** A line with its points fewer, none more than STRAY off it (Douglas and Peucker). */
-function simplify(line: Coords): Coords {
-  if (line.length < 3) return line
-  const [a, b] = [line[0], line[line.length - 1]]
-  let [far, at] = [0, 0]
-  for (let i = 1; i < line.length - 1; i++) {
-    const [x, y] = line[i]
-    const d =
-      Math.abs((b[0] - a[0]) * (a[1] - y) - (a[0] - x) * (b[1] - a[1])) /
-      (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1)
-    if (d > far) [far, at] = [d, i]
-  }
-  if (far <= STRAY) return [a, b]
-  return [
-    ...simplify(line.slice(0, at + 1)).slice(0, -1),
-    ...simplify(line.slice(at)),
-  ]
-}
-
-const features = async (layer: string): Promise<Array<Feature>> =>
-  (
-    (await (await fetch(`${EARTH}ne_10m_${layer}.geojson`)).json()) as {
-      features: Array<Feature>
-    }
-  ).features.filter((f) => (f.properties.scalerank ?? 99) <= RANK)
 
 const url =
   'https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.csv?altitude' +
@@ -239,18 +192,7 @@ const deadBits = dead
     ).toString('base64')
   : null
 // The main rivers within the frame, cut where they leave it, in tenths of a degree.
-const rivers = (await features('rivers_lake_centerlines'))
-  .flatMap(partsOf)
-  .flatMap((line) => {
-    const runs: Array<Coords> = [[]]
-    for (const p of line)
-      if (inside(p)) runs[runs.length - 1].push([p[0], p[1]])
-      else if (runs[runs.length - 1].length) runs.push([])
-    return runs.filter((r) => r.length > 1).map(simplify)
-  })
-  .map((line) =>
-    line.flatMap(([x, y]) => [Math.round(x * 10), Math.round(y * 10)]),
-  )
+const rivers = await riversWithin([w, e, s, n])
 const b64 = Buffer.from(bytes).toString('base64')
 const lines = b64.match(/.{1,76}/g) ?? []
 const Name = name.toUpperCase()

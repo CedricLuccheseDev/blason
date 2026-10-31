@@ -113,11 +113,6 @@ function sketch(
   const land = cells(world.land)
   g.fillStyle = css(TONE.page)
   g.fill(land)
-  // The dead land, others' than the map's own, brown-black (layers/lands.ts).
-  if (world.dead.length > 0) {
-    g.fillStyle = css(DEAD)
-    g.fill(cells(world.dead))
-  }
   // The darker lands washed in, kept within the coast.
   g.save()
   g.clip(land)
@@ -127,6 +122,12 @@ function sketch(
   g.drawImage(soft, 0, 0, width, height)
   g.restore()
   sketchRivers(g, world, px, LINE, INK)
+  // The dead land, others' than the map's own, brown-black (layers/lands.ts), over the rivers, which are
+  // the land in play's alone.
+  if (world.dead.length > 0) {
+    g.fillStyle = css(DEAD)
+    g.fill(cells(world.dead))
+  }
   mountains(g, world, px)
   g.lineWidth = INK * px
   g.strokeStyle = css(TONE.ink)

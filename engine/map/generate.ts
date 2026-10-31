@@ -148,7 +148,7 @@ export function generateWorld(
   const borders = makeBorders(seed, cells, water, count > FINE ? 2 : 0)
   // A map of the Earth has its own rivers; an invented land, its own.
   const rivers = atlas
-    ? riversOf(atlas, cells, width, height)
+    ? riversOf(atlas, cells, width, height, water)
     : makeRivers(
         seed,
         cells,
