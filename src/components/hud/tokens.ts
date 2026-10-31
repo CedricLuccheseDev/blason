@@ -67,7 +67,7 @@ export const SHIELD = {
 /** A seal's, a medallion's or a lozenge's radius: on the bar, in the cartouche, at its largest. */
 export const SEAL = { xs: 13, s: 18, l: 26 } as const
 
-/** An act's medallion on a thin line of a list (the right click's menu): its side, the cartouche's medallion drawn smaller. */
+/** An act's medallion in the cartouche by the pointer, among the mouse's signs: its side, drawn smaller. */
 export const LINE_MEDALLION = 28
 
 /** A badge of standing (an ally, a foe, a felon): its diameter, beside a name in a list or on a sheet. */

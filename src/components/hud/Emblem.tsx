@@ -121,31 +121,45 @@ export function WorkEmblem({
 }
 
 /**
- * An act's medallion on a thin line of a list, ringed in the colour of what
- * it does (the right click's menu: an attack in gules, an alliance in green,
- * an offering in gold): the cartouche's medallion, drawn smaller.
+ * An act's medallion in the right click's menu, ringed in the colour of what
+ * it does (an attack in gules, an alliance in green, an offering in gold): as
+ * large as the bar's pieces and the works of the menu on one's own land, so
+ * that both menus are one design (« c'est pas le même design »), round as an
+ * act is, where a work is square.
  */
 export function ActMedallion({
   icon,
   ring,
   dim = false,
-}: Readonly<{ icon: Mark; ring: string; dim?: boolean }>) {
-  // The cartouche's box, laid out smaller.
-  const side = boxOf('s')
-  const c = side / 2
+  small = false,
+}: Readonly<{
+  icon: Mark
+  ring: string
+  dim?: boolean
+  /** In the cartouche by the pointer, among the mouse's signs: smaller. */
+  small?: boolean
+}>) {
+  if (small) {
+    const c = boxOf('s') / 2
+    return (
+      <svg
+        viewBox={`0 0 ${2 * c} ${2 * c}`}
+        style={{
+          width: scaled(LINE_MEDALLION),
+          height: scaled(LINE_MEDALLION),
+          filter: SHADOW,
+        }}
+        aria-hidden="true"
+        className="shrink-0 overflow-visible"
+      >
+        <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} dim={dim} />
+      </svg>
+    )
+  }
   return (
-    <svg
-      viewBox={`0 0 ${side} ${side}`}
-      style={{
-        width: scaled(LINE_MEDALLION),
-        height: scaled(LINE_MEDALLION),
-        filter: SHADOW,
-      }}
-      aria-hidden="true"
-      className="shrink-0 overflow-visible"
-    >
-      <Medallion cx={c} cy={c} r={SEAL.s} icon={icon} ring={ring} dim={dim} />
-    </svg>
+    <Round size="s" held={false}>
+      {(at) => <Medallion {...at} icon={icon} ring={ring} dim={dim} />}
+    </Round>
   )
 }
 

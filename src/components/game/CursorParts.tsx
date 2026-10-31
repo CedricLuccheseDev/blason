@@ -71,8 +71,8 @@ export function MenuHint() {
   return (
     <div className="opacity-50" title={m.menu.options}>
       <Inline gap="hair">
-        <ActMedallion icon="links" ring="var(--color-pact)" />
-        <ActMedallion icon="market" ring="var(--color-gilt)" />
+        <ActMedallion icon="links" ring="var(--color-pact)" small />
+        <ActMedallion icon="market" ring="var(--color-gilt)" small />
       </Inline>
     </div>
   )
