@@ -45,6 +45,8 @@ export type GameHandle = {
   build: (work: Work) => void
   /** From the right click's menu on the water: a warship fitted out for the tile right clicked, from my nearest port. */
   fitOut: () => void
+  /** The piece under the pointer in the place's menu, drawn on the tile right clicked as if in hand; none. */
+  foresee: (piece: Work | 'warship' | null) => void
   /** An order about another lord: to offer or accept an alliance, renew it, or break it, or to give him an offering. */
   treat: (type: 'ally' | 'breakAlliance' | 'offering', target: number) => void
   /** The camera: one step closer (1) or farther (-1), back to the player's land. */

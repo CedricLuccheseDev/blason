@@ -80,8 +80,13 @@ export function arrowHead(
 /** The target's cross's radius, in pixels. */
 const CROSS = 9
 
-/** A red target's cross where the army strikes: a ring, four ticks across it, a dot at its heart. */
-export function targetCross(g: Graphics, at: At, zoom: number) {
+/** A target's cross, red where the army strikes, gold where a work may be built from the right click's menu: a ring, four ticks across it, a dot at its heart. */
+export function targetCross(
+  g: Graphics,
+  at: At,
+  zoom: number,
+  tone: number = TONE.fight,
+) {
   const [r, tick] = [CROSS / zoom, 5 / zoom]
   g.circle(at.x, at.y, r)
   for (const [dx, dy] of [
@@ -96,11 +101,11 @@ export function targetCross(g: Graphics, at: At, zoom: number) {
     )
   g.stroke({ width: 3.8 / zoom, color: TONE.ink, cap: 'round' }).stroke({
     width: 2.8 / zoom,
-    color: TONE.fight,
+    color: tone,
     cap: 'round',
   })
   g.circle(at.x, at.y, 2.4 / zoom)
-    .fill(TONE.fight)
+    .fill(tone)
     .stroke({
       width: 1 / zoom,
       color: TONE.ink,

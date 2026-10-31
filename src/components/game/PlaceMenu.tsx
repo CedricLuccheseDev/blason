@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { SealEmblem, Shield, WorkEmblem } from '../hud/Emblem'
 import { Caption, Inline, Panel } from '../hud/Layout'
 import { Name } from '../hud/Text'
@@ -20,7 +21,10 @@ import { useMessages } from '~/i18n'
  * dans la bar en bas »): the works that may stand on the tile, or a warship
  * to fit out for the water. The piece under the pointer lights its sister in
  * the bar (« si t'hover les boutons ça hover en bas aussi »), so that a new
- * player learns where it is. What cannot be paid is at half ink; a piece
+ * player learns where it is, and is drawn on the tile as if in hand, red
+ * where it may not stand, where it may ringed in gold (« survoler les
+ * constructions montre la preview et si c'est possible comme quand on l'a
+ * dans la main »), under a gold target where it was right clicked. What cannot be paid is at half ink; a piece
  * taken builds there, or sends the warship, and the menu closes.
  */
 export function PlaceMenu({
@@ -46,6 +50,10 @@ export function PlaceMenu({
   const m = useMessages()
   const { box, place, narrow } = useBeside(floor)
   useFar(box, onLeave, !narrow)
+  // Closed under the pointer (Escape, a piece taken), nothing lit or drawn is left behind.
+  const echo = useRef(onEcho)
+  echo.current = onEcho
+  useEffect(() => () => echo.current(null), [])
   const { me, fleet } = summary
   if (!me) return null
   const title = aim.sea ? m.menu.sea : m.menu.build

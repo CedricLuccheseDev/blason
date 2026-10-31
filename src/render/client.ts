@@ -138,14 +138,8 @@ export async function mountGame(
     camera.step()
     // Farther than the whole land, the names shrink with it.
     const far = Math.min(1, camera.level())
-    scene.draw(
-      pin.hovered(),
-      hand.hand,
-      camera.zoom(),
-      between,
-      far,
-      perf.measure,
-    )
+    const { pointed, held } = pin.drawn(hand.hand)
+    scene.draw(pointed, held, camera.zoom(), between, far, perf.measure)
     const now = performance.now() / 1000
     heralds.show([...scene.anchors(), ...notes.anchors(now)])
     // The figures are read once a second, as every figure of the game.
@@ -222,6 +216,7 @@ export async function mountGame(
       if (tile >= 0) session.send({ player: me, type: 'build', tile, work })
       pin.close()
     },
+    foresee: pin.foresee,
     fitOut() {
       const tile = pin.menuAt()
       if (tile >= 0) session.send({ player: me, type: 'warship', tile })

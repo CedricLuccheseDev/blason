@@ -192,7 +192,10 @@ export function GameScreen({
               onBuild={game.build}
               onFitOut={game.fitOut}
               onLeave={game.leave}
-              onEcho={setEcho}
+              onEcho={(piece) => {
+                setEcho(piece)
+                game.foresee(piece)
+              }}
             />
           )}
           {aim?.pinned && aim.lord !== null && (

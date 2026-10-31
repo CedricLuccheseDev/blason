@@ -33,6 +33,9 @@ import type { Hand } from '../hand'
 
 type At = { x: number; y: number }
 
+/** The tile aimed at: under the pointer, or the one a right click pinned the place's menu on, its target drawn there. */
+export type Pointed = { tile: number; pinned: boolean }
+
 /** How far a work reaches, in tiles, for those that reach: a castle holds its land, a market trades. */
 const REACH: Partial<Record<Work, (state: GameState) => number>> = {
   castle: (state) => state.rules.castleRadius,
@@ -201,12 +204,20 @@ export function makeAim(state: GameState, me: number) {
 
   return {
     container,
-    draw(hovered: number, hand: Hand, zoom: number) {
+    draw({ tile: hovered, pinned }: Pointed, hand: Hand, zoom: number) {
       marks.clear()
       ghost.clear()
       ghost.visible = false
       coups.clear()
       if (me < 0 || !state.players[me].alive) return
+      // The place's menu open: its target where it was right clicked, under
+      // the work its pointer is on, drawn as in hand (« survoler les
+      // constructions montre la preview et si c'est possible »).
+      if (pinned) {
+        targetCross(marks, siteOf(state, hovered), zoom, TONE.gold)
+        if (hand.work) building(hovered, hand.work, zoom)
+        return
+      }
       const opened = state.tick >= state.rules.openingTicks
       // The reach of a coup in hand shows even with the pointer off the land.
       if (opened && hand.coup && hovered < 0) coups.band(hand.coup)

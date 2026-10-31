@@ -36,6 +36,7 @@ import { makeVolleys } from './layers/volleys'
 import { makeBase } from './base'
 import { makeLife } from './layers/life'
 import { groundOf } from './clearance'
+import type { Pointed } from './layers/aim'
 import type { Measure } from './perf'
 import type { GameState, World } from '../../engine'
 import type { Hand } from './hand'
@@ -190,7 +191,7 @@ export function makeScene(
     },
     /** `far`: the land's size against the whole land's, under 1 only farther out than it. */
     draw(
-      hovered: number,
+      pointed: Pointed,
       hand: Hand,
       zoom: number,
       between = 0,
@@ -227,7 +228,7 @@ export function makeScene(
       m('volleys', () => volleys.draw(state, zoom, seen, between))
       m('strikes', () => strikes.draw(state, zoom, between))
       m('tidings', () => tidings.draw(state, zoom))
-      m('aim', () => aim.draw(hovered, hand, zoom))
+      m('aim', () => aim.draw(pointed, hand, zoom))
       m('planted', () => planted.draw(state, zoom, now))
       m('goals', () => goals.draw(state, zoom))
       const fit = Math.max(0.45, Math.min(1, app.screen.width / 1280))
