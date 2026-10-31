@@ -25,7 +25,9 @@ try {
     deviceScaleFactor: SHARP,
   })
   // Any page of the site: only its modules are imported there.
-  await page.goto('http://localhost:3107/blog', { waitUntil: 'domcontentloaded' })
+  await page.goto('http://localhost:3107/blog', {
+    waitUntil: 'domcontentloaded',
+  })
   const plates = await page.evaluate(
     async ([width, height]) => {
       const { ATLAS_MAPS } = await import('/engine/index.ts')
