@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { whenIdle } from './idle'
 import type { Land } from '../../../engine'
 
-// The home's one land (« y'a qu'une map et la section montre la map au
-// centre par rapport à sa position, pour faire une continuité »): the public
-// game's land drawn once over the whole screen, held still behind the page,
-// blurred and washed into the parchment; the card of the game a window on it
-// (LandPlate's `through`), the very part under the card, sharp. Drawn anew
-// for a new seed and when the screen changes size.
-
-/** The land drawn, and the seed it was drawn from: what a window copies. */
-export type Drawn = { canvas: HTMLCanvasElement; seed: string }
+// The home's land behind it (« la carte de la partie publique nette dans sa
+// section, et le reste de la terre flouté derrière »; one land seen through
+// the card was tried, « c'était mieux avant avec les 2 maps »): the public
+// game's land drawn large over the whole screen, held still behind the
+// page, blurred and washed into the parchment, while its card draws it
+// whole and sharp. Drawn anew for a new seed and when the screen changes
+// size.
 
 /** The land behind, out of focus: Cédric's own ask (« le reste de la terre flouté derrière »), the card alone sharp. */
 const BEHIND = 'size-full blur-[9px] saturate-[0.85]' // norm-ok: the home's land behind its card, out of focus by design (31/10).
@@ -21,11 +19,9 @@ const SETTLE = 250
 export function HomeLand({
   seed,
   land,
-  onDrawn,
 }: Readonly<{
   seed: string | null
   land: Land
-  onDrawn: (drawn: Drawn) => void
 }>) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const landKey = land.kind === 'real' ? land.map : land.size
@@ -44,7 +40,6 @@ export function HomeLand({
         stop = whenIdle(() => {
           sketchGame(element, seed, land)
           setShown(seed)
-          onDrawn({ canvas: element, seed })
         }, 1000)
       })
     }

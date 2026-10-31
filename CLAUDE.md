@@ -188,7 +188,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
 - `src/routes/index.tsx` : l'accueil, fait comme celui d'OpenFront dans nos matières (acté le 28/10, « Fais un
   système comme openfront en adapté pour nous pour la home »), allégé le 29/10 (« la partie en arrière-plan est de
   trop je pense, et le layout peut être mieux fait ») : plus de partie de bots derrière, la page du jeu seule, son
-  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`) ; depuis le 31/10, une seule terre sous toute la page, celle de la partie publique, floutée, dont la carte de la partie est une fenêtre nette à sa place même (« y'a qu'une map et la section montre la map au centre par rapport à sa position pour faire une continuité », `HomeLand.tsx`, le `through` de `LandPlate.tsx`). Le nom du jeu seul (sa ligne
+  parchemin, son cadre et une rose des vents pâle dans le coin (`Ornaments.tsx`) ; depuis le 31/10, la terre de la partie publique en grand sous toute la page, floutée, et nette et entière dans sa carte (« la carte de la partie publique nette dans sa section, et le reste de la terre flouté derrière » ; une seule terre vue par la carte essayée, « c'était mieux avant avec les 2 maps », `HomeLand.tsx`). Le nom du jeu seul (sa ligne
   viendra avec les titres et les mots, « retire la catchline », 29/10) ; la partie publique en héros, une grosse carte comme celle d'OpenFront dont le corps est la terre de
   la partie en cours de pose, celle même où elle se joue, tirée de sa graine quand le navigateur a un moment et
   dessinée en petit (`src/render/sketch.ts`, gardée pour la partie par `ahead.ts`), son titre, le temps qui reste

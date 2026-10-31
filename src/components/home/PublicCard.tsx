@@ -5,7 +5,6 @@ import { RoomTrouble, Seats } from './Seats'
 import { atPublic } from './useRoom'
 import { publicLand } from './useUpcoming'
 import type { ReactNode } from 'react'
-import type { Drawn } from './HomeLand'
 import type { Room, RoomActions } from './useRoom'
 import type { Heard } from './useUpcoming'
 import { Act } from '~/components/hud/Act'
@@ -44,7 +43,6 @@ export function PublicCard({
   rooms,
   online,
   heard,
-  land: behind,
 }: Readonly<{
   room: Room
   rooms: RoomActions
@@ -52,8 +50,6 @@ export function PublicCard({
   online: boolean
   /** The public game as the relay told it last (useUpcoming.ts). */
   heard: Heard
-  /** Its land drawn behind the page, which the card is a window on; none yet. */
-  land: Drawn | null
 }>) {
   const m = useMessages()
   const t = m.home
@@ -79,7 +75,6 @@ export function PublicCard({
         seed={game?.seed ?? null}
         land={land}
         label={t.public.land}
-        through={behind}
       >
         {/* The whole land is played on (« on peut cliquer sur la carte directement »); Play stays the button for the keyboard. */}
         {(ready || failed) && (
