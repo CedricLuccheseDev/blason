@@ -103,7 +103,7 @@ function Hosted() {
   const [book, setBook] = useState(fresh)
   const [launched, setLaunched] = useState(false)
   // The book as it stands, for the guests to read (« à lire pour l'invité »).
-  // The bots in the seats the guests leave: twenty lords at most.
+  // The bots in the seats the guests leave: twenty-four lords at most.
   const sat: Book = {
     ...book,
     guests,

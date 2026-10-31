@@ -4,6 +4,7 @@ import { DEAD } from './layers/lands'
 import { mixColor } from './ease'
 import { chain, simplify } from './geometry'
 import { TONE } from './palette'
+import { RULES, halfWidthAt } from '../../engine'
 import type { Land, Point, World } from '../../engine'
 
 // The land of a game to come, drawn small on a canvas for its card on the
@@ -125,6 +126,11 @@ function sketch(
   const soft = relief(world, at, [width, height], SOFT * ratio)
   g.drawImage(soft, 0, 0, width, height)
   g.restore()
+  // The rivers within the coast, no round end out in the sea.
+  g.save()
+  g.clip(land)
+  rivers(g, world, px)
+  g.restore()
   mountains(g, world, px)
   g.lineWidth = INK * px
   g.strokeStyle = css(TONE.ink)
@@ -175,6 +181,28 @@ function boundsOf(world: World) {
 }
 
 /** The high mountains, as the map draws them small (layers/peaks.ts): their ground in stone, and on each of their cells a mount in ink, `px` a pixel of the page in the map's units. */
+/** The rivers, water as the sea's (engine/map/streams.ts): the sea's wash between the coast's ink, as wide as on the map, a line at least. */
+function rivers(g: CanvasRenderingContext2D, world: World, px: number) {
+  g.lineCap = 'round'
+  g.lineJoin = 'round'
+  for (const [extra, color] of [
+    [2 * INK * px, css(TONE.ink)],
+    [0, css(TONE.seaWash)],
+  ] as const)
+    for (const river of world.rivers) {
+      const n = river.length
+      for (let i = 0; i < n - 1; i++) {
+        const wide = (2 * halfWidthAt(i, n) + 0.4) * RULES.tileSize
+        g.lineWidth = Math.max(LINE * px, wide) + extra
+        g.strokeStyle = color
+        g.beginPath()
+        g.moveTo(...river[i])
+        g.lineTo(...river[i + 1])
+        g.stroke()
+      }
+    }
+}
+
 function mountains(g: CanvasRenderingContext2D, world: World, px: number) {
   if (world.peaks.length === 0) return
   const ground = new Path2D()

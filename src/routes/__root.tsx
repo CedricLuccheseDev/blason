@@ -12,7 +12,7 @@ import { LocaleProvider } from '~/i18n'
 import { getLocale } from '~/i18n/locale'
 
 const DESCRIPTION =
-  'A medieval real-time strategy game in the browser: twenty lords, a land drawn anew each game, taken tile by tile.'
+  'A medieval real-time strategy game in the browser: twenty-four lords, a land drawn anew each game, taken tile by tile.'
 
 /** The schema.org graph every page carries: the site and the game it serves. */
 function siteGraph(): string {
