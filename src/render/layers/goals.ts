@@ -1,63 +1,47 @@
 import { Container, Graphics } from 'pixi.js'
-import { drawBanner } from '../art/banner'
-import { TONE, playerColor } from '../palette'
+import { positionOf } from '../../../engine'
+import { arrowHead, fadingDashes, targetCross } from '../art/arrow'
+import { playerColor } from '../palette'
 import { siteOf } from '../marks'
 import { hostReach } from '../reach'
 import type { GameState, Host } from '../../../engine'
 
-// Where the player's armies are going: a war banner of his colour planted
-// where each army's men will be spent, its foot ringed in red, standing
-// while the army is (« Sur mobile quand on fait un clic pour envoyer une
-// unité met un étendard de guerre »; then, 31/10, « l'étendard planté là où
-// l'armée s'épuisera », the click a direction, render/reach.ts): at a
-// glance, how far each of his armies will go, set again each second, back
-// when a battle costs it men. Sized on screen.
+// Where the player's armies are going, as the aim drew it before the click
+// (« des pointillés avec une flèche qui deviennent transparents petit à
+// petit … une croix de cible rouge pour dire où attaquer, mais pas de
+// bannière », 31/10): from where each stands, dashes of his colour fading
+// out where its men will be spent (render/reach.ts, set again each second),
+// an arrowhead and a red target's cross on the tile it was sent at. At a
+// glance, on a phone too, where each of his armies goes and how far.
 
-/** On screen, in pixels: the banner's width. */
-const WIDTH = 18
-
-type Goal = { box: Container; zoom: number }
+/** Where an army stands now: on its road, or at the front it last took. */
+function frontOf(host: Host): number {
+  if (host.along < (host.road.length - 1) * 1000) return positionOf(host)
+  return host.edge[0] ?? host.entry
+}
 
 export function makeGoals(me: number) {
   const container = new Container()
-  const goals = new Map<Host, Goal>()
-
-  function plant(): Goal {
-    const box = new Container()
-    box.addChild(new Graphics(), new Graphics(), new Graphics())
-    container.addChild(box)
-    return { box, zoom: 0 }
-  }
-
-  function redraw(goal: Goal, zoom: number) {
-    const [ring, pole, cloth] = goal.box.children as Array<Graphics>
-    const s = 1 / zoom
-    ring
-      .clear()
-      .ellipse(0, 0, 8 * s, 3 * s)
-      .fill({ color: TONE.fight, alpha: 0.25 })
-      .stroke({ width: 1.6 * s, color: TONE.fight })
-    drawBanner(pole, cloth, playerColor(me), WIDTH * s, s)
-    goal.zoom = zoom
-  }
+  const g = container.addChild(new Graphics())
 
   return {
     container,
     draw(state: GameState, zoom: number) {
-      const going = new Set(
-        me < 0 ? [] : state.hosts.filter((h) => h.owner === me && h.men > 0),
-      )
-      for (const [host, goal] of goals)
-        if (!going.has(host)) {
-          goal.box.destroy({ children: true })
-          goals.delete(host)
-        }
-      for (const host of going) {
-        const goal = goals.get(host) ?? plant()
-        goals.set(host, goal)
-        if (goal.zoom !== zoom) redraw(goal, zoom)
-        const { x, y } = siteOf(state, hostReach(state, host).tile)
-        goal.box.position.set(x, y)
+      g.clear()
+      if (me < 0) return
+      const color = playerColor(me)
+      for (const host of state.hosts) {
+        if (host.owner !== me || host.men <= 0) continue
+        const from = siteOf(state, frontOf(host))
+        const to = siteOf(state, hostReach(state, host).tile)
+        const aim = siteOf(state, host.aim)
+        const fade = Math.max(1, Math.hypot(to.x - from.x, to.y - from.y))
+        fadingDashes(g, [from, to], zoom, color, fade)
+        // Its target taken, it pushes on past it: no arrow pointing back.
+        if (state.owner[host.aim] === me) continue
+        const toAim = Math.hypot(aim.x - from.x, aim.y - from.y)
+        arrowHead(g, from, aim, zoom, color, Math.max(0.35, 1 - toAim / fade))
+        targetCross(g, aim, zoom)
       }
     },
   }

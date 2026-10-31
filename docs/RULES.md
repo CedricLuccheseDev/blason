@@ -151,14 +151,14 @@ leaves it gives his seat back to its bot.
   faster; it never swells into a ball (`engine/war.ts`, its band
   `engine/band.ts`). Free land, which hardly holds, it takes twice as fast
   (`freePace`, 200 %).
-- **Its standard where it will be spent** (`engine/reach.ts`): the click
-  gives a direction, and the army's standard is planted not on the click but
-  where its men will all be spent on that line, its push played over in
+- **Where it will be spent** (`engine/reach.ts`): the click
+  gives a direction, and the army goes on to where its men will all be
+  spent on that line, worked out by its push played over in
   thought on the land as it is (what each tile costs, the castles, its
-  band); while aiming, the dotted course runs on past the pointer to it,
-  the standard's ghost there, the tile aimed at ringed in red when it falls
-  short; on its way, worked out again each second, back when a battle costs
-  it men.
+  band); while aiming and on its way, its course is drawn in dashes fading
+  out where its men will be spent, an arrow and a red target's cross where
+  it is aimed, no banner; worked out again each second, back when a battle
+  costs it men.
 - **The land's roughness**: each tile bears a little roughness, fixed and
   drawn from the map's seed, an unseen relief smooth over a mesh of 5 tiles,
   at most 3 tiles' worth, added to the order an army takes tiles in; each
