@@ -47,7 +47,7 @@ function relaysOf(state: GameState): Uint8Array {
   return near
 }
 
-/** The outline of a set of tiles as one path, its steps rounded off, in the picture's pixels; its holes left out by the even-odd rule. */
+/** The outline of a set of tiles as one path, its steps smoothed, in the picture's pixels; its holes left out by the even-odd rule. */
 function pathOf(
   width: number,
   height: number,
