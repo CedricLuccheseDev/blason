@@ -218,7 +218,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
   `SoloSettings.tsx`, `PrivateRoom.tsx`, `useRoom.ts` la ligne vers le relais, `useUpcoming.ts`). La terre de la
   prochaine partie solo s'y prépare (`src/render/ahead.ts`) ; une partie en ligne commencée y passe à
   `/play?online` (`src/render/online.ts`, `remote.ts` qui la joue au rythme des tours du relais).
-- Les pages à côté du jeu (le Journal et ses articles, « Comment ça marche », les mentions légales, les erreurs) sont
+- Les pages à côté du jeu (le Journal et ses articles, les mentions légales, les erreurs ; « Comment ça marche » retirée le 31/10, « enlève le comment ça marche, on fera une page règles / help » : écart voulu à la page `/about` de la norme, que la page de règles et d'aide remplacera) sont
   des feuillets du livre du jeu (`src/components/home/Leaf.tsx`, 29/10, « les articles on lit mal y'a pas de hiérarchie
   de sections ») : la page de l'accueil, son cadre et sa rose, le nom du jeu en tête, le contenu sur un feuillet dans
   les niveaux du design system (`.hud-prose` pour le texte des articles), et leur pied. comme le veut la norme (29/10, « Dans la norme pour les blogs et autre page met que ça doit ressembler a la DA du site ») :

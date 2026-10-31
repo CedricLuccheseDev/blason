@@ -11,7 +11,6 @@ export const en = {
   book: bookEn,
   common: {
     author: 'Cédric Lucchese',
-    about: 'How it works',
     legal: 'Legal notice',
   },
   home: homeEn,

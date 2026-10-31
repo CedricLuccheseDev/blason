@@ -12,7 +12,6 @@ export const fr: Messages = {
   book: bookFr,
   common: {
     author: 'Cédric Lucchese',
-    about: 'Comment ça marche',
     legal: 'Mentions légales',
   },
   home: homeFr,

@@ -6,7 +6,7 @@ import { SITE_URL } from '~/lib/site'
 // pages so that they never lie. Server module.
 
 /** The public pages, the legal notice aside (it carries noindex). */
-const PAGES = ['/', '/play', '/about', '/blog']
+const PAGES = ['/', '/play', '/blog']
 
 async function blogPosts() {
   const slugs = new Set(
@@ -54,7 +54,6 @@ export async function llmsTxt() {
     '',
     `- [Home](${SITE_URL}/): the public game being planted, its land drawn on its card, Play straight into it; create a game or join one by its code; the journal.`,
     `- [Play](${SITE_URL}/play): the game itself: the public game online, or a game you created, its standard planted during its opening.`,
-    `- [How it works](${SITE_URL}/about): the land from a seed, the step of a game, from the state to the screen.`,
     `- [Journal](${SITE_URL}/blog): what was written and what shipped.`,
     `- [Legal](${SITE_URL}/legal)`,
     '',

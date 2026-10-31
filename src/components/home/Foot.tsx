@@ -23,9 +23,6 @@ export function Foot() {
             {__APP_VERSION__.startsWith('0.') ? ' alpha' : ''}
           </Figure>
         </Link>
-        <Link to="/about" className={FOOT}>
-          {m.common.about}
-        </Link>
         <Link to="/legal" className={FOOT}>
           {m.common.legal}
         </Link>
