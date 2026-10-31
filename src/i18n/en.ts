@@ -122,6 +122,8 @@ export const en = {
   // cartouche's word that a right click opens it.
   menu: {
     label: (lord: string) => `What to do with ${lord}`,
+    build: 'Build here',
+    sea: 'At sea',
     attack: 'Attack',
     // The alliance's line says what it does now.
     alliance: {

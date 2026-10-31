@@ -575,8 +575,12 @@ families `BarGroups.tsx`, the drawer `BarDrawer.tsx`, its pieces
 `BarPiece.tsx`, the seals' marks `seals.ts`);
 the cartouche beside the pointer, what a left click sends, the army in hand
 and its men, and over another lord's land that a right click opens the rest
-(`Cursor.tsx`); a right click there opens his menu beside the pointer, as a
-short list: a small sheet, his shield and his name, then a thin line for
+(`Cursor.tsx`, its pieces `CursorParts.tsx`); a right click puts down a
+work, a coup or a warship in hand, and with the army alone in hand opens the
+place's menu: on my land the works that may stand there, on the water a port
+of mine reaches a warship, each as the bar's piece with its hint, the one
+under the pointer lit in the bar (`PlaceMenu.tsx`); on another lord's land
+his menu beside the pointer, as a short list: a small sheet, his shield and his name, then a thin line for
 each act, its medallion ringed in its colour, its word and its figure:
 attack, the men of the army in hand, sent there as a left click would (none
 on an ally's land); the alliance, its word what it does now, to offer,

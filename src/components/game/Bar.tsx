@@ -5,7 +5,7 @@ import { Note } from '../hud/Text'
 import { Divide } from './BarPiece'
 import { Drawer } from './BarDrawer'
 import { armies, coups, works } from './BarGroups'
-import type { Acts, Family } from './BarGroups'
+import type { Acts, Echo, Family } from './BarGroups'
 import type { Summary } from '~/render/client'
 import { useMessages } from '~/i18n'
 
@@ -40,16 +40,17 @@ const FITS = [
  */
 export function Bar({
   summary,
+  echo = null,
   ...acts
-}: Readonly<{ summary: Summary } & Acts>) {
+}: Readonly<{ summary: Summary; echo?: Echo } & Acts>) {
   const m = useMessages()
   const { room, piece, step } = useFit(FITS.length - 1)
   if (!summary.me) return null
   const { folded, close } = FITS[step]
   const gap = close ? GAP.hair : GAP.part
   const families: Array<Family> = [
-    armies(summary, m, acts),
-    works(summary, m, acts),
+    armies(summary, m, acts, echo),
+    works(summary, m, acts, echo),
     coups(summary, m, acts),
   ]
   return (
@@ -67,6 +68,7 @@ export function Bar({
                   <Drawer
                     label={family.label}
                     held={family.held}
+                    lit={family.lit}
                     face={family.face}
                   >
                     {family.pieces(true)}

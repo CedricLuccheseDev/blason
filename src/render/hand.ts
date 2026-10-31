@@ -57,6 +57,12 @@ export function makeHand() {
       drop()
       hand.ship = ship
     },
+    /** A right click: a work, a coup or a warship in hand put down, back to the army; whether one was. */
+    release(): boolean {
+      if (!this.holding()) return false
+      drop()
+      return true
+    },
     /** Whether a work, a coup or a warship is in hand, over the army. */
     holding: () =>
       hand.work !== null ||

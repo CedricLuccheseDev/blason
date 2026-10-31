@@ -69,7 +69,7 @@ function told(
 }
 
 /** The menu is left when the pointer goes far from it; on a phone, where it stands above the bar, only a tap elsewhere closes it. */
-function useFar(
+export function useFar(
   box: RefObject<HTMLElement | null>,
   onLeave: () => void,
   near: boolean,
@@ -154,7 +154,7 @@ export function LordMenu({
                   key={line.act}
                   k={null}
                   name={word}
-                  hint={[]}
+                  hint={[m.hints.menu[line.act]]}
                   held={false}
                   onClick={() =>
                     line.act === 'alliance'

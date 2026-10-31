@@ -44,7 +44,12 @@ export function makeControls(
   const input = makeInput(canvas, world, pick, {
     hover: pin.hover,
     click,
-    menu: pin.open,
+    // A right click puts down what is in hand over the army, as in most
+    // strategy games; with the army alone in hand, it opens the place's menu.
+    menu: (tile: number) => {
+      if (hand.release()) refresh()
+      else pin.open(tile)
+    },
     away: pin.close,
   })
   const onKey = makeKeys(

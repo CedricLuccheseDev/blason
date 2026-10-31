@@ -43,7 +43,13 @@ describe('a saved game', () => {
   it('gives back the game it was made from, and the same HUD to every seat', () => {
     const restored = back()
     expect(stateHash(restored)).toBe(stateHash(state))
-    const hand = { army: 'host', work: null, coup: null, fleet: false, ship: null } as const
+    const hand = {
+      army: 'host',
+      work: null,
+      coup: null,
+      fleet: false,
+      ship: null,
+    } as const
     for (let me = 0; me < 20; me++)
       expect(summarize(restored, me, hand)).toEqual(summarize(state, me, hand))
   })

@@ -217,6 +217,16 @@ export async function mountGame(
       if (tile >= 0) session.send({ player: me, type: 'attack', tile, army })
       pin.close()
     },
+    build(work) {
+      const tile = pin.menuAt()
+      if (tile >= 0) session.send({ player: me, type: 'build', tile, work })
+      pin.close()
+    },
+    fitOut() {
+      const tile = pin.menuAt()
+      if (tile >= 0) session.send({ player: me, type: 'warship', tile })
+      pin.close()
+    },
     treat(type, target) {
       session.send({ player: me, type, target })
       pin.close()

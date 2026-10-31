@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Sheet } from '../hud/Sheet'
 import { GAP } from '../hud/Layout'
-import { PIECE } from './BarPiece'
+import { LIT, PIECE } from './BarPiece'
 import type { PointerEvent as Pointer, ReactNode } from 'react'
 
 // A family of the bar folded behind one face when the bar lacks room (« si
@@ -20,6 +20,7 @@ const LINGER = 250
 export function Drawer({
   label,
   held,
+  lit,
   face,
   children,
 }: Readonly<{
@@ -27,6 +28,8 @@ export function Drawer({
   label: string
   /** Whether one of its pieces is in hand: the face raised. */
   held: boolean
+  /** Whether one of its pieces is lit from the right click's menu: the face lit too. */
+  lit: boolean
   face: ReactNode
   children: ReactNode
 }>) {
@@ -129,7 +132,7 @@ export function Drawer({
         onPointerDown={(e) => (mouse.current = e.pointerType === 'mouse')}
         // The pointer has opened it already: a click keeps it open; a tap or a key opens or shuts it.
         onClick={() => setOpen(mouse.current ? true : !open)}
-        className={`hud-afloat ${PIECE}`}
+        className={`hud-afloat ${PIECE} ${lit ? LIT : ''}`}
       >
         {face}
       </button>

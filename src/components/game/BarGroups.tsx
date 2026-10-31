@@ -15,7 +15,10 @@ import { FLEET_KEY, coupKey, keyAt, workKey } from '~/render/keys'
 // (« Navire de guerre a mettre dans armée »); the works; the coups.
 
 /** The warship's wax: gold, as the mercenaries', an army paid in gold (« Le warship met un sceau en gold comme mercenaire ? »). */
-const GOLD = 'var(--color-gilt)'
+export const GOLD = 'var(--color-gilt)'
+
+/** A piece of the bar lit from elsewhere, its sister in the right click's menu under the pointer (PlaceMenu.tsx); none. */
+export type Echo = Work | 'warship' | null
 
 /** What the bar's pieces do when pressed. */
 export type Acts = Readonly<{
@@ -29,6 +32,8 @@ export type Acts = Readonly<{
 export type Family = Readonly<{
   label: string
   held: boolean
+  /** Whether one of its pieces is lit from elsewhere: its face, folded, lit too. */
+  lit: boolean
   face: ReactNode
   pieces: (named: boolean) => Array<ReactNode>
 }>
@@ -43,7 +48,12 @@ type Messages = ReturnType<typeof useMessages>
  * face is the one in hand, with its figure: what a click sends. The levies'
  * share by the purse's icon for the peasants it takes.
  */
-export function armies(summary: Summary, m: Messages, acts: Acts): Family {
+export function armies(
+  summary: Summary,
+  m: Messages,
+  acts: Acts,
+  echo: Echo = null,
+): Family {
   const color = summary.me ? hex(summary.me.color) : 'var(--color-vellum)'
   const fleet = summary.fleet
   const army = (a: Summary['armies'][number], held: boolean) => (
@@ -70,6 +80,7 @@ export function armies(summary: Summary, m: Messages, acts: Acts): Family {
     summary.armies.find((a) => a.army === summary.army) ?? summary.armies[0]
   return {
     label: m.game.families.armies,
+    lit: echo === 'warship',
     held: !summary.work && !summary.coup,
     face: fleet.held ? (
       <>
@@ -107,6 +118,7 @@ export function armies(summary: Summary, m: Messages, acts: Acts): Family {
         name={m.game.warship}
         hint={[m.hints.warship]}
         held={fleet.held}
+        lit={echo === 'warship'}
         named={named}
         onClick={() => (fleet.can || fleet.held) && acts.onFleet(!fleet.held)}
         emblem={
@@ -126,9 +138,15 @@ export function armies(summary: Summary, m: Messages, acts: Acts): Family {
 }
 
 /** The works as gilt medallions, each with its price; folded, behind a castle's medallion and the family's word. */
-export function works(summary: Summary, m: Messages, acts: Acts): Family {
+export function works(
+  summary: Summary,
+  m: Messages,
+  acts: Acts,
+  echo: Echo = null,
+): Family {
   return {
     label: m.game.families.works,
+    lit: echo !== null && echo !== 'warship',
     held: summary.work !== null,
     face: (
       <>
@@ -147,6 +165,7 @@ export function works(summary: Summary, m: Messages, acts: Acts): Family {
             name={m.game.works[w.work]}
             hint={[m.hints.works[w.work]]}
             held={held}
+            lit={echo === w.work}
             named={named}
             onClick={() => (w.can || held) && acts.onWork(held ? null : w.work)}
             emblem={
@@ -164,6 +183,7 @@ export function works(summary: Summary, m: Messages, acts: Acts): Family {
 export function coups(summary: Summary, m: Messages, acts: Acts): Family {
   return {
     label: m.game.families.coups,
+    lit: false,
     held: summary.coup !== null,
     face: (
       <>

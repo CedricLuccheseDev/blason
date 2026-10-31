@@ -12,6 +12,9 @@ import type { ReactNode } from 'react'
 export const PIECE =
   'pointer-events-auto flex cursor-pointer flex-col items-center gap-1 rounded-md px-1 pt-1 hud-press hover:bg-quill/5'
 
+// norm-ok: a piece lit from the right click's menu, washed and ringed in gold as a lord's line is lit in the list.
+export const LIT = 'bg-gilt/35 outline-[1.5px] outline-gilt outline-solid'
+
 /**
  * One piece of the bar: its emblem, its key at its top right (none on a
  * phone, which has no keyboard), and under it its figure, if it has one. No
@@ -28,6 +31,7 @@ export function Piece({
   held,
   short = false,
   named = false,
+  lit = false,
   onClick,
 }: Readonly<{
   emblem: ReactNode
@@ -41,6 +45,8 @@ export function Piece({
   short?: boolean
   /** Its name written under its figure, as in a drawer. */
   named?: boolean
+  /** Lit from elsewhere: its sister in the right click's menu under the pointer. */
+  lit?: boolean
   onClick: () => void
 }>) {
   return (
@@ -51,7 +57,7 @@ export function Piece({
         aria-disabled={short || undefined}
         aria-label={name}
         onClick={onClick}
-        className={PIECE}
+        className={`${PIECE} ${lit ? LIT : ''}`}
       >
         {/* What cannot be had is at half ink inside its drawing (the emblems' dim): an opacity here made a layer that left its trace as the bar moved (« en bas les losanges y'a un carré derrière »). */}
         <span className="relative">

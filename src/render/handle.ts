@@ -41,6 +41,10 @@ export type GameHandle = {
   leave: () => void
   /** From the right click's menu: the army in hand sent at the land right clicked, as a left click there would. */
   attack: () => void
+  /** From the right click's menu on my land: the work built on the tile right clicked. */
+  build: (work: Work) => void
+  /** From the right click's menu on the water: a warship fitted out for the tile right clicked, from my nearest port. */
+  fitOut: () => void
   /** An order about another lord: to offer or accept an alliance, renew it, or break it, or to give him an offering. */
   treat: (type: 'ally' | 'breakAlliance' | 'offering', target: number) => void
   /** The camera: one step closer (1) or farther (-1), back to the player's land. */

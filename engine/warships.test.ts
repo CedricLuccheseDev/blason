@@ -4,6 +4,7 @@ import { RULES } from './rules'
 import { hold, setupOf } from './testing'
 import { UNIT } from './units'
 import { launchWarship, sailWarships, sendWarship, whereIs } from './warships'
+import { reachesSea } from './ships'
 import type { GameState, Grid, Host, Warship } from './types'
 
 /** A sea between two coasts: four columns of land each side, twelve of water, twelve rows down. */
@@ -31,9 +32,15 @@ function game() {
     shipCrowd: 1000,
   })
   state.tick = state.rules.openingTicks
-  const west = Array.from({ length: 240 }, (_, t) => t).filter((t) => t % 20 < 4)
+  const west = Array.from({ length: 240 }, (_, t) => t).filter(
+    (t) => t % 20 < 4,
+  )
   hold(state, 0, west)
-  hold(state, 1, west.map((t) => t + 16))
+  hold(
+    state,
+    1,
+    west.map((t) => t + 16),
+  )
   state.works.push({ work: 'port', tile: at(3, 5), owner: 0 })
   state.works.push({ work: 'port', tile: at(16, 5), owner: 1 })
   for (const lord of state.players) lord.gold = 1000 * UNIT
@@ -56,6 +63,13 @@ function afloat(state: GameState, owner: number, tile: number): Warship {
 }
 
 describe('the warships', () => {
+  it('may be fitted out for the water a port of the lord’s reaches, never for land', () => {
+    const state = game()
+    expect(reachesSea(state, 0, at(10, 2))).toBe(true)
+    expect(reachesSea(state, 0, at(1, 5))).toBe(false)
+    expect(reachesSea(state, 2, at(10, 2))).toBe(false)
+  })
+
   it('are fitted out at the lord’s port nearest the water clicked, and sail there', () => {
     const state = game()
     launchWarship(state, 0, at(10, 2))
@@ -70,7 +84,8 @@ describe('the warships', () => {
       state.tick++
     }
     expect(state.rules.warshipPatrol ** 2).toBeGreaterThanOrEqual(
-      (whereIs(ship) % 20 - 10) ** 2 + (Math.floor(whereIs(ship) / 20) - 2) ** 2,
+      ((whereIs(ship) % 20) - 10) ** 2 +
+        (Math.floor(whereIs(ship) / 20) - 2) ** 2,
     )
   })
 

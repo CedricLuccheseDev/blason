@@ -6,8 +6,10 @@ import type { Aim } from './aiming'
 // closed: by Escape, a click elsewhere on the map, the camera moved, the
 // pointer gone far, an act of the menu done. A click on the map only closes
 // it, and so does one just after the pointer left it behind, so that no
-// army goes out of a click meant to put the menu away. A right click
-// anywhere but another lord's land only closes what was open.
+// army goes out of a click meant to put the menu away. A right click opens
+// the place's menu there: a lord's on his land, the works on mine, a warship
+// on the water a port of mine reaches; anywhere else it only closes what was
+// open.
 
 /** How long after the pointer left a menu behind a click on the map only finishes closing it, in milliseconds. */
 const GRACE = 400
@@ -56,7 +58,7 @@ export function makePin(
       close()
       left = performance.now()
     },
-    /** A right click on a tile: another lord's menu opened there; anywhere else, only what was open closes. */
+    /** A right click on a tile: the place's menu opened there; where nothing may be done, only what was open closes. */
     open(tile: number) {
       const aim = aimAt(tile, true)
       if (!aim) {

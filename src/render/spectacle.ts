@@ -57,7 +57,10 @@ export function makeSpectacle() {
   function sea(state: GameState) {
     const shots: Array<number> = []
     const hits: Array<number> = []
-    const now = new Map<number, { reload: number; hull: number; tile: number }>()
+    const now = new Map<
+      number,
+      { reload: number; hull: number; tile: number }
+    >()
     for (const ship of state.warships) {
       const tile = whereIs(ship)
       const was = fleet.get(ship.id)

@@ -115,6 +115,8 @@ export const fr: Messages = {
   },
   menu: {
     label: (lord: string) => `Que faire avec ${lord}`,
+    build: 'Bâtir ici',
+    sea: 'En mer',
     attack: 'Attaquer',
     alliance: {
       offer: 'Alliance',

@@ -38,6 +38,12 @@ export const hintsEn = {
   },
   warship:
     'Click the water: it sails from your nearest port and patrols there; takes merchant ships, sinks boats',
+  // The right click's menu on another lord's land, each act as the bar's pieces are told.
+  menu: {
+    attack: 'Sends the army in hand at his land, as a left click',
+    alliance: 'Allies for 5 minutes: your armies no longer strike each other',
+    offering: 'Gives him a quarter of your gold',
+  },
   race: {
     title: 'The race',
     line: (needed: number) => `Hold ${needed} % of the land`,
@@ -83,6 +89,11 @@ export const hintsFr: HintsMessages = {
   },
   warship:
     'Clic sur l’eau : il part de ton port le plus proche et y patrouille ; prend les marchands, coule les barques',
+  menu: {
+    attack: 'Envoie l’armée en main sur sa terre, comme un clic gauche',
+    alliance: 'Alliés 5 minutes : vos armées ne se frappent plus',
+    offering: 'Lui donne un quart de ton or',
+  },
   race: {
     title: 'La course',
     line: (needed: number) => `Tenir ${needed} % de la terre`,

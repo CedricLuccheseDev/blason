@@ -65,6 +65,23 @@ function seasBy(grid: Grid, tile: number): Set<number> {
   return out
 }
 
+/** Whether a tile of water lies on a sea one of the lord's standing ports touches: where a warship of his may be fitted out for. */
+export function reachesSea(
+  state: GameState,
+  lord: number,
+  tile: number,
+): boolean {
+  if (!state.grid.water[tile]) return false
+  const at = seasOf(state.grid).sea[tile]
+  return state.works.some(
+    (w) =>
+      w.owner === lord &&
+      isPort(w) &&
+      standing(state, w) &&
+      seasBy(state.grid, w.tile).has(at),
+  )
+}
+
 /** The shortest way over the water from beside one port to beside another, both ends on the water; none if no water joins them. */
 function seaWay(grid: Grid, from: number, to: number): Array<number> | null {
   const { ways } = seasOf(grid)

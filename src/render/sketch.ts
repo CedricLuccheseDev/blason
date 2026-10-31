@@ -75,9 +75,7 @@ function sketch(
     ? boundsOf(world)
     : { x: 0, y: 0, w: world.width, h: world.height }
   const cover = Math.max(width / world.width, height / world.height)
-  const scale = whole
-    ? Math.min(width / frame.w, height / frame.h)
-    : cover
+  const scale = whole ? Math.min(width / frame.w, height / frame.h) : cover
   // The land's middle, moved for the card to show as little past the frame as may be.
   const within = (middle: number, half: number, side: number) =>
     2 * half >= side ? side / 2 : Math.min(Math.max(middle, half), side - half)

@@ -3,11 +3,13 @@ import { useNavigate } from '@tanstack/react-router'
 import { Defs } from './svg/kit'
 import { Cursor } from './Cursor'
 import { LordMenu } from './LordMenu'
+import { PlaceMenu } from './PlaceMenu'
 import { Shades } from './Shades'
 import { Heralds } from './Heralds'
 import { GameBook } from './GameBook'
 import { Places } from './Places'
 import { Failed } from './Failed'
+import type { Echo } from './BarGroups'
 import type { Aim, GameHandle, News, Summary } from '~/render/client'
 import type { Atlas, Book, Land, Level, MapSize } from '../../../engine'
 import type { Online } from '~/render/online'
@@ -92,6 +94,8 @@ export function GameScreen({
   const [game, setGame] = useState<GameHandle | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [aim, setAim] = useState<Aim | null>(null)
+  /** The bar's piece lit from the right click's menu, its sister under the pointer there. */
+  const [echo, setEcho] = useState<Echo>(null)
   // The game could not start (no WebGL, a failed load): said, not a blank page.
   const [failed, setFailed] = useState(false)
   // The last betrayal, cried under the race for a few seconds; the rest of
@@ -175,10 +179,23 @@ export function GameScreen({
             online={online !== undefined}
             cry={cry}
             floor={floor}
+            echo={aim?.pinned ? echo : null}
             onHome={() => void navigate({ to: '/' })}
             onBook={hosting ? () => setOpen(true) : null}
           />
-          {aim?.pinned ? (
+          {aim?.pinned && aim.lord === null && (
+            <PlaceMenu
+              key={`${aim.x},${aim.y}`}
+              aim={aim}
+              summary={summary}
+              floor={floor}
+              onBuild={game.build}
+              onFitOut={game.fitOut}
+              onLeave={game.leave}
+              onEcho={setEcho}
+            />
+          )}
+          {aim?.pinned && aim.lord !== null && (
             <LordMenu
               key={`${aim.x},${aim.y}`}
               aim={aim}
@@ -188,9 +205,8 @@ export function GameScreen({
               onTreat={game.treat}
               onLeave={game.leave}
             />
-          ) : (
-            <Cursor summary={summary} aim={aim} floor={floor} />
           )}
+          {!aim?.pinned && <Cursor summary={summary} aim={aim} floor={floor} />}
         </>
       )}
       {hosting && open && (

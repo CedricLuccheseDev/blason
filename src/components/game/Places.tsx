@@ -2,6 +2,7 @@ import { GAP, Inline, MARGIN, Stack } from '../hud/Layout'
 import { BookButton, HomeMark } from './BookParts'
 import { Banner } from './Banner'
 import { Bar } from './Bar'
+import type { Echo } from './BarGroups'
 import { Campaign } from './Campaign'
 import { Moment } from './Moment'
 import { Purse } from './Purse'
@@ -29,6 +30,7 @@ export function Places({
   online,
   cry,
   floor,
+  echo,
   onHome,
   onBook,
 }: Readonly<{
@@ -41,6 +43,8 @@ export function Places({
   cry: Cry | null
   /** The bottom row: the cartouche keeps above it. */
   floor: RefObject<HTMLDivElement | null>
+  /** The bar's piece lit from the right click's menu; none. */
+  echo: Echo
   onHome: () => void
   /** The book's button, for a hosted game. */
   onBook: (() => void) | null
@@ -87,6 +91,7 @@ export function Places({
           {!waiting && summary.opening === null && (
             <Bar
               summary={summary}
+              echo={echo}
               onArmy={game.choose}
               onWork={game.hold}
               onCoup={game.aim}
