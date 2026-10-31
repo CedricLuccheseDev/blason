@@ -1,8 +1,8 @@
 import { Container, Graphics } from 'pixi.js'
-import type { GraphicsContext } from 'pixi.js'
 import { mixColor } from '../ease'
 import { TONE } from '../palette'
 import { RULES, halfWidthAt } from '../../../engine'
+import type { GraphicsContext } from 'pixi.js'
 import type { Point } from '../../../engine'
 
 // The rivers of the land (engine/map/rivers.ts), water as the sea is since

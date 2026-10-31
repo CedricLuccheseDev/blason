@@ -1,11 +1,11 @@
 import { Container } from 'pixi.js'
-import type { GraphicsContext } from 'pixi.js'
 import { tradeLinks } from '../../../engine'
 import { makeBlooms } from '../ground/bloom'
 import { makeDecor } from '../ground/decor'
 import { makeRivers } from '../ground/rivers'
 import { readTerrain } from '../ground/terrain'
 import { makeTones } from '../ground/tones'
+import type { GraphicsContext } from 'pixi.js'
 import type { Box } from '../camera'
 import type { GameState, Link, World } from '../../../engine'
 
