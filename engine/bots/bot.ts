@@ -181,8 +181,30 @@ export function createBot(
   const thrift = 20 + drawInt(seed, 40, 'thrift', self) + skill.thrift
   const seen = new Map<number, number>()
   let rest = 0
+  /** The tick before which it acts no more: its pause after its last act. */
+  let ready = 0
 
-  return (state, me) => {
+  /** Its army out, once its peasants are full enough and its rest over: to the free land, or to war; its rest begins. */
+  const strike = (
+    state: GameState,
+    me: number,
+    fronts: Map<number, Array<number>>,
+  ): Array<Order> => {
+    const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
+    if (state.tick < rest || !full || !armed(state, me)) return []
+    // The free land at its border; else, the free land it reaches by boat.
+    const free = fronts.get(NEUTRAL) ?? freeAfar(state, me) ?? undefined
+    const orders = free
+      ? expand(state, me, free)
+      : war(state, me, fronts, boldness, skill.slips, skill.hunters)
+    if (orders.length === 0) return orders
+    const drawn = drawInt(state.seed, 100, 'rest', me, state.tick)
+    rest =
+      state.tick + Math.floor((((free ? 50 : 60) + drawn) * skill.rest) / 100)
+    return orders
+  }
+
+  const decide: Bot = (state, me) => {
     if ((state.tick + me) % skill.every !== 0) return []
     if (state.tick < state.rules.openingTicks) return opening(state, me)
     const answered = answer(state, me, seen, skill)
@@ -198,23 +220,20 @@ export function createBot(
     if (built.length) return built
     const fitted = navy(state, me)
     if (fitted.length) return fitted
-    const full = state.players[me].peasants * 100 >= capOf(state, me) * patience
-    if (state.tick < rest || !full) return []
-    if (!armed(state, me)) return []
-    // The free land at its border; else, the free land it reaches by boat.
-    const free = fronts.get(NEUTRAL) ?? freeAfar(state, me) ?? undefined
-    const orders = free
-      ? expand(state, me, free)
-      : war(state, me, fronts, boldness, skill.slips, skill.hunters)
-    if (orders.length)
-      rest =
+    return strike(state, me, fronts)
+  }
+
+  // A pause after each act, drawn within its level's: never two at once.
+  return (state, me) => {
+    if (state.tick < ready) return []
+    const orders = decide(state, me)
+    if (orders.length > 0) {
+      const [least, most] = skill.pause
+      ready =
         state.tick +
-        Math.floor(
-          (((free ? 50 : 60) +
-            drawInt(state.seed, 100, 'rest', me, state.tick)) *
-            skill.rest) /
-            100,
-        )
+        least +
+        drawInt(state.seed, most - least + 1, 'pause', me, state.tick)
+    }
     return orders
   }
 }

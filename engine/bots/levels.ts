@@ -1,5 +1,5 @@
 // The bots' levels, chosen before a game: never by cheating, only by how
-// fast a bot thinks, how soon it notices an army biting its land, how long
+// fast a bot thinks and how long it pauses after each act, how soon it notices an army biting its land, how long
 // it rests between two attacks, how full it waits for its peasants to be,
 // how readily it builds, how often it slips (a war on the wrong
 // neighbour, an attack sent short of men, an army upon it let be), and how
@@ -22,6 +22,8 @@ export type Skill = {
   slips: number
   /** The lords at most who strike the same lord at once: one already struck by so many others is left alone, answers apart. */
   hunters: number
+  /** After each of its acts, a pause drawn between so many ticks and so many, as a player takes his hand back (« des cooldown aléatoires avant de faire une action pour imiter les humains, en fonction de leur difficulté »). */
+  pause: readonly [number, number]
 }
 
 export const SKILLS: Readonly<Record<Level, Skill>> = {
@@ -33,6 +35,7 @@ export const SKILLS: Readonly<Record<Level, Skill>> = {
     thrift: -10,
     slips: 25,
     hunters: 1,
+    pause: [30, 80],
   },
   normal: {
     every: 10,
@@ -42,6 +45,7 @@ export const SKILLS: Readonly<Record<Level, Skill>> = {
     thrift: 0,
     slips: 0,
     hunters: 1,
+    pause: [10, 40],
   },
   hard: {
     every: 10,
@@ -51,5 +55,6 @@ export const SKILLS: Readonly<Record<Level, Skill>> = {
     thrift: 20,
     slips: 0,
     hunters: 2,
+    pause: [3, 15],
   },
 }

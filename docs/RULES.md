@@ -298,7 +298,7 @@ made to you, the seal of an alliance to renew:
 - **The trade network**: each market reaches 40 tiles. Two markets within
   range of each other are joined by a road over the land, whoever holds them,
   unless a third market lies nearer to both (`engine/network.ts`). A road
-  runs in long straight runs across and down, as OpenFront's railways, few
+  runs in long straight runs across, down and aslant, as OpenFront's railways, few
   turns, a step off the water where the land allows; it is drawn on its own
   tiles, and a village in hand lights the tiles where it would be a relay.
 - Every 10 seconds, each market may send a caravan to another market, its
