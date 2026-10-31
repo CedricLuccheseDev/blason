@@ -1,7 +1,7 @@
 // The map gains detail as one comes closer, by the pixels a tile covers on
 // screen, and never loses what the game must make read first. From afar
-// (under 9) the wash alone and the works' silhouettes; at mid distance
-// (9 to 18) hatched hills, groves, rivers, fields round the villages, the
+// (under 9) the wash alone, the rivers (water, at every distance) and the
+// works' silhouettes; at mid distance (9 to 18) hatched hills, groves, fields round the villages, the
 // works drawn, the mill turning; up close (over 18) single shaded trees,
 // tufts, close furrows, the sea's ripples, roof tiles, smoke, peasants at
 // work, gold glinting. Each level fades in over a range: nothing pops.
@@ -13,7 +13,6 @@ const RANGES = {
   mid: [9, 14],
   near: [18, 26],
   fields: [11, 18],
-  rivers: [6, 12],
 } as const
 
 export type Fades = Record<keyof typeof RANGES, number> & {
@@ -30,7 +29,6 @@ export function fades(perTile: number): Fades {
     mid: at('mid'),
     near: at('near'),
     fields: at('fields'),
-    rivers: at('rivers'),
   }
 }
 

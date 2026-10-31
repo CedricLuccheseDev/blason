@@ -44,6 +44,11 @@ applies each rule is named beside it.
   great, and the maps of the Earth, each with the lords it suits
   (`/play?size=huge` draws the huge one). Its tiles and cells keep their size: a larger land has more of
   them, and more lakes, rivers, ranges and woods.
+- **The rivers are water** (`engine/map/streams.ts`): every tile of land
+  under a river's course is water, a tile wide at its spring and three at its
+  mouth. No one holds it; armies cross it by boat from any bank, as the sea
+  (or go round by its spring when that is sooner), ports stand by it and
+  ships sail it. It is drawn as the sea is, at every distance.
 - The game is played on one piece of land: a tile the sea cuts off, which
   no walk reaches, is no part of it (`engine/land.ts`).
 - What no lord holds is one **free land**. It only defends itself, by its

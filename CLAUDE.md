@@ -67,7 +67,7 @@ Le détail vit dans `docs/ARCHITECTURE.md` ; ici, la carte et ce qui ne se devin
     taille »), ses îles gardées à part et ses détroits ouverts, nommés (« l'irlande est connecté a l'angleterre … »), ses
     hautes montagnes sur les vraies chaînes (le relief local ; détroits et chaînes posés sur le cadre, `map/landmarks.ts`), ses vrais fleuves ; une partie dit sa terre par `Land`
     (`types.ts` : inventée à une taille, ou une carte de l'atlas), le livre les range par taille et dit laquelle convient ;
-    `grid.ts` les tuiles ; `setup.ts` ce dont une partie est faite, en un objet (`GameSetup`, dans `types.ts` : la
+    `grid.ts` les tuiles, les fleuves en vraie eau (31/10, « des vrais points d'eaux pour ajouter des ports traverser tout ça », sans gué : `map/streams.ts`, d'une tuile de large à la source à trois à l'embouchure, dessinés comme la mer à toutes les distances) ; `setup.ts` ce dont une partie est faite, en un objet (`GameSetup`, dans `types.ts` : la
     graine et sa terre, le mode, l'ouverture, les sièges, chacun son équipe et son bot ou personne), que le livre de
     l'hôte remplira, que le relais passera sans le lire et dont `createGame(grid, setup)` fait la partie, ses
     préréglages (seul, des bots, la partie publique sans bot), sa lecture bornée par `SETUP_LIMITS` et sa terre

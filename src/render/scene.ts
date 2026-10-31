@@ -76,11 +76,11 @@ export function makeScene(
   const sea = makeSea(land)
   const peaks = makePeaks(land)
   const regions = makeRegions(state, me)
-  const ground = makeGround(land, state)
+  const shape = landShape(land)
+  const ground = makeGround(land, state, shape)
   const borders = makeBorders(land, regions.outline)
   // The land's one shape, laid bare and clipped to twice: the washes with
   // the ground's tones, then the borders over the decoration.
-  const shape = landShape(land)
   const washed = new Container()
   washed.addChild(regions.container, ground.tinted)
   washed.mask = washed.addChild(new Graphics(shape))
@@ -122,6 +122,10 @@ export function makeScene(
   const scars = makeScars()
   const room = makeRoom(state, me)
   const strikes = makeStrikes(me)
+  // The coast's line, but across the rivers' mouths, open water (« ça fait une coupure bizarre »).
+  const coast = new Container()
+  coast.addChild(borders.coast, ground.riverCut)
+  coast.setMask({ mask: ground.riverCut, inverse: true })
   const world = new Container()
   // Each layer its own render group: what moves each frame (a man shown or
   // hidden, a seal drawn again) rebuilds its own group's batches, never the
@@ -136,7 +140,8 @@ export function makeScene(
       ground.container,
       trade.roads,
       lines,
-      borders.coast,
+      coast,
+      ground.rivers,
       peaks.container,
       lit.container,
       scars.container,

@@ -1,13 +1,16 @@
+import { riverTiles } from './map/streams'
 import type { GameMap } from './map/types'
+import type { Point } from './map/points'
 import type { Grid } from './types'
 
 // The land cut into a fine grid of tiles, as OpenFront's map is cut in
 // pixels: a tile is land when the cell of the map nearest its middle is
 // land, so the grid follows the same coast as the drawing; a tile of the
 // high mountains is not, as the sea's, nor the dead land's (another's on a
-// map of some lands only), but only the sea's is water, which the boats
-// sail (crossing.ts). Made from the map's whole positions
-// alone: the same on every machine.
+// map of some lands only), but only the sea's, the lakes' and the rivers'
+// is water, which the boats sail (crossing.ts), a river as wide as it is
+// drawn (map/streams.ts). Made from the map's whole positions alone: the
+// same on every machine.
 
 /** The grid of a map so many units wide and high, tiles so many units a side. */
 export function makeGrid(
@@ -15,6 +18,8 @@ export function makeGrid(
   width: number,
   height: number,
   size: number,
+  /** The rivers' courses, from spring to mouth, made water. */
+  rivers: ReadonlyArray<ReadonlyArray<Point>> = [],
 ): Grid {
   const cols = Math.ceil(width / size)
   const rows = Math.ceil(height / size)
@@ -68,6 +73,8 @@ export function makeGrid(
       water.push(site?.water ?? false)
       wood.push(site !== null && 'wood' in site && site.wood === true)
     }
+  for (const t of riverTiles(rivers, cols, rows, size))
+    if (land[t]) [land[t], water[t], wood[t]] = [false, true, false]
   return {
     width: cols,
     height: rows,

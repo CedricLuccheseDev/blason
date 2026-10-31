@@ -177,7 +177,13 @@ export function landOf(
   generator?: Generator,
 ): { world: World; grid: Grid } {
   const world = worldOf(setup.seed, setup.land, generator)
-  const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
+  const grid = makeGrid(
+    world.map,
+    world.width,
+    world.height,
+    RULES.tileSize,
+    world.rivers,
+  )
   return { world, grid }
 }
 

@@ -30,7 +30,13 @@ const kept = (seed: string, land: Land) =>
 
 function makeLand(seed: string, land: Land = STANDARD): Made {
   const world = kept(seed, land) ?? worldOf(seed, land)
-  const grid = makeGrid(world.map, world.width, world.height, RULES.tileSize)
+  const grid = makeGrid(
+    world.map,
+    world.width,
+    world.height,
+    RULES.tileSize,
+    world.rivers,
+  )
   return { land: world, grid }
 }
 

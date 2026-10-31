@@ -160,3 +160,37 @@ The land a game is played on, and how a game begins on it. Figures:
   each overlapping tile goes to the nearer standard.
 #### Validation
 - Confidence: Supported (arena: every bot placed, games start even).
+
+## D-WLD-7: The rivers are water
+
+- Status: Accepted
+- Owner: Cédric
+- Updated: 2026-10-31
+- Links: D-WAR-6, D-ECO-5
+#### Why?
+- Need: « Les fleuves rivières et lac sont de la vrai eau il faut les manage
+  comme tel … Fais pas juste des rivière toutes fine juste pour le style »;
+  « Les fleuves doivent être des vrais points d'eaux pour ajouter des ports
+  traverser tout ça ».
+- Alternative left: fords where armies cross on foot (« A », no ford): one
+  rule more; a river is always turned by its spring, and a boat crosses a
+  narrow one fast.
+- Tradeoff: fronts along rivers hold better; a land may take a crossing.
+#### How?
+- Every tile of land under a river's course is water: armies cross it by
+  boat from any bank (D-WAR-6), or walk round by the spring when sooner; no
+  one holds it; ports stand by it and ships sail it (D-ECO-5).
+- Drawn as the sea (« fais le même design que la mer »): the water's wash
+  between banks in the coast's ink, a shore line along each bank, the mouth
+  open on the sea, at every distance.
+#### What?
+- `riverTiles` (`engine/map/streams.ts`), laid by `makeGrid`: a tile is water
+  when its middle lies within the river's half width of its course, 0.75
+  tile at the spring to 1.5 at the mouth (tunable); land only.
+- Acceptance: Given a map with rivers, When its grid is made, Then the tiles
+  under each course are water and no land.
+#### Validation
+- Riskiest hypothesis: the bots still find their way across.
+- Method: the arena (game length, lands taken); played.
+- Confidence: Untested.
+

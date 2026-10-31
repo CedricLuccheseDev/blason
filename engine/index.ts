@@ -59,6 +59,7 @@ export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.
 export { courseFor, entryFor, wideOf } from './course'
+export { halfWidthAt } from './map/streams'
 export { reachOf } from './reach'
 export type { Plan } from './reach'
 export { afloat } from './crossing'
