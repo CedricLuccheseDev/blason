@@ -2,14 +2,16 @@ import { Container, Graphics } from 'pixi.js'
 import { drawBanner } from '../art/banner'
 import { TONE, playerColor } from '../palette'
 import { siteOf } from '../marks'
+import { hostReach } from '../reach'
 import type { GameState, Host } from '../../../engine'
 
-// Where the player's armies are going: a war banner of his colour planted on
-// the tile each was sent to, its foot ringed in red, standing until the army
-// has taken it or is no more (« Sur mobile quand on fait un clic pour
-// envoyer une unité met un étendard de guerre », the banner at the target):
-// at a glance, where each of his armies goes, on a phone where no pointer
-// hovers as on a computer. Sized on screen.
+// Where the player's armies are going: a war banner of his colour planted
+// where each army's men will be spent, its foot ringed in red, standing
+// while the army is (« Sur mobile quand on fait un clic pour envoyer une
+// unité met un étendard de guerre »; then, 31/10, « l'étendard planté là où
+// l'armée s'épuisera », the click a direction, render/reach.ts): at a
+// glance, how far each of his armies will go, set again each second, back
+// when a battle costs it men. Sized on screen.
 
 /** On screen, in pixels: the banner's width. */
 const WIDTH = 18
@@ -45,9 +47,7 @@ export function makeGoals(me: number) {
       const going = new Set(
         me < 0
           ? []
-          : state.hosts.filter(
-              (h) => h.owner === me && h.men > 0 && state.owner[h.aim] !== me,
-            ),
+          : state.hosts.filter((h) => h.owner === me && h.men > 0),
       )
       for (const [host, goal] of goals)
         if (!going.has(host)) {
@@ -58,7 +58,7 @@ export function makeGoals(me: number) {
         const goal = goals.get(host) ?? plant()
         goals.set(host, goal)
         if (goal.zoom !== zoom) redraw(goal, zoom)
-        const { x, y } = siteOf(state, host.aim)
+        const { x, y } = siteOf(state, hostReach(state, host).tile)
         goal.box.position.set(x, y)
       }
     },

@@ -58,7 +58,9 @@ export { barredBy, canStart, hasPicked, takeSeat } from './opening'
 export { nextDrop, stateHash, step, victoryShare, wonBy } from './step'
 
 // What the screen and the bots ask of the rules.
-export { courseFor, entryFor } from './course'
+export { courseFor, entryFor, wideOf } from './course'
+export { reachOf } from './reach'
+export type { Plan } from './reach'
 export { afloat } from './crossing'
 export { relayGold } from './relays'
 export { isPort, reachesSea } from './ships'

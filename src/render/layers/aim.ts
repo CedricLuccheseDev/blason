@@ -11,6 +11,8 @@ import { drawRoad } from '../roads'
 import { TONE, playerColor } from '../palette'
 import { drawWork } from '../art/works'
 import { siteOf } from '../marks'
+import { drawBanner } from '../art/banner'
+import { reachNow } from '../reach'
 import { makeCoupAim } from './aimCoup'
 import type { Army, GameState, Work } from '../../../engine'
 import type { Hand } from '../hand'
@@ -18,7 +20,10 @@ import type { Hand } from '../hand'
 // What a click on the tile under the pointer would do. Against another's
 // land or free land: the road the army would march from its village (the
 // mercenaries from their market) to the border, where it would enter, ringed, and a dotted line from there to
-// the tile aimed at, the very course the click sends it by. With a work in hand: its drawing on the
+// the tile aimed at, the very course the click sends it by, and on past it
+// to where its men will be spent, the ghost of its standard planted there
+// (« l'étendard planté là où l'armée s'épuisera », render/reach.ts); short of
+// the tile, the tile ringed in red: too few men to get there. With a work in hand: its drawing on the
 // tile, the circle it reaches (the castle's land held, the market's range of
 // trade), red where it may not stand,
 // with the works already standing ringed in red. With a coup in hand, the
@@ -35,6 +40,9 @@ const REACH: Partial<Record<Work, (state: GameState) => number>> = {
   market: (state) => state.rules.tradeRange,
 }
 
+/** The standard's ghost's width on screen, in pixels, as the planted ones' (layers/goals.ts). */
+const BANNER = 18
+
 /** Dashes a path is drawn with at most: beyond them, the rest of a far way is left undrawn. */
 const DASHES = 4000
 
@@ -43,6 +51,11 @@ export function makeAim(state: GameState, me: number) {
   const marks = container.addChild(new Graphics())
   const ghost = container.addChild(new Graphics())
   ghost.alpha = 0.85
+  // The standard's ghost, where the army in hand would be spent.
+  const standard = container.addChild(new Container())
+  const [pole, cloth] = [new Graphics(), new Graphics()]
+  standard.addChild(pole, cloth)
+  standard.alpha = 0.7
   const coups = makeCoupAim(state, me)
   container.addChild(coups.container)
   const color = playerColor(me)
@@ -176,13 +189,22 @@ export function makeAim(state: GameState, me: number) {
     // walk, then on to the tile aimed at by the way it takes over the land.
     if (road.length > 0) path([...road, e], zoom)
     path(way.length > 1 ? way : [e, p], zoom)
+    // On past the tile to where its men will be spent, its standard's ghost there.
+    const reach = reachNow(state, me, tile, army)
+    if (reach) {
+      const r = siteOf(state, reach.tile)
+      if (!reach.short) path([p, r], zoom)
+      drawBanner(pole, cloth, color, BANNER / zoom, 1 / zoom)
+      standard.position.set(r.x, r.y)
+      standard.visible = true
+    }
     marks
       .circle(e.x, e.y, 7 / zoom)
       .fill(color)
       .stroke({ width: 1.6 / zoom, color: TONE.ink })
     marks
       .circle(p.x, p.y, 6 / zoom)
-      .stroke({ width: 2 / zoom, color: TONE.ink })
+      .stroke({ width: 2 / zoom, color: reach?.short ? TONE.fight : TONE.ink })
   }
 
   return {
@@ -191,6 +213,7 @@ export function makeAim(state: GameState, me: number) {
       marks.clear()
       ghost.clear()
       ghost.visible = false
+      standard.visible = false
       coups.clear()
       if (me < 0 || !state.players[me].alive) return
       const opened = state.tick >= state.rules.openingTicks

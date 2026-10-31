@@ -28,6 +28,7 @@ describe('an army, tile by tile', () => {
     state.rules = {
       ...state.rules,
       paceTiles: 1,
+      freePace: 100,
       neutralHold: 0,
       neutralFloor: 0,
     }
@@ -44,8 +45,8 @@ describe('an army, tile by tile', () => {
 
   it('raises a share of the peasants for free, the gold left for the works', () => {
     const state = playing(field(6))
-    // Free land that brings no gold, to count the army's alone.
-    state.rules = { ...state.rules, neutralGold: 0 }
+    // Free land that brings no gold, taken at the lords' pace, to count the army's alone.
+    state.rules = { ...state.rules, neutralGold: 0, freePace: 100 }
     hold(state, 0, [0])
     muster(state, 0, 0)
     hold(state, 1, [5])

@@ -1,5 +1,4 @@
 import { UNIT } from './units'
-import { isqrt } from './numbers'
 import { around } from './grid'
 import { holdOf, seize, setOwner } from './land'
 import { NEUTRAL } from './types'
@@ -8,7 +7,7 @@ import { walled } from './battle'
 import { disband, hired } from './armies'
 import { costOf, marching, menFor, paceOf, passable } from './muster'
 import { courseFor, wideOf } from './course'
-import { roughAt } from './rough'
+import { inBand, priority, struck } from './band'
 import type { Army } from './rules'
 import type { GameState, Host } from './types'
 
@@ -26,53 +25,6 @@ import type { GameState, Host } from './types'
 // take, its survivors go home to the peasants, the mercenaries their way
 // (armies.ts). Two enemy armies that meet fight a battle first (battle.ts).
 
-/**
- * The order an army takes tiles in: from where it entered, twice as fast
- * towards the click as to the sides, within its band (inBand), so its front
- * is a wall moving on, not a thread; the land's roughness bends it
- * (rough.ts). Distances in tenths of a tile.
- */
-function priority(
-  state: GameState,
-  host: Pick<Host, 'entry' | 'aim' | 'owner'>,
-  tile: number,
-) {
-  const w = state.grid.width
-  const dx = (tile % w) - (host.entry % w)
-  const dy = Math.floor(tile / w) - Math.floor(host.entry / w)
-  const ax = (host.aim % w) - (host.entry % w)
-  const ay = Math.floor(host.aim / w) - Math.floor(host.entry / w)
-  const reach = isqrt(100 * (dx * dx + dy * dy))
-  const length = isqrt(ax * ax + ay * ay)
-  const ahead =
-    length === 0 ? 0 : Math.floor((10 * (dx * ax + dy * ay)) / length)
-  return 2 * reach - ahead + roughAt(state, host.owner, tile)
-}
-
-/**
- * Whether a tile lies in the army's band: near enough the line from where it
- * entered towards the click, as wide as its men. An army pushes on along its
- * line, past the click while it has men, and never swells into a ball.
- */
-function inBand(state: GameState, host: Host, tile: number): boolean {
-  const w = state.grid.width
-  const dx = (tile % w) - (host.entry % w)
-  const dy = Math.floor(tile / w) - Math.floor(host.entry / w)
-  const ax = (host.aim % w) - (host.entry % w)
-  const ay = Math.floor(host.aim / w) - Math.floor(host.entry / w)
-  const length = ax * ax + ay * ay
-  // The band's edge bends with the land's roughness, some tiles in or out,
-  // so that it is no straight wall (rough.ts).
-  const { roughness } = state.rules
-  const bend = Math.floor(
-    (2 * roughAt(state, host.owner, tile) - roughness) / 10,
-  )
-  const wide = Math.max(1, host.wide + bend)
-  if (length === 0) return dx * dx + dy * dy <= wide * wide
-  const across = dx * ay - dy * ax
-  return across * across <= wide * wide * length
-}
-
 /** Whether a tile borders land the lord's armies walk: his own, or an ally's, through which they go to strike beyond it. */
 function touches(state: GameState, player: number, tile: number) {
   return around(state.grid, tile).some((t) => passable(state, player, t))
@@ -81,11 +33,6 @@ function touches(state: GameState, player: number, tile: number) {
 /** Whether a tile is where the army came ashore from the water (crossing.ts), which it strikes first, though it borders no land of its lord's. */
 const landed = (state: GameState, host: Host, tile: number) =>
   tile === host.entry && state.grid.water[host.road.at(-1) ?? -1]
-
-/** Whether a tile is the army's to strike: its target's; or free, on its way to a lord its land does not touch (course.ts, `through`). */
-const struck = (state: GameState, host: Host, tile: number) =>
-  state.owner[tile] === host.target ||
-  (host.through === true && state.owner[tile] === NEUTRAL)
 
 /** A click: an army raised at one of the lord's free villages, or mercenaries hired at one of his free markets, marching by the course that brings it soonest to strike the clicked tile's lord or free domain. */
 export function attack(
@@ -135,12 +82,8 @@ function take(state: GameState, host: Host, tile: number) {
       push(host.queue, [priority(state, host, t), t])
 }
 
-/**
- * The army fights for a tile: a soldier is worth two peasants, one under the
- * castle of the tile's lord. Whether it took it; if not, its last men fell
- * there, and their worth of its holders.
- */
-function fight(state: GameState, host: Host, tile: number): boolean {
+/** What a tile costs an army: its holders, and what each is worth against it, a soldier two peasants, one under the castle of the tile's lord. */
+function termsOf(state: GameState, tile: number) {
   const held = holdOf(state, tile)
   // Its holder's: the target's, or nobody's on the free land it crosses.
   const holder = state.owner[tile]
@@ -148,7 +91,24 @@ function fight(state: GameState, host: Host, tile: number): boolean {
   const rate = walled(state, tile, holder) ? castle : peasants
   // A lord's land never for nothing, however thin; the free land as it holds.
   const least = holder >= 0 ? state.rules.leastCost : 0
-  const cost = Math.max(least, Math.floor((held * rate) / 100))
+  return {
+    held,
+    holder,
+    rate,
+    cost: Math.max(least, Math.floor((held * rate) / 100)),
+  }
+}
+
+/** The men a tile costs an army to take, as it is held now. */
+export const priceOf = (state: GameState, tile: number) =>
+  termsOf(state, tile).cost
+
+/**
+ * The army fights for a tile. Whether it took it; if not, its last men fell
+ * there, and their worth of its holders.
+ */
+function fight(state: GameState, host: Host, tile: number): boolean {
+  const { held, holder, rate, cost } = termsOf(state, tile)
   const paid = Math.min(cost, host.men)
   const killed = rate === 0 ? held : Math.floor((paid * 100) / rate)
   if (holder >= 0) {
@@ -166,7 +126,7 @@ function strideOf(state: GameState, host: Host): number {
   return Math.floor(((t + 1) * per) / 100) - Math.floor((t * per) / 100)
 }
 
-/** One tick of an army: it takes the next tiles it can pay for, a few at most. */
+/** One tick of an army: it takes the next tiles it can pay for, a few at most; free land, which hardly holds, faster. */
 function march(state: GameState, host: Host) {
   const taken: Array<number> = []
   const stride = strideOf(state, host)
@@ -175,7 +135,10 @@ function march(state: GameState, host: Host) {
     host.slow = (host.slow ?? 0) - 100 * stride
     return
   }
-  while (taken.length < stride && host.men > 0) {
+  // Its stride in hundredths of a tile: a free tile takes less of it (« ça peut être long », 31/10).
+  const free = Math.floor(10_000 / state.rules.freePace)
+  let spent = 0
+  while (spent < 100 * stride && host.men > 0) {
     const next = pop(host.queue)
     if (!next) break
     const tile = next[1]
@@ -185,7 +148,9 @@ function march(state: GameState, host: Host) {
       !(touches(state, host.owner, tile) || landed(state, host, tile))
     )
       continue
+    const wild = state.owner[tile] === NEUTRAL
     if (!fight(state, host, tile)) break
+    spent += wild ? free : 100
     take(state, host, tile)
     taken.push(tile)
     if (wooded(state, tile))

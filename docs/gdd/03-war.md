@@ -183,3 +183,45 @@ How land changes hands. Figures: `docs/RULES.md` (War).
 - Method: arena (gold from ships before and after), then played on Britain
   and the Mediterranean.
 - Confidence: Untested.
+
+## D-WAR-9: The standard where the army will be spent
+
+- Status: Accepted
+- Owner: Cédric
+- Updated: 2026-10-31
+- Links: D-WAR-1, P1
+#### Why?
+- Need: « On pose un porte étendard mais les troupes vont au delà, est ce que
+  c'est logique ? » The click gives a direction (28/10, « c'est pour donner une
+  direction pas un point d'arret »), but the standard planted on it said
+  « my army goes there », a lie a new player reads first.
+- Alternatives left: stopping at the standard (« au final c'est pas l'objectif
+  de s'arrêter »); widening round it (« si une armée adverse arrive comment on
+  fait »); the standard moving with the front.
+- Tradeoff: an estimate, the land moving while the army marches; asked again
+  each second.
+#### How?
+- While aiming, the dotted course runs from the entry through the pointer to
+  where the army's men will be spent, the ghost of its standard there; short
+  of the pointer, the tile aimed at is ringed in red. A small army falls
+  short, a large one goes far, a well held lord or a castle pulls it back:
+  the army's size is read as its reach, untold.
+- On its way, its standard stands at that point, set again each second.
+- With it, the free land taken twice as fast: « je sais pas si l'assaut de
+  zone vide est satisfaisant, ça peut être long ».
+#### What?
+- `reachOf` (`engine/reach.ts`): the army's push played over in thought, as
+  `war.ts` plays it, on the land as it is: from its entry, across its lord's
+  land in its band, each tile at its price (`priceOf`), the cheapest way
+  first, until the next is not paid; the reach is the tile taken farthest
+  on its line. `freePace` 200 % (tunable).
+- Acceptance: Given an army sent over even free land, When its push ends,
+  Then it ends within 2 tiles of the reach worked out as it was sent
+  (`engine/reach.test.ts`).
+#### Validation
+- Riskiest hypothesis: the reach moves little enough, as the army marches,
+  for the standard to be trusted.
+- Method: played; the arena for the game's length with the free land faster
+  (4 games of 20 bots, 22 to 26 minutes, all won by share).
+- Confidence: Supported (tests, arena), untested in play.
+

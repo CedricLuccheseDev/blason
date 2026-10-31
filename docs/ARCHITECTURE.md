@@ -102,6 +102,8 @@ can tune them without touching the code. The rules themselves are described in
 | `muster.ts`              | Raising an army: the free villages, the march out of them and its pace, where an army stands                   |
 | `course.ts`              | An army's course: the border tile that brings it soonest to the click, its village and its road                |
 | `war.ts`                 | Armies: their march, how they spread, what each tile costs                                                     |
+| `band.ts`                | The band an army takes: its strip along its line, the order it takes it in                                     |
+| `reach.ts`               | Where an army's men will be spent: its push played over in thought, its standard there                         |
 | `battle.ts`              | Battles between armies that meet, by the combat table                                                          |
 | `volleys.ts`             | The castles' arrows: a volley every few seconds at each enemy army fighting in their zone                      |
 | `enclosure.ts`           | Encircled land passing to the lord all round it                                                                |
